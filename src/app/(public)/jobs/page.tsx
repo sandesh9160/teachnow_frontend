@@ -36,6 +36,7 @@ function JobsContent() {
     work_types: [],
     experience: [],
     salary: [],
+    institution_type: [],
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -49,8 +50,8 @@ function JobsContent() {
       setLoading(true);
       try {
         const results = (keywordParam || locationParam)
-            ? await searchJobs(keywordParam, locationParam)
-            : await getJobs();
+          ? await searchJobs(keywordParam, locationParam)
+          : await getJobs();
         setJobs(results);
 
         if (keywordParam) setSearch(keywordParam);
@@ -103,6 +104,7 @@ function JobsContent() {
       work_types: [],
       experience: [],
       salary: [],
+      institution_type: [],
     });
     setSearch("");
     setCurrentPage(1);
@@ -113,10 +115,10 @@ function JobsContent() {
   // Client-side Filtering Logic
   const filtered = jobs.filter((job) => {
     if (!job) return false;
-    
+
     // Search
     if (search && !(job.title?.toLowerCase().includes(search.toLowerCase()) || job.employer?.company_name?.toLowerCase().includes(search.toLowerCase()))) return false;
-    
+
     // Job Type Filter
     if (selectedFilters.types.length) {
       const normalizeType = (value: string) =>
@@ -154,7 +156,13 @@ function JobsContent() {
       });
       if (!isMatch) return false;
     }
-    
+
+    // Institution Type Filter
+    if (selectedFilters.institution_type.length > 0) {
+      const instType = (job as any).institution_type || (job.employer as any)?.institution_type;
+      if (!instType || !selectedFilters.institution_type.includes(instType)) return false;
+    }
+
     return true;
   });
 

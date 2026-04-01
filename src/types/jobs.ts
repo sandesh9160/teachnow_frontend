@@ -14,6 +14,7 @@ export interface JobsFilters {
   work_types: string[];
   experience: string[];
   salary: string[];
+  institution_type: string[];
 }
 
 export interface JobsState {

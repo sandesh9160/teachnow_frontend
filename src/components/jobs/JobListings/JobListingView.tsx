@@ -42,6 +42,7 @@ export default function JobListingView({
     work_types: initialFilters?.work_types || [],
     experience: initialFilters?.experience || [],
     salary: initialFilters?.salary || [],
+    institution_type: initialFilters?.institution_type || [],
   });
 
   useEffect(() => {
@@ -138,6 +139,12 @@ export default function JobListingView({
         return jobMax >= rangeMin && jobMin <= rangeMax;
       });
       if (!isMatch) return false;
+    }
+
+    // Institution Type Filter
+    if (selectedFilters.institution_type.length > 0) {
+      const instType = (job as any).institution_type || (job.employer as any)?.institution_type;
+      if (!instType || !selectedFilters.institution_type.includes(instType)) return false;
     }
 
     return true;

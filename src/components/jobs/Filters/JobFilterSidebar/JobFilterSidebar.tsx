@@ -34,6 +34,14 @@ export const JobFilterSidebar = ({
     { value: "10-15", label: "10 - 15 Lakhs" },
   ];
 
+  const institutionTypeOptions = [
+    { value: "UG", label: "UG" },
+    { value: "PG", label: "PG" },
+    { value: "Diploma", label: "Diploma" },
+    { value: "School", label: "School" },
+    { value: "Intermediate", label: "Intermediate" },
+  ];
+
   return (
     <div className="flex flex-col gap-6">
       <FilterCard>
@@ -44,7 +52,7 @@ export const JobFilterSidebar = ({
                 <CheckboxItem
                   key={opt.value}
                   label={opt.label}
-                  checked={selectedFilters.types.includes(opt.value)}
+                  checked={selectedFilters.types?.includes(opt.value) || false}
                   onChange={() => onToggle("types", opt.value)}
                 />
               ))}
@@ -57,8 +65,21 @@ export const JobFilterSidebar = ({
                 <CheckboxItem
                   key={range.value}
                   label={range.label}
-                  checked={selectedFilters.experience.includes(range.value)}
+                  checked={selectedFilters.experience?.includes(range.value) || false}
                   onChange={() => onToggle("experience", range.value)}
+                />
+              ))}
+            </div>
+          </FilterSection>
+
+          <FilterSection title="Institution Type">
+            <div className="space-y-3">
+              {institutionTypeOptions.map((opt) => (
+                <CheckboxItem
+                  key={opt.value}
+                  label={opt.label}
+                  checked={selectedFilters.institution_type?.includes(opt.value) || false}
+                  onChange={() => onToggle("institution_type", opt.value)}
                 />
               ))}
             </div>
@@ -70,7 +91,7 @@ export const JobFilterSidebar = ({
                 <CheckboxItem
                   key={range.value}
                   label={range.label}
-                  checked={selectedFilters.salary.includes(range.value)}
+                  checked={selectedFilters.salary?.includes(range.value) || false}
                   onChange={() => onToggle("salary", range.value)}
                 />
               ))}

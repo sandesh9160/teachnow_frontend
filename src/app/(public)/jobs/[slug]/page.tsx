@@ -152,7 +152,7 @@ async function lookupBySearchFallback(s: string) {
     }
 
     // Detect common filters from the remaining parts
-    const initialFilters: any = { types: [], experience: [], salary: [] };
+    const initialFilters: any = { types: [], experience: [], salary: [], institution_type: [] };
     const finalKeywordParts: string[] = [];
     
     // Range maps for experience and salary
