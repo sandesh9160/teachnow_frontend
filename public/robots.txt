@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /employer
+Disallow: /employer-dashboard
+Disallow: /login
+Disallow: /signup
+Disallow: /employer-login
+
+Sitemap: https://teachnow.in/sitemap.xml
