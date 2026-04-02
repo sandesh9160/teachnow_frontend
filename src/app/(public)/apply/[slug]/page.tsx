@@ -25,7 +25,7 @@ import {
   Plus,
   Star,
 } from "lucide-react";
-import { getJobBySlug } from "@/hooks/useJobs";
+import { getJobBySlug } from "@/lib/jobs/api";
 import { useApplications } from "@/hooks/useApplications";
 import { useResumes } from "@/hooks/useResumes";
 import { Job } from "@/types/homepage";
@@ -38,8 +38,8 @@ export default function ApplyJobPage() {
   const slug = params?.slug as string;
   const router = useRouter();
   const { isLoggedIn, user } = useAuth();
-  const { applyJob } = useApplications();
-  const { getResumes } = useResumes();
+  const { apply } = useApplications();
+  const { resumes } = useResumes({ enabled: isLoggedIn });
 
   const [step, setStep] = useState(0);
   const [candidate, setCandidate] = useState({
@@ -67,7 +67,6 @@ export default function ApplyJobPage() {
   const [isRewriting, setIsRewriting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
-  const [resumes, setResumes] = useState<any[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<string | number>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -90,21 +89,11 @@ export default function ApplyJobPage() {
   }, [slug]);
 
   useEffect(() => {
-    async function loadResumes() {
-      if (!isLoggedIn) return;
-      try {
-        const data = await getResumes();
-        const resumeList = Array.isArray(data) ? data : [];
-        setResumes(resumeList);
-        const defaultResume = resumeList.find((r: any) => r.is_default);
-        if (defaultResume) setSelectedResumeId(defaultResume.id);
-        else if (resumeList.length > 0) setSelectedResumeId(resumeList[0].id);
-      } catch (error) {
-        console.error("Error loading resumes:", error);
-      }
-    }
-    loadResumes();
-  }, [isLoggedIn, getResumes]);
+    if (!resumes.length) return;
+    const defaultResume = resumes.find((r) => r.is_default);
+    if (defaultResume) setSelectedResumeId(defaultResume.id);
+    else setSelectedResumeId(resumes[0].id);
+  }, [resumes]);
 
   useEffect(() => {
     if (!loading) {
@@ -143,16 +132,20 @@ export default function ApplyJobPage() {
     if (!jobDetails.id) return;
     try {
       setIsSubmitting(true);
-      await applyJob(jobDetails.id, {
-        resume_id: selectedResumeId,
-        cover_letter: coverLetter,
-        candidate_details: candidate
-      });
+      const answers: { question_id: number; candidate_answer: string }[] = [];
+      if (jobDetails.cover_letter_question_id != null && coverLetter.trim()) {
+        answers.push({
+          question_id: jobDetails.cover_letter_question_id,
+          candidate_answer: coverLetter,
+        });
+      }
+      await apply(jobDetails.id, answers);
 
       setSubmitted(true);
       toast.success("Application Submitted Successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to submit application.");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to submit application.";
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -350,10 +343,12 @@ export default function ApplyJobPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-foreground truncate">{resume.name}</p>
-                          {resume.isDefault && <Star className="h-3 w-3 fill-primary text-primary" />}
+                          <p className="text-sm font-semibold text-foreground truncate">{resume.title ?? resume.file_name ?? "—"}</p>
+                          {resume.is_default && <Star className="h-3 w-3 fill-primary text-primary" />}
                         </div>
-                        <p className="text-[10px] text-muted-foreground uppercase">{resume.fileType} · {resume.size}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">
+                          {(resume.file_name ?? "").split(".").pop() ?? "—"} · {resume.size ?? "—"}
+                        </p>
                       </div>
                       {selectedResumeId === resume.id && <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />}
                     </label>
@@ -453,7 +448,7 @@ export default function ApplyJobPage() {
                   { label: "Job", value: jobDetails.title },
                   { label: "Company", value: jobDetails.employer?.company_name },
                   { label: "Candidate", value: candidate.name },
-                  { label: "Resume", value: resumes.find(r => r.id === selectedResumeId)?.name || "Not selected" },
+                  { label: "Resume", value: resumes.find((r) => r.id === selectedResumeId)?.title ?? resumes.find((r) => r.id === selectedResumeId)?.file_name ?? "Not selected" },
                 ].map((item) => (
                   <div key={item.label} className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{item.label}</span>

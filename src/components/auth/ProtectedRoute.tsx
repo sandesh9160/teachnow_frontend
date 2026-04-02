@@ -6,7 +6,7 @@ import { ReactNode, useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRole?: "jobseeker" | "employer";
+  allowedRole?: "job_seeker" | "employer";
 }
 
 export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {

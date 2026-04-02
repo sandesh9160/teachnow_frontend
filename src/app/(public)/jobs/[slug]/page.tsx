@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
-import { getJobs, searchJobs, getJobBySlug, normalizeJob } from "@/hooks/useJobs";
+import { getJobs, searchJobs, getJobBySlug, normalizeJob } from "@/lib/jobs/api";
 import { getCompanies, getCompanyBySlug } from "@/hooks/useCompanies";
 import { getCategories, getFilters } from "@/hooks/useHomepage";
 import { fetchAPI } from "@/services/api/client";

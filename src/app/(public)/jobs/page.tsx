@@ -2,8 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { searchJobs, getJobs } from "@/hooks/useJobs";
-import { Job } from "@/types/homepage";
+import { useJobs } from "@/hooks/useJobs";
 import { JobsFilters } from "@/types/jobs";
 
 // Reusable Components
@@ -22,9 +21,7 @@ function JobsContent() {
   const keywordParam = searchParams.get("keyword") || "";
   const locationParam = searchParams.get("location") || "";
 
-  // Data State
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { jobs, loading, error, fetchJobs } = useJobs();
 
   // UI/Filter State
   const [search, setSearch] = useState("");
@@ -44,27 +41,14 @@ function JobsContent() {
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  // Sync URL params and Fetch Jobs
   useEffect(() => {
-    const fetchJobsData = async () => {
-      setLoading(true);
-      try {
-        const results = (keywordParam || locationParam)
-          ? await searchJobs(keywordParam, locationParam)
-          : await getJobs();
-        setJobs(results);
-
-        if (keywordParam) setSearch(keywordParam);
-        if (locationParam) setLocationSearch(locationParam);
-      } catch (err) {
-        console.error("Failed to fetch jobs:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobsData();
-  }, [keywordParam, locationParam]);
+    void fetchJobs({
+      keyword: keywordParam || undefined,
+      location: locationParam || undefined,
+    });
+    if (keywordParam) setSearch(keywordParam);
+    if (locationParam) setLocationSearch(locationParam);
+  }, [keywordParam, locationParam, fetchJobs]);
 
   const handleSearch = () => {
     const combined = [search, locationSearch]
@@ -191,6 +175,21 @@ function JobsContent() {
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
+
+      {error ? (
+        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+          <div className="rounded-xl border border-red-100 bg-red-50/90 px-4 py-3 text-sm text-red-800">
+            {error}
+            <button
+              type="button"
+              className="ml-3 font-semibold text-primary underline"
+              onClick={() => void fetchJobs({ keyword: keywordParam || undefined, location: locationParam || undefined })}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <JobsHeader
         search={search}

@@ -1,4 +1,4 @@
-import { getJobs } from "@/hooks/useJobs";
+import { getJobs } from "@/lib/jobs/api";
 import JobListingView from "./JobListingView";
 import { notFound } from "next/navigation";
 

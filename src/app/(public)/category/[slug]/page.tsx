@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCategoryJobs } from "@/hooks/useJobs";
+import { getCategoryJobs } from "@/lib/jobs/api";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 
 export const revalidate = 300;
@@ -37,7 +37,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const categoryResult = await getCategoryJobs(slug);
   const jobs = Array.isArray(categoryResult)
     ? categoryResult
-    : (Array.isArray(categoryResult?.jobs) ? categoryResult.jobs : []);
+    : Array.isArray(categoryResult?.jobs)
+      ? categoryResult.jobs
+      : [];
 
   if (jobs.length === 0) {
     notFound();

@@ -5,20 +5,30 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
 import { useAuth } from "@/context/AuthContext";
+import {EmailSignInAction} from "@/lib/sign-in";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading: isLoading } = useAuth();
+  const { loading: isLoading } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login("jobseeker", { email, password });
+       const res = await EmailSignInAction({ email, password });
+
+if (!res.status) {
+  toast.error(res.message);
+} else {
+  toast.success("Logged in!");
+}
+       
     } catch (err: any) {
       // Handled in context
+      toast.error(err.message || "An error occurred during login.");
     }
   };
 

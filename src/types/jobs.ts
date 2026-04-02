@@ -1,4 +1,10 @@
-import { Job } from "./homepage";
+import type { Job } from "./homepage";
+
+/** Re-export canonical job shape for consumers of `@/types/jobs`. */
+export type { Job };
+
+/** Full job record for detail views (includes `similar_jobs` and optional screening fields on `Job`). */
+export type JobDetails = Job;
 
 export interface JobsPageProps {
   searchParams: {

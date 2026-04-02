@@ -215,7 +215,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { fetchAPI } from "@/services/api/client";
 
-export type UserRole = "jobseeker" | "employer" | "manager" | "recruiter";
+export type UserRole = "job_seeker" | "employer" | "manager" | "recruiter";
 
 export interface AuthUser {
   id: number;
@@ -293,46 +293,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ==============================
   // LOGIN
   // ==============================
-  const login = useCallback(
-    async (role: string, credentials: any) => {
-      setLoading(true);
-      try {
-        // ✅ CSRF handled inside fetchAPI
-        await fetchAPI("/auth/login", {
-          method: "POST",
-          body: { ...credentials, role },
-        });
+ const login = useCallback(
+  async (role: string, credentials: any) => {
+    setLoading(true);
+    try {
+      const res = await fetchAPI<{ user: AuthUser }>("/auth/login", {
+        method: "POST",
+        body: { ...credentials, role },
+      });
 
-        // ✅ Get fresh user
-        const loggedInUser = await fetchProfile();
+      const loggedInUser: AuthUser = res.user;
 
-        toast.success("Welcome back!");
+      if (!loggedInUser?.role) throw new Error("User role missing");
 
-        // ✅ Redirect based on returned user
-        switch (loggedInUser?.role) {
-          case "employer":
-            router.push("/dashboard/employer/company-profile");
-            break;
-          case "jobseeker":
-            router.push("/dashboard/jobseeker/profile");
-            break;
-          case "manager":
-            router.push("/dashboard/manager");
-            break;
-          case "recruiter":
-            router.push("/dashboard/recruiter");
-            break;
-          default:
-            router.push("/");
-        }
-      } catch (err: any) {
-        toast.error(err?.message || "Login failed");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fetchProfile, router]
-  );
+      setUser(loggedInUser);
+      setRole(loggedInUser.role as UserRole);
+
+      // Optional callback URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get("callbackUrl");
+
+      // Role redirect map
+      const roleRedirectMap: Record<UserRole, string> = {
+        job_seeker: "/dashboard/jobseeker/profile",
+        employer: "/dashboard/employer/company-profile",
+        manager: "/dashboard/manager",
+        recruiter: "/dashboard/recruiter",
+      };
+
+      // Normalize role key
+      const roleKey = (loggedInUser.role || "").trim().toLowerCase() as UserRole;
+
+      // Redirect to callbackUrl or role-based dashboard
+      router.push(callbackUrl || roleRedirectMap[roleKey] || "/");
+
+      toast.success("Welcome back!");
+    } catch (err: any) {
+      toast.error(err?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  },
+  [router]
+);
 
   // ==============================
   // REGISTER

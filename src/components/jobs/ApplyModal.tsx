@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { useApplications } from "@/hooks/useApplications";
+import type { ApplicationAnswer } from "@/types/application";
 import {
   X,
   MapPin,
@@ -30,6 +32,10 @@ import {
 interface ApplyModalProps {
   open: boolean;
   onClose: () => void;
+  /** Numeric job id for POST /jobseeker/jobs/{id}/apply */
+  jobId: number | string;
+  /** When set, cover letter text is sent as that question’s answer. */
+  coverLetterQuestionId?: number;
   job: {
     title: string;
     company: string;
@@ -45,9 +51,10 @@ interface ApplyModalProps {
 
 const STEPS = ["Review Job", "Your Details", "Resume", "Cover Letter", "Submit"];
 
-const ApplyModal = ({ open, onClose, job }: ApplyModalProps) => {
+const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyModalProps) => {
   const router = useRouter();
   const { isLoggedIn, user } = useAuth();
+  const { apply, loading: applyLoading } = useApplications();
   const [step, setStep] = useState(0);
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -83,27 +90,23 @@ const ApplyModal = ({ open, onClose, job }: ApplyModalProps) => {
     onClose();
   };
 
-  const handleSubmit = () => {
-    const application = {
-      name: candidate.name,
-      email: candidate.email,
-      phone: candidate.phone,
-      resume: "Resume.pdf",
-      coverLetter: coverLetter,
-      jobTitle: job.title,
-      company: job.company,
-      appliedAt: new Date().toISOString(),
-    };
-    
-    // In a real app, this would be a POST request to your backend
-    const existing = JSON.parse(localStorage.getItem("teachnow_applications") || "[]");
-    existing.push(application);
-    localStorage.setItem("teachnow_applications", JSON.stringify(existing));
-
-    setSubmitted(true);
-    toast.success("Application Submitted Successfully", {
-      description: `Your application for ${job.title} at ${job.company} has been submitted.`,
-    });
+  const handleSubmit = async () => {
+    try {
+      const answers: ApplicationAnswer[] = [];
+      if (coverLetterQuestionId != null && coverLetter.trim()) {
+        answers.push({
+          question_id: coverLetterQuestionId,
+          candidate_answer: coverLetter,
+        });
+      }
+      await apply(jobId, answers);
+      setSubmitted(true);
+      toast.success("Application Submitted Successfully", {
+        description: `Your application for ${job.title} at ${job.company} has been submitted.`,
+      });
+    } catch {
+      toast.error("Failed to submit application. Please try again.");
+    }
   };
 
   // Not logged in
@@ -402,8 +405,8 @@ const ApplyModal = ({ open, onClose, job }: ApplyModalProps) => {
                 <Button variant="outline" className="flex-1" onClick={() => setStep(3)}>
                   <ArrowLeft className="mr-1 h-4 w-4" /> Back
                 </Button>
-                <Button variant="hero" className="flex-1" onClick={handleSubmit}>
-                  <Sparkles className="mr-1 h-4 w-4" /> Submit Application
+                <Button variant="hero" className="flex-1" onClick={() => void handleSubmit()} disabled={applyLoading}>
+                  <Sparkles className="mr-1 h-4 w-4" /> {applyLoading ? "Submitting…" : "Submit Application"}
                 </Button>
               </div>
             </div>

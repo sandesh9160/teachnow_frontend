@@ -5,7 +5,7 @@ import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 
-import { getJobBySlug, getCategoryJobs, searchJobs } from "@/hooks/useJobs";
+import { getJobBySlug, getCategoryJobs, searchJobs } from "@/lib/jobs/api";
 import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
 import { getLocationJobs } from "@/hooks/useHomepage";
 import { sanitizeSlug } from "@/lib/utils";
@@ -96,11 +96,12 @@ async function lookupByCategory(s: string) {
     const res = await getCategoryJobs(s);
     if (!res) return null;
 
-    const jobsRaw = res?.jobs ?? res?.data ?? res;
+    const jobsRaw = Array.isArray(res) ? res : (res.jobs ?? res.data ?? res);
     const jobs = Array.isArray(jobsRaw) ? jobsRaw : [];
     if (jobs.length === 0) return null;
 
-    return { type: 'category' as const, data: { jobs, name: res.name || res.category_name || s } };
+    const name = Array.isArray(res) ? s : (res.name ?? res.category_name ?? s);
+    return { type: 'category' as const, data: { jobs, name } };
   } catch { return null; }
 }
 

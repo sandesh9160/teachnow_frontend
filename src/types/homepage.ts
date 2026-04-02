@@ -24,6 +24,8 @@ export type Job = {
   meta_description?: string;
   meta_keywords?: string;
   similar_jobs?: Job[];
+  cover_letter_question_id?: number;
+  screening_questions?: { id: number; question: string }[];
 };
 
 export type Institution = {

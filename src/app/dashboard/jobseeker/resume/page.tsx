@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useResumes } from "@/hooks/useResumes";
 import { Loader2, FileText, Upload, Trash2, CheckCircle2, FileUp } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -8,27 +8,9 @@ import { Badge } from "@/shared/ui/Badge/Badge";
 import { toast } from "sonner";
 
 export default function ResumeManagementPage() {
-  const { getResumes, uploadResume, setDefaultResume, deleteResume } = useResumes();
-  const [resumes, setResumes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { resumes, loading, error, fetchResumes, upload, remove, setDefault } = useResumes();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const fetchResumes = async () => {
-    try {
-      setLoading(true);
-      const data = await getResumes();
-      setResumes(Array.isArray(data) ? data : []);
-    } catch (error) {
-      toast.error("Failed to load resumes.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchResumes();
-  }, [getResumes]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,16 +21,11 @@ export default function ResumeManagementPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("resume", file);
-    formData.append("title", file.name);
-
     try {
       setUploading(true);
-      await uploadResume(formData);
+      await upload(file);
       toast.success("Resume uploaded successfully!");
-      fetchResumes();
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload resume.");
     } finally {
       setUploading(false);
@@ -58,10 +35,9 @@ export default function ResumeManagementPage() {
 
   const handleSetDefault = async (id: number | string) => {
     try {
-      await setDefaultResume(id);
+      await setDefault(id);
       toast.success("Default resume updated.");
-      fetchResumes();
-    } catch (error) {
+    } catch {
       toast.error("Failed to set default.");
     }
   };
@@ -69,10 +45,9 @@ export default function ResumeManagementPage() {
   const handleDelete = async (id: number | string) => {
     if (!confirm("Are you sure you want to delete this resume?")) return;
     try {
-      await deleteResume(id);
+      await remove(id);
       toast.success("Resume deleted.");
-      fetchResumes();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete resume.");
     }
   };
@@ -96,7 +71,7 @@ export default function ResumeManagementPage() {
           <Button 
             variant="default" 
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
+            disabled={uploading || loading}
           >
             {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
             Upload Resume
@@ -104,8 +79,21 @@ export default function ResumeManagementPage() {
         </div>
       </div>
 
+      {error ? (
+        <div className="mb-4 rounded-2xl border border-red-100 bg-red-50/80 px-6 py-4 text-red-800 text-sm">
+          <p className="font-medium">{error}</p>
+          <button
+            type="button"
+            onClick={() => void fetchResumes()}
+            className="mt-2 font-semibold text-primary hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      ) : null}
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {loading ? (
+        {loading && !uploading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
@@ -120,7 +108,7 @@ export default function ResumeManagementPage() {
                   <div>
                     <h3 className="font-bold text-gray-900">{resume.title || resume.file_name}</h3>
                     <p className="text-sm text-gray-500">
-                      Uploaded on {new Date(resume.created_at).toLocaleDateString()}
+                      Uploaded on {resume.created_at ? new Date(resume.created_at).toLocaleDateString() : "—"}
                     </p>
                   </div>
                 </div>
@@ -134,7 +122,8 @@ export default function ResumeManagementPage() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => handleSetDefault(resume.id)}
+                      disabled={loading}
+                      onClick={() => void handleSetDefault(resume.id)}
                     >
                       Set as Default
                     </Button>
@@ -144,7 +133,8 @@ export default function ResumeManagementPage() {
                     variant="outline" 
                     size="sm"
                     className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => handleDelete(resume.id)}
+                    disabled={loading}
+                    onClick={() => void handleDelete(resume.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -162,6 +152,7 @@ export default function ResumeManagementPage() {
             <Button 
               variant="outline" 
               onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || loading}
             >
               Upload your first resume
             </Button>

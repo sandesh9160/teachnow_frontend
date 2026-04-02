@@ -44,7 +44,7 @@ export const apiSanctum = axios.create({
   xsrfHeaderName: "X-XSRF-TOKEN",
   timeout: 10000,
   headers: {
-    Accept: "application/json",
+    "Accept": "application/json",
     "Content-Type": "application/json",
   },
 });
@@ -58,7 +58,7 @@ export const api = axios.create({
   xsrfHeaderName: "X-XSRF-TOKEN",
   timeout: 30000,
   headers: {
-    Accept: "application/json",
+    "Accept": "application/json",
     "Content-Type": "application/json",
   },
 });
