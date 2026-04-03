@@ -1,40 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Loader2, BookmarkX, BookmarkCheck } from "lucide-react";
 import JobCard from "@/shared/cards/JobCard/JobCard";
-import { Job } from "@/types/homepage";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
 export default function SavedJobsPage() {
-  const { getBookmarks, removeBookmark } = useBookmarks();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const data = await getBookmarks();
-      setJobs(Array.isArray(data) ? data : []);
-    } catch (error) {
-      toast.error("Failed to load saved jobs.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { bookmarks, loading, fetchBookmarks, toggleBookmark } = useBookmarks();
 
   useEffect(() => {
-    fetchJobs();
-  }, [getBookmarks]);
+    void fetchBookmarks();
+  }, [fetchBookmarks]);
 
   const handleRemove = async (jobId: string | number) => {
     try {
-      await removeBookmark(jobId);
+      await toggleBookmark(jobId);
       toast.success("Job removed from saved list.");
-      setJobs((prev) => prev.filter((j) => j.id !== jobId));
     } catch (error) {
       toast.error("Failed to remove saved job.");
     }
@@ -51,9 +35,9 @@ export default function SavedJobsPage() {
         <div className="flex justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : jobs.length > 0 ? (
+      ) : bookmarks.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => (
+          {bookmarks.map((job) => (
             <div key={job.id} className="relative group flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="flex-1 p-5">
                 <JobCard 

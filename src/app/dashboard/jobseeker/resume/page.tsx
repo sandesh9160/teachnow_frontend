@@ -1,16 +1,28 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useResumes } from "@/hooks/useResumes";
-import { Loader2, FileText, Upload, Trash2, CheckCircle2, FileUp } from "lucide-react";
+import { useCV } from "@/hooks/useCV";
+import { Loader2, FileText, Upload, Trash2, CheckCircle2, FileUp, Sparkles } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Badge } from "@/shared/ui/Badge/Badge";
 import { toast } from "sonner";
 
 export default function ResumeManagementPage() {
   const { resumes, loading, error, fetchResumes, upload, remove, setDefault } = useResumes();
+  const {
+    templates,
+    loading: cvLoading,
+    error: cvError,
+    fetchTemplates,
+    generateCV,
+  } = useCV();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    void fetchTemplates();
+  }, [fetchTemplates]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,6 +89,75 @@ export default function ResumeManagementPage() {
             Upload Resume
           </Button>
         </div>
+      </div>
+
+      <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <div>
+              <h2 className="font-semibold text-gray-900">Resume Builder (CV Templates)</h2>
+              <p className="text-xs text-gray-500">
+                Quickly generate a polished CV from ready-made templates.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {cvError ? (
+          <div className="px-6 py-4 text-sm text-red-700 bg-red-50 border-t border-red-100">
+            {cvError}
+          </div>
+        ) : null}
+
+        {cvLoading && templates.length === 0 ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        ) : templates.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 py-5">
+            {templates.map((tpl) => (
+              <div
+                key={tpl.id}
+                className="rounded-xl border border-gray-100 p-4 flex flex-col gap-3 bg-gray-50/60 hover:bg-white hover:shadow-sm transition"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{tpl.name}</h3>
+                    {tpl.description && (
+                      <p className="text-xs text-gray-500 mt-1">{tpl.description}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    disabled={cvLoading}
+                    onClick={async () => {
+                      try {
+                        await generateCV({ template_id: tpl.id });
+                        toast.success("Your CV is being generated.");
+                      } catch {
+                        toast.error("Failed to generate CV.");
+                      }
+                    }}
+                  >
+                    {cvLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 mr-2" />
+                    )}
+                    Generate CV
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="px-6 py-8 text-center text-sm text-gray-500">
+            No CV templates available right now.
+          </div>
+        )}
       </div>
 
       {error ? (

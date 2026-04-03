@@ -1,4 +1,5 @@
-import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import { normalizeMediaUrl } from "@/services/api/client";
 import { Institution, Job, ApiResponse } from "@/types/homepage";
 
 /* -------------------- HELPERS -------------------- */
@@ -59,14 +60,11 @@ export async function getCompanies(filters: Record<string, any> = {}): Promise<I
   });
 
   try {
-    const res = await fetchAPI<ApiResponse<any>>(
-      `/open/home/featured-companies${params.toString() ? "?" + params.toString() : ""}`,
-      { silentStatusCodes: [404, 500] }
-    );
+    const endpoint = `open/home/featured-companies${params.toString() ? "?" + params.toString() : ""}`;
+    const res = await dashboardServerFetch<ApiResponse<any>>(endpoint, { method: "GET" });
     const data = res.data || res;
     return toArray<Institution>(data).map(normalizeInstitution);
   } catch (err: any) {
-    //console.error("getCompanies error:", err);
     return [];
   }
 }
@@ -86,16 +84,14 @@ export async function getCompanyProfileWithJobs(
 
   try {
     // 1. Try standard profile endpoint
-    let res = await fetchAPI<ApiResponse<any>>(
-      `/open/company/${encodeURIComponent(slug)}/profile`,
-      { silentStatusCodes: [404, 500] }
+    let res = await dashboardServerFetch<ApiResponse<any>>(
+      `open/company/${encodeURIComponent(slug)}/profile`, { method: "GET" }
     );
 
     // 2. Fallback: Try direct company endpoint (some IDs use this instead of profile/jobs)
     if (!res || (!(res as any).data && !(res as any).company_name && !(res as any).name)) {
-      res = await fetchAPI<ApiResponse<any>>(
-        `/open/company/${encodeURIComponent(slug)}`,
-        { silentStatusCodes: [404, 500] }
+      res = await dashboardServerFetch<ApiResponse<any>>(
+        `open/company/${encodeURIComponent(slug)}`, { method: "GET" }
       );
     }
 
@@ -115,9 +111,6 @@ export async function getCompanyProfileWithJobs(
 
     return { company, jobs };
   } catch (error: any) {
-    if (error.status !== 404 && error.status !== 500) {
-      //console.error(`getCompanyProfileWithJobs error (${slugOrId}):`, error);
-    }
     return null;
   }
 }

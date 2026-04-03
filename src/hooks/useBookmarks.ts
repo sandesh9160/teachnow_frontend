@@ -1,53 +1,56 @@
-import { useState, useCallback } from "react";
-import { fetchAPI } from "@/services/api/client";
+import { useCallback, useState } from "react";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import type { Job } from "@/types/homepage";
+
+type Bookmark = Job & { id: number | string };
 
 export function useBookmarks() {
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getBookmarks = useCallback(async () => {
+  const fetchBookmarks = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchAPI<any>("jobseeker/bookmarks");
-      return res.data || res;
+      const res = await dashboardServerFetch<any>("jobseeker/bookmarks", { method: "GET" });
+      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      setBookmarks(data);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch saved jobs");
+      setBookmarks([]);
+      setError(err?.message || "Failed to fetch saved jobs");
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const bookmarkJob = async (jobId: number | string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      return await fetchAPI<any>(`jobseeker/jobs/${jobId}/bookmark`, {
-        method: "POST",
-      });
-    } catch (err: any) {
-      setError(err.message || "Failed to save job");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const toggleBookmark = useCallback(
+    async (jobId: number | string) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const removeBookmark = async (jobId: number | string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      return await fetchAPI<any>(`jobseeker/jobs/${jobId}/bookmark`, {
-        method: "DELETE",
-      });
-    } catch (err: any) {
-      setError(err.message || "Failed to remove saved job");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+        const isAlreadyBookmarked = bookmarks.some((job) => job.id === jobId);
+        const method = isAlreadyBookmarked ? "DELETE" : "POST";
 
-  return { loading, error, getBookmarks, bookmarkJob, removeBookmark };
+        await dashboardServerFetch<any>(`jobseeker/jobs/${jobId}/bookmark`, { method });
+        await fetchBookmarks();
+      } catch (err: any) {
+        setError(err?.message || "Failed to update bookmark");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [bookmarks, fetchBookmarks]
+  );
+
+  return {
+    bookmarks,
+    loading,
+    error,
+    fetchBookmarks,
+    toggleBookmark,
+  };
 }

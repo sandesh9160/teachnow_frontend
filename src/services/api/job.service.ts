@@ -55,9 +55,11 @@ export async function getJobDetails(slug: string): Promise<JobDetails | null> {
   } catch (err) {
     if (axios.isAxiosError(err)) {
       const s = err.response?.status;
-      if (s !== 404 && s !== 500) //console.error(`getJobDetails error (${slug}):`, err);
+      if (s !== 404 && s !== 500) {
+        // console.error(`getJobDetails error (${slug}):`, err);
+      }
     } else {
-      //console.error(`getJobDetails error (${slug}):`, err);
+      // console.error(`getJobDetails error (${slug}):`, err);
     }
     return null;
   }

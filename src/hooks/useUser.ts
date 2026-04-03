@@ -15,6 +15,6 @@ export function useUser() {
     refreshProfile: fetchProfile,
     // Shorthand for conditional checks
     isEmployer: role === "employer",
-    isJobSeeker: role === "jobseeker",
+    isJobSeeker: role === "job_seeker",
   };
 }

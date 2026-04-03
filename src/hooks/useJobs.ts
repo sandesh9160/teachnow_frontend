@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { getJobs as getJobsService, getJobDetails } from "@/services/api/job.service";
-import { searchJobs } from "@/lib/jobs/api";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type { Job } from "@/types/homepage";
 import type { JobDetails } from "@/types/jobs";
 
@@ -30,8 +29,14 @@ export function useJobs() {
       setLoading(true);
       const kw = opts?.keyword?.trim() ?? "";
       const loc = opts?.location?.trim() ?? "";
-      const list = kw || loc ? await searchJobs(kw, loc) : await getJobsService({});
-      setJobs(list);
+      let endpoint = "open/jobs";
+      let query = [];
+      if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
+      if (loc) query.push(`location=${encodeURIComponent(loc)}`);
+      if (query.length) endpoint += `?${query.join("&")}`;
+      const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
+      const jobsList = Array.isArray(res?.data) ? res.data : [];
+      setJobs(jobsList);
     } catch (e: unknown) {
       setJobs([]);
       setError(e instanceof Error ? e.message : "Failed to load jobs");
@@ -44,7 +49,9 @@ export function useJobs() {
     try {
       setError(null);
       setLoading(true);
-      const detail = await getJobDetails(slug);
+      const endpoint = `open/jobs/${encodeURIComponent(slug)}`;
+      const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
+      const detail = res?.data ?? null;
       setJobDetails(detail);
       if (!detail) setError("Job not found");
     } catch (e: unknown) {

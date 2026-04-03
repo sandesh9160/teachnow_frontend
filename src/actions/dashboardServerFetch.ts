@@ -89,15 +89,24 @@ export const dashboardServerFetch = async <T = any>(
         // console.log("response.request : ", response.request);
         return response.data;
     } catch (error: any) {
-        console.error("Dashboard server fetch error:", error);
+        const httpStatus = error?.response?.status as number | undefined;
+        // 404/403 are common for optional lookups (e.g. slug resolution); avoid noisy server logs.
+        const isSilentClientError =
+            httpStatus === 404 || httpStatus === 403 || httpStatus === 410;
+        if (!isSilentClientError) {
+            console.error("Dashboard server fetch error:", error);
+        }
         // Return error in same format as old ServerFetch
         let message = "Error occurred";
         let statusCode = 500;
         if (error instanceof Error) {
             message = error.message;
-        } else if (error?.response?.data?.message) {
+        }
+        if (error?.response?.data?.message) {
             message = error.response.data.message;
-            statusCode = error.response.status;
+        }
+        if (typeof httpStatus === "number") {
+            statusCode = httpStatus;
         }
 
         return {

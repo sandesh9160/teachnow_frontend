@@ -1,12 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import {
-  getResumes as getResumesRequest,
-  uploadResume as uploadResumeRequest,
-  deleteResume as deleteResumeRequest,
-  setDefaultResume as setDefaultResumeRequest,
-} from "@/services/api/resume.service";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type { Resume } from "@/types/resume";
 
 export type UseResumesOptions = {
@@ -22,7 +17,8 @@ export function useResumes(options?: UseResumesOptions) {
   const [error, setError] = useState<string | null>(null);
 
   const refreshList = useCallback(async () => {
-    const list = await getResumesRequest();
+    const res = await dashboardServerFetch<any>("jobseeker/resumes", { method: "GET" });
+    const list = Array.isArray(res?.data) ? res.data : [];
     setResumes(list);
   }, []);
 
@@ -52,7 +48,14 @@ export function useResumes(options?: UseResumesOptions) {
       try {
         setError(null);
         setLoading(true);
-        await uploadResumeRequest(file);
+        const formData = new FormData();
+        formData.append("resume", file);
+        formData.append("title", file.name);
+        await dashboardServerFetch<any>("jobseeker/resumes", {
+          method: "POST",
+          data: formData,
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         await refreshList();
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Failed to upload resume";
@@ -70,7 +73,7 @@ export function useResumes(options?: UseResumesOptions) {
       try {
         setError(null);
         setLoading(true);
-        await deleteResumeRequest(id);
+        await dashboardServerFetch<any>(`jobseeker/resumes/${id}`, { method: "DELETE" });
         await refreshList();
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Failed to delete resume";
@@ -88,7 +91,7 @@ export function useResumes(options?: UseResumesOptions) {
       try {
         setError(null);
         setLoading(true);
-        await setDefaultResumeRequest(id);
+        await dashboardServerFetch<any>(`jobseeker/resumes/${id}/default`, { method: "POST" });
         await refreshList();
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Failed to set default resume";

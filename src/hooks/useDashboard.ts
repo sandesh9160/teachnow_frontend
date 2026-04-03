@@ -1,7 +1,6 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
-import { getDashboard } from "@/services/api/dashboard.service";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type { DashboardStats } from "@/types/dashboard";
 
 export function useDashboard() {
@@ -13,7 +12,7 @@ export function useDashboard() {
     try {
       setError(null);
       setLoading(true);
-      const res = await getDashboard();
+      const res = await dashboardServerFetch<any>("jobseeker/dashboard", { method: "GET" });
       if (res?.status && res.data) {
         setData(res.data);
       } else {

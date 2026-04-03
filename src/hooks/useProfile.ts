@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { fetchAPI } from "@/services/api/client";
+// import { fetchAPI } from "@/services/api/client";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
 export function useProfile() {

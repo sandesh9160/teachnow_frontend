@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { fetchAPI } from "@/services/api/client";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { applyJob as applyJobRequest } from "@/services/api/application.service";
 import type { ApplicationAnswer, ApplicationPayload } from "@/types/application";
 
@@ -25,7 +25,7 @@ export function useApplications() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchAPI<unknown>("jobseeker/applications");
+      const res = await dashboardServerFetch<unknown>("jobseeker/applications", { method: "GET" });
       const r = res as { data?: unknown };
       return r.data ?? res;
     } catch (err: unknown) {
@@ -40,7 +40,7 @@ export function useApplications() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchAPI<unknown>("jobseeker/shortlisted");
+      const res = await dashboardServerFetch<unknown>("jobseeker/shortlisted", { method: "GET" });
       const r = res as { data?: unknown };
       return r.data ?? res;
     } catch (err: unknown) {
@@ -88,7 +88,7 @@ export function useApplications() {
     try {
       setLoading(true);
       setError(null);
-      return await fetchAPI<unknown>(`jobseeker/applications/${applicationId}`, {
+      return await dashboardServerFetch<unknown>(`jobseeker/applications/${applicationId}`, {
         method: "DELETE",
       });
     } catch (err: unknown) {

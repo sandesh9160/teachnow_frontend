@@ -9,10 +9,16 @@ import { Label } from "@/shared/ui/Label/Label";
 import { toast } from "sonner";
 
 export default function TestimonialsPage() {
-  const { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial } = useTestimonials();
-  
-  const [testimonials, setTestimonials] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    testimonials,
+    loading,
+    error,
+    fetchTestimonials,
+    createTestimonial,
+    updateTestimonial,
+    deleteTestimonial,
+  } = useTestimonials();
+
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | string | null>(null);
@@ -24,21 +30,9 @@ export default function TestimonialsPage() {
     message: "",
   });
 
-  const fetchTestimonials = async () => {
-    try {
-      setLoading(true);
-      const data = await getTestimonials();
-      setTestimonials(Array.isArray(data) ? data : []);
-    } catch (error) {
-      toast.error("Failed to load testimonials.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchTestimonials();
-  }, [getTestimonials]);
+    void fetchTestimonials();
+  }, [fetchTestimonials]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +48,6 @@ export default function TestimonialsPage() {
       setFormData({ name: "", designation: "", company: "", message: "" });
       setShowForm(false);
       setEditingId(null);
-      fetchTestimonials();
     } catch (error) {
       toast.error("Failed to save testimonial.");
     } finally {
@@ -78,7 +71,6 @@ export default function TestimonialsPage() {
     try {
       await deleteTestimonial(id);
       toast.success("Testimonial deleted.");
-      fetchTestimonials();
     } catch (error) {
       toast.error("Failed to delete testimonial.");
     }
@@ -99,6 +91,12 @@ export default function TestimonialsPage() {
           {showForm ? "Cancel" : <><Plus className="w-4 h-4 mr-2" /> Add Testimonial</>}
         </Button>
       </div>
+
+      {error ? (
+        <div className="mb-4 rounded-2xl border border-red-100 bg-red-50/80 px-6 py-4 text-red-800 text-sm">
+          <p className="font-medium">{error}</p>
+        </div>
+      ) : null}
 
       {showForm && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
