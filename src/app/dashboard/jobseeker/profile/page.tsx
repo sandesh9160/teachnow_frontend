@@ -48,7 +48,7 @@ export default function ProfilePage() {
     updateEducation,
     deleteEducation,
   } = useEducation();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showEduForm, setShowEduForm] = useState(false);
@@ -88,7 +88,7 @@ export default function ProfilePage() {
           bio: profile.bio || "",
         });
       } catch (err) {
-        console.error(err);
+        //console.error(err);
       } finally {
         setLoading(false);
       }
@@ -191,12 +191,12 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <div className="relative">
-                <Input 
-                  id="name" 
-                  name="name" 
-                  value={profileData.name} 
-                  onChange={handleChange} 
-                  required 
+                <Input
+                  id="name"
+                  name="name"
+                  value={profileData.name}
+                  onChange={handleChange}
+                  required
                   className="pl-10"
                   suppressHydrationWarning
                 />
@@ -207,13 +207,13 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <div className="relative">
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  value={profileData.email} 
-                  onChange={handleChange} 
-                  required 
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={profileData.email}
+                  onChange={handleChange}
+                  required
                   disabled
                   className="pl-10 bg-gray-50 text-gray-500 cursor-not-allowed"
                   suppressHydrationWarning
@@ -225,11 +225,11 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <div className="relative">
-                <Input 
-                  id="phone" 
-                  name="phone" 
-                  value={profileData.phone} 
-                  onChange={handleChange} 
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={profileData.phone}
+                  onChange={handleChange}
                   className="pl-10"
                   placeholder="+1 (555) 000-0000"
                   suppressHydrationWarning
@@ -241,11 +241,11 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <Label htmlFor="address">Location</Label>
               <div className="relative">
-                <Input 
-                  id="address" 
-                  name="address" 
-                  value={profileData.address} 
-                  onChange={handleChange} 
+                <Input
+                  id="address"
+                  name="address"
+                  value={profileData.address}
+                  onChange={handleChange}
                   className="pl-10"
                   placeholder="City, State, Country"
                   suppressHydrationWarning
@@ -257,11 +257,11 @@ export default function ProfilePage() {
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="title">Professional Title</Label>
               <div className="relative">
-                <Input 
-                  id="title" 
-                  name="title" 
-                  value={profileData.title} 
-                  onChange={handleChange} 
+                <Input
+                  id="title"
+                  name="title"
+                  value={profileData.title}
+                  onChange={handleChange}
                   className="pl-10"
                   placeholder="e.g. Senior Software Engineer"
                   suppressHydrationWarning
@@ -306,9 +306,9 @@ export default function ProfilePage() {
             <GraduationCap className="w-6 h-6 text-primary" />
             <h2 className="text-xl font-bold text-gray-900">Education</h2>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             disabled={eduLoading}
             onClick={() => { setShowEduForm(!showEduForm); if (!showEduForm) setEditingEduId(null); }}
           >
@@ -334,51 +334,51 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Institution</Label>
-                <Input 
-                  value={eduFormData.institution} 
-                  onChange={(e) => setEduFormData({...eduFormData, institution: e.target.value})} 
-                  placeholder="University Name" 
-                  required 
+                <Input
+                  value={eduFormData.institution}
+                  onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
+                  placeholder="University Name"
+                  required
                   suppressHydrationWarning
                 />
               </div>
               <div className="space-y-2">
                 <Label>Degree</Label>
-                <Input 
-                  value={eduFormData.degree} 
-                  onChange={(e) => setEduFormData({...eduFormData, degree: e.target.value})} 
-                  placeholder="Bachelor's, Master's, etc." 
-                  required 
+                <Input
+                  value={eduFormData.degree}
+                  onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })}
+                  placeholder="Bachelor's, Master's, etc."
+                  required
                   suppressHydrationWarning
                 />
               </div>
               <div className="space-y-2">
                 <Label>Field of Study</Label>
-                <Input 
-                  value={eduFormData.field_of_study} 
-                  onChange={(e) => setEduFormData({...eduFormData, field_of_study: e.target.value})} 
-                  placeholder="Computer Science" 
-                  required 
+                <Input
+                  value={eduFormData.field_of_study}
+                  onChange={(e) => setEduFormData({ ...eduFormData, field_of_study: e.target.value })}
+                  placeholder="Computer Science"
+                  required
                   suppressHydrationWarning
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
                   <Label>Start Date</Label>
-                  <Input 
-                    type="date" 
-                    value={eduFormData.start_date} 
-                    onChange={(e) => setEduFormData({...eduFormData, start_date: e.target.value})} 
-                    required 
+                  <Input
+                    type="date"
+                    value={eduFormData.start_date}
+                    onChange={(e) => setEduFormData({ ...eduFormData, start_date: e.target.value })}
+                    required
                     suppressHydrationWarning
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>End Date</Label>
-                  <Input 
-                    type="date" 
-                    value={eduFormData.end_date} 
-                    onChange={(e) => setEduFormData({...eduFormData, end_date: e.target.value})} 
+                  <Input
+                    type="date"
+                    value={eduFormData.end_date}
+                    onChange={(e) => setEduFormData({ ...eduFormData, end_date: e.target.value })}
                     suppressHydrationWarning
                   />
                 </div>

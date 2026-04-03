@@ -66,7 +66,7 @@ export async function getCompanies(filters: Record<string, any> = {}): Promise<I
     const data = res.data || res;
     return toArray<Institution>(data).map(normalizeInstitution);
   } catch (err: any) {
-    console.error("getCompanies error:", err);
+    //console.error("getCompanies error:", err);
     return [];
   }
 }
@@ -90,22 +90,22 @@ export async function getCompanyProfileWithJobs(
       `/open/company/${encodeURIComponent(slug)}/profile`,
       { silentStatusCodes: [404, 500] }
     );
-    
+
     // 2. Fallback: Try direct company endpoint (some IDs use this instead of profile/jobs)
     if (!res || (!(res as any).data && !(res as any).company_name && !(res as any).name)) {
-       res = await fetchAPI<ApiResponse<any>>(
+      res = await fetchAPI<ApiResponse<any>>(
         `/open/company/${encodeURIComponent(slug)}`,
         { silentStatusCodes: [404, 500] }
       );
     }
 
     if (!res) return null;
-    
+
     // Minimal normalization, direct from backend
     const raw = res.data ?? res;
     // Some responses might have { status, company, jobs } while others have the company at the root
     const company = normalizeInstitution(raw.company || raw.institution || raw.employer || raw);
-    
+
     if (!company?.id && !raw.id) return null;
 
     const jobs = toArray<Job>(raw.jobs || raw.associated_jobs || []).map((j: any) => normalizeJob({
@@ -116,7 +116,7 @@ export async function getCompanyProfileWithJobs(
     return { company, jobs };
   } catch (error: any) {
     if (error.status !== 404 && error.status !== 500) {
-      console.error(`getCompanyProfileWithJobs error (${slugOrId}):`, error);
+      //console.error(`getCompanyProfileWithJobs error (${slugOrId}):`, error);
     }
     return null;
   }

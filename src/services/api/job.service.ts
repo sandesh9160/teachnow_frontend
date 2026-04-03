@@ -14,7 +14,7 @@ export async function getJobs(filters: Record<string, unknown> = {}): Promise<Jo
     const res = await api.get<unknown>(`/open/jobs${query ? `?${query}` : ""}`);
     return toArray<Job>(res.data).map((j) => normalizeJob(j));
   } catch (err) {
-    console.error("getJobs error:", err);
+    //console.error("getJobs error:", err);
     return [];
   }
 }
@@ -55,9 +55,9 @@ export async function getJobDetails(slug: string): Promise<JobDetails | null> {
   } catch (err) {
     if (axios.isAxiosError(err)) {
       const s = err.response?.status;
-      if (s !== 404 && s !== 500) console.error(`getJobDetails error (${slug}):`, err);
+      if (s !== 404 && s !== 500) //console.error(`getJobDetails error (${slug}):`, err);
     } else {
-      console.error(`getJobDetails error (${slug}):`, err);
+      //console.error(`getJobDetails error (${slug}):`, err);
     }
     return null;
   }

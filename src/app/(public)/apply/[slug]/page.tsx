@@ -69,7 +69,7 @@ export default function ApplyJobPage() {
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState<string | number>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,7 +80,7 @@ export default function ApplyJobPage() {
         const found = await getJobBySlug(slug);
         setJob(found);
       } catch (error) {
-        console.error("Error loading job for application:", error);
+        //console.error("Error loading job for application:", error);
       } finally {
         setLoading(false);
       }
@@ -326,11 +326,10 @@ export default function ApplyJobPage() {
                   {resumes.map((resume) => (
                     <label
                       key={resume.id}
-                      className={`flex items-center gap-4 rounded-xl border p-4 cursor-pointer transition-colors ${
-                        selectedResumeId === resume.id
-                           ? "border-primary bg-primary/3"
-                           : "border-border bg-card hover:bg-muted/30"
-                      }`}
+                      className={`flex items-center gap-4 rounded-xl border p-4 cursor-pointer transition-colors ${selectedResumeId === resume.id
+                          ? "border-primary bg-primary/3"
+                          : "border-border bg-card hover:bg-muted/30"
+                        }`}
                     >
                       <input
                         type="radio"
@@ -361,9 +360,9 @@ export default function ApplyJobPage() {
                 </div>
               )}
 
-                <Button variant="outline" className="w-full" onClick={() => router.push("/dashboard/jobseeker/resume")}>
-                  <Plus className="mr-1 h-4 w-4" /> Go to Resume Management
-                </Button>
+              <Button variant="outline" className="w-full" onClick={() => router.push("/dashboard/jobseeker/resume")}>
+                <Plus className="mr-1 h-4 w-4" /> Go to Resume Management
+              </Button>
 
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>
@@ -416,19 +415,19 @@ export default function ApplyJobPage() {
                   </div>
                 </div>
               ) || (
-                <div>
-                  <label htmlFor="cover-letter" className="mb-1.5 block text-xs font-medium text-foreground">Cover Letter</label>
-                  <textarea
-                    id="cover-letter"
-                    value={coverLetter}
-                    onChange={(e) => { if (e.target.value.length <= 1500) setCoverLetter(e.target.value); }}
-                    placeholder="Tell the employer why you're a great fit..."
-                    rows={8}
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none resize-none"
-                  />
-                  <p className="mt-1 text-right text-[10px] text-muted-foreground">{coverLetter.length} / 1500</p>
-                </div>
-              )}
+                  <div>
+                    <label htmlFor="cover-letter" className="mb-1.5 block text-xs font-medium text-foreground">Cover Letter</label>
+                    <textarea
+                      id="cover-letter"
+                      value={coverLetter}
+                      onChange={(e) => { if (e.target.value.length <= 1500) setCoverLetter(e.target.value); }}
+                      placeholder="Tell the employer why you're a great fit..."
+                      rows={8}
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none resize-none"
+                    />
+                    <p className="mt-1 text-right text-[10px] text-muted-foreground">{coverLetter.length} / 1500</p>
+                  </div>
+                )}
 
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>

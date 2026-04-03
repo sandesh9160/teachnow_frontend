@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { SlidersHorizontal, ArrowUpRight, Search, MapPin, Loader2 } from "lucide-react";import { Button } from "@/shared/ui/Buttons/Buttons";
+import { SlidersHorizontal, ArrowUpRight, Search, MapPin, Loader2 } from "lucide-react"; import { Button } from "@/shared/ui/Buttons/Buttons";
 import { getSearchSuggestions } from "@/hooks/useSearch";
 
 interface JobsHeaderProps {
@@ -25,10 +25,10 @@ export const JobsHeader = ({
 }: JobsHeaderProps) => {
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [isSuggesting, setIsSuggesting] = useState(false);
-  
+
   const [showRoleSuggestions, setShowRoleSuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  
+
   const roleRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
 
@@ -54,7 +54,7 @@ export const JobsHeader = ({
         const data = await getSearchSuggestions(search);
         setSuggestions(prev => ({ ...prev, roles: data.roles || [] }));
       } catch (err) {
-        console.error("Role suggestions failed:", err);
+        //console.error("Role suggestions failed:", err);
       } finally {
         setIsSuggesting(false);
       }
@@ -75,7 +75,7 @@ export const JobsHeader = ({
         const data = await getSearchSuggestions(location);
         setSuggestions(prev => ({ ...prev, cities: data.cities || [] }));
       } catch (err) {
-        console.error("City suggestions failed:", err);
+        //console.error("City suggestions failed:", err);
       } finally {
         setIsSuggesting(false);
       }
@@ -88,12 +88,12 @@ export const JobsHeader = ({
     <section className="bg-slate-50 relative z-30 pt-12 pb-6">
       {/* Decorative background circle */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      
+
       <div className="container relative z-10 px-4">
         {/* Search Pill Container */}
         <div className="mx-auto max-w-3xl">
           <div className="bg-white rounded-2xl md:rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 p-2 flex flex-col md:flex-row items-center gap-2">
-            
+
             {/* Job Title Input */}
             <div className="relative flex-1 w-full" ref={roleRef}>
               <div className="flex items-center gap-3 rounded-xl bg-slate-50/50 px-4 py-3 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 w-full group">
@@ -195,7 +195,7 @@ export const JobsHeader = ({
               )}
             </div>
 
-            <Button 
+            <Button
               onClick={onSearch}
               className="rounded-xl md:rounded-full h-12 px-8 flex items-center gap-3 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all font-bold group w-full md:w-auto shrink-0"
             >

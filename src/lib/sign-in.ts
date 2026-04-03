@@ -7,8 +7,8 @@ export const EmailSignInAction = async (data: {
   password: string;
 }) => {
   try {
-    const result = await customSignIn(data.email, data.password);
-
+    const result = await customSignIn({ email: data.email, password: data.password });
+    console.log("result is ", result);
     return {
       status: true,
       user: result.user,

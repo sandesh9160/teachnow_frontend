@@ -13,20 +13,20 @@ export default function EmployerLoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("[handleLogin] Form submitted", { email, password });
+    //console.log("[handleLogin] Form submitted", { email, password });
     if (typeof document !== "undefined") {
-      console.log("[handleLogin] Cookies before login:", document.cookie);
+      //console.log("[handleLogin] Cookies before login:", document.cookie);
     }
 
     try {
       await login("employer", { email, password });
 
-      console.log("[handleLogin] Login successful");
+      //console.log("[handleLogin] Login successful");
       if (typeof document !== "undefined") {
-        console.log("[handleLogin] Cookies after login:", document.cookie);
+        //console.log("[handleLogin] Cookies after login:", document.cookie);
       }
     } catch (err: any) {
-      console.error("[handleLogin] Login failed", err);
+      //console.error("[handleLogin] Login failed", err);
       alert(err?.message || "Login failed"); // optional for quick feedback
     }
   };
@@ -45,31 +45,31 @@ export default function EmployerLoginPage() {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-foreground">Company Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="hr@yourschool.com" 
-              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" 
+              placeholder="hr@yourschool.com"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••" 
-              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" 
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
-          <Button 
-            variant="hero" 
-            className="w-full" 
+          <Button
+            variant="hero"
+            className="w-full"
             size="lg"
             type="submit"
             disabled={authLoading}

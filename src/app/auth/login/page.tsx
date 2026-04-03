@@ -5,23 +5,35 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { GraduationCap, User, Building2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth, UserRole } from "@/context/AuthContext";
+import { EmailSignInAction } from "@/lib/sign-in";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const { login, loading: authLoading } = useAuth();
-  const [role, setRole] = useState<UserRole>("jobseeker");
+  const [role, setRole] = useState<UserRole>("job_seeker");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const redirectMessage = searchParams.get("message");
-
+  const router = useRouter();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const loginRole = role === "employer" ? "employer" : "jobseeker";
-      await login(loginRole, { email, password });
+      const res = await EmailSignInAction({ email, password });
+      console.log("res is ", res);
+
+      if (!res.status) {
+        toast.error(res.message);
+      } else {
+        toast.success("Logged in!");
+        router.push("/dashboard/jobseeker/profile");
+      }
+
     } catch (err: any) {
-      // Error handled in context/toast
+      // Handled in context
+      toast.error(err.message || "An error occurred during login.");
     }
   };
 
@@ -84,8 +96,8 @@ function LoginContent() {
             <button
               type="button"
               suppressHydrationWarning
-              onClick={() => setRole("jobseeker")}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "jobseeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+              onClick={() => setRole("job_seeker")}
+              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               <User className="h-3.5 w-3.5" /> Job Seeker
@@ -149,10 +161,10 @@ function LoginContent() {
               type="submit"
               disabled={authLoading}
               suppressHydrationWarning
-              className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg mt-5 disabled:opacity-50 disabled:cursor-wait ${role === "jobseeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
+              className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg mt-5 disabled:opacity-50 disabled:cursor-wait ${role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
                 }`}
             >
-              {authLoading ? "Signing in..." : `Log In as ${role === "jobseeker" ? "Job Seeker" : "Employer"}`}
+              {authLoading ? "Signing in..." : `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`}
             </button>
           </form>
 

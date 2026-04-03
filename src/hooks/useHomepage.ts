@@ -44,10 +44,10 @@ function normalizeJob(job: any): Job {
         ...job.employer,
         company_logo: normalizeMediaUrl(
           job.employer.company_logo ??
-            job.employer.logo ??
-            job.employer.company_image ??
-            job.employer.company_logo_url ??
-            null
+          job.employer.logo ??
+          job.employer.company_image ??
+          job.employer.company_logo_url ??
+          null
         ),
       }
       : job.employer,
@@ -78,7 +78,7 @@ export async function getFeaturedJobs(): Promise<Job[]> {
     const data = res.data || res;
     return toArray<Job>(data).map(normalizeJob);
   } catch (error) {
-    console.error("Error in getFeaturedJobs hook:", error);
+    //console.error("Error in getFeaturedJobs hook:", error);
     return [];
   }
 }
@@ -93,7 +93,7 @@ export async function getFeaturedInstitutions(): Promise<Institution[]> {
     const data = res.data || res;
     return toArray<Institution>(data).map(normalizeInstitution);
   } catch (error) {
-    console.error("Error in getFeaturedInstitutions hook:", error);
+    //console.error("Error in getFeaturedInstitutions hook:", error);
     return [];
   }
 }
@@ -108,7 +108,7 @@ export async function getTopCities(): Promise<City[]> {
     const data = res.data || res;
     return toArray<City>(data);
   } catch (error) {
-    console.error("Error in getTopCities hook:", error);
+    //console.error("Error in getTopCities hook:", error);
     return [];
   }
 }
@@ -123,7 +123,7 @@ export async function getCategories(): Promise<any[]> {
     const data = res.data || res;
     return toArray<any>(data);
   } catch (error) {
-    console.error("Error in getCategories hook:", error);
+    //console.error("Error in getCategories hook:", error);
     return [];
   }
 }
@@ -145,7 +145,7 @@ export async function getFilters(): Promise<{
       locations: Array.isArray(data?.locations) ? data.locations : [],
     };
   } catch (error) {
-    console.error("Error fetching filters:", error);
+    //console.error("Error fetching filters:", error);
     return { categories: [], locations: [] };
   }
 }
@@ -158,13 +158,13 @@ export async function getHeroSection(): Promise<HeroResponse | null> {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/hero-section");
     const data = res.data || res;
-    
+
     // Minimal normalization for background images
     const hero = data?.hero
       ? {
-          ...data.hero,
-          background_image: normalizeMediaUrl(data.hero.background_image),
-        }
+        ...data.hero,
+        background_image: normalizeMediaUrl(data.hero.background_image),
+      }
       : null;
 
     if (!hero) return null;
@@ -188,7 +188,7 @@ export async function getHeroSection(): Promise<HeroResponse | null> {
       },
     } as HeroResponse;
   } catch (error) {
-    console.error("Error fetching Hero Section API:", error);
+    //console.error("Error fetching Hero Section API:", error);
     return null;
   }
 }
@@ -202,7 +202,7 @@ export async function getStats(): Promise<Stats | null> {
     const res = await fetchAPI<ApiResponse<Stats>>("/open/home/stats");
     return res.data || (res as any).stats || null;
   } catch (error) {
-    console.error("Error fetching Stats API:", error);
+    //console.error("Error fetching Stats API:", error);
     return null;
   }
 }
@@ -217,7 +217,7 @@ export async function getTestimonials(): Promise<TestimonialData[]> {
     const data = res.data || res;
     return toArray<TestimonialData>(data).map(normalizeTestimonial);
   } catch (error) {
-    console.error("Error in getTestimonials hook:", error);
+    //console.error("Error in getTestimonials hook:", error);
     return [];
   }
 }
@@ -232,7 +232,7 @@ export async function getFAQs(): Promise<any[]> {
     const data = res.data || res;
     return toArray<any>(data);
   } catch (error) {
-    console.error("Error in getFAQs hook:", error);
+    //console.error("Error in getFAQs hook:", error);
     return [];
   }
 }
@@ -247,7 +247,7 @@ export async function getNavigation(): Promise<NavigationData | null> {
     return res.data || (res as any);
   } catch (error: any) {
     if (error.status !== 404 && error.status !== 500) {
-      console.error(`Error in getNavigation hook:`, error); // Changed message to be specific to getNavigation
+      //console.error(`Error in getNavigation hook:`, error); // Changed message to be specific to getNavigation
     }
     return null;
   }
@@ -262,7 +262,7 @@ export async function getFooter(): Promise<any> {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/footer");
     return res.data || (res as any);
   } catch (error) {
-    console.error("Error in getFooter hook:", error);
+    //console.error("Error in getFooter hook:", error);
     return null;
   }
 }
@@ -281,7 +281,7 @@ export async function getResourceBySlug(
     );
 
     const rootData = res.data || res;
-    
+
     // Check if it has the nested 'resource' structure
     const data = rootData.resource ? rootData.resource : rootData;
     const similar = rootData.similar_resources || [];
@@ -301,7 +301,7 @@ export async function getResourceBySlug(
       }))
     };
   } catch (err) {
-    console.error("getResourceBySlug error:", err);
+    //console.error("getResourceBySlug error:", err);
     return null;
   }
 }
@@ -316,7 +316,7 @@ export async function getResources(): Promise<ResourceData[]> {
       pdf: normalizeMediaUrl(resource.pdf),
     }));
   } catch (error) {
-    console.error("Error in getResources hook:", error);
+    //console.error("Error in getResources hook:", error);
     return [];
   }
 }
@@ -343,7 +343,7 @@ export async function getLocationJobs(slug: string): Promise<any> {
     return { jobs };
   } catch (error: any) {
     if (error.status !== 404 && error.status !== 500) {
-      console.error(`Error fetching location jobs for ${slug}:`, error);
+      //console.error(`Error fetching location jobs for ${slug}:`, error);
     }
     return null;
   }

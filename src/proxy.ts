@@ -49,7 +49,7 @@
 //   const xsrfToken = Boolean(req.cookies.get("XSRF-TOKEN")?.value);
 
 //   if (process.env.NODE_ENV === "development") {
-//     console.log("[auth] cookies:", { laravelSession, xsrfToken, path: pathname });
+//     //console.log("[auth] cookies:", { laravelSession, xsrfToken, path: pathname });
 //   }
 
 //   // --- CASE 1: Both cookies present → allow request ---
@@ -74,7 +74,7 @@
 //       const callbackRaw = query ? `${pathname}${query}` : pathname;
 //       const redirectUrl = new URL("/auth/login", req.url);
 //       redirectUrl.searchParams.set("callbackUrl", callbackRaw);
-      
+
 //       const res = NextResponse.redirect(redirectUrl);
 //       clearAuthCookies(res);
 //       setNoStore(res);
@@ -111,7 +111,7 @@ function clearAuthCookies(res: NextResponse) {
     maxAge: 0,
     expires: new Date(0),
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const, 
+    sameSite: "lax" as const,
   };
   res.cookies.set("laravel-session", "", { ...common, httpOnly: true });
   res.cookies.set("XSRF-TOKEN", "", { ...common, httpOnly: false });
@@ -122,9 +122,9 @@ export function proxy(req: NextRequest) {
 
   // 1. Bypass internal Next.js and static files
   if (
-    req.headers.has("next-action") || 
-    pathname.startsWith("/api") || 
-    pathname.startsWith("/_next") || 
+    req.headers.has("next-action") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
     pathname.includes(".")
   ) {
     return NextResponse.next();
@@ -133,20 +133,25 @@ export function proxy(req: NextRequest) {
   // 2. Bypass login page to avoid loops
   if (pathname.startsWith("/auth/login")) return NextResponse.next();
 
-  // 3. Cookie Detection
-  const hasSession = req.cookies.get("laravel-session");
-  const hasXsrf = req.cookies.get("XSRF-TOKEN");
-  console.log(`[Proxy] Cookies - laravel-session: ${hasSession}, XSRF-TOKEN: ${hasXsrf} | Path: ${pathname}`);
+  // 3. Cookie Detection (get() returns { name, value } — coerce for logs and checks)
+  const sessionCookie = req.cookies.get("laravel-session");
+  const xsrfCookie = req.cookies.get("XSRF-TOKEN");
+  const hasSession = Boolean(sessionCookie?.value);
+  const hasXsrf = Boolean(xsrfCookie?.value);
 
-  // Terminal log for debugging
-  console.log(`[Proxy] Path: ${pathname} | Session: ${hasSession} | XSRF: ${hasXsrf}`);
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      `[Proxy] Path: ${pathname} | Session: ${hasSession} | XSRF: ${hasXsrf}`
+    );
+  }
 
   // 4. Protection Logic
   const isProtectedRoute = ["/dashboard", "/jobseeker", "/employer", "/recruiter"].some(p => pathname.startsWith(p));
 
-  if(process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "development") {
     console.log(`[Proxy] Checking auth for ${pathname} | Protected: ${isProtectedRoute}`);
-  
+  }
+
   if (isProtectedRoute && (!hasSession || !hasXsrf)) {
     const loginUrl = new URL("/auth/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
@@ -154,7 +159,7 @@ export function proxy(req: NextRequest) {
     clearAuthCookies(res); // Clean up any partial state
     return res;
   }
-}
+
 
   return NextResponse.next();
 }
@@ -163,9 +168,9 @@ export default proxy;
 
 export const config = {
   matcher: [
-    "/dashboard/:path*", 
-    "/auth/:path*", 
-    "/jobseeker/:path*", 
+    "/dashboard/:path*",
+    // "/auth/:path*",
+    "/jobseeker/:path*",
     "/employer/:path*"
   ],
 };

@@ -43,7 +43,7 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
     // Default return
     return { roles: [], cities: [] };
   } catch (error) {
-    console.error("Error fetching suggestions:", error);
+    //console.error("Error fetching suggestions:", error);
     return { roles: [], cities: [] };
   }
 }
@@ -56,15 +56,15 @@ export async function searchJobs(keyword: string, location: string): Promise<Job
   try {
 
     // Restored /open prefix based on user's original API confirmation
-    console.log(`url : /open/search/jobs/search?keyword=${encodeURIComponent(keyword.trim())}&location=${encodeURIComponent(location.trim())}`)
+    //console.log(`url : /open/search/jobs/search?keyword=${encodeURIComponent(keyword.trim())}&location=${encodeURIComponent(location.trim())}`)
     const res = await fetchAPI<ApiResponse<any>>(`/open/search/jobs/search?keyword=${encodeURIComponent(keyword.trim())}&location=${encodeURIComponent(location.trim())}`);
     const data = res.data || res;
-    console.log("searchJobs", data);
+    //console.log("searchJobs", data);
 
     return toArray<Job>(data);
   } catch (error: any) {
     if (error.status !== 404 && error.status !== 500) {
-      console.error("Error searching jobs:", error);
+      //console.error("Error searching jobs:", error);
     }
     return [];
   }

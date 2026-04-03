@@ -18,7 +18,7 @@ export default function InstitutionsPage() {
         const data = await getCompanies();
         setCompanies(data || []);
       } catch (err) {
-        console.error("Error loading institutions:", err);
+        //console.error("Error loading institutions:", err);
       } finally {
         setLoading(false);
       }
@@ -97,11 +97,11 @@ export default function InstitutionsPage() {
                         {company.company_name}
                       </h3>
                       {company.industry && (
-                         <p className="mt-0.5 text-xs text-muted-foreground truncate">{company.industry}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground truncate">{company.industry}</p>
                       )}
                     </div>
                   </div>
-                  
+
                   {(company.city || company.location) && (
                     <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -112,15 +112,15 @@ export default function InstitutionsPage() {
                   )}
 
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-                     {(company.jobs_count || 0) > 0 && (
-                        <span className="flex items-center gap-1 text-xs font-medium text-primary">
-                          <Briefcase className="h-3.5 w-3.5" />
-                          {company.jobs_count} open jobs
-                        </span>
-                     )}
-                     {company.founded_in && (
-                        <span className="text-xs text-muted-foreground">Est. {company.founded_in}</span>
-                     )}
+                    {(company.jobs_count || 0) > 0 && (
+                      <span className="flex items-center gap-1 text-xs font-medium text-primary">
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {company.jobs_count} open jobs
+                      </span>
+                    )}
+                    {company.founded_in && (
+                      <span className="text-xs text-muted-foreground">Est. {company.founded_in}</span>
+                    )}
                   </div>
                 </Link>
               ))}

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { fetchAPI } from "@/services/api/client";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
 export function useProfile() {
   const [loading, setLoading] = useState(false);
@@ -9,7 +10,7 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      return await fetchAPI<any>("jobseeker/profile", { silentStatusCodes: [404], auth: true });
+      return await dashboardServerFetch<any>("jobseeker/profile", { method: "GET" });
     } catch (err: any) {
       setError(err.message || "Failed to fetch profile");
       throw err;
@@ -22,10 +23,9 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      return await fetchAPI<any>("jobseeker/profile", {
+      return await dashboardServerFetch<any>("jobseeker/profile", {
         method: "POST",
-        body: data,
-        auth: true,
+        data: data,
       });
     } catch (err: any) {
       setError(err.message || "Failed to create profile");
@@ -39,10 +39,9 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      return await fetchAPI<any>("jobseeker/profile", {
+      return await dashboardServerFetch<any>("jobseeker/profile", {
         method: "PUT",
-        body: data,
-        auth: true,
+        data: data,
       });
     } catch (err: any) {
       setError(err.message || "Failed to update profile");
@@ -56,9 +55,8 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      return await fetchAPI<any>("jobseeker/profile", {
+      return await dashboardServerFetch<any>("jobseeker/profile", {
         method: "DELETE",
-        auth: true,
       });
     } catch (err: any) {
       setError(err.message || "Failed to delete profile");

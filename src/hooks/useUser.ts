@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
  */
 export function useUser() {
   const { user, role, loading, isLoggedIn, logout, fetchProfile } = useAuth();
-  
+
   return {
     user,
     role,

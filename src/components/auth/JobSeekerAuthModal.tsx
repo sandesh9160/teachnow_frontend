@@ -63,10 +63,10 @@ const JobSeekerAuthModal = ({ open, onClose, onSuccess, onSwitchToRegister }: Jo
                   value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
               </div>
             </div>
-            <Button 
-              type="submit" 
-              variant="hero" 
-              className="w-full" 
+            <Button
+              type="submit"
+              variant="hero"
+              className="w-full"
               size="lg"
               disabled={authLoading}
             >

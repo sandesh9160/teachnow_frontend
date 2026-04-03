@@ -31,11 +31,11 @@ export function useResource(slug: string) {
           const relatedItems = allResources
             .filter((item: ResourceData) => item.slug !== slug)
             .slice(0, 3);
-  
+
           setRelated(relatedItems);
         }
       } catch (err) {
-        console.error("Error loading resource:", err);
+        //console.error("Error loading resource:", err);
         setError("Failed to load this resource.");
       } finally {
         setLoading(false);

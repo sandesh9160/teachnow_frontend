@@ -56,7 +56,7 @@ export async function getCategoryJobs(slug: string | number): Promise<CategoryJo
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status;
     if (status !== 404 && status !== 500) {
-      console.error(`getCategoryJobs error (${slug}):`, err);
+      //console.error(`getCategoryJobs error (${slug}):`, err);
     }
     return null;
   }
@@ -92,7 +92,7 @@ export async function searchJobs(
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status;
     if (status !== 404 && status !== 500) {
-      console.error("searchJobs error:", err);
+      //console.error("searchJobs error:", err);
     }
     return [];
   }

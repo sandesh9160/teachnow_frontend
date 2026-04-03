@@ -3,19 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  LayoutDashboard, 
-  User, 
-  Briefcase, 
-  Bookmark, 
-  FileText, 
-  MessageSquare, 
-  PlusCircle, 
-  ClipboardList, 
-  Building2, 
-  CheckCircle, 
-  Settings, 
-  CreditCard, 
+import {
+  LayoutDashboard,
+  User,
+  Briefcase,
+  Bookmark,
+  FileText,
+  MessageSquare,
+  PlusCircle,
+  ClipboardList,
+  Building2,
+  CheckCircle,
+  Settings,
+  CreditCard,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -28,7 +28,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
-  
+
   const role = user?.role || "jobseeker";
 
   const seekerLinks = [
@@ -62,10 +62,9 @@ export function DashboardSidebar() {
   };
 
   return (
-    <aside 
-      className={`relative h-full bg-white border-r border-gray-100 flex flex-col transition-all duration-300 shadow-sm ${
-        collapsed ? "w-20" : "w-64"
-      }`}
+    <aside
+      className={`relative h-full bg-white border-r border-gray-100 flex flex-col transition-all duration-300 shadow-sm ${collapsed ? "w-20" : "w-64"
+        }`}
     >
       {/* Brand Header */}
       <div className="h-20 flex items-center px-6 border-b border-gray-100">
@@ -84,16 +83,15 @@ export function DashboardSidebar() {
         {links.map((link) => {
           const isActive = pathname === link.href;
           const Icon = link.icon;
-          
+
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group ${
-                isActive 
-                  ? "bg-primary text-white shadow-md shadow-primary/20" 
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group ${isActive
+                  ? "bg-primary text-white shadow-md shadow-primary/20"
                   : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+                }`}
             >
               <Icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-400 group-hover:text-primary transition-colors"}`} />
               {!collapsed && <span>{link.label}</span>}

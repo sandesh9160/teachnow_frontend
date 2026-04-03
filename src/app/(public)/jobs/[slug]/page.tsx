@@ -43,7 +43,7 @@ async function lookupByNavigation(s: string) {
       // REWRITE: Map legacy/incorrect search URLs to the current valid endpoint
       if (apiUrl.includes("/open/search/jobs")) {
         if (!apiUrl.includes("/search?")) {
-           apiUrl = apiUrl.replace("/open/search/jobs", "/open/search/jobs/search");
+          apiUrl = apiUrl.replace("/open/search/jobs", "/open/search/jobs/search");
         }
         apiUrl = apiUrl.replace(/([?&])title=/g, "$1keyword=");
       }
@@ -55,12 +55,12 @@ async function lookupByNavigation(s: string) {
         : (Array.isArray(data?.jobs)
           ? data.jobs
           : (Array.isArray(data?.data) ? data.data : []));
-      
+
       const jobs = jobsArray.map(normalizeJob);
       return { type: 'category' as const, data: jobs, name: match.title };
     }
   } catch (err) {
-    console.error("Navigation lookup error:", err);
+    //console.error("Navigation lookup error:", err);
   }
   return null;
 }
@@ -91,22 +91,22 @@ async function lookupByJob(s: string) {
       const searchResults = await searchJobs(keyword, "");
       if (searchResults && searchResults.length > 0) {
         // Find best match (one where sanitized slug matches our current slug)
-        const bestMatch = searchResults.find(j => 
-          sanitizeSlug(j.slug) === s || 
+        const bestMatch = searchResults.find(j =>
+          sanitizeSlug(j.slug) === s ||
           j.title.toLowerCase().includes(keyword.toLowerCase())
         );
-        
+
         if (bestMatch) {
           // Re-fetch using getJobBySlug with the ACTUAL backend slug to trigger profile resolution
           const fullJob = await getJobBySlug(bestMatch.slug || bestMatch.id.toString());
           if (fullJob?.id) return { type: 'job' as const, data: fullJob };
-          
+
           return { type: 'job' as const, data: bestMatch };
         }
       }
     }
   } catch (err) {
-    console.error("Job lookup fallback failed:", err);
+    //console.error("Job lookup fallback failed:", err);
   }
   return null;
 }
@@ -122,7 +122,7 @@ async function lookupByInstitution(s: string) {
 async function lookupBySearchFallback(s: string) {
   try {
     const parts = s.split("-");
-    
+
     // Fetch dynamic locations to avoid hardcoded City limitations
     const { locations } = await getFilters();
     const knownCities = new Set(locations.map(l => l.name?.toLowerCase()).filter(Boolean));
@@ -139,7 +139,7 @@ async function lookupBySearchFallback(s: string) {
         keywordParts = parts.filter(p_ => p_.toLowerCase() !== p);
         break;
       }
-      
+
       // Try prefix match for common shortcuts (at least 3 chars)
       if (p.length >= 3) {
         const fuzzyMatch = [...knownCities].find(city => city.startsWith(p));
@@ -154,59 +154,59 @@ async function lookupBySearchFallback(s: string) {
     // Detect common filters from the remaining parts
     const initialFilters: any = { types: [], experience: [], salary: [], institution_type: [] };
     const finalKeywordParts: string[] = [];
-    
+
     // Range maps for experience and salary
     const expRanges = new Set(["0-0", "0-2", "2-5", "5-10", "10-50"]);
     const salRanges = new Set(["0-5", "5-10", "10-15"]);
 
     for (let i = 0; i < keywordParts.length; i++) {
-        const p = keywordParts[i].toLowerCase();
-        const nextP = keywordParts[i + 1]?.toLowerCase();
-        const combined = nextP ? `${p}-${nextP}` : "";
+      const p = keywordParts[i].toLowerCase();
+      const nextP = keywordParts[i + 1]?.toLowerCase();
+      const combined = nextP ? `${p}-${nextP}` : "";
 
-        if (p === "fresher") {
-            initialFilters.experience.push("0-0");
-        } else if (expRanges.has(p)) {
-            initialFilters.experience.push(p);
-        } else if (expRanges.has(combined)) {
-            initialFilters.experience.push(combined);
-            i++;
-        } else if (salRanges.has(p)) {
-            initialFilters.salary.push(p);
-        } else if (salRanges.has(combined)) {
-            initialFilters.salary.push(combined);
-            i++;
-        } else if ((p === "full" && nextP === "time") || p === "fulltime") {
-            initialFilters.types.push("Full-time");
-            if (nextP === "time") i++;
-        } else if ((p === "part" && nextP === "time") || p === "parttime") {
-            initialFilters.types.push("Part-time");
-            if (nextP === "time") i++;
-        } else if (p !== "lpa" && p !== "years" && p !== "experience") {
-            finalKeywordParts.push(p);
-        }
+      if (p === "fresher") {
+        initialFilters.experience.push("0-0");
+      } else if (expRanges.has(p)) {
+        initialFilters.experience.push(p);
+      } else if (expRanges.has(combined)) {
+        initialFilters.experience.push(combined);
+        i++;
+      } else if (salRanges.has(p)) {
+        initialFilters.salary.push(p);
+      } else if (salRanges.has(combined)) {
+        initialFilters.salary.push(combined);
+        i++;
+      } else if ((p === "full" && nextP === "time") || p === "fulltime") {
+        initialFilters.types.push("Full-time");
+        if (nextP === "time") i++;
+      } else if ((p === "part" && nextP === "time") || p === "parttime") {
+        initialFilters.types.push("Part-time");
+        if (nextP === "time") i++;
+      } else if (p !== "lpa" && p !== "years" && p !== "experience") {
+        finalKeywordParts.push(p);
+      }
     }
 
     const keyword = finalKeywordParts.filter(p => !["teaching", "jobs", "teacher"].includes(p)).join(" ").trim();
-    
+
     // Build a nice display name that includes detected filters
     const filterLabels = [];
     if (initialFilters.experience?.includes("0-0")) filterLabels.push("Fresher");
     if (initialFilters.types?.includes("Full-time")) filterLabels.push("Full-time");
     if (initialFilters.types?.includes("Part-time")) filterLabels.push("Part-time");
-    
+
     // Prefer cleaner display: "Fresher Mathematics Teacher - Hyderabad"
     const displayName = [
-      keyword, 
-      filterLabels.length > 0 ? filterLabels.join(" ") : "", 
+      keyword,
+      filterLabels.length > 0 ? filterLabels.join(" ") : "",
       location
     ].filter(Boolean).join(" - ");
 
     if (keyword || location || initialFilters.types.length > 0 || initialFilters.experience.length > 0) {
       const jobs = await searchJobs(keyword, location);
-      return { 
-        type: 'category' as const, 
-        data: jobs || [], 
+      return {
+        type: 'category' as const,
+        data: jobs || [],
         name: displayName || "Jobs",
         keyword,
         location,
@@ -223,7 +223,7 @@ async function lookupBySearchFallback(s: string) {
  */
 async function resolveSlug(slug: string) {
   const s = sanitizeSlug(slug);
-  
+
   // Guard against common placeholder or invalid slugs
   if (!s || ["null", "undefined"].includes(s)) {
     return { type: 'not-found' as const };
@@ -239,7 +239,7 @@ async function resolveSlug(slug: string) {
 
     if (result) return result;
   } catch (err) {
-    console.error(`Resolver error for ${slug}:`, err);
+    //console.error(`Resolver error for ${slug}:`, err);
   }
 
   return { type: 'not-found' as const };
@@ -250,7 +250,7 @@ export default async function GenericJobDetailPage({ params }: { readonly params
   const resolved = await resolveSlug(slug);
 
   if (resolved.type === 'job') return <JobDetails job={resolved.data as Job} slug={slug} />;
-  
+
   if (resolved.type === 'institution') {
     const company = resolved.data as Institution;
     const [companyJobs, allCompanies] = await Promise.all([
@@ -260,19 +260,19 @@ export default async function GenericJobDetailPage({ params }: { readonly params
     const similarCompanies = allCompanies.filter(c => c.id !== company.id).slice(0, 4);
 
     return (
-      <InstitutionDetailsView 
-        company={company} 
-        companyJobs={companyJobs} 
-        similarCompanies={similarCompanies} 
+      <InstitutionDetailsView
+        company={company}
+        companyJobs={companyJobs}
+        similarCompanies={similarCompanies}
       />
     );
   }
 
   if (resolved.type === 'category') {
     return (
-      <JobListingView 
-        jobs={resolved.data as Job[]} 
-        pageName={(resolved as any).name || "Search"} 
+      <JobListingView
+        jobs={resolved.data as Job[]}
+        pageName={(resolved as any).name || "Search"}
         initialKeyword={(resolved as any).keyword}
         initialLocation={(resolved as any).location}
         initialFilters={(resolved as any).initialFilters}

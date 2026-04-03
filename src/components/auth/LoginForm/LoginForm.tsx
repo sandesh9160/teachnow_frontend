@@ -5,7 +5,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
 import { useAuth } from "@/context/AuthContext";
-import {EmailSignInAction} from "@/lib/sign-in";
+import { EmailSignInAction } from "@/lib/sign-in";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -15,19 +15,19 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const { loading: isLoading } = useAuth();
 
+  // LoginForm.tsx — redirect after login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-       const res = await EmailSignInAction({ email, password });
-
-if (!res.status) {
-  toast.error(res.message);
-} else {
-  toast.success("Logged in!");
-}
-       
+      const res = await EmailSignInAction({ email, password });
+      if (!res.status) {
+        toast.error(res.message);
+      } else {
+        toast.success("Logged in!");
+        // ✅ Hard navigation so middleware picks up the new cookie
+        window.location.href = "/dashboard/jobseeker/profile";
+      }
     } catch (err: any) {
-      // Handled in context
       toast.error(err.message || "An error occurred during login.");
     }
   };

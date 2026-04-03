@@ -25,11 +25,11 @@ const JobSeekerRegisterModal = ({ open, onClose, onSuccess, onSwitchToLogin }: J
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await register("jobseeker", { 
-        full_name: regName, 
-        email: regEmail, 
-        phone: regPhone, 
-        password: regPassword 
+      await register("jobseeker", {
+        full_name: regName,
+        email: regEmail,
+        phone: regPhone,
+        password: regPassword
       });
       onClose();
       setTimeout(() => onSuccess(), 300);
@@ -86,10 +86,10 @@ const JobSeekerRegisterModal = ({ open, onClose, onSuccess, onSwitchToLogin }: J
                   value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
               </div>
             </div>
-            <Button 
-              type="submit" 
-              variant="hero" 
-              className="w-full" 
+            <Button
+              type="submit"
+              variant="hero"
+              className="w-full"
               size="lg"
               disabled={authLoading}
             >

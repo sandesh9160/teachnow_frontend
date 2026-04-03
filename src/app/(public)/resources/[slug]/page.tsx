@@ -100,11 +100,11 @@ export default function ResourceDetailPage() {
   return (
     <div className="min-h-screen pb-12 bg-slate-50">
       <div className="container mx-auto px-4 md:px-8 py-4">
-        <Breadcrumb 
+        <Breadcrumb
           items={[
             { label: "Resources", href: "/resources" },
             { label: resource.title, isCurrent: true }
-          ]} 
+          ]}
         />
       </div>
 
@@ -119,10 +119,10 @@ export default function ResourceDetailPage() {
         ) : (
           <div className="w-full h-full absolute inset-0 bg-gradient-to-br from-primary/80 to-blue-900" />
         )}
-        
+
         {/* Elegant Black Gradient Overlay for Text Readability */}
         <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent pointer-events-none" />
-        
+
         <div className="absolute inset-0 flex flex-col justify-end">
           <div className="container mx-auto px-4 md:px-8 pb-8 md:pb-12 text-white">
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 max-w-3xl drop-shadow-md leading-tight">
@@ -143,7 +143,7 @@ export default function ResourceDetailPage() {
         </span>
         {resource.created_at && (
           <span className="text-sm text-slate-500 flex items-center gap-1">
-            <Calendar className="w-4 h-4" /> 
+            <Calendar className="w-4 h-4" />
             {formatDate(resource.created_at)}
           </span>
         )}
@@ -151,43 +151,43 @@ export default function ResourceDetailPage() {
 
       {/* Main Layout Area */}
       <div className="container mx-auto px-4 md:px-8 pb-8 flex flex-col lg:flex-row gap-8 relative z-10">
-        
+
         <main className="flex-1">
           {/* Main Description Block */}
           <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 md:p-10 border border-slate-100 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/60">
             <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 flex items-center gap-2 mb-6">
               <Lightbulb className="text-primary w-6 h-6" /> About this resource
             </h2>
-            
+
             <div className="bg-slate-50 rounded-xl p-1 mb-6 border border-slate-100">
-               <div
-                  className="prose prose-slate prose-img:rounded-xl prose-a:text-primary max-w-none p-4 md:p-6 bg-white rounded-lg shadow-sm"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      resource.description ||
-                      "<p>No detailed content available.</p>",
-                  }}
-                />
+              <div
+                className="prose prose-slate prose-img:rounded-xl prose-a:text-primary max-w-none p-4 md:p-6 bg-white rounded-lg shadow-sm"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    resource.description ||
+                    "<p>No detailed content available.</p>",
+                }}
+              />
             </div>
           </div>
         </main>
 
         <aside className="w-full lg:w-[340px] space-y-6">
-          
+
           {/* Author Card */}
           <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 border border-slate-100">
             <div className="flex items-center gap-4">
-               {resource.author_photo ? (
-                 <img src={normalizeMediaUrl(resource.author_photo)} alt={resource.author_name || "Author"} className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white ring-2 ring-slate-50" />
-               ) : (
-                 <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <User className="w-6 h-6" />
-                 </div>
-               )}
-               <div>
-                  <p className="text-sm text-slate-500 font-medium leading-none mb-1">Created by</p>
-                  <p className="font-bold text-slate-900 text-lg">{resource.author_name || "Expert Educator"}</p>
-               </div>
+              {resource.author_photo ? (
+                <img src={normalizeMediaUrl(resource.author_photo)} alt={resource.author_name || "Author"} className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white ring-2 ring-slate-50" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                  <User className="w-6 h-6" />
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-slate-500 font-medium leading-none mb-1">Created by</p>
+                <p className="font-bold text-slate-900 text-lg">{resource.author_name || "Expert Educator"}</p>
+              </div>
             </div>
           </div>
 
@@ -213,8 +213,8 @@ export default function ResourceDetailPage() {
                 ))}
             </ul>
 
-            <Button 
-              className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all mt-2" 
+            <Button
+              className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all mt-2"
               onClick={handleDownload}
             >
               <Download className="h-5 w-5 mr-2" />
@@ -222,7 +222,7 @@ export default function ResourceDetailPage() {
             </Button>
 
             <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-500 text-center font-medium">
-               <LogIn className="w-3.5 h-3.5" /> Job Seeker login required to download
+              <LogIn className="w-3.5 h-3.5" /> Job Seeker login required to download
             </div>
           </div>
 
@@ -230,7 +230,7 @@ export default function ResourceDetailPage() {
           {related.length > 0 && (
             <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 border border-slate-100">
               <h3 className="font-bold text-slate-900 mb-5 text-lg flex items-center gap-2">
-                 Similar Resources
+                Similar Resources
               </h3>
 
               <div className="space-y-3">
@@ -245,19 +245,19 @@ export default function ResourceDetailPage() {
                       className="group flex items-center gap-4 p-3 rounded-xl border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all"
                     >
                       {rImage ? (
-                         <div className="h-12 w-12 rounded-lg overflow-hidden shrink-0 shadow-sm border border-slate-100 relative">
-                           <img src={rImage} alt={r.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                         </div>
+                        <div className="h-12 w-12 rounded-lg overflow-hidden shrink-0 shadow-sm border border-slate-100 relative">
+                          <img src={rImage} alt={r.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
                       ) : (
-                         <div className="h-12 w-12 shrink-0 flex items-center justify-center bg-primary/10 text-primary rounded-lg shadow-sm">
-                           <RelatedIcon className="h-5 w-5" />
-                         </div>
+                        <div className="h-12 w-12 shrink-0 flex items-center justify-center bg-primary/10 text-primary rounded-lg shadow-sm">
+                          <RelatedIcon className="h-5 w-5" />
+                        </div>
                       )}
                       <div className="flex-1 min-w-0">
-                         <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-primary transition-colors">{r.title}</h4>
-                         <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {r.read_time ? `${r.read_time} min read` : "Resource"}
-                         </p>
+                        <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-primary transition-colors">{r.title}</h4>
+                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {r.read_time ? `${r.read_time} min read` : "Resource"}
+                        </p>
                       </div>
                     </Link>
                   );
@@ -290,7 +290,7 @@ export default function ResourceDetailPage() {
 
             <div className="text-center">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5 text-primary">
-                 <LogIn className="w-8 h-8 ml-1" />
+                <LogIn className="w-8 h-8 ml-1" />
               </div>
 
               <h3 className="text-2xl font-bold text-slate-900 mb-2">

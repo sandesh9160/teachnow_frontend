@@ -48,11 +48,11 @@ async function lookupByJob(s: string, rawSlug: string) {
     if (s.includes('-')) {
       // Clean keyword: Remove numeric suffixes and single-char suffixes (like -w, -1, -04)
       const keyword = s.split('-')
-        .filter(p => !/^\d+$/.test(p) && p.length > 1) 
-        .join(' '); 
-      
+        .filter(p => !/^\d+$/.test(p) && p.length > 1)
+        .join(' ');
+
       const searchResults = await searchJobs(keyword, "");
-      
+
       if (searchResults && searchResults.length > 0) {
         const bestMatch = searchResults.find(j => {
           const sanitizedBackendSlug = sanitizeSlug(j.slug || String(j.id));
@@ -66,7 +66,7 @@ async function lookupByJob(s: string, rawSlug: string) {
       }
     }
   } catch (err) {
-    console.error("Job strategy failed:", err);
+    //console.error("Job strategy failed:", err);
   }
   return null;
 }
@@ -118,9 +118,9 @@ async function lookupByLocation(s: string) {
     const safeJobs = jobs.length > 0 ? jobs : await searchJobs("", locationSlug);
     if (safeJobs.length === 0) return null;
 
-    return { 
-      type: 'location' as const, 
-      data: { jobs: safeJobs, name: res?.location || res?.name || locationSlug || s } 
+    return {
+      type: 'location' as const,
+      data: { jobs: safeJobs, name: res?.location || res?.name || locationSlug || s }
     };
   } catch { return null; }
 }
@@ -221,7 +221,7 @@ export default async function PublicSlugPage({ params }: { readonly params: Prom
   // We check against the decoded slug to handle spaces/special characters from the backend correctly.
   const currentSlug = decodeURIComponent(slug);
   const official = (resolved as any).officialSlug;
-  
+
   if (official && currentSlug !== official) {
     redirect(`/${official}`);
   }
@@ -233,10 +233,10 @@ export default async function PublicSlugPage({ params }: { readonly params: Prom
 
   if (resolved.type === 'institute') {
     return (
-      <InstitutionDetailsView 
-        company={resolved.data.company} 
-        companyJobs={resolved.data.jobs} 
-        similarCompanies={resolved.data.similarCompanies} 
+      <InstitutionDetailsView
+        company={resolved.data.company}
+        companyJobs={resolved.data.jobs}
+        similarCompanies={resolved.data.similarCompanies}
       />
     );
   }

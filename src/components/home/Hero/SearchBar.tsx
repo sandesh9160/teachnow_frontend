@@ -10,16 +10,16 @@ interface SearchBarProps {
   // no props needed
 }
 
-export function SearchBar({}: SearchBarProps) {
+export function SearchBar({ }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
   const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  
+
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const queryRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
 
@@ -44,7 +44,7 @@ export function SearchBar({}: SearchBarProps) {
         const data = await getSearchSuggestions(query);
         setSuggestions(prev => ({ ...prev, roles: data.roles || [] }));
       } catch (err) {
-        console.error("Query suggestions failed:", err);
+        //console.error("Query suggestions failed:", err);
       } finally {
         setIsLoading(false);
       }
@@ -64,7 +64,7 @@ export function SearchBar({}: SearchBarProps) {
         const data = await getSearchSuggestions(city);
         setSuggestions(prev => ({ ...prev, cities: data.cities || [] }));
       } catch (err) {
-        console.error("City suggestions failed:", err);
+        //console.error("City suggestions failed:", err);
       } finally {
         setIsLoading(false);
       }
@@ -76,7 +76,7 @@ export function SearchBar({}: SearchBarProps) {
     const activeQuery = typeof searchQuery === "string" ? searchQuery : query;
     const activeCity = typeof searchCity === "string" ? searchCity : city;
     const combined = [activeQuery, activeCity].filter(Boolean).join(" ");
-    
+
     // SEO-friendly slug generation
     const slug = decodeURIComponent(combined.replaceAll("+", " "))
       .toLowerCase()
@@ -199,11 +199,11 @@ export function SearchBar({}: SearchBarProps) {
           )}
         </div>
 
-        <Button 
+        <Button
           variant="hero"
-          size="lg" 
-          className="rounded-xl md:rounded-full h-12 px-8 flex items-center gap-3 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all font-bold group w-full sm:w-auto shrink-0" 
-          onClick={() => handleSearch()} 
+          size="lg"
+          className="rounded-xl md:rounded-full h-12 px-8 flex items-center gap-3 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all font-bold group w-full sm:w-auto shrink-0"
+          onClick={() => handleSearch()}
           disabled={isLoading}
         >
           Search

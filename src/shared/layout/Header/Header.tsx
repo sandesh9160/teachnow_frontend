@@ -24,19 +24,19 @@ import { normalizeMediaUrl } from "@/services/api/client";
 
 // --- Sub-components for better modularity and less repetition ---
 
-const MegaMenu = ({ 
+const MegaMenu = ({
   label,
-  data, 
-  active, 
-  onToggle, 
-  onClose, 
+  data,
+  active,
+  onToggle,
+  onClose,
   isMobile,
   isJobs
-}: Readonly<{ 
+}: Readonly<{
   label: string,
-  data: any, 
-  active: boolean, 
-  onToggle: () => void, 
+  data: any,
+  active: boolean,
+  onToggle: () => void,
   onClose: () => void,
   isMobile: boolean,
   isJobs?: boolean
@@ -102,7 +102,7 @@ const MegaMenu = ({
                 <div className="space-y-0.5">
                   {sb.links.map((link: any) => (
                     <Link key={link.label} href={link.href} onClick={onClose} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors group">
-                      <span className="truncate">{link.label}</span> 
+                      <span className="truncate">{link.label}</span>
                       <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
                     </Link>
                   ))}
@@ -126,10 +126,10 @@ const MegaMenu = ({
           </div>
           {isJobs && (
             <div className="mt-8 border-t border-border pt-5 flex items-center justify-between">
-               <p className="text-xs text-muted-foreground">Find the perfect teaching opportunity</p>
-               <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
-                 View All Opportunities <ArrowUpRight className="h-4 w-4" />
-               </Link>
+              <p className="text-xs text-muted-foreground">Find the perfect teaching opportunity</p>
+              <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
+                View All Opportunities <ArrowUpRight className="h-4 w-4" />
+              </Link>
             </div>
           )}
         </div>
@@ -138,19 +138,19 @@ const MegaMenu = ({
   );
 };
 
-const SimpleDropdown = ({ 
-  label, 
-  items, 
-  active, 
-  onToggle, 
-  onClose, 
+const SimpleDropdown = ({
+  label,
+  items,
+  active,
+  onToggle,
+  onClose,
   isMobile,
   isJobs
-}: Readonly<{ 
-  label: string, 
-  items: any[], 
-  active: boolean, 
-  onToggle: () => void, 
+}: Readonly<{
+  label: string,
+  items: any[],
+  active: boolean,
+  onToggle: () => void,
   onClose: () => void,
   isMobile: boolean,
   isJobs?: boolean
@@ -172,11 +172,11 @@ const SimpleDropdown = ({
                 {item.label}
               </Link>
             ))}
-             {isJobs && (
-               <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-primary/5">
-                  View All Jobs
-               </Link>
-             )}
+            {isJobs && (
+              <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-primary/5">
+                View All Jobs
+              </Link>
+            )}
           </div>
         )}
       </>
@@ -201,9 +201,9 @@ const SimpleDropdown = ({
           ))}
           {isJobs && (
             <div className="mt-1 border-t border-border pt-1">
-               <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-primary/5">
-                  View All
-               </Link>
+              <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-primary/5">
+                View All
+              </Link>
             </div>
           )}
         </div>
@@ -218,7 +218,7 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
   if (!menu) return "#";
 
   const rawUrl = String(menu.url || "").trim();
-  
+
   // If it's an external absolute URL, return as is
   if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
 
@@ -261,7 +261,7 @@ function mapNavigationData(navData: NavigationData | null): any[] {
       const children = (menu.children_recursive || [])
         .filter((c: NavMenu) => c.is_active === 1 && c.show_in_nav === 1)
         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-      
+
       const hasChildren = children.length > 0;
       const isJobsMenu = menu.slug === "jobs" || menu.title?.toLowerCase().includes("job");
       const isInstitutionsMenu = ["institutes", "institutions"].includes(String(menu.slug || "").toLowerCase());
@@ -317,15 +317,15 @@ function mapNavigationData(navData: NavigationData | null): any[] {
 
 // --- Auth Sections extracted for better maintainability and lower complexity ---
 
-const DesktopAuth = ({ 
-  mounted, 
-  isLoggedIn, 
-  user, 
-  userDropdownOpen, 
-  setUserDropdownOpen, 
-  userDropdownRef, 
-  dashboardPath, 
-  handleLogout 
+const DesktopAuth = ({
+  mounted,
+  isLoggedIn,
+  user,
+  userDropdownOpen,
+  setUserDropdownOpen,
+  userDropdownRef,
+  dashboardPath,
+  handleLogout
 }: Readonly<{
   mounted: boolean;
   isLoggedIn: boolean;
@@ -337,7 +337,7 @@ const DesktopAuth = ({
   handleLogout: () => void;
 }>) => {
   if (!mounted) return <div className="h-9 w-24 animate-pulse rounded-lg bg-muted" />;
-  
+
   if (!isLoggedIn) {
     return (
       <>
@@ -349,8 +349,8 @@ const DesktopAuth = ({
 
   return (
     <div className="relative" ref={userDropdownRef}>
-      <button 
-        onClick={() => setUserDropdownOpen(!userDropdownOpen)} 
+      <button
+        onClick={() => setUserDropdownOpen(!userDropdownOpen)}
         className="flex items-center gap-2 rounded-lg pl-1 pr-2 py-1 transition-colors hover:bg-muted"
       >
         <div className={`flex h-7 w-7 items-center justify-center rounded-full font-display font-bold text-[10px] overflow-hidden ${user?.role === "employer" ? "bg-secondary/10 text-secondary" : "bg-primary/10 text-primary"}`}>
@@ -385,13 +385,13 @@ const DesktopAuth = ({
   );
 };
 
-const MobileAuth = ({ 
-  mounted, 
-  isLoggedIn, 
-  user, 
-  dashboardPath, 
-  handleLogout, 
-  closeAll 
+const MobileAuth = ({
+  mounted,
+  isLoggedIn,
+  user,
+  dashboardPath,
+  handleLogout,
+  closeAll
 }: Readonly<{
   mounted: boolean;
   isLoggedIn: boolean;
@@ -469,7 +469,7 @@ const Header = ({
       setUserDropdownOpen(false);
       setMobileOpen(false);
     } catch (error) {
-      console.error("Logout failed:", error);
+      //console.error("Logout failed:", error);
     }
   };
 
@@ -487,7 +487,7 @@ const Header = ({
   const dashboardPath = user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker";
 
   // Brand Data: Robust extraction from navigation or footer data
-  const footerBrandSection = footerData?.sections?.find((s: any) => 
+  const footerBrandSection = footerData?.sections?.find((s: any) =>
     String(s?.title || "").toLowerCase().includes("teach")
   );
   const footerBrandLink = (footerBrandSection?.links?.find((l: any) => Boolean(l?.icon)) || footerBrandSection?.links?.[0]) as any;
@@ -500,16 +500,16 @@ const Header = ({
     navigationData ||
     (footerData as any)?.company ||
     (footerData as any)?.brand ||
-    footerBrandSection || 
+    footerBrandSection ||
     footerData;
 
   const companyName = rawCompany?.company_name || rawCompany?.name || rawCompany?.title || footerBrandLink?.title || "TeachNow";
-  const rawLogo = 
-    rawCompany?.company_logo || 
-    rawCompany?.logo || 
-    rawCompany?.brand_logo || 
-    rawCompany?.icon || 
-    footerBrandLink?.icon || 
+  const rawLogo =
+    rawCompany?.company_logo ||
+    rawCompany?.logo ||
+    rawCompany?.brand_logo ||
+    rawCompany?.icon ||
+    footerBrandLink?.icon ||
     footerBrandLink?.logo;
 
   const companyLogo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
@@ -527,13 +527,13 @@ const Header = ({
             </div>
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-display font-bold text-xl transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:scale-105 group-hover:shadow-lg">
-               {companyName[0] || "T"}
+              {companyName[0] || "T"}
             </div>
           )}
           <span className="font-display text-lg font-bold text-foreground transition-colors group-hover:text-primary">
             {brandSecondaryPart}
             {brandPrimaryPart ? (
-               <span className="text-primary group-hover:text-foreground transition-colors">{brandPrimaryPart}</span>
+              <span className="text-primary group-hover:text-foreground transition-colors">{brandPrimaryPart}</span>
             ) : null}
           </span>
         </Link>
@@ -541,48 +541,48 @@ const Header = ({
         {/* Dynamic Navigation (Desktop) */}
         <div className="hidden items-center gap-1 lg:flex">
           {mappedMenus.map((menu) => {
-             if (menu.isMega && menu.structure) {
-               return (
-                 <MegaMenu 
-                   key={menu.id}
-                   label={menu.title}
-                   data={menu.structure}
-                   active={activeDropdown === menu.slug}
-                   onToggle={() => toggleDropdown(menu.slug)}
-                   onClose={closeAll}
-                   isMobile={false}
-                 />
-               );
-             }
-             if (menu.hasChildren && menu.structure && Array.isArray(menu.structure)) {
-               return (
-                  <SimpleDropdown 
-                    key={menu.id}
-                    label={menu.title}
-                    items={menu.structure}
-                    active={activeDropdown === menu.slug}
-                    onToggle={() => toggleDropdown(menu.slug)}
-                    onClose={closeAll}
-                    isMobile={false}
-                    isJobs={menu.isJobs}
-                  />
-               );
-             }
-             return (
-               <Link 
-                 key={menu.id} 
-                 href={menu.url} 
-                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${pathname === menu.url ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
-               >
-                 {menu.title}
-               </Link>
-             );
+            if (menu.isMega && menu.structure) {
+              return (
+                <MegaMenu
+                  key={menu.id}
+                  label={menu.title}
+                  data={menu.structure}
+                  active={activeDropdown === menu.slug}
+                  onToggle={() => toggleDropdown(menu.slug)}
+                  onClose={closeAll}
+                  isMobile={false}
+                />
+              );
+            }
+            if (menu.hasChildren && menu.structure && Array.isArray(menu.structure)) {
+              return (
+                <SimpleDropdown
+                  key={menu.id}
+                  label={menu.title}
+                  items={menu.structure}
+                  active={activeDropdown === menu.slug}
+                  onToggle={() => toggleDropdown(menu.slug)}
+                  onClose={closeAll}
+                  isMobile={false}
+                  isJobs={menu.isJobs}
+                />
+              );
+            }
+            return (
+              <Link
+                key={menu.id}
+                href={menu.url}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${pathname === menu.url ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+              >
+                {menu.title}
+              </Link>
+            );
           })}
         </div>
 
         {/* Auth Actions (Desktop) */}
         <div className="hidden items-center gap-3 lg:flex">
-          <DesktopAuth 
+          <DesktopAuth
             mounted={mounted}
             isLoggedIn={isLoggedIn}
             user={user}
@@ -605,47 +605,47 @@ const Header = ({
         <div className="border-t border-border bg-card px-4 pb-4 lg:hidden animate-in fade-in slide-in-from-top-4 duration-300 max-h-[80vh] overflow-y-auto">
           <div className="flex flex-col gap-1 pt-2">
             {mappedMenus.map((menu) => {
-               if (menu.isMega && menu.structure) {
-                 return (
-                   <MegaMenu 
-                     key={menu.id}
-                     label={menu.title}
-                     data={menu.structure}
-                     active={activeDropdown === menu.slug}
-                     onToggle={() => toggleDropdown(menu.slug)}
-                     onClose={closeAll}
-                     isMobile={true}
-                     isJobs={menu.isJobs}
-                   />
-                 );
-               }
-               if (menu.hasChildren && menu.structure) {
-                 return (
-                    <SimpleDropdown 
-                      key={menu.id}
-                      label={menu.title}
-                      items={menu.structure}
-                      active={activeDropdown === menu.slug}
-                      onToggle={() => toggleDropdown(menu.slug)}
-                      onClose={closeAll}
-                      isMobile={true}
-                      isJobs={menu.isJobs}
-                    />
-                 );
-               }
-               return (
-                 <Link 
-                   key={menu.id} 
-                   href={menu.url} 
-                   onClick={closeAll}
-                   className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted shadow-none"
-                 >
-                   {menu.title}
-                 </Link>
-               );
+              if (menu.isMega && menu.structure) {
+                return (
+                  <MegaMenu
+                    key={menu.id}
+                    label={menu.title}
+                    data={menu.structure}
+                    active={activeDropdown === menu.slug}
+                    onToggle={() => toggleDropdown(menu.slug)}
+                    onClose={closeAll}
+                    isMobile={true}
+                    isJobs={menu.isJobs}
+                  />
+                );
+              }
+              if (menu.hasChildren && menu.structure) {
+                return (
+                  <SimpleDropdown
+                    key={menu.id}
+                    label={menu.title}
+                    items={menu.structure}
+                    active={activeDropdown === menu.slug}
+                    onToggle={() => toggleDropdown(menu.slug)}
+                    onClose={closeAll}
+                    isMobile={true}
+                    isJobs={menu.isJobs}
+                  />
+                );
+              }
+              return (
+                <Link
+                  key={menu.id}
+                  href={menu.url}
+                  onClick={closeAll}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted shadow-none"
+                >
+                  {menu.title}
+                </Link>
+              );
             })}
-            
-            <MobileAuth 
+
+            <MobileAuth
               mounted={mounted}
               isLoggedIn={isLoggedIn}
               user={user}

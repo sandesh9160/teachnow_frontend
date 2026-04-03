@@ -20,7 +20,7 @@ export const CaptchaField = forwardRef<ReCAPTCHA, CaptchaFieldProps>(
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
     if (!siteKey) {
-      console.warn("reCAPTCHA site key is missing. Component will not render correctly.");
+      //console.warn("reCAPTCHA site key is missing. Component will not render correctly.");
       return null;
     }
 
@@ -31,9 +31,8 @@ export const CaptchaField = forwardRef<ReCAPTCHA, CaptchaFieldProps>(
 
     return (
       <div className={`space-y-2 ${className}`}>
-        <div className={`relative flex flex-col items-center gap-2 overflow-hidden rounded-xl border transition-all p-3 ${
-          isVerified ? "border-green-200 bg-green-50/50" : "border-border bg-muted/3 hover:bg-muted/5"
-        }`}>
+        <div className={`relative flex flex-col items-center gap-2 overflow-hidden rounded-xl border transition-all p-3 ${isVerified ? "border-green-200 bg-green-50/50" : "border-border bg-muted/3 hover:bg-muted/5"
+          }`}>
           <div className="w-full text-center">
             {isVerified ? (
               <div className="flex flex-col items-center animate-in zoom-in-95 duration-300">
@@ -56,9 +55,8 @@ export const CaptchaField = forwardRef<ReCAPTCHA, CaptchaFieldProps>(
               </>
             )}
           </div>
-          <div className={`relative w-full flex justify-center scale-[0.85] origin-center transition-all ${
-            isVerified ? "h-0 opacity-0 -my-4 overflow-hidden" : "min-h-[78px] -my-2.5"
-          }`}>
+          <div className={`relative w-full flex justify-center scale-[0.85] origin-center transition-all ${isVerified ? "h-0 opacity-0 -my-4 overflow-hidden" : "min-h-[78px] -my-2.5"
+            }`}>
             <ReCAPTCHA
               ref={ref}
               sitekey={siteKey}

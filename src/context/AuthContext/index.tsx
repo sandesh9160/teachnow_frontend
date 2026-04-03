@@ -90,7 +90,7 @@
 //       }
 //     } catch (err: any) {
 //       if (err?.status !== 401) {
-//         console.error("Profile fetch error:", err);
+//         //console.error("Profile fetch error:", err);
 //       }
 //       setUser(null);
 //       setRole(null);
@@ -293,49 +293,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ==============================
   // LOGIN
   // ==============================
- const login = useCallback(
-  async (role: string, credentials: any) => {
-    setLoading(true);
-    try {
-      const res = await fetchAPI<{ user: AuthUser }>("/auth/login", {
-        method: "POST",
-        body: { ...credentials, role },
-      });
+  const login = useCallback(
+    async (role: string, credentials: any) => {
+      setLoading(true);
+      try {
+        const res = await fetchAPI<{ user: AuthUser }>("/auth/login", {
+          method: "POST",
+          body: { ...credentials, role },
+        });
 
-      const loggedInUser: AuthUser = res.user;
+        const loggedInUser: AuthUser = res.user;
 
-      if (!loggedInUser?.role) throw new Error("User role missing");
+        if (!loggedInUser?.role) throw new Error("User role missing");
 
-      setUser(loggedInUser);
-      setRole(loggedInUser.role as UserRole);
+        setUser(loggedInUser);
+        setRole(loggedInUser.role as UserRole);
 
-      // Optional callback URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const callbackUrl = urlParams.get("callbackUrl");
+        // Optional callback URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const callbackUrl = urlParams.get("callbackUrl");
 
-      // Role redirect map
-      const roleRedirectMap: Record<UserRole, string> = {
-        job_seeker: "/dashboard/jobseeker/profile",
-        employer: "/dashboard/employer/company-profile",
-        manager: "/dashboard/manager",
-        recruiter: "/dashboard/recruiter",
-      };
+        // Role redirect map
+        const roleRedirectMap: Record<UserRole, string> = {
+          job_seeker: "/dashboard/jobseeker/profile",
+          employer: "/dashboard/employer/company-profile",
+          manager: "/dashboard/manager",
+          recruiter: "/dashboard/recruiter",
+        };
 
-      // Normalize role key
-      const roleKey = (loggedInUser.role || "").trim().toLowerCase() as UserRole;
+        // Normalize role key
+        const roleKey = (loggedInUser.role || "").trim().toLowerCase() as UserRole;
 
-      // Redirect to callbackUrl or role-based dashboard
-      router.push(callbackUrl || roleRedirectMap[roleKey] || "/");
+        // Redirect to callbackUrl or role-based dashboard
+        router.push(callbackUrl || roleRedirectMap[roleKey] || "/");
 
-      toast.success("Welcome back!");
-    } catch (err: any) {
-      toast.error(err?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  },
-  [router]
-);
+        toast.success("Welcome back!");
+      } catch (err: any) {
+        toast.error(err?.message || "Login failed");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [router]
+  );
 
   // ==============================
   // REGISTER

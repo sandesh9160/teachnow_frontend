@@ -33,15 +33,15 @@ import { getBlogs } from "@/hooks/useBlogs";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 // Types
-import { 
-  Job, 
-  Institution, 
-  City, 
-  Blog, 
-  Stats, 
-  TestimonialData, 
+import {
+  Job,
+  Institution,
+  City,
+  Blog,
+  Stats,
+  TestimonialData,
   FAQData,
-  Category 
+  Category
 } from "@/types/homepage";
 
 export default async function HomePage() {
@@ -60,7 +60,7 @@ export default async function HomePage() {
 
   try {
     const results = await Promise.all([
-      getFeaturedJobs(), 
+      getFeaturedJobs(),
       getFeaturedInstitutions(),
       getTopCities(),
       getBlogs(),
@@ -73,7 +73,7 @@ export default async function HomePage() {
     // Safely assign results back to variables
     [jobs, institutions, cities, blogs, stats, testimonials, faqs, categories] = results;
   } catch (error) {
-    console.error("Critical error in HomePage data collection:", error);
+    //console.error("Critical error in HomePage data collection:", error);
     // Page will still render with initialized empty arrays/nulls above
   }
 
