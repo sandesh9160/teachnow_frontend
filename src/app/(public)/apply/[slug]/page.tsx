@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useClientSession } from "@/hooks/useClientSession";
 import {
   MapPin,
   Briefcase,
@@ -37,7 +37,7 @@ export default function ApplyJobPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user } = useClientSession();
   const { apply } = useApplications();
   const { resumes } = useResumes({ enabled: isLoggedIn });
 
@@ -53,7 +53,7 @@ export default function ApplyJobPage() {
   useEffect(() => {
     if (user) {
       setCandidate({
-        name: user.full_name || user.name || "",
+        name: user.name || "",
         email: user.email || "",
         phone: "",
         experience: "",

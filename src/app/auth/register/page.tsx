@@ -3,12 +3,14 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { GraduationCap, User, Building2, Check, X, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { fetchAPI } from "@/services/api/client";
 import { LocationPicker } from "@/shared/ui/LocationPicker/LocationPicker";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 
 export default function RegisterPage() {
-  const { register, loading: authLoading } = useAuth();
+  const [authLoading, setAuthLoading] = useState(false);
+  const router = useRouter();
   const captchaRef = useRef<any>(null);
   
   // Jobseeker as default to ensure fields always show
@@ -99,9 +101,17 @@ export default function RegisterPage() {
     };
 
     try {
-      await register(role, payload);
+      setAuthLoading(true);
+      await fetchAPI("/auth/register", {
+        method: "POST",
+        body: { ...payload, role },
+      });
+      toast.success("Account created!");
+      router.push("/auth/login");
     } catch (err: any) {
-      // Error is handled in context via toast
+      toast.error(err?.message || "Registration failed");
+    } finally {
+      setAuthLoading(false);
     }
   };
 

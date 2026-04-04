@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useClientSession } from "@/hooks/useClientSession";
 import JobSeekerAuthModal from "@/components/auth/JobSeekerAuthModal";
 import JobSeekerRegisterModal from "@/components/auth/JobSeekerRegisterModal";
 import { JobCardProps } from "@/types/components";
@@ -18,7 +18,7 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user } = useClientSession();
   
   // Clean the slug for a "neat" URL, fallback to ID if no slug provided
   const jobPath = slug ? sanitizeSlug(slug) : String(id);

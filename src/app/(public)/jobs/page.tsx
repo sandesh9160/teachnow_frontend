@@ -18,8 +18,8 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 function JobsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const keywordParam = searchParams.get("keyword") || "";
-  const locationParam = searchParams.get("location") || "";
+  const keywordParam = searchParams?.get("keyword") || "";
+  const locationParam = searchParams?.get("location") || "";
 
   const { jobs, loading, error, fetchJobs } = useJobs();
 

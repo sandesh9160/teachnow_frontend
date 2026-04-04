@@ -1,0 +1,91 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { fetchAPI } from "@/services/api/client";
+import type { DashboardRole } from "@/types/session";
+
+export type ClientSessionUser = {
+  name: string;
+  email: string;
+  role: DashboardRole;
+};
+
+let sessionPromise: Promise<ClientSessionUser | null> | null = null;
+
+function normalizeRole(raw: unknown): DashboardRole {
+  const s = String(raw ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+  if (s.includes("employer")) return "employer";
+  return "job_seeker";
+}
+
+function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
+  const email = String(data.email ?? "").trim();
+  const id = data.id ?? data.user_id;
+  if (!email && (id === undefined || id === null || id === "")) return null;
+  const name =
+    String(data.f_name ?? data.name ?? data.full_name ?? "").trim() ||
+    (email ? email.split("@")[0] : "User");
+  return {
+    name,
+    email,
+    role: normalizeRole(data.user_type ?? data.role),
+  };
+}
+
+/**
+ * Shared cookie-backed session probe for client components (no React context).
+ * Deduplicates in-flight requests across the tree.
+ */
+export function getSharedClientSession(): Promise<ClientSessionUser | null> {
+  if (sessionPromise) return sessionPromise;
+  sessionPromise = (async () => {
+    const tryEndpoints = ["/auth/profile", "/jobseeker/profile"];
+    for (const ep of tryEndpoints) {
+      try {
+        const res = await fetchAPI<unknown>(ep, {
+          silentStatusCodes: [401, 403, 404, 422],
+        });
+        const body = res as Record<string, unknown>;
+        const data = (body?.data ?? body?.user ?? body) as unknown;
+        if (!data || typeof data !== "object") continue;
+        const mapped = mapPayload(data as Record<string, unknown>);
+        if (mapped) return mapped;
+      } catch {
+        /* try next */
+      }
+    }
+    return null;
+  })();
+  return sessionPromise;
+}
+
+export function resetSharedClientSession() {
+  sessionPromise = null;
+}
+
+export function useClientSession() {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<ClientSessionUser | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getSharedClientSession().then((u) => {
+      if (!cancelled) {
+        setUser(u);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return {
+    loading,
+    isLoggedIn: !!user,
+    user,
+    role: user?.role ?? null,
+  };
+}

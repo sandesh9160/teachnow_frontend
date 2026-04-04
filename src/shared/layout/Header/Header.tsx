@@ -15,8 +15,9 @@ import {
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
 import { NavigationData, Menu as NavMenu } from "@/types/homepage";
+import type { DashboardRole } from "@/types/session";
+import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import type { FooterData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { normalizeMediaUrl } from "@/services/api/client";
 
@@ -325,7 +326,6 @@ const DesktopAuth = ({
   setUserDropdownOpen,
   userDropdownRef,
   dashboardPath,
-  handleLogout
 }: Readonly<{
   mounted: boolean;
   isLoggedIn: boolean;
@@ -334,7 +334,6 @@ const DesktopAuth = ({
   setUserDropdownOpen: (open: boolean) => void;
   userDropdownRef: React.RefObject<HTMLDivElement | null>;
   dashboardPath: string;
-  handleLogout: () => void;
 }>) => {
   if (!mounted) return <div className="h-9 w-24 animate-pulse rounded-lg bg-muted" />;
 
@@ -376,9 +375,9 @@ const DesktopAuth = ({
             {user?.role === "employer" ? <Settings className="h-4 w-4" /> : <User className="h-4 w-4" />}
             {user?.role === "employer" ? "Settings" : "Profile"}
           </Link>
-          <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
+          <LogoutSubmitButton className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
             <LogOut className="h-4 w-4" /> Logout
-          </button>
+          </LogoutSubmitButton>
         </div>
       )}
     </div>
@@ -390,14 +389,12 @@ const MobileAuth = ({
   isLoggedIn,
   user,
   dashboardPath,
-  handleLogout,
   closeAll
 }: Readonly<{
   mounted: boolean;
   isLoggedIn: boolean;
   user: any;
   dashboardPath: string;
-  handleLogout: () => void;
   closeAll: () => void;
 }>) => {
   if (!mounted) return <div className="h-10 w-full animate-pulse rounded-lg bg-muted" />;
@@ -421,9 +418,9 @@ const MobileAuth = ({
         <Link href={dashboardPath} onClick={closeAll}>
           <Button variant="outline" className="w-full gap-2"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
         </Link>
-        <Button variant="ghost" className="w-full gap-2 text-destructive hover:text-destructive" onClick={handleLogout}>
+        <LogoutSubmitButton className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10">
           <LogOut className="h-4 w-4" /> Logout
-        </Button>
+        </LogoutSubmitButton>
       </div>
     </div>
   );
@@ -431,12 +428,21 @@ const MobileAuth = ({
 
 // --- Main Header Component ---
 
+export type HeaderAuthUser = {
+  name: string;
+  email: string;
+  role: DashboardRole;
+  avatar?: string;
+};
+
 const Header = ({
   navigationData,
   footerData,
+  authUser,
 }: Readonly<{
   navigationData: NavigationData | null;
   footerData: FooterData | null;
+  authUser: HeaderAuthUser | null;
 }>) => {
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -445,7 +451,8 @@ const Header = ({
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const { user, isLoggedIn, logout } = useAuth();
+  const isLoggedIn = !!authUser;
+  const user = authUser;
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -462,16 +469,6 @@ const Header = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setUserDropdownOpen(false);
-      setMobileOpen(false);
-    } catch (error) {
-      //console.error("Logout failed:", error);
-    }
-  };
 
   const toggleDropdown = (name: string) => setActiveDropdown(activeDropdown === name ? null : name);
   const closeAll = () => {
@@ -590,7 +587,6 @@ const Header = ({
             setUserDropdownOpen={setUserDropdownOpen}
             userDropdownRef={userDropdownRef}
             dashboardPath={dashboardPath}
-            handleLogout={handleLogout}
           />
         </div>
 
@@ -650,7 +646,6 @@ const Header = ({
               isLoggedIn={isLoggedIn}
               user={user}
               dashboardPath={dashboardPath}
-              handleLogout={handleLogout}
               closeAll={closeAll}
             />
           </div>

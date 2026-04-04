@@ -5,36 +5,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Mo
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
-import { useAuth } from "@/context/AuthContext";
+import { fetchAPI } from "@/services/api/client";
+import { toast } from "sonner";
 import { GraduationCap, Mail, Lock, User, Phone } from "lucide-react";
 
 interface JobSeekerRegisterModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  /** @deprecated Registration ends on login screen; kept for call-site compatibility. */
+  onSuccess?: () => void;
   onSwitchToLogin: () => void;
 }
 
-const JobSeekerRegisterModal = ({ open, onClose, onSuccess, onSwitchToLogin }: JobSeekerRegisterModalProps) => {
+const JobSeekerRegisterModal = ({ open, onClose, onSwitchToLogin }: JobSeekerRegisterModalProps) => {
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPhone, setRegPhone] = useState("");
   const [regPassword, setRegPassword] = useState("");
-  const { register, loading: authLoading } = useAuth();
+  const [authLoading, setAuthLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await register("jobseeker", {
-        full_name: regName,
-        email: regEmail,
-        phone: regPhone,
-        password: regPassword
+      setAuthLoading(true);
+      await fetchAPI("/auth/register", {
+        method: "POST",
+        body: {
+          full_name: regName,
+          email: regEmail,
+          phone: regPhone,
+          password: regPassword,
+          role: "jobseeker",
+        },
       });
+      toast.success("Account created! Please log in.");
       onClose();
-      setTimeout(() => onSuccess(), 300);
+      setTimeout(() => onSwitchToLogin(), 200);
     } catch (err: any) {
-      // Error is handled in context via toast
+      toast.error(err?.message || "Registration failed");
+    } finally {
+      setAuthLoading(false);
     }
   };
 

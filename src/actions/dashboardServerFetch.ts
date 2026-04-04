@@ -1,6 +1,6 @@
 "use server";
 
-import { api, apiSanctum } from "@/lib/api";
+import { api } from "@/lib/api";
 import { cookies } from "next/headers";
 import type { AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -30,11 +30,7 @@ export const dashboardServerFetch = async <T = any>(
         // Remove leading slash if present
         const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
 
-        // Determine which API instance to use
-        // Endpoints like "/current/user/details" are at root level, use apiSanctum
-        // Other endpoints are under /api, use api
-        const useSanctum = cleanEndpoint.startsWith("current/");
-        // const apiInstance = useSanctum ? apiSanctum : api;
+        // All dashboard calls use the shared API client (cookies forwarded below).
         const apiInstance = api;
 
         // Prepare headers with cookies
@@ -89,24 +85,25 @@ export const dashboardServerFetch = async <T = any>(
         // console.log("response.request : ", response.request);
         return response.data;
     } catch (error: any) {
-        const httpStatus = error?.response?.status as number | undefined;
-        // 404/403 are common for optional lookups (e.g. slug resolution); avoid noisy server logs.
-        const isSilentClientError =
-            httpStatus === 404 || httpStatus === 403 || httpStatus === 410;
-        if (!isSilentClientError) {
-            console.error("Dashboard server fetch error:", error);
+        if (error?.response?.status !== 401) {
+            console.error("Dashboard server fetch error:", error?.message || error);
         }
         // Return error in same format as old ServerFetch
         let message = "Error occurred";
         let statusCode = 500;
-        if (error instanceof Error) {
+
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            message = error.response.data?.message || error.message || "Request failed";
+            statusCode = error.response.status;
+        } else if (error.request) {
+            // The request was made but no response was received
+            message = "No response from server";
+            statusCode = 504; // Gateway Timeout or another appropriate status
+        } else if (error instanceof Error) {
+            // Something happened in setting up the request that triggered an Error
             message = error.message;
-        }
-        if (error?.response?.data?.message) {
-            message = error.response.data.message;
-        }
-        if (typeof httpStatus === "number") {
-            statusCode = httpStatus;
         }
 
         return {

@@ -3,31 +3,31 @@
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { EmailSignInAction } from "@/lib/sign-in";
+import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
+import { toast } from "sonner";
 
 export default function EmployerLoginPage() {
-  const { login, loading: authLoading } = useAuth();
+  const [authLoading, setAuthLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    //console.log("[handleLogin] Form submitted", { email, password });
-    if (typeof document !== "undefined") {
-      //console.log("[handleLogin] Cookies before login:", document.cookie);
-    }
-
     try {
-      await login("employer", { email, password });
-
-      //console.log("[handleLogin] Login successful");
-      if (typeof document !== "undefined") {
-        //console.log("[handleLogin] Cookies after login:", document.cookie);
+      setAuthLoading(true);
+      const res = await EmailSignInAction({ email, password });
+      if (!res.status) {
+        toast.error(res.message ?? "Login failed");
+        return;
       }
+      toast.success("Logged in!");
+      const u = "user" in res ? (res as { user?: { user_type?: string } }).user : undefined;
+      window.location.href = dashboardUrlAfterLogin(u);
     } catch (err: any) {
-      //console.error("[handleLogin] Login failed", err);
-      alert(err?.message || "Login failed"); // optional for quick feedback
+      toast.error(err?.message || "Login failed");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -67,19 +67,13 @@ export default function EmployerLoginPage() {
             />
           </div>
 
-          <Button
-            variant="hero"
-            className="w-full"
-            size="lg"
-            type="submit"
-            disabled={authLoading}
-          >
+          <Button variant="hero" className="w-full" size="lg" type="submit" disabled={authLoading}>
             {authLoading ? "Signing in..." : "Log In as Employer"}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/auth/register" className="font-semibold text-primary hover:underline">
             Register as Employer
           </a>

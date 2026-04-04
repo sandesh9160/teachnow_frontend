@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
-import { useAuth } from "@/context/AuthContext";
+import { fetchAPI } from "@/services/api/client";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Mail, Lock, User, Phone } from "lucide-react";
 import Link from "next/link";
 
@@ -13,19 +15,29 @@ const RegisterForm = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const { register, loading: isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await register("jobseeker", {
-        full_name: name,
-        email,
-        phone,
-        password
+      setIsLoading(true);
+      await fetchAPI("/auth/register", {
+        method: "POST",
+        body: {
+          full_name: name,
+          email,
+          phone,
+          password,
+          role: "jobseeker",
+        },
       });
+      toast.success("Account created!");
+      router.push("/auth/login");
     } catch (err: any) {
-      // Handled in context
+      toast.error(err?.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 

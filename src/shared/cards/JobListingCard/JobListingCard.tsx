@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MapPin, Briefcase, ArrowUpRight } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useClientSession } from "@/hooks/useClientSession";
 import { toast } from "sonner";
 import JobSeekerAuthModal from "@/components/auth/JobSeekerAuthModal";
 import JobSeekerRegisterModal from "@/components/auth/JobSeekerRegisterModal";
@@ -33,7 +33,7 @@ const JobListingCard = ({
   slug,
 }: JobData) => {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user } = useClientSession();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   

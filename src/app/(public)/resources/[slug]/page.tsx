@@ -6,7 +6,7 @@ import Link from "next/link";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { useAuth } from "@/context/AuthContext";
+import { useClientSession } from "@/hooks/useClientSession";
 import { normalizeMediaUrl } from "@/services/api/client";
 import {
   FileText,
@@ -54,13 +54,13 @@ export default function ResourceDetailPage() {
   const slug = params?.slug as string;
 
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user } = useClientSession();
 
   const { resource, related, loading, error } = useResource(slug);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
 
   const handleDownload = () => {
-    if (!isLoggedIn || user?.role !== "jobseeker") {
+    if (!isLoggedIn || user?.role !== "job_seeker") {
       setShowDownloadModal(true);
       return;
     }

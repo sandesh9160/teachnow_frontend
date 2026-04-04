@@ -143,39 +143,26 @@ function getBenefits(job: Job): string[] {
 export default function JobDetails({ job, slug }: JobDetailsProps) {
   const [activeTab, setActiveTab] = useState("Description");
   const [mounted, setMounted] = useState(false);
-  const { bookmarkJob, removeBookmark, getBookmarks } = useBookmarks();
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const checkBookmark = async () => {
-      try {
-        const bookmarks = await getBookmarks();
-        if (Array.isArray(bookmarks)) {
-          setIsBookmarked(bookmarks.some((b: any) => b.id === job.id));
-        }
-      } catch (err) { /* ignore */ }
-    };
-    checkBookmark();
-  }, [job.id, getBookmarks]);
+    void fetchBookmarks();
+  }, [job.id, fetchBookmarks]);
+
+  const isBookmarked = bookmarks.some((b) => b.id === job.id);
 
   const handleToggleBookmark = async () => {
+    const wasBookmarked = isBookmarked;
     try {
-      setBookmarkLoading(true);
-      if (isBookmarked) {
-        await removeBookmark(job.id);
-        setIsBookmarked(false);
-        toast.success("Job removed from saved.");
-      } else {
-        await bookmarkJob(job.id);
-        setIsBookmarked(true);
-        toast.success("Job saved!");
-      }
+      setBookmarkBusy(true);
+      await toggleBookmark(job.id);
+      toast.success(wasBookmarked ? "Job removed from saved." : "Job saved!");
     } catch (err) {
       toast.error("Failed to update saved jobs.");
     } finally {
-      setBookmarkLoading(false);
+      setBookmarkBusy(false);
     }
   };
 
@@ -298,7 +285,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     size="lg"
                     className={`h-11 rounded-lg px-5 flex items-center gap-2 border-slate-200 ${isBookmarked ? 'text-primary bg-primary/5 border-primary/20' : ''}`}
                     onClick={handleToggleBookmark}
-                    disabled={bookmarkLoading}
+                    disabled={bookmarkBusy || bookmarksHookLoading}
                   >
                     <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-primary' : ''}`} />
                     <span className="font-bold">{isBookmarked ? "Saved" : "Save"}</span>

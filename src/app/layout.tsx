@@ -6,6 +6,7 @@ import "./globals.css";
 import Header from "@/shared/layout/Header/Header";
 import Footer from "@/shared/layout/Footer/Footer";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
+import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -22,13 +23,17 @@ export default function RootLayout({
 }
 
 async function RootLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
-  const { navigation, footer } = await getGlobalLayoutData();
+  const [{ navigation, footer }, session] = await Promise.all([
+    getGlobalLayoutData(),
+    getSessionProfile(),
+  ]);
+  const authUser = sessionUserForHeader(session);
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <Providers>
-          <Header navigationData={navigation} footerData={footer} />
+          <Header navigationData={navigation} footerData={footer} authUser={authUser} />
           <main className="pt-16">{children}</main>
           <Footer footerData={footer} />
         </Providers>

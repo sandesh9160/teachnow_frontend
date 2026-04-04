@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useClientSession } from "@/hooks/useClientSession";
 import { useApplications } from "@/hooks/useApplications";
 import type { ApplicationAnswer } from "@/types/application";
 import {
@@ -53,7 +53,7 @@ const STEPS = ["Review Job", "Your Details", "Resume", "Cover Letter", "Submit"]
 
 const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyModalProps) => {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user } = useClientSession();
   const { apply, loading: applyLoading } = useApplications();
   const [step, setStep] = useState(0);
   const [showResumePreview, setShowResumePreview] = useState(false);
@@ -71,7 +71,7 @@ const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyM
   useEffect(() => {
     if (user) {
       setCandidate({
-        name: user.full_name || user.name || "",
+        name: user.name || "",
         email: user.email || "",
         phone: "",
         experience: "",

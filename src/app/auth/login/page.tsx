@@ -4,36 +4,37 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { GraduationCap, User, Building2, AlertCircle, Eye, EyeOff } from "lucide-react";
-import { useAuth, UserRole } from "@/context/AuthContext";
 import { EmailSignInAction } from "@/lib/sign-in";
+import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+
+type LoginRole = "job_seeker" | "employer";
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const { login, loading: authLoading } = useAuth();
-  const [role, setRole] = useState<UserRole>("job_seeker");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [role, setRole] = useState<LoginRole>("job_seeker");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const redirectMessage = searchParams.get("message");
-  const router = useRouter();
+  const redirectMessage = searchParams?.get("message");
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setAuthLoading(true);
       const res = await EmailSignInAction({ email, password });
-      console.log("res is ", res);
 
       if (!res.status) {
         toast.error(res.message);
       } else {
         toast.success("Logged in!");
-        router.push("/dashboard/jobseeker/profile");
+        const u = "user" in res ? (res as { user?: { user_type?: string } }).user : undefined;
+        window.location.href = dashboardUrlAfterLogin(u);
       }
-
     } catch (err: any) {
-      // Handled in context
       toast.error(err.message || "An error occurred during login.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
-import { useAuth } from "@/context/AuthContext";
 import { EmailSignInAction } from "@/lib/sign-in";
+import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
 import { Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -13,22 +13,25 @@ import { toast } from "sonner";
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { loading: isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   // LoginForm.tsx — redirect after login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
       const res = await EmailSignInAction({ email, password });
       if (!res.status) {
         toast.error(res.message);
       } else {
         toast.success("Logged in!");
-        // ✅ Hard navigation so middleware picks up the new cookie
-        window.location.href = "/dashboard/jobseeker/profile";
+        const u = "user" in res ? (res as { user?: { user_type?: string } }).user : undefined;
+        window.location.href = dashboardUrlAfterLogin(u);
       }
     } catch (err: any) {
       toast.error(err.message || "An error occurred during login.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

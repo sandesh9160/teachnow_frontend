@@ -5,7 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Mo
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
-import { useAuth } from "@/context/AuthContext";
+import { EmailSignInAction } from "@/lib/sign-in";
+import { toast } from "sonner";
+import { resetSharedClientSession } from "@/hooks/useClientSession";
 import { GraduationCap, Mail, Lock } from "lucide-react";
 
 interface JobSeekerAuthModalProps {
@@ -18,16 +20,25 @@ interface JobSeekerAuthModalProps {
 const JobSeekerAuthModal = ({ open, onClose, onSuccess, onSwitchToRegister }: JobSeekerAuthModalProps) => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const { login, loading: authLoading } = useAuth();
+  const [authLoading, setAuthLoading] = useState(false);
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
     try {
-      await login("jobseeker", { email: loginEmail, password: loginPassword });
+      setAuthLoading(true);
+      const res = await EmailSignInAction({ email: loginEmail, password: loginPassword });
+      if (!res.status) {
+        toast.error(res.message ?? "Login failed");
+        return;
+      }
+      resetSharedClientSession();
+      toast.success("Logged in!");
       onClose();
       setTimeout(() => onSuccess(), 300);
     } catch (err: any) {
-      // Error is handled in context via toast
+      toast.error(err?.message || "Login failed");
+    } finally {
+      setAuthLoading(false);
     }
   };
 

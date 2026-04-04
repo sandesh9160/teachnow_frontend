@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { MapPin, Search } from "lucide-react";
 import { useState } from "react";

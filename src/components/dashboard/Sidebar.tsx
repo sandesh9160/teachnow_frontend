@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
+import type { DashboardRole } from "@/types/session";
 import {
   LayoutDashboard,
   User,
@@ -22,14 +23,12 @@ import {
   GraduationCap
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ userRole }: { userRole: DashboardRole }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
-  const role = user?.role || "jobseeker";
+  const role = userRole;
 
   const seekerLinks = [
     { label: "Overview", href: "/dashboard/jobseeker", icon: LayoutDashboard },
@@ -52,14 +51,6 @@ export function DashboardSidebar() {
   ];
 
   const links = role === "employer" ? employerLinks : seekerLinks;
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (err) {
-      toast.error("Failed to log out");
-    }
-  };
 
   return (
     <aside
@@ -102,13 +93,12 @@ export function DashboardSidebar() {
 
       {/* Bottom Actions */}
       <div className="p-4 border-t border-gray-100 space-y-1">
-        <button
-          onClick={handleLogout}
+        <LogoutSubmitButton
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all group"
         >
           <LogOut className="h-5 w-5 text-gray-400 group-hover:text-red-500 transition-colors" />
           {!collapsed && <span>Log Out</span>}
-        </button>
+        </LogoutSubmitButton>
 
         <button
           onClick={() => setCollapsed(!collapsed)}
