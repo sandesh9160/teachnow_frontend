@@ -41,7 +41,7 @@ function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
 export function getSharedClientSession(): Promise<ClientSessionUser | null> {
   if (sessionPromise) return sessionPromise;
   sessionPromise = (async () => {
-    const tryEndpoints = ["/auth/profile", "/jobseeker/profile"];
+    const tryEndpoints = ["/jobseeker/profile"];
     for (const ep of tryEndpoints) {
       try {
         const res = await fetchAPI<unknown>(ep, {

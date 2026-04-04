@@ -8,11 +8,22 @@ export type CvTemplate = {
   name: string;
   description?: string;
   preview_url?: string;
+  preview_image?: string;
+  [key: string]: unknown;
+};
+
+export type GeneratedCV = {
+  id: number | string;
+  template_id: number | string;
+  file_url: string;
+  created_at: string;
+  title?: string;
   [key: string]: unknown;
 };
 
 export function useCV() {
   const [templates, setTemplates] = useState<CvTemplate[]>([]);
+  const [generatedCVs, setGeneratedCVs] = useState<GeneratedCV[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +39,23 @@ export function useCV() {
     } catch (err: any) {
       setTemplates([]);
       setError(err?.message || "Failed to load CV templates");
-      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchGeneratedCVs = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // Attempt to load from the history/generated list
+      const res = await dashboardServerFetch<any>("jobseeker/cv/list", {
+        method: "GET",
+      });
+      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      setGeneratedCVs(data);
+    } catch (err: any) {
+      setGeneratedCVs([]);
     } finally {
       setLoading(false);
     }
@@ -39,26 +66,33 @@ export function useCV() {
       try {
         setLoading(true);
         setError(null);
-        await dashboardServerFetch<any>("jobseeker/cv/generate-base", {
+        // Call the generation endpoint provided by the user
+        const res = await dashboardServerFetch<any>("jobseeker/cv/generate-base", {
           method: "POST",
           data: payload,
         });
-        await fetchTemplates();
+        
+        // After success, sync the history immediately
+        await fetchGeneratedCVs();
+        return res;
       } catch (err: any) {
-        setError(err?.message || "Failed to generate CV");
+        const msg = err?.message || "Failed to generate CV";
+        setError(msg);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [fetchTemplates]
+    [fetchGeneratedCVs]
   );
 
   return {
     templates,
+    generatedCVs,
     loading,
     error,
     fetchTemplates,
+    fetchGeneratedCVs,
     generateCV,
   };
 }

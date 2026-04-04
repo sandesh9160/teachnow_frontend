@@ -325,7 +325,6 @@ const DesktopAuth = ({
   userDropdownOpen,
   setUserDropdownOpen,
   userDropdownRef,
-  dashboardPath,
 }: Readonly<{
   mounted: boolean;
   isLoggedIn: boolean;
@@ -333,50 +332,65 @@ const DesktopAuth = ({
   userDropdownOpen: boolean;
   setUserDropdownOpen: (open: boolean) => void;
   userDropdownRef: React.RefObject<HTMLDivElement | null>;
-  dashboardPath: string;
 }>) => {
-  if (!mounted) return <div className="h-9 w-24 animate-pulse rounded-lg bg-muted" />;
+  if (!mounted) return <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100" />;
 
   if (!isLoggedIn) {
     return (
-      <>
-        <Button asChild variant="ghost" size="sm"><Link href="/auth/login">Register / Login</Link></Button>
-        <Button asChild variant="hero" size="sm"><Link href="/auth/employer-login">Post a Job</Link></Button>
-      </>
+      <div className="flex items-center gap-2">
+        <Button asChild variant="ghost" size="sm" className="font-bold text-gray-600 hover:text-primary transition-colors">
+          <Link href="/auth/login">Login</Link>
+        </Button>
+        <Button asChild variant="hero" size="sm" className="rounded-lg px-5 h-9 font-bold bg-primary shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20">
+          <Link href="/auth/employer-login">Post a Job</Link>
+        </Button>
+      </div>
     );
   }
+
+  const avatarSrc = user?.avatar && (user.avatar.startsWith("http") || user.avatar.includes("/")) ? user.avatar : null;
 
   return (
     <div className="relative" ref={userDropdownRef}>
       <button
         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-        className="flex items-center gap-2 rounded-lg pl-1 pr-2 py-1 transition-colors hover:bg-muted"
+        className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-gray-50 transition-all group"
       >
-        <div className={`flex h-7 w-7 items-center justify-center rounded-full font-display font-bold text-[10px] overflow-hidden ${user?.role === "employer" ? "bg-secondary/10 text-secondary" : "bg-primary/10 text-primary"}`}>
-          {user?.avatar && (user.avatar.startsWith("http") || user.avatar.includes("/")) ? (
-            <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+        <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden">
+          {avatarSrc ? (
+            <img src={avatarSrc} alt={user.name} className="h-full w-full object-cover" />
           ) : (
-            user?.avatar || user?.name?.[0] || "U"
+            user?.name?.charAt(0).toUpperCase() || "U"
           )}
         </div>
-        <span className="text-xs font-semibold text-foreground">{user?.name}</span>
-        <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${userDropdownOpen ? "rotate-180" : ""}`} />
+        <div className="hidden xl:block text-left">
+          <p className="text-[13px] font-bold text-gray-900 leading-tight">{user?.name}</p>
+          <p className="text-[10px] font-bold text-primary uppercase tracking-wider opacity-70">
+            {user?.role === "employer" ? "Institution" : "Job Seeker"}
+          </p>
+        </div>
+        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-300 ${userDropdownOpen ? "rotate-180" : ""}`} />
       </button>
+
       {userDropdownOpen && (
-        <div className="absolute right-0 top-12 w-48 rounded-xl border border-border bg-card p-1.5 shadow-lg animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="px-3 py-2 border-b border-border mb-1">
-            <p className="text-sm font-semibold text-foreground">{user?.name}</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-gray-200/80 border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 py-1 z-50">
+          <div className="px-4 py-3 border-b border-gray-50 mb-1">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Account Info</p>
+            <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
           </div>
-          <Link href={dashboardPath} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
+          
+          <Link href={user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-primary/5 hover:text-primary transition-all">
+            <LayoutDashboard className="h-4 w-4" /> Go to Dashboard
           </Link>
-          <Link href={user?.role === "employer" ? "/dashboard/employer/settings" : "/dashboard/jobseeker/profile"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <Link href={user?.role === "employer" ? "/dashboard/employer/settings" : "/dashboard/jobseeker/profile"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-primary/5 hover:text-primary transition-all">
             {user?.role === "employer" ? <Settings className="h-4 w-4" /> : <User className="h-4 w-4" />}
-            {user?.role === "employer" ? "Settings" : "Profile"}
+            Manage {user?.role === "employer" ? "Settings" : "Profile"}
           </Link>
-          <LogoutSubmitButton className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
-            <LogOut className="h-4 w-4" /> Logout
+
+          <div className="h-px bg-gray-50 my-1 mx-4"></div>
+
+          <LogoutSubmitButton className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-all text-left">
+            <LogOut className="h-4 w-4 " /> Sign Out
           </LogoutSubmitButton>
         </div>
       )}
@@ -397,31 +411,34 @@ const MobileAuth = ({
   dashboardPath: string;
   closeAll: () => void;
 }>) => {
-  if (!mounted) return <div className="h-10 w-full animate-pulse rounded-lg bg-muted" />;
+  if (!mounted) return <div className="h-10 w-full animate-pulse rounded-lg bg-gray-100" />;
 
   if (!isLoggedIn) {
     return (
-      <div className="mt-3 flex flex-col gap-2">
-        <Button asChild variant="outline" className="w-full"><Link href="/auth/login" onClick={closeAll}>Register / Login</Link></Button>
-        <Button asChild variant="hero" className="w-full"><Link href="/auth/employer-login" onClick={closeAll}>Post a Job</Link></Button>
+      <div className="mt-4 flex flex-col gap-3 p-2">
+        <Button asChild variant="outline" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login" onClick={closeAll}>Login</Link></Button>
+        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-primary"><Link href="/auth/employer-login" onClick={closeAll}>Post a Job</Link></Button>
       </div>
     );
   }
 
   return (
-    <div className="mt-3 flex flex-col gap-2">
-      <div className="space-y-2">
-        <div className="px-4 py-2 bg-muted/30 rounded-lg">
-          <p className="text-xs font-semibold text-muted-foreground uppercase">User</p>
-          <p className="text-sm font-medium">{user?.name}</p>
+    <div className="mt-4 flex flex-col gap-2 p-2 pt-4 border-t border-gray-50">
+      <div className="flex items-center gap-3 px-1 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold shadow-md">
+          {user?.name?.[0].toUpperCase()}
         </div>
-        <Link href={dashboardPath} onClick={closeAll}>
-          <Button variant="outline" className="w-full gap-2"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
-        </Link>
-        <LogoutSubmitButton className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10">
-          <LogOut className="h-4 w-4" /> Logout
-        </LogoutSubmitButton>
+        <div>
+          <p className="text-sm font-bold text-gray-900 leading-tight">{user?.name}</p>
+          <p className="text-xs text-gray-500">{user?.role === "employer" ? "Institution" : "Job Seeker"}</p>
+        </div>
       </div>
+      <Link href={dashboardPath} onClick={closeAll}>
+        <Button variant="outline" className="w-full gap-2 h-11 rounded-xl font-bold"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
+      </Link>
+      <LogoutSubmitButton className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition-all mt-1">
+        <LogOut className="h-4 w-4" /> Logout
+      </LogoutSubmitButton>
     </div>
   );
 };
@@ -515,70 +532,72 @@ const Header = ({
   const brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100/60 bg-white/70 backdrop-blur-md dark:bg-slate-950/70 dark:border-slate-800/60">
-      <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center justify-between px-4 sm:px-6 md:px-10" ref={navRef}>
-        <Link href="/" className="flex items-center gap-2 group" onClick={closeAll}>
-          {companyLogo ? (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-              <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
-            </div>
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-display font-bold text-xl transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:scale-105 group-hover:shadow-lg">
-              {companyName[0] || "T"}
-            </div>
-          )}
-          <span className="font-display text-lg font-bold text-foreground transition-colors group-hover:text-primary">
-            {brandSecondaryPart}
-            {brandPrimaryPart ? (
-              <span className="text-primary group-hover:text-foreground transition-colors">{brandPrimaryPart}</span>
-            ) : null}
-          </span>
-        </Link>
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300">
+      <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-4 sm:px-6 md:px-8" ref={navRef}>
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0" onClick={closeAll}>
+            {companyLogo ? (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
+                <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+              </div>
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">
+                {companyName[0] || "T"}
+              </div>
+            )}
+            <span className="font-display text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none">
+              {brandSecondaryPart}
+              {brandPrimaryPart ? (
+                <span className="text-primary">{brandPrimaryPart}</span>
+              ) : null}
+            </span>
+          </Link>
 
-        {/* Dynamic Navigation (Desktop) */}
-        <div className="hidden items-center gap-1 lg:flex">
-          {mappedMenus.map((menu) => {
-            if (menu.isMega && menu.structure) {
+          {/* Dynamic Navigation (Desktop) */}
+          <div className="hidden items-center gap-2 xl:flex">
+            {mappedMenus.map((menu) => {
+              if (menu.isMega && menu.structure) {
+                return (
+                  <MegaMenu
+                    key={menu.id}
+                    label={menu.title}
+                    data={menu.structure}
+                    active={activeDropdown === menu.slug}
+                    onToggle={() => toggleDropdown(menu.slug)}
+                    onClose={closeAll}
+                    isMobile={false}
+                  />
+                );
+              }
+              if (menu.hasChildren && menu.structure && Array.isArray(menu.structure)) {
+                return (
+                  <SimpleDropdown
+                    key={menu.id}
+                    label={menu.title}
+                    items={menu.structure}
+                    active={activeDropdown === menu.slug}
+                    onToggle={() => toggleDropdown(menu.slug)}
+                    onClose={closeAll}
+                    isMobile={false}
+                    isJobs={menu.isJobs}
+                  />
+                );
+              }
               return (
-                <MegaMenu
+                <Link
                   key={menu.id}
-                  label={menu.title}
-                  data={menu.structure}
-                  active={activeDropdown === menu.slug}
-                  onToggle={() => toggleDropdown(menu.slug)}
-                  onClose={closeAll}
-                  isMobile={false}
-                />
+                  href={menu.url}
+                  className={`rounded-lg px-4 py-2 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${pathname === menu.url ? "text-primary bg-primary/5 shadow-inner" : "text-gray-500"}`}
+                >
+                  {menu.title}
+                </Link>
               );
-            }
-            if (menu.hasChildren && menu.structure && Array.isArray(menu.structure)) {
-              return (
-                <SimpleDropdown
-                  key={menu.id}
-                  label={menu.title}
-                  items={menu.structure}
-                  active={activeDropdown === menu.slug}
-                  onToggle={() => toggleDropdown(menu.slug)}
-                  onClose={closeAll}
-                  isMobile={false}
-                  isJobs={menu.isJobs}
-                />
-              );
-            }
-            return (
-              <Link
-                key={menu.id}
-                href={menu.url}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${pathname === menu.url ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
-              >
-                {menu.title}
-              </Link>
-            );
-          })}
+            })}
+          </div>
         </div>
 
-        {/* Auth Actions (Desktop) */}
-        <div className="hidden items-center gap-3 lg:flex">
+        {/* Action Belt (Desktop) */}
+        <div className="hidden items-center gap-4 lg:flex">
           <DesktopAuth
             mounted={mounted}
             isLoggedIn={isLoggedIn}
@@ -586,20 +605,24 @@ const Header = ({
             userDropdownOpen={userDropdownOpen}
             setUserDropdownOpen={setUserDropdownOpen}
             userDropdownRef={userDropdownRef}
-            dashboardPath={dashboardPath}
           />
         </div>
 
         {/* Mobile Toggle */}
-        <button className="flex items-center justify-center rounded-lg p-2 text-foreground lg:hidden hover:bg-muted" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex lg:hidden items-center gap-2">
+          {!isLoggedIn && (
+            <Link href="/auth/login" className="text-xs font-bold text-primary px-3 py-1.5 bg-primary/5 rounded-lg">Login</Link>
+          )}
+          <button className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Content */}
       {mobileOpen && (
-        <div className="border-t border-border bg-card px-4 pb-4 lg:hidden animate-in fade-in slide-in-from-top-4 duration-300 max-h-[80vh] overflow-y-auto">
-          <div className="flex flex-col gap-1 pt-2">
+        <div className="border-t border-gray-50 bg-white px-2 pb-6 lg:hidden animate-in fade-in slide-in-from-top-4 duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="pt-4 flex flex-col gap-0.5">
             {mappedMenus.map((menu) => {
               if (menu.isMega && menu.structure) {
                 return (
@@ -634,7 +657,7 @@ const Header = ({
                   key={menu.id}
                   href={menu.url}
                   onClick={closeAll}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted shadow-none"
+                  className="rounded-lg px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   {menu.title}
                 </Link>
@@ -651,7 +674,7 @@ const Header = ({
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 

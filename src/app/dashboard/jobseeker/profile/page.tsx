@@ -12,7 +12,7 @@ export default async function JobSeekerProfilePage() {
   }
 
   const raw = res as Record<string, unknown>;
-  const profile = (raw?.data as Record<string, unknown>) ?? raw ?? {};
+  const profileResponse = raw.data ? raw : { data: raw };
 
-  return <ProfileFormClient initialProfile={profile} />;
+  return <ProfileFormClient initialResponse={profileResponse} />;
 }

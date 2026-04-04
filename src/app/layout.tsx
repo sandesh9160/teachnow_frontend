@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import { Providers } from "@/providers";
 import "./globals.css";
 
-import Header from "@/shared/layout/Header/Header";
-import Footer from "@/shared/layout/Footer/Footer";
+import { LayoutWrapper } from "./LayoutWrapper";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
 
@@ -33,9 +32,13 @@ async function RootLayoutInner({ children }: Readonly<{ children: React.ReactNod
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <Providers>
-          <Header navigationData={navigation} footerData={footer} authUser={authUser} />
-          <main className="pt-16">{children}</main>
-          <Footer footerData={footer} />
+          <LayoutWrapper
+            navigationData={navigation}
+            footerData={footer}
+            authUser={authUser}
+          >
+            {children}
+          </LayoutWrapper>
         </Providers>
       </body>
     </html>

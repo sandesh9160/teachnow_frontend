@@ -5,7 +5,7 @@ import type { EducationPayload, EducationRecord } from "@/types/education";
 function extractEducationList(body: unknown): EducationRecord[] {
   const root = body as Record<string, unknown> | null | undefined;
   const inner = (root?.data as Record<string, unknown> | undefined) ?? root;
-  const raw = inner?.education;
+  const raw = inner?.educations ?? inner?.education;
   return Array.isArray(raw) ? (raw as EducationRecord[]) : [];
 }
 

@@ -15,7 +15,7 @@ declare module "axios" {
 ROOT BACKEND URL (NO /api)
 ===================================================== */
 const BACKEND_URL =
-    process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://teachnowbackend.jobsvedika.in:8080";
+    process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
 
 
 // axios.defaults.withCredentials = true;
@@ -32,7 +32,7 @@ export const apiSanctum = axios.create({
     timeout: 10000, // ⬅️ add this (important)
     headers: {
         "Accept": "application/json",
-        "Content-Type": "application/json",
+        // "Content-Type": "application/json",
     },
 });
 
@@ -46,7 +46,7 @@ export const api = axios.create({
     xsrfHeaderName: "X-XSRF-TOKEN",
     timeout: 10000, // ⬅️ add this (important)
     headers: {
-        "Content-Type": "application/json",
+        // "Content-Type": "application/json",
         "Accept": "application/json",
     },
 });

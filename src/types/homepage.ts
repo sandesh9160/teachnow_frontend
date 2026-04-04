@@ -174,4 +174,6 @@ export type NavigationData = {
     total: number;
     list: any[];
   };
+  company_logos?: any[];
+  company?: any;
 };

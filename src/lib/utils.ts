@@ -39,3 +39,18 @@ export function sanitizeSlug(rawSlug?: string | null): string {
     return (rawSlug || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/-+/g, "-");
   }
 }
+import { IMAGE_BASE_URL } from "@/services/api/config";
+
+/**
+ * Converts a relative media path into a full URL using the global IMAGE_BASE_URL.
+ */
+export function normalizeMediaUrl(path?: string | null): string {
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+
+  // Use the professionally configured IMAGE_BASE_URL
+  const cleanBase = IMAGE_BASE_URL.endsWith("/") ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+  const cleanPath = path.toString().startsWith("/") ? path : `/${path}`;
+
+  return `${cleanBase}${cleanPath}`;
+}

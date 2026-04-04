@@ -30,6 +30,8 @@ export type FooterTopSearch = {
 export type FooterData = {
   sections: FooterSection[];
   top_searches: FooterTopSearch[];
+  company_logos?: any[];
+  company?: any;
 };
 
 export type HeroCTAData = {
@@ -69,7 +71,12 @@ async function fetchNavigation(): Promise<NavigationData | null> {
     const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation", {
       revalidate: REVALIDATE_SECONDS,
     });
-    return res.data || (res as any);
+    // Ensure company_logos is accessible from the navigation data
+    const data = res.data || (res as any);
+    return {
+      ...data,
+      company_logos: data?.company_logos || (res as any)?.company_logos || [],
+    };
   } catch {
     return null;
   }
@@ -84,6 +91,8 @@ async function fetchFooter(): Promise<FooterData | null> {
     const normalized: FooterData = {
       sections: Array.isArray(data?.sections) ? data.sections : [],
       top_searches: Array.isArray(data?.top_searches) ? data.top_searches : [],
+      company_logos: data?.company_logos || (res as any)?.company_logos || [],
+      company: data?.company || (res as any)?.company || null,
     };
 
     // Normalize icon URLs

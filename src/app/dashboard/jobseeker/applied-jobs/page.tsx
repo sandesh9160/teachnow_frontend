@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useApplications } from "@/hooks/useApplications";
-import { Loader2, Briefcase} from "lucide-react";
-import JobCard from "@/shared/cards/JobCard/JobCard";
+import { 
+  Loader2, 
+  MapPin, 
+  Clock, 
+  Briefcase, 
+  Building2, 
+  Trash2
+} from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { Badge } from "@/shared/ui/Badge/Badge";
+import { normalizeMediaUrl } from "@/services/api/client";
 
 export default function AppliedJobsPage() {
   const { getApplications, withdrawApplication } = useApplications();
@@ -41,88 +47,84 @@ export default function AppliedJobsPage() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    const s = status?.toLowerCase();
+    if (s === 'accepted' || s === 'hired') return "bg-emerald-500";
+    if (s === 'rejected') return "bg-red-500";
+    return "bg-blue-600";
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold text-gray-900 drop-shadow-sm">Applied Jobs</h1>
-        <p className="text-gray-500 mt-2">Track the status of jobs you have applied for.</p>
+    <div className="max-w-7xl mx-auto py-8 px-4 md:px-0 space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Applied Jobs</h1>
+        <p className="text-gray-500 text-sm mt-1 font-medium">Tracking {applications.length} applications</p>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
         </div>
       ) : applications.length > 0 ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {applications.map((app) => (
-            <div key={app.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="flex flex-col md:flex-row p-5 gap-6 items-start md:items-center">
-                <div className="flex-1 w-full">
-                  {/* Reuse JobCard inside if app.job is fully populated, otherwise manual layout */}
-                  {app.job ? (
-                    <JobCard 
-                      id={app.job.id}
-                      title={app.job.title}
-                      company={app.job.employer?.company_name || "Unknown Company"}
-                      location={app.job.location || "Remote"}
-                      type={app.job.job_type || "Full-time"}
-                      salary={app.job.salary_min ? `₹${app.job.salary_min} - ₹${app.job.salary_max}` : "Not disclosed"}
-                      tags={[app.job.job_type, `${app.job.experience_required || 0} Yrs Exp`].filter(Boolean)}
-                      posted={app.job.created_at ? new Date(app.job.created_at).toLocaleDateString() : "Recently"}
-                      slug={app.job.slug}
-                      logo={app.job.employer?.company_logo}
+            <div key={app.id} className="flex flex-col bg-white border border-gray-200 rounded-lg overflow-hidden shadow-none">
+              {/* Header */}
+              <div className="p-4 flex items-center justify-between border-b border-gray-50">
+                <div className="h-10 w-10 border border-gray-100 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center p-1">
+                  {app.job?.employer?.company_logo ? (
+                    <img 
+                      src={normalizeMediaUrl(app.job.employer.company_logo)} 
+                      alt={app.job.employer.company_name} 
+                      className="h-full w-full object-contain"
                     />
                   ) : (
-                    <div>
-                      <h3 className="font-bold text-lg">{app.job_title || "Unknown Job"}</h3>
-                      <p className="text-sm text-gray-500">{app.company_name}</p>
-                    </div>
+                    <Building2 className="w-5 h-5 text-gray-300" />
                   )}
                 </div>
-                
-                <div className="flex flex-col md:items-end gap-3 w-full md:w-auto border-t md:border-t-0 border-gray-100 pt-4 md:pt-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Status:</span>
-                    <Badge variant={
-                      app.status === 'accepted' ? 'success' : 
-                      app.status === 'rejected' ? 'destructive' : 
-                      'outline'
-                    }>
-                      {app.status || "Pending"}
-                    </Badge>
-                  </div>
-                  <span className="text-xs text-gray-400">
-                    Applied on: {new Date(app.created_at || Date.now()).toLocaleDateString()}
-                  </span>
-                  
-                  <div className="flex gap-2 w-full md:w-auto mt-2">
-                    <Link href={`/jobs/${app.job?.slug || app.job_id}`} className="flex-1 md:flex-auto">
-                      <Button variant="outline" size="sm" className="w-full">View Job</Button>
-                    </Link>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => handleWithdraw(app.id)}
-                    >
-                      Withdraw
-                    </Button>
-                  </div>
+                <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-sm text-white ${getStatusColor(app.status)}`}>
+                  {app.status || "Pending"}
+                </span>
+              </div>
+
+              {/* Body */}
+              <div className="p-4 flex-1 space-y-1.5 min-h-[90px]">
+                <h3 className="text-base font-bold text-gray-900 line-clamp-2">
+                  {app.job?.title || "Position"}
+                </h3>
+                <p className="text-primary text-sm font-bold truncate">
+                  {app.job?.employer?.company_name || app.company_name}
+                </p>
+                <div className="flex flex-wrap gap-3 pt-2 text-[10px] font-bold text-gray-400 uppercase">
+                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{app.job?.location || "Remote"}</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" />Applied {new Date(app.created_at).toLocaleDateString()}</span>
                 </div>
+              </div>
+
+              {/* Actions */}
+              <div className="p-4 border-t border-gray-50 flex items-center gap-2">
+                <Link href={`/${app.job?.slug || app.job_id}`} className="flex-1">
+                  <button className={`w-full h-9 rounded text-xs font-bold text-white transition-opacity hover:opacity-90 ${getStatusColor(app.status)}`}>
+                    View Details
+                  </button>
+                </Link>
+                <button 
+                  onClick={() => handleWithdraw(app.id)}
+                  className="h-9 w-9 border border-red-100 rounded bg-red-50 flex items-center justify-center text-red-500 hover:bg-red-100"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center">
-          <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-            <Briefcase className="w-10 h-10 text-gray-300" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">No applications yet</h3>
-          <p className="text-gray-500 max-w-sm mb-6">Start applying to jobs to track their progress here.</p>
-          <Link href="/jobs">
-            <Button variant="default">Explore Jobs</Button>
-          </Link>
+        <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+           <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+           <p className="text-gray-500 font-medium">No applications found.</p>
+           <Link href="/jobs" className="mt-4 block">
+             <Button variant="default">Explore Jobs</Button>
+           </Link>
         </div>
       )}
     </div>
