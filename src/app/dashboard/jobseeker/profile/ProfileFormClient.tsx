@@ -76,7 +76,6 @@ export default function ProfileFormClient({
     data: education,
     loading: eduLoading,
     error: eduError,
-    fetch: refetchEducation,
     createEducation,
     updateEducation,
     deleteEducation,
@@ -148,12 +147,20 @@ export default function ProfileFormClient({
     return () => { cancelled = true; };
   }, [getProfile]);
 
-  const toggleSkill = (id: number) => {
-    setProfileData((prev) => {
-      const skills = prev.skills.includes(id)
-        ? prev.skills.filter((s: number) => s !== id)
-        : [...prev.skills, id];
-      return { ...prev, skills };
+  const toggleSkill = (id: number | string) => {
+    setProfileData((prev: any) => {
+      const skills = Array.isArray(prev.skills) ? prev.skills : [];
+      const targetId = String(id).toLowerCase().trim();
+      
+      const isSelected = skills.some((s: any) => 
+        String(s.id || s).toLowerCase().trim() === targetId
+      );
+      
+      const newSkills = isSelected
+        ? skills.filter((s: any) => String(s.id || s).toLowerCase().trim() !== targetId)
+        : [...skills, id];
+        
+      return { ...prev, skills: newSkills };
     });
   };
 
@@ -488,24 +495,29 @@ export default function ProfileFormClient({
             </div>
           </section>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
               <Tag className="w-4 h-4 text-primary/60" />
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Skills</h3>
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Skills & Expertise</h2>
             </div>
             
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-2.5 mt-2">
               {availableSkills.map((skill) => {
-                const isSelected = profileData.skills.includes(skill.id);
+                const targetId = String(skill.id).toLowerCase().trim();
+                const isSelected = Array.isArray(profileData.skills) && profileData.skills.some((s: any) => {
+                  const savedId = String(s.id || s).toLowerCase().trim();
+                  return savedId === targetId;
+                });
+
                 return (
                   <button
                     key={skill.id}
                     type="button"
                     onClick={() => toggleSkill(skill.id)}
-                    className={`px-3 py-1.5 rounded-md text-[13px] font-bold transition-all duration-200 border ${
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 border shadow-sm ${
                       isSelected
-                        ? "bg-primary text-white border-primary shadow-sm"
-                        : "bg-white text-gray-500 border-gray-200 hover:border-primary/30 hover:bg-primary/5"
+                        ? "bg-primary text-white border-primary scale-[1.02] ring-2 ring-primary/20 shadow-md"
+                        : "bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-primary hover:bg-primary/5 active:scale-95"
                     }`}
                   >
                     {skill.name}
@@ -513,7 +525,9 @@ export default function ProfileFormClient({
                 );
               })}
               {availableSkills.length === 0 && (
-                <p className="text-gray-400 italic text-sm">No skills available.</p>
+                <div className="flex flex-col items-center justify-center p-10 w-full border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                   <p className="text-slate-400 font-medium italic">No skills available from server.</p>
+                </div>
               )}
             </div>
           </section>
