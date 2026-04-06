@@ -5,7 +5,6 @@ import {
   Briefcase, 
   MapPin, 
   Calendar, 
-  ExternalLink, 
   Edit3, 
   Trash2, 
   Search, 
@@ -14,7 +13,9 @@ import {
   CheckCircle2,
   Clock,
   MoreVertical,
-  TrendingUp
+  TrendingUp,
+  Layout,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -63,17 +64,39 @@ const StatusBadge = ({ status }: { type: 'job' | 'admin', status: string }) => {
 
 export default function JobsClient({ initialData }: JobsClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const jobs = initialData?.data || [];
+  const [activeTab, setActiveTab] = useState<'active' | 'expired' | 'featured'>('active');
   
-  const filteredJobs = jobs.filter(job => 
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.location.toLowerCase().includes(searchTerm.toLowerCase())
+  // High-resilience job discovery engine
+  const activeJobs: Job[] = (initialData as any)?.active_jobs?.data || [];
+  const expiredJobs: Job[] = (initialData as any)?.expired_jobs?.data || [];
+  const featuredJobs = [...activeJobs, ...expiredJobs].filter(j => j.featured === 1);
+  
+  const jobs = activeTab === 'active' ? activeJobs : (activeTab === 'expired' ? expiredJobs : featuredJobs);
+  
+  const filteredJobs = jobs.filter((job: any) => 
+    job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+    job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
   const stats = [
-    { label: "Total postings", value: initialData?.total_jobs || 0, icon: Briefcase, color: "blue" },
-    { label: "Currently open", value: jobs.filter(j => j.job_status === 'open').length, icon: TrendingUp, color: "emerald" },
-    { label: "Verified listings", value: jobs.filter(j => j.status === 'approved').length, icon: CheckCircle2, color: "indigo" },
+    { 
+      label: "Active Postings", 
+      value: (initialData as any)?.active_jobs?.total || activeJobs.length, 
+      icon: Briefcase, 
+      color: "emerald" 
+    },
+    { 
+      label: "Expired Listings", 
+      value: (initialData as any)?.expired_jobs?.total || expiredJobs.length, 
+      icon: Clock, 
+      color: "gray" 
+    },
+    { 
+      label: "Verified", 
+      value: jobs.filter(j => j?.status === 'approved').length, 
+      icon: CheckCircle2, 
+      color: "indigo" 
+    },
   ];
 
   return (
@@ -81,14 +104,14 @@ export default function JobsClient({ initialData }: JobsClientProps) {
       {/* Compact Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Requirement center</h1>
-          <p className="text-xs text-gray-500 font-medium">Manage your active, expired, and upcoming job listings.</p>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Manage Jobs</h1>
+          <p className="text-xs text-gray-500 font-medium">Keep track of your current job listings and applications.</p>
         </div>
         
         <Link href="/dashboard/employer/post-job">
            <Button size="sm" className="h-10 px-6 rounded-lg font-bold text-xs tracking-widest shadow-md">
              <PlusCircle className="mr-2 w-4 h-4" />
-             Launch new requirement
+             Post a New Job
            </Button>
         </Link>
       </div>
@@ -114,20 +137,52 @@ export default function JobsClient({ initialData }: JobsClientProps) {
       </div>
 
       {/* Control Bar Controls */}
-      <div className="bg-white p-2 rounded-xl border shadow-sm flex flex-col sm:flex-row items-center gap-2">
-         <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <div className="bg-white p-2 rounded-xl border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+         <div className="flex-1 w-full sm:max-w-md relative scale-[0.98]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <Input 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by title or location..." 
-              className="h-9 pl-10 border-transparent bg-gray-50/50 focus:bg-white rounded-lg text-xs" 
+              className="h-8.5 pl-10 border-transparent bg-gray-50/50 focus:bg-white rounded-lg text-xs font-semibold" 
             />
          </div>
-         <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs font-bold border-gray-200">
-               <Filter className="w-3.5 h-3.5 mr-2" /> Filter
-            </Button>
+
+         <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl border border-gray-100 font-bold">
+            <button 
+              onClick={() => setActiveTab('active')}
+              className={cn(
+                "px-5 py-1.5 rounded-lg text-[10px] transition-all",
+                activeTab === 'active' 
+                ? "bg-white text-primary shadow-sm border border-gray-100" 
+                : "text-gray-400 hover:text-gray-600"
+              )}
+            >
+              Active Postings ({activeJobs.length})
+            </button>
+            <button 
+              onClick={() => setActiveTab('expired')}
+              className={cn(
+                "px-5 py-1.5 rounded-lg text-[10px] transition-all",
+                activeTab === 'expired' 
+                ? "bg-white text-gray-900 shadow-sm border border-gray-100" 
+                : "text-gray-400 hover:text-gray-600"
+              )}
+            >
+              Expired Listings ({expiredJobs.length})
+            </button>
+            <button 
+              onClick={() => setActiveTab('featured')}
+              className={cn(
+                "px-5 py-1.5 rounded-lg text-[10px] transition-all flex items-center gap-1.5",
+                activeTab === 'featured' 
+                ? "bg-white text-indigo-600 shadow-sm border border-gray-100" 
+                : "text-gray-400 hover:text-indigo-600 font-bold"
+              )}
+            >
+              <TrendingUp className="w-3 h-3 text-indigo-400" />
+              Featured Jobs ({featuredJobs.length})
+            </button>
          </div>
       </div>
 
@@ -135,12 +190,12 @@ export default function JobsClient({ initialData }: JobsClientProps) {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
          <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[1000px]">
-               <thead>
+                <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-100">
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Requirement title</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Status / Visibility</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Compensation & Type</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Performance & Dates</th>
+                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Job Post</th>
+                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Hiring Status</th>
+                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">System Status</th>
+                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Featured</th>
                      <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide text-right">Actions</th>
                   </tr>
                </thead>
@@ -150,47 +205,34 @@ export default function JobsClient({ initialData }: JobsClientProps) {
                        <td className="px-6 py-5">
                           <div className="flex flex-col gap-1">
                              <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight">{job.title}</span>
-                             <div className="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                                <span className={cn(
-                                   "px-1.5 py-0.5 rounded text-[9px] font-bold",
-                                   job.featured ? "text-amber-600 bg-amber-50 border border-amber-100" : "text-gray-400"
-                                )}>
-                                   {job.featured ? "Featured" : "Regular"}
-                                </span>
-                                <span>•</span>
+                             <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
                                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {job.location}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
                              </div>
                           </div>
                        </td>
                        <td className="px-6 py-5">
-                          <div className="flex flex-col gap-2">
-                             <StatusBadge type="job" status={job.job_status} />
-                             <StatusBadge type="admin" status={job.status} />
-                          </div>
+                          <StatusBadge type="job" status={job.job_status} />
                        </td>
                        <td className="px-6 py-5">
-                          <div className="flex flex-col gap-1">
-                             <span className="text-sm text-gray-900 font-bold tracking-tight">LPA {job.salary_min.split('.')[0]} - {job.salary_max.split('.')[0]}</span>
-                             <span className="text-xs text-gray-500 font-medium capitalize">{job.job_type.replace('_', ' ')}</span>
-                          </div>
+                          <StatusBadge type="admin" status={job.status} />
                        </td>
                        <td className="px-6 py-5">
-                          <div className="space-y-2">
-                             <div className="flex items-center gap-2 text-xs font-bold text-gray-900">
-                                <Calendar className="w-3.5 h-3.5 text-gray-400" /> Published: {new Date(job.created_at).toLocaleDateString()}
-                             </div>
-                             {job.expires_at && (
-                                <div className="flex items-center gap-2 text-xs font-bold text-amber-600">
-                                   <Clock className="w-3.5 h-3.5" /> Deadline: {new Date(job.expires_at).toLocaleDateString()}
-                                </div>
-                             )}
+                          <div className={cn(
+                             "w-8 h-8 rounded-lg flex items-center justify-center border",
+                             job.featured 
+                             ? "bg-amber-50 text-amber-500 border-amber-100 shadow-sm" 
+                             : "bg-gray-50 text-gray-300 border-gray-100 grayscale opacity-40"
+                          )}>
+                             <TrendingUp className="w-4 h-4" />
                           </div>
                        </td>
                        <td className="px-6 py-5 text-right">
                           <div className="flex items-center justify-end gap-2">
-                             <Link href={`/jobs/${job.slug}`} target="_blank">
+                             <Link href={`/dashboard/employer/jobs/view/${job.id}`}>
                                 <Button size="sm" variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold text-green-600 border-green-100 hover:bg-green-50 transition-colors">
-                                   <ExternalLink className="w-4 h-4 mr-2" /> View
+                                   <Layout className="w-4 h-4 mr-2" /> View
                                 </Button>
                              </Link>
                              <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>

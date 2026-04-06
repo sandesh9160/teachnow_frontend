@@ -19,6 +19,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -51,6 +52,7 @@ export function DashboardSidebar({
     { label: "Post a Job", href: "/dashboard/employer/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/employer/jobs", icon: ClipboardList },
     { label: "Manage Applicants", href: "/dashboard/employer/applicants", icon: User },
+    { label: "Recruiters", href: "/dashboard/employer/recruiters", icon: Users },
     { label: "Institution Verif.", href: "/dashboard/employer/institution-verification", icon: CheckCircle },
     { label: "Subscription", href: "/dashboard/employer/purchase-history", icon: CreditCard },
     { label: "Settings", href: "/dashboard/employer/settings", icon: Settings },
