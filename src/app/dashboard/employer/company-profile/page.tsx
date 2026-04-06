@@ -1,12 +1,15 @@
-import { getSessionProfile } from "@/lib/serverAuth";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import CompanyProfileClient from "./CompanyProfileClient";
+import { EmployerProfileResponse } from "@/types/employer";
 
 export default async function EmployerCompanyProfilePage() {
-  const profile = await getSessionProfile();
+  const response = await dashboardServerFetch<EmployerProfileResponse>("employer/profile");
+  
+  const profile = response.status ? response.data : null;
+
   return (
     <CompanyProfileClient
-      initialName={profile?.name ?? ""}
-      initialEmail={profile?.email ?? ""}
+      initialData={profile}
     />
   );
 }

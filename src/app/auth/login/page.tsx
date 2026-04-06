@@ -3,12 +3,12 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, User, Building2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, User, Building2, AlertCircle, Eye, EyeOff, Briefcase } from "lucide-react";
 import { EmailSignInAction } from "@/lib/sign-in";
 import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
 import { toast } from "sonner";
 
-type LoginRole = "job_seeker" | "employer";
+type LoginRole = "job_seeker" | "employer" | "recruiter";
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -22,7 +22,11 @@ function LoginContent() {
     e.preventDefault();
     try {
       setAuthLoading(true);
-      const res = await EmailSignInAction({ email, password });
+      const res = await EmailSignInAction({ 
+        email, 
+        password, 
+        role: role === "job_seeker" ? "jobseeker" : role 
+      });
 
       if (!res.status) {
         toast.error(res.message);
@@ -60,9 +64,9 @@ function LoginContent() {
               className="w-56 drop-shadow-sm"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
-            <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full px-4">
               {["12,000+ active jobs", "3,500+ verified schools", "Trusted by educators"].map((t) => (
-                <div key={t} className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs text-foreground font-medium shadow-sm border border-border/50">
+                <div key={t} className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-[10px] text-foreground font-medium shadow-sm border border-border/50">
                   <span className="text-primary font-bold">✓</span> {t}
                 </div>
               ))}
@@ -71,52 +75,61 @@ function LoginContent() {
         </div>
 
         {/* RIGHT PANEL — form */}
-        <div className="p-3 md:p-4 bg-white">
+        <div className="p-3 md:p-6 bg-white min-h-[480px] flex flex-col">
           {/* Mobile brand */}
-          <div className="flex items-center gap-2 mb-2 md:hidden">
+          <div className="flex items-center gap-2 mb-4 md:hidden">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <GraduationCap className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-display text-base font-bold text-foreground">TeachNow</span>
           </div>
 
-          <div className="mb-2">
-            <h1 className="font-display text-base font-bold text-foreground">Welcome back</h1>
-            <p className="mt-0.5 text-[10px] text-muted-foreground">Sign in to your account to continue</p>
+          <div className="mb-4">
+            <h1 className="font-display text-xl font-bold text-foreground">Welcome back</h1>
+            <p className="mt-1 text-xs text-muted-foreground font-medium">Sign in to your account to continue</p>
           </div>
 
           {redirectMessage && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[10px] text-primary">
+              <AlertCircle className="h-3 w-3 shrink-0" />
               {redirectMessage}
             </div>
           )}
 
           {/* Role toggle */}
-          <div className="mb-4 grid grid-cols-2 gap-1.5 rounded-xl border border-border bg-muted/20 p-1">
+          <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/20 p-1">
             <button
               type="button"
               suppressHydrationWarning
               onClick={() => setRole("job_seeker")}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[9px] font-bold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              <User className="h-3.5 w-3.5" /> Job Seeker
+              <User className="h-3 w-3" /> Job Seeker
             </button>
             <button
               type="button"
               suppressHydrationWarning
               onClick={() => setRole("employer")}
-              className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "employer" ? "bg-white text-secondary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[9px] font-bold transition-all ${role === "employer" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              <Building2 className="h-3.5 w-3.5" /> Employer
+              <Building2 className="h-3 w-3" /> Employer
+            </button>
+            <button
+              type="button"
+              suppressHydrationWarning
+              onClick={() => setRole("recruiter")}
+              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[9px] font-bold transition-all ${role === "recruiter" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              <Briefcase className="h-3 w-3" /> Recruiter
             </button>
           </div>
 
-          <form className="space-y-4" onSubmit={handleLogin}>
+          <form className="space-y-4 flex-1" onSubmit={handleLogin}>
             <div>
-              <label htmlFor="login_email" className="mb-1.5 block text-sm font-medium text-foreground">Email Address</label>
+              <label htmlFor="login_email" className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-tight opacity-70">Email Address</label>
               <input
                 id="login_email"
                 type="email"
@@ -125,14 +138,14 @@ function LoginContent() {
                 onChange={(e) => setEmail(e.target.value)}
                 suppressHydrationWarning
                 placeholder="you@example.com"
-                className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                className="w-full rounded-xl border border-border bg-slate-50 px-4 py-2.5 text-sm text-foreground focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="login_password" className="block text-sm font-medium text-foreground">Password</label>
-                <Link href="/auth/forget-password" className="px-0 text-[10px] text-primary hover:underline">
+                <label htmlFor="login_password" className="block text-[11px] font-bold text-slate-700 uppercase tracking-tight opacity-70">Password</label>
+                <Link href="/auth/forget-password" className="px-0 text-[10px] text-primary font-bold hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -145,7 +158,7 @@ function LoginContent() {
                   onChange={(e) => setPassword(e.target.value)}
                   suppressHydrationWarning
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-border bg-white px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                  className="w-full rounded-xl border border-border bg-slate-50 px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium"
                 />
                 <button
                   type="button"
@@ -162,10 +175,17 @@ function LoginContent() {
               type="submit"
               disabled={authLoading}
               suppressHydrationWarning
-              className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg mt-5 disabled:opacity-50 disabled:cursor-wait ${role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
+              className={`w-full rounded-xl py-2.5 text-xs font-bold text-white transition-all shadow-lg mt-4 disabled:opacity-50 disabled:cursor-wait bg-primary hover:bg-primary/90 shadow-primary/20 active:scale-[0.98]
                 }`}
             >
-              {authLoading ? "Signing in..." : `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`}
+              {authLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Signing in...
+                </div>
+              ) : (
+                `Log In as ${role === "job_seeker" ? "Job Seeker" : role.charAt(0).toUpperCase() + role.slice(1)}`
+              )}
             </button>
           </form>
 

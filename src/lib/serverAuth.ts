@@ -35,10 +35,10 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
   const email = String(data.email ?? "").trim();
   if (!id && !email) return null;
   const name =
-    String(data.f_name ?? data.name ?? data.full_name ?? "").trim() ||
+    String(data.f_name ?? data.name ?? data.full_name ?? data.company_name ?? "").trim() ||
     (email ? email.split("@")[0] : "User");
   const role = normalizeDashboardRole(data.user_type ?? data.role);
-  const pic = data.profile_pic;
+  const pic = data.profile_pic ?? data.company_logo;
   const avatar =
     typeof pic === "string" && pic
       ? pic
@@ -59,7 +59,7 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
  * Current session from cookie-backed API. Tries /auth/profile then /jobseeker/profile.
  */
 export async function getSessionProfile(): Promise<ServerSessionUser | null> {
-  const endpoints = ["auth/profile", "jobseeker/profile"];
+  const endpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
   for (const ep of endpoints) {
     try {
       const res = await dashboardServerFetch<unknown>(ep, { method: "GET" });

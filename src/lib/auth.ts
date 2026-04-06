@@ -265,9 +265,9 @@ export interface AdminUser {
   profile_pic?: string;
   user_type: string;
 }
-const LARAVEL_COOKIE_NAMES = new Set(["laravel-session", "XSRF-TOKEN"]);
 
-export const signIn = async (data: { email: string; password: string }) => {
+
+export const signIn = async (data: { email: string; password: string; role?: "jobseeker" | "employer" | "recruiter" }) => {
   const cookieStore = await cookies();
 
   // Fetch CSRF cookie first to get fmg-session and XSRF-TOKEN
@@ -333,9 +333,18 @@ export const signIn = async (data: { email: string; password: string }) => {
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
 
+  // Determine login endpoint
+  let endpoint = "/auth/login";
+  if (data.role === "employer") {
+    endpoint = "/auth/employer-login";
+  } else if (data.role === "recruiter") {
+    // Correct recruiter login endpoint as per user request
+    endpoint = "/recruiter/login";
+  }
+
   // Use api instance for login, but manually add cookies and XSRF token
   const res = await api.post(
-    "/auth/login",
+    endpoint,
     {
       email: data.email,
       password: data.password,
@@ -386,12 +395,13 @@ export const signIn = async (data: { email: string; password: string }) => {
 
 
   // Set userData cookie for middleware compatibility
+  const user = responseData.user;
   const userData = {
-    user_id: responseData.user.user_id,
-    f_name: responseData.user.f_name,
-    email: responseData.user.email,
-    profile_pic: responseData.user.profile_pic,
-    user_type: responseData.user.user_type,
+    user_id: user.user_id || user.id,
+    f_name: user.f_name || user.name || user.company_name || user.full_name || "",
+    email: user.email,
+    profile_pic: user.profile_pic || user.company_logo || "",
+    user_type: user.user_type || user.role || "",
   };
 
   cookieStore.set("userData", JSON.stringify(userData), cookieOptions);
@@ -413,6 +423,10 @@ export const signOut = async () => {
         const userData = JSON.parse(userDataStr);
         if (userData.user_type === "jobseeker" || userData.user_type === "Jobseeker") {
           endpoint = "/jobseeker/logout";
+        } else if (userData.user_type === "employer" || userData.user_type === "Employer") {
+          endpoint = "/employer/logout";
+        } else if (userData.user_type === "recruiter" || userData.user_type === "Recruiter") {
+          endpoint = "/recruiter/logout";
         }
       } catch (e) {
         // Fallback to default logout

@@ -75,11 +75,17 @@ export async function dashboardServerFetch<T = any>(
         return response.data;
     } catch (error: any) {
         const errStatus = error?.response?.status;
-        const isPublicEndpoint = endpoint.startsWith("open/") || endpoint.startsWith("/open/") || endpoint === "auth/profile";
+        const isPublicEndpoint = 
+            endpoint.startsWith("open/") || 
+            endpoint.startsWith("/open/") || 
+            endpoint === "auth/profile" ||
+            endpoint === "jobseeker/profile" ||
+            endpoint === "employer/profile" ||
+            endpoint === "recruiter/profile";
 
         // Only log errors that are critical (not 401/404, or not public probes)
         if (errStatus !== 401 && errStatus !== 404 && !isPublicEndpoint) {
-            console.error("Dashboard server fetch error:", error?.message || error);
+            console.error(`[DashboardServerFetch Error] ${endpoint}: ${error?.message || error}`, error?.response?.data || "");
         }
         
         let message = "Error occurred";

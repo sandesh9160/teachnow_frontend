@@ -53,7 +53,7 @@ export default function QuickAuthModal({
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await EmailSignInAction({ email, password });
+      const res = await EmailSignInAction({ email, password, role });
       if (!res.status) {
         toast.error(res.message ?? "Login failed");
         return;
@@ -99,7 +99,7 @@ export default function QuickAuthModal({
       toast.success("Account created! Logging you in...");
       
       // Auto-login after registration for seamless UX
-      const res = await EmailSignInAction({ email, password });
+      const res = await EmailSignInAction({ email, password, role });
       if (res.status) {
         resetSharedClientSession();
         onClose();
@@ -132,26 +132,24 @@ export default function QuickAuthModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-3 sm:pt-3 scrollbar-hide">
-          {mode === "register" && (
-             <div className="flex bg-slate-100/60 p-0.5 rounded-lg mb-3 border border-slate-200/40">
-                <button 
-                  type="button"
-                  onClick={() => setRole("jobseeker")}
-                  className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${role === "jobseeker" ? "bg-white text-primary shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  <User className="h-3 w-3" />
-                  Job Seeker
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => setRole("employer")}
-                  className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${role === "employer" ? "bg-white text-primary shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  <Building2 className="h-3 w-3" />
-                  Employer
-                </button>
-             </div>
-          )}
+          <div className="flex bg-slate-100/60 p-0.5 rounded-lg mb-3 border border-slate-200/40">
+            <button 
+              type="button"
+              onClick={() => setRole("jobseeker")}
+              className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${role === "jobseeker" ? "bg-white text-primary shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
+            >
+              <User className="h-3 w-3" />
+              Job Seeker
+            </button>
+            <button 
+              type="button"
+              onClick={() => setRole("employer")}
+              className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${role === "employer" ? "bg-white text-primary shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
+            >
+              <Building2 className="h-3 w-3" />
+              Employer
+            </button>
+          </div>
 
           <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-2">
             {mode === "register" && (

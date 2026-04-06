@@ -25,7 +25,7 @@ function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
   const id = data.id ?? data.user_id;
   if (!email && (id === undefined || id === null || id === "")) return null;
   const name =
-    String(data.f_name ?? data.name ?? data.full_name ?? "").trim() ||
+    String(data.f_name ?? data.name ?? data.full_name ?? data.company_name ?? "").trim() ||
     (email ? email.split("@")[0] : "User");
   return {
     name,
@@ -42,7 +42,7 @@ function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
 export function getSharedClientSession(): Promise<ClientSessionUser | null> {
   if (sessionPromise) return sessionPromise;
   sessionPromise = (async () => {
-    const tryEndpoints = ["auth/profile", "jobseeker/profile", "employer/profile"];
+    const tryEndpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
     for (const ep of tryEndpoints) {
       try {
         // Try server-action probe (server-side fetches have better cookie access)
