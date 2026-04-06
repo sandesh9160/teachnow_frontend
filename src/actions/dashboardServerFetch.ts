@@ -14,10 +14,10 @@ import type { AxiosRequestConfig, AxiosResponse } from "axios";
  * @param options - Axios request options (data, method, etc.)
  * @returns Promise with response data
  */
-export const dashboardServerFetch = async <T = any>(
+export async function dashboardServerFetch<T = any>(
     endpoint: string,
     options?: AxiosRequestConfig & { data?: any }
-): Promise<T> => {
+): Promise<T> {
     try {
         const cookieStore = await cookies();
 
@@ -46,7 +46,6 @@ export const dashboardServerFetch = async <T = any>(
         const requestConfig: AxiosRequestConfig = {
             ...options,
             headers,
-            // Remove data from config (it's passed separately to axios methods)
             data: options?.data,
         };
 
@@ -71,38 +70,24 @@ export const dashboardServerFetch = async <T = any>(
             default:
                 response = await apiInstance.get<T>(`/${cleanEndpoint}`, requestConfig);
         }
-        // console.log("response : ", response);
-        console.log("response.data : ", response.data);
-        console.log("response.status : ", response.status);
-        // console.log("response.statusText : ", response.statusText);
-        // console.log("response.headers : ", response.headers);
-        // console.log("response.config : ", response.config);
-        // console.log("response.request : ", response.request);
-        // console.log("response.status : ", response.status);
-        // console.log("response.statusText : ", response.statusText);
-        // console.log("response.headers : ", response.headers);
-        // console.log("response.config : ", response.config);
-        // console.log("response.request : ", response.request);
+
+        console.log(`[DashboardServerFetch] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`);
         return response.data;
     } catch (error: any) {
         if (error?.response?.status !== 401) {
             console.error("Dashboard server fetch error:", error?.message || error);
         }
-        // Return error in same format as old ServerFetch
+        
         let message = "Error occurred";
         let statusCode = 500;
 
         if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
             message = error.response.data?.message || error.message || "Request failed";
             statusCode = error.response.status;
         } else if (error.request) {
-            // The request was made but no response was received
             message = "No response from server";
-            statusCode = 504; // Gateway Timeout or another appropriate status
+            statusCode = 504;
         } else if (error instanceof Error) {
-            // Something happened in setting up the request that triggered an Error
             message = error.message;
         }
 
@@ -112,4 +97,5 @@ export const dashboardServerFetch = async <T = any>(
             statusCode,
         } as T;
     }
-};
+}
+

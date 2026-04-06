@@ -124,6 +124,24 @@ export function useResumes(options?: UseResumesOptions) {
     [refreshList]
   );
 
+  const removeGenerated = useCallback(
+    async (id: number | string) => {
+      try {
+        setError(null);
+        setLoading(true);
+        await dashboardServerFetch<any>(`jobseeker/cv/${id}`, { method: "DELETE" });
+        await refreshList();
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Failed to delete generated resume";
+        setError(msg);
+        throw e;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [refreshList]
+  );
+
   const remove = useCallback(
     async (id: number | string) => {
       try {
@@ -168,6 +186,7 @@ export function useResumes(options?: UseResumesOptions) {
     fetchResumes,
     upload,
     remove,
+    removeGenerated,
     setDefault,
   };
 }

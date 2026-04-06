@@ -400,9 +400,25 @@ export const signIn = async (data: { email: string; password: string }) => {
 };
 
 export const signOut = async () => {
-  // Call Laravel logout endpoint to handle server-side logout
+  // Call role-specific logout endpoint to handle server-side session cleanup
   try {
     const cookieStore = await cookies();
+    
+    // Determine the logout endpoint based on user type
+    const userDataStr = cookieStore.get("userData")?.value;
+    let endpoint = "/logout";
+    
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        if (userData.user_type === "jobseeker" || userData.user_type === "Jobseeker") {
+          endpoint = "/jobseeker/logout";
+        }
+      } catch (e) {
+        // Fallback to default logout
+      }
+    }
+
     const cookieHeader = cookieStore
       .getAll()
       .map((cookie) => `${cookie.name}=${cookie.value}`)
@@ -411,7 +427,7 @@ export const signOut = async () => {
     const xsrfToken = cookieStore.get("XSRF-TOKEN")?.value;
 
     await api.post(
-      "/logout",
+      endpoint,
       {},
       {
         headers: {

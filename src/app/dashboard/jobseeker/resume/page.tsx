@@ -30,6 +30,7 @@ export default function ResumeManagementPage() {
     remove,
     setDefault,
     fetchResumes,
+    removeGenerated,
     generatedResumes = []
   } = useResumes();
   const {
@@ -41,6 +42,7 @@ export default function ResumeManagementPage() {
 
   const [uploading, setUploading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<number | string | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<any | null>(null);
   const [lastGeneratedCV, setLastGeneratedCV] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,6 +117,16 @@ export default function ResumeManagementPage() {
       toast.success("Deleted.");
     } catch {
       toast.error("Failed to delete.");
+    }
+  };
+
+  const handleDeleteGenerated = async (id: number | string) => {
+    if (!confirm("Are you sure you want to delete this generated CV?")) return;
+    try {
+      await removeGenerated(id);
+      toast.success("Generated CV deleted.");
+    } catch {
+      toast.error("Failed to delete generated CV.");
     }
   };
 
@@ -193,18 +205,24 @@ export default function ResumeManagementPage() {
                 {templates.map((tpl) => (
                   <div
                     key={tpl.id}
-                    className={`group relative flex flex-col bg-white border rounded-xl overflow-hidden shadow-sm transition-all duration-300 ${selectedTemplate === tpl.id ? 'border-primary ring-1 ring-primary/20 scale-[1.02]' : 'border-slate-100 hover:border-slate-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50'}`}
+                    className={`group relative flex flex-col bg-white border rounded-xl overflow-hidden shadow-sm transition-all duration-300 cursor-pointer ${selectedTemplate === tpl.id ? 'border-primary ring-1 ring-primary/20 scale-[1.02]' : 'border-slate-100 hover:border-slate-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50'}`}
+                    onClick={() => setPreviewTemplate(tpl)}
                   >
                     <div className="aspect-4/5 bg-slate-50 relative overflow-hidden flex items-center justify-center p-6 grayscale-[0.2] group-hover:grayscale-0 transition-all border-b border-slate-50">
                       {(tpl.preview_image || tpl.preview_url) ? (
                         <img
                           src={normalizeMediaUrl(tpl.preview_image || tpl.preview_url || "")}
                           alt={tpl.name}
-                          className="w-full h-full object-cover rounded shadow-sm"
+                          className="w-full h-full object-cover rounded shadow-sm transition-transform duration-500 group-hover:scale-105"
                         />
                       ) : (
                         <FileText className="w-12 h-12 text-slate-200" />
                       )}
+                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="bg-white/20 backdrop-blur-md border border-white/30 p-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                          <Eye className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
                     </div>
                     <div className="p-4 space-y-4">
                       <div className="flex items-center justify-between">
@@ -218,9 +236,12 @@ export default function ResumeManagementPage() {
                       </div>
                       <Button
                         size="sm"
-                        onClick={() => handleGenerate(tpl.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGenerate(tpl.id);
+                        }}
                         disabled={cvLoading}
-                        className="rounded-xl font-semibold text-[12px] w-full h-9 bg-primary/5 text-primary border border-primary/10 hover:bg-primary hover:text-white transition-all shadow-none"
+                        className="rounded-xl font-bold text-[12px] w-full h-9 bg-primary text-white hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
                       >
                         {cvLoading && selectedTemplate === tpl.id ? <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> : <FileText className="w-3.5 h-3.5 mr-2" />}
                         Generate CV
@@ -277,7 +298,7 @@ export default function ResumeManagementPage() {
                 </div>
               ) : resumes.length > 0 ? (
                 <div className="divide-y divide-slate-100">
-                  {resumes.map((resume) => {
+                  {resumes.map((resume: any) => {
                     const ext = resume.file_name?.split('.').pop()?.toLowerCase() || 'doc';
                     const isPdf = ext === 'pdf';
                     const previewUrl = resume.url || resume.file || resume.file_url || resume.resume_file;
@@ -391,12 +412,21 @@ export default function ResumeManagementPage() {
                           <h4 className="font-semibold text-slate-800 text-[13px] leading-tight truncate">Teacher CV</h4>
                           <span className="text-[10px] font-medium text-slate-400 mt-0.5 block">ID: {cv.id}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Saved</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Saved</span>
+                          <button
+                            onClick={() => handleDeleteGenerated(cv.id)}
+                            className="h-7 w-7 flex items-center justify-center text-rose-500 bg-rose-50 rounded-lg transition-all hover:bg-rose-100"
+                            title="Delete Generated CV"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       <Button
                         size="sm"
-                        variant="ghost"
-                        className="w-full h-8 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg font-semibold text-[11px] border border-emerald-100 transition-all shadow-none"
+                        variant="default"
+                        className="w-full h-8 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-bold text-[11px] border-none transition-all shadow-md shadow-emerald-100"
                         onClick={() => handleDownload(cv.pdf_path)}
                       >
                         <Download className="w-3.5 h-3.5 mr-2" /> Download Full PDF
@@ -414,6 +444,97 @@ export default function ResumeManagementPage() {
 
         </div>
       </div>
+
+      {/* Template Preview Sidebar */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm cursor-pointer"
+            onClick={() => setPreviewTemplate(null)}
+          />
+          <div className="relative w-full max-w-xl bg-white h-full shadow-2xl flex flex-col p-0 overflow-hidden animate-in slide-in-from-right duration-500">
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">{previewTemplate.name}</h3>
+                <p className="text-slate-500 text-xs font-medium">Professional ATS-Optimized Template</p>
+              </div>
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center transition-colors text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Sidebar Content */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+              <div className="aspect-[4/5.5] w-full bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden group relative">
+                {(previewTemplate.preview_image || previewTemplate.preview_url) ? (
+                  <img
+                    src={normalizeMediaUrl(previewTemplate.preview_image || previewTemplate.preview_url || "")}
+                    alt={previewTemplate.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
+                    <FileText className="w-20 h-20 text-slate-100" />
+                    <p className="text-slate-400 text-sm font-medium">No preview available</p>
+                  </div>
+                )}
+                {/* Scroll hint/decoration */}
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/10 to-transparent pointer-events-none" />
+              </div>
+
+              <div className="mt-8 space-y-6 pb-24">
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Template Features</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { icon: CheckCircle2, text: "ATS Friendly", color: "emerald" },
+                      { icon: Monitor, text: "Modern Design", color: "blue" },
+                      { icon: FileCheck, text: "Job-Tailored", color: "indigo" },
+                      { icon: Clock, text: "Fast Generation", color: "amber" }
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                        <feature.icon className={`w-4 h-4 text-${feature.color}-500`} />
+                        <span className="text-xs font-semibold text-slate-600">{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-5 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                  <h4 className="text-sm font-bold text-indigo-900 mb-1">AI-Powered Optimization</h4>
+                  <p className="text-[11px] text-indigo-600 leading-relaxed font-medium">
+                    This template uses our proprietary AI architect to restructure your profile for maximum recruiter engagement.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar Action */}
+            <div className="p-6 border-t border-slate-100 bg-white/80 backdrop-blur-md sticky bottom-0">
+              <Button
+                variant="default"
+                className="w-full h-14 rounded-2xl text-base font-bold shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
+                onClick={() => {
+                  handleGenerate(previewTemplate.id);
+                  setPreviewTemplate(null);
+                }}
+                disabled={cvLoading}
+              >
+                {cvLoading ? (
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                ) : (
+                  <FileText className="w-5 h-5 mr-3" />
+                )}
+                Create Resume from this Template
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
