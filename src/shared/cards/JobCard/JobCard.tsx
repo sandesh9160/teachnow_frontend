@@ -7,8 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
-import JobSeekerAuthModal from "@/components/auth/JobSeekerAuthModal";
-import JobSeekerRegisterModal from "@/components/auth/JobSeekerRegisterModal";
+import QuickAuthModal from "@/components/auth/QuickAuthModal";
 import { JobCardProps } from "@/types/components";
 import { sanitizeSlug } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
@@ -16,7 +15,6 @@ import { normalizeMediaUrl } from "@/services/api/client";
 const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo }: JobCardProps) => {
   const [saved, setSaved] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
   
@@ -110,17 +108,12 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
         </div>
       </div>
 
-      <JobSeekerAuthModal
+      <QuickAuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
-        onSwitchToRegister={() => { setShowAuthModal(false); setTimeout(() => setShowRegisterModal(true), 200); }}
-      />
-      <JobSeekerRegisterModal
-        open={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-        onSuccess={handleAuthSuccess}
-        onSwitchToLogin={() => { setShowRegisterModal(false); setTimeout(() => setShowAuthModal(true), 200); }}
+        title="Apply for this Job"
+        submitText="Login to Apply"
       />
     </>
   );

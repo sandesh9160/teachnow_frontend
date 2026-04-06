@@ -6,8 +6,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { useRouter } from "next/navigation";
 import { useClientSession } from "@/hooks/useClientSession";
 import { toast } from "sonner";
-import JobSeekerAuthModal from "@/components/auth/JobSeekerAuthModal";
-import JobSeekerRegisterModal from "@/components/auth/JobSeekerRegisterModal";
+import QuickAuthModal from "@/components/auth/QuickAuthModal";
 
 export interface JobData {
   id: string | number;
@@ -35,7 +34,6 @@ const JobListingCard = ({
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   
   const jobPath = slug || `job-${id}`;
   const jobHref = `/${jobPath}`;
@@ -144,17 +142,12 @@ const JobListingCard = ({
         </div>
       </div>
 
-      <JobSeekerAuthModal
+      <QuickAuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
-        onSwitchToRegister={() => { setShowAuthModal(false); setTimeout(() => setShowRegisterModal(true), 200); }}
-      />
-      <JobSeekerRegisterModal
-        open={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-        onSuccess={handleAuthSuccess}
-        onSwitchToLogin={() => { setShowRegisterModal(false); setTimeout(() => setShowAuthModal(true), 200); }}
+        title="Apply for this Job"
+        submitText="Login to Apply"
       />
     </>
   );

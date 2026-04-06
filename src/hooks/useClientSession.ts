@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchAPI } from "@/services/api/client";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type { DashboardRole } from "@/types/session";
 
 export type ClientSessionUser = {
@@ -38,16 +38,18 @@ function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
  * Shared cookie-backed session probe for client components (no React context).
  * Deduplicates in-flight requests across the tree.
  */
+
 export function getSharedClientSession(): Promise<ClientSessionUser | null> {
   if (sessionPromise) return sessionPromise;
   sessionPromise = (async () => {
-    const tryEndpoints = ["/jobseeker/profile"];
+    const tryEndpoints = ["auth/profile", "jobseeker/profile", "employer/profile"];
     for (const ep of tryEndpoints) {
       try {
-        const res = await fetchAPI<unknown>(ep, {
-          silentStatusCodes: [401, 403, 404, 422],
-        });
+        // Try server-action probe (server-side fetches have better cookie access)
+        const res = await dashboardServerFetch<unknown>(ep, { method: "GET" });
         const body = res as Record<string, unknown>;
+        if (body?.status === false) continue;
+
         const data = (body?.data ?? body?.user ?? body) as unknown;
         if (!data || typeof data !== "object") continue;
         const mapped = mapPayload(data as Record<string, unknown>);

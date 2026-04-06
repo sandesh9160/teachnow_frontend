@@ -6,7 +6,7 @@ import Link from "next/link";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { useClientSession } from "@/hooks/useClientSession";
+import { useClientSession, getSharedClientSession } from "@/hooks/useClientSession";
 import { normalizeMediaUrl } from "@/services/api/client";
 import {
   FileText,
@@ -19,8 +19,10 @@ import {
   User,
   Clock,
   Calendar,
-  X,
 } from "lucide-react";
+import { toast } from "sonner";
+import QuickAuthModal from "@/components/auth/QuickAuthModal";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
 import { ResourceData } from "@/types/homepage";
 import { useResource } from "@/hooks/useResource";
@@ -54,23 +56,48 @@ export default function ResourceDetailPage() {
   const slug = params?.slug as string;
 
   const router = useRouter();
-  const { isLoggedIn, user } = useClientSession();
+  const { resource, related, loading: resourceLoading, error } = useResource(slug);
+  const { isLoggedIn, loading: sessionLoading } = useClientSession();
 
-  const { resource, related, loading, error } = useResource(slug);
-  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownload = () => {
-    if (!isLoggedIn || user?.role !== "job_seeker") {
-      setShowDownloadModal(true);
-      return;
-    }
+  const performDownload = async (resourceId: number, pdfUrl: string) => {
+    try {
+      setIsDownloading(true);
+      const res = await dashboardServerFetch<any>(`jobseeker/resources/${resourceId}/download`, {
+        method: "GET"
+      });
 
-    if (resource?.pdf) {
-      window.open(normalizeMediaUrl(resource.pdf), "_blank", "noopener,noreferrer");
+      const downloadUrl = res?.data?.download_url || res?.download_url || pdfUrl;
+
+      if (downloadUrl) {
+        window.open(normalizeMediaUrl(downloadUrl), "_blank", "noopener,noreferrer");
+        toast.success("Download started!");
+      } else {
+        toast.error("Download link not available.");
+      }
+    } catch (err) {
+      window.open(normalizeMediaUrl(pdfUrl), "_blank", "noopener,noreferrer");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
-  if (loading) {
+  const handleDownload = async () => {
+    if (!isLoggedIn) {
+      setShowAuth(true);
+      return;
+    }
+
+    if (resource?.id && resource?.pdf) {
+      void performDownload(resource.id, resource.pdf);
+    } else {
+      toast.error("Resource file not found.");
+    }
+  };
+
+  if (resourceLoading || sessionLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 text-center text-muted-foreground">
         <div className="flex flex-col items-center gap-3">
@@ -117,11 +144,11 @@ export default function ResourceDetailPage() {
             className="w-full h-auto max-h-[60vh] object-contain"
           />
         ) : (
-          <div className="w-full h-full absolute inset-0 bg-gradient-to-br from-primary/80 to-blue-900" />
+          <div className="w-full h-full absolute inset-0 bg-linear-to-br from-primary/80 to-blue-900" />
         )}
 
         {/* Elegant Black Gradient Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-black/40 bg-linear-to-t from-slate-900/95 via-slate-900/50 to-transparent pointer-events-none" />
 
         <div className="absolute inset-0 flex flex-col justify-end">
           <div className="container mx-auto px-4 md:px-8 pb-8 md:pb-12 text-white">
@@ -155,7 +182,7 @@ export default function ResourceDetailPage() {
         <main className="flex-1">
           {/* Main Description Block */}
           <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 md:p-10 border border-slate-100 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/60">
-            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 flex items-center gap-2 mb-6">
+            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-600 flex items-center gap-2 mb-6">
               <Lightbulb className="text-primary w-6 h-6" /> About this resource
             </h2>
 
@@ -216,14 +243,26 @@ export default function ResourceDetailPage() {
             <Button
               className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all mt-2"
               onClick={handleDownload}
+              disabled={isDownloading}
             >
-              <Download className="h-5 w-5 mr-2" />
-              Download Free
+              {isDownloading ? (
+                <div className="flex items-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Processing...
+                </div>
+              ) : (
+                <>
+                  <Download className="h-5 w-5 mr-2" />
+                  Download Free
+                </>
+              )}
             </Button>
 
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-500 text-center font-medium">
-              <LogIn className="w-3.5 h-3.5" /> Job Seeker login required to download
-            </div>
+            {!isLoggedIn && (
+              <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-500 text-center font-medium">
+                <LogIn className="w-3.5 h-3.5" /> Login required to download
+              </div>
+            )}
           </div>
 
           {/* Related Resources */}
@@ -268,65 +307,18 @@ export default function ResourceDetailPage() {
         </aside>
       </div>
 
-      {/* Login Modal */}
-      {showDownloadModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          {/* Backdrop */}
-          <button
-            type="button"
-            className="absolute inset-0 w-full h-full bg-slate-900/60 backdrop-blur-sm border-0 cursor-default transition-opacity"
-            onClick={() => setShowDownloadModal(false)}
-            aria-label="Close modal overlay"
-            tabIndex={-1}
-          />
-
-          <div className="relative bg-white rounded-3xl p-8 w-full max-w-md mx-auto shadow-2xl animate-in fade-in zoom-in duration-200">
-            <button
-              onClick={() => setShowDownloadModal(false)}
-              className="absolute right-5 top-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5 text-primary">
-                <LogIn className="w-8 h-8 ml-1" />
-              </div>
-
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                Unlock This Resource
-              </h3>
-
-              <p className="text-base text-slate-600 mb-8 leading-relaxed">
-                Log in as a Job Seeker to instantly download this and hundreds of other premium teaching resources for free.
-              </p>
-
-              <div className="space-y-3">
-                <Button
-                  className="w-full h-12 text-base font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
-                  onClick={() => {
-                    setShowDownloadModal(false);
-                    router.push("/auth/login");
-                  }}
-                >
-                  Log In to Download
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-base font-bold rounded-xl border-slate-200 hover:bg-slate-50 text-slate-700 transition-all"
-                  onClick={() => {
-                    setShowDownloadModal(false);
-                    router.push("/auth/register");
-                  }}
-                >
-                  Create Free Account
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Unified Authentication Popup */}
+      <QuickAuthModal
+        open={showAuth}
+        onClose={() => setShowAuth(false)}
+        title="Login to Download Resource"
+        submitText="Login to Download"
+        onSuccess={() => {
+          if (resource?.id && resource?.pdf) {
+            void performDownload(resource.id, resource.pdf);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -5,34 +5,28 @@ import { GraduationCap, User, Building2, Check, X, Eye, EyeOff } from "lucide-re
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/services/api/client";
-import { LocationPicker } from "@/shared/ui/LocationPicker/LocationPicker";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 
 export default function RegisterPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const router = useRouter();
   const captchaRef = useRef<any>(null);
-  
+
   // Jobseeker as default to ensure fields always show
- const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
+  const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [mapLink, setMapLink] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     company_name: "",
-    company_description: "",
-    industry: "",
-    website: "",
     phone: "",
-    city: "",
-    country: "",
-    address: "",
     full_name: "",
     email: "",
   });
 
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const hasMinLength = password.length >= 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -61,20 +55,14 @@ export default function RegisterPage() {
 
     if (role === "employer") {
       if (!formData.company_name) { toast.error("Company Name is required"); return; }
-      if (!formData.company_description) { toast.error("Company Description is required"); return; }
-      if (!formData.industry) { toast.error("Industry is required"); return; }
       if (!formData.phone) { toast.error("Phone Number is required"); return; }
-      if (!mapLink) { toast.error("Please pin your institution's location on the map"); return; }
-      if (!formData.city) { toast.error("City is required"); return; }
-      if (!formData.country) { toast.error("Country is required"); return; }
-      if (!formData.address) { toast.error("Full Address is required"); return; }
     } else if (role === "jobseeker") {
       if (!formData.full_name) { toast.error("Full Name is required"); return; }
     }
 
     if (!formData.email) { toast.error("Email Address is required"); return; }
     if (!formData.email.includes("@")) { toast.error("Please enter a valid email address"); return; }
-    
+
     if (!password) { toast.error("Password is required"); return; }
     if (!isPasswordValid) {
       toast.error("Password is too weak", {
@@ -83,20 +71,14 @@ export default function RegisterPage() {
       return;
     }
 
-    let latitude = null;
-    let longitude = null;
-
-    if (mapLink) {
-      const [lat, lng] = mapLink.split(",").map(Number);
-      latitude = lat;
-      longitude = lng;
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
     }
 
     const payload = {
       ...formData,
       password,
-      latitude,
-      longitude,
       captcha_token: captchaToken
     };
 
@@ -165,9 +147,8 @@ export default function RegisterPage() {
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setRole("jobseeker")}
-                className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
-                  role === "jobseeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "jobseeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <User className="h-3.5 w-3.5" /> Job Seeker
               </button>
@@ -175,9 +156,8 @@ export default function RegisterPage() {
                 type="button"
                 suppressHydrationWarning
                 onClick={() => setRole("employer")}
-                className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
-                  role === "employer" ? "bg-white text-secondary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "employer" ? "bg-white text-secondary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 <Building2 className="h-3.5 w-3.5" /> Employer
               </button>
@@ -192,40 +172,8 @@ export default function RegisterPage() {
                   <input id="company_name_reg" name="company_name" value={formData.company_name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="Sri Chaitanya Junior College" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
                 <div>
-                  <label htmlFor="desc_reg" className="mb-1.5 block text-sm font-medium text-foreground">Company Description</label>
-                  <textarea id="desc_reg" name="company_description" value={formData.company_description} onChange={handleChange} suppressHydrationWarning required placeholder="Our school is a Tech leveraging school..." className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[80px]" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div>
-                    <label htmlFor="industry_reg" className="mb-1.5 block text-sm font-medium text-foreground">Industry</label>
-                    <input id="industry_reg" name="industry" value={formData.industry} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="Education industry" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-                  </div>
-                  <div>
-                    <label htmlFor="web_reg" className="mb-1.5 block text-sm font-medium text-foreground">Website</label>
-                    <input id="web_reg" name="website" value={formData.website} onChange={handleChange} type="text" suppressHydrationWarning placeholder="www.srichaitanya.com" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-                  </div>
-                </div>
-                <div>
                   <label htmlFor="phone_reg" className="mb-1.5 block text-sm font-medium text-foreground">Phone Number</label>
                   <input id="phone_reg" name="phone" value={formData.phone} onChange={handleChange} type="tel" suppressHydrationWarning required placeholder="+91 9638527410" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Pin Your Institution's Location</label>
-                  <LocationPicker value={mapLink} onChange={setMapLink} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                  <div>
-                    <label htmlFor="city_reg" className="mb-1.5 block text-sm font-medium text-foreground">City</label>
-                    <input id="city_reg" name="city" value={formData.city} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="Hyderabad" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-                  </div>
-                  <div>
-                    <label htmlFor="country_reg" className="mb-1.5 block text-sm font-medium text-foreground">Country</label>
-                    <input id="country_reg" name="country" value={formData.country} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="INDIA" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="addr_reg" className="mb-1.5 block text-sm font-medium text-foreground">Full Address</label>
-                  <input id="addr_reg" name="address" value={formData.address} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="Manjeera mall, JNTU" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
               </div>
             ) : role === "jobseeker" ? (
@@ -244,15 +192,15 @@ export default function RegisterPage() {
                 <div>
                   <label htmlFor="pw_reg" className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
                   <div className="relative">
-                    <input 
+                    <input
                       id="pw_reg"
                       type={showPassword ? "text" : "password"}
                       required
                       suppressHydrationWarning
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••" 
-                      className="w-full rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" 
+                      placeholder="••••••••"
+                      className="w-full rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                     <div
                       onClick={() => setShowPassword(!showPassword)}
@@ -261,7 +209,7 @@ export default function RegisterPage() {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </div>
                   </div>
-                  
+
                   {/* Password Validation UI */}
                   <div className="mt-3.5 space-y-3">
                     <div className="flex gap-1.5 h-1.5 w-full">
@@ -270,7 +218,7 @@ export default function RegisterPage() {
                       <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase && hasNumber ? "bg-green-500" : "bg-border"}`} />
                       <div className={`h-full flex-1 rounded-full transition-colors ${isPasswordValid ? "bg-green-500" : "bg-border"}`} />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-xs">
                       <div className={`flex items-center gap-1.5 transition-colors ${hasMinLength ? "text-green-600 dark:text-green-400 font-medium" : "text-muted-foreground"}`}>
                         {hasMinLength ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
@@ -291,7 +239,28 @@ export default function RegisterPage() {
                     </div>
                   </div>
                 </div>
-                <CaptchaField 
+                <div>
+                  <label htmlFor="confirm_pw_reg" className="mb-1.5 block text-sm font-medium text-foreground">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      id="confirm_pw_reg"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      suppressHydrationWarning
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
+                    <div
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </div>
+                  </div>
+                </div>
+                <CaptchaField
                   ref={captchaRef}
                   onChange={setCaptchaToken}
                   className="mt-5"
@@ -305,9 +274,8 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-wait ${
-                    role === "jobseeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
-                  }`}
+                  className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-wait ${role === "jobseeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
+                    }`}
                 >
                   {authLoading ? "Creating Account..." : "Create Account"}
                 </button>

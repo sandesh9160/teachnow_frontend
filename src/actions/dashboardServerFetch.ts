@@ -74,7 +74,11 @@ export async function dashboardServerFetch<T = any>(
         console.log(`[DashboardServerFetch] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`);
         return response.data;
     } catch (error: any) {
-        if (error?.response?.status !== 401) {
+        const errStatus = error?.response?.status;
+        const isPublicEndpoint = endpoint.startsWith("open/") || endpoint.startsWith("/open/") || endpoint === "auth/profile";
+
+        // Only log errors that are critical (not 401/404, or not public probes)
+        if (errStatus !== 401 && errStatus !== 404 && !isPublicEndpoint) {
             console.error("Dashboard server fetch error:", error?.message || error);
         }
         

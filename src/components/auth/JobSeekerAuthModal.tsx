@@ -15,9 +15,18 @@ interface JobSeekerAuthModalProps {
   onClose: () => void;
   onSuccess: () => void;
   onSwitchToRegister: () => void;
+  title?: string;
+  submitText?: string;
 }
 
-const JobSeekerAuthModal = ({ open, onClose, onSuccess, onSwitchToRegister }: JobSeekerAuthModalProps) => {
+const JobSeekerAuthModal = ({
+  open,
+  onClose,
+  onSuccess,
+  onSwitchToRegister,
+  title = "Apply for this Job",
+  submitText = "Login"
+}: JobSeekerAuthModalProps) => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
@@ -51,7 +60,7 @@ const JobSeekerAuthModal = ({ open, onClose, onSuccess, onSwitchToRegister }: Jo
               <GraduationCap className="h-5 w-5 text-primary" />
             </div>
             <DialogTitle className="font-display text-lg font-bold text-foreground">
-              Apply for this Job
+              {title}
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -81,7 +90,7 @@ const JobSeekerAuthModal = ({ open, onClose, onSuccess, onSwitchToRegister }: Jo
               size="lg"
               disabled={authLoading}
             >
-              {authLoading ? "Logging in..." : "Login"}
+              {authLoading ? "Logging in..." : submitText}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">

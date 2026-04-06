@@ -15,9 +15,17 @@ interface JobSeekerRegisterModalProps {
   /** @deprecated Registration ends on login screen; kept for call-site compatibility. */
   onSuccess?: () => void;
   onSwitchToLogin: () => void;
+  title?: string;
+  submitText?: string;
 }
 
-const JobSeekerRegisterModal = ({ open, onClose, onSwitchToLogin }: JobSeekerRegisterModalProps) => {
+const JobSeekerRegisterModal = ({
+  open,
+  onClose,
+  onSwitchToLogin,
+  title = "Create Job Seeker Account",
+  submitText = "Create Job Seeker Account"
+}: JobSeekerRegisterModalProps) => {
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPhone, setRegPhone] = useState("");
@@ -57,7 +65,7 @@ const JobSeekerRegisterModal = ({ open, onClose, onSwitchToLogin }: JobSeekerReg
               <GraduationCap className="h-5 w-5 text-primary" />
             </div>
             <DialogTitle className="font-display text-lg font-bold text-foreground">
-              Create Job Seeker Account
+              {title}
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -103,7 +111,7 @@ const JobSeekerRegisterModal = ({ open, onClose, onSwitchToLogin }: JobSeekerReg
               size="lg"
               disabled={authLoading}
             >
-              {authLoading ? "Creating account..." : "Create Job Seeker Account"}
+              {authLoading ? "Creating account..." : submitText}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
