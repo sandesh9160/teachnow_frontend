@@ -14,7 +14,8 @@ import {
   Loader2,
   Trash2,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  Calendar
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -69,7 +70,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
          "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border shadow-inner transition-transform group-hover:scale-110 relative z-10", 
          colorClass || "bg-primary/5 text-primary border-primary/10"
        )}>
-          <Icon className="w-4.5 h-4.5" />
+          <Icon className="w-5 h-5" />
        </div>
        <div className="min-w-0 space-y-0.5 relative z-10 pt-0.5">
           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tight leading-none">{label}</p>
@@ -193,7 +194,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                />
                <DetailItem 
                   label="Estimated LPA" 
-                  value={`₹${job.salary_min?.split('.')[0]} - ₹${job.salary_max?.split('.')[0]}`} 
+                  value={`₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`} 
                   icon={DollarSign} 
                   colorClass="bg-emerald-50 text-emerald-600 border-emerald-100"
                />

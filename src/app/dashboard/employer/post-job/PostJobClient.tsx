@@ -47,7 +47,13 @@ interface PostJobClientProps {
   isEdit?: boolean;
 }
 
-export default function PostJobClient({ metadata, initialData, isEdit = false }: PostJobClientProps) {
+export default function PostJobClient({ 
+  metadata, 
+  initialData, 
+  isEdit = false,
+  userRole = "employer"
+}: PostJobClientProps & { userRole?: string }) {
+  const basePath = `/dashboard/${userRole}`;
   // Resolve core job metadata and screening questions
   const job = isEdit ? initialData?.job : initialData;
   const initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
@@ -110,7 +116,7 @@ export default function PostJobClient({ metadata, initialData, isEdit = false }:
 
       if (result.status === true) {
         alert(isEdit ? "Job updated successfully!" : "Job posted successfully!");
-        window.location.href = "/dashboard/employer/jobs";
+        window.location.href = `${basePath}/jobs`;
       } else {
         alert(result.message || "Something went wrong. Please check your inputs.");
       }

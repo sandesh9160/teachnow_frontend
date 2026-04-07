@@ -58,7 +58,14 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default function JobsClient({ initialData }: JobsClientProps) {
+export default function JobsClient({ 
+  initialData,
+  userRole = "employer"
+}: { 
+  initialData?: JobsClientProps["initialData"],
+  userRole?: string
+}) {
+  const basePath = `/dashboard/${userRole}`;
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<'active' | 'expired' | 'featured'>('active');
   
@@ -82,7 +89,7 @@ export default function JobsClient({ initialData }: JobsClientProps) {
           <p className="text-[11px] text-gray-400 font-medium tracking-tight">Review and control your job listings</p>
         </div>
         
-        <Link href="/dashboard/employer/post-job">
+        <Link href={`${basePath}/post-job`}>
            <Button size="sm" className="h-9 px-4 rounded-lg font-black text-[10px] uppercase tracking-widest shadow-md whitespace-nowrap">
              <PlusCircle className="mr-2 w-3.5 h-3.5" />
              <span className="hidden xs:inline">Post Job</span>
@@ -181,12 +188,12 @@ export default function JobsClient({ initialData }: JobsClientProps) {
                   </div>
 
                   <div className="flex items-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-50">
-                     <Link href={`/dashboard/employer/jobs/view/${job.id}`} className="flex-1 sm:flex-none">
+                     <Link href={`${basePath}/jobs/view/${job.id}`} className="flex-1 sm:flex-none">
                         <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-[11px] font-bold text-emerald-600 border-emerald-100 hover:bg-emerald-50 whitespace-nowrap">
                            <Layout className="w-3.5 h-3.5 mr-1.5" /> View
                         </Button>
                      </Link>
-                     <Link href={`/dashboard/employer/jobs/edit/${job.id}`} className="flex-1 sm:flex-none">
+                     <Link href={`${basePath}/jobs/edit/${job.id}`} className="flex-1 sm:flex-none">
                         <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-[11px] font-bold text-primary border-primary/10 hover:bg-primary/5 whitespace-nowrap">
                            <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit
                         </Button>
@@ -206,7 +213,7 @@ export default function JobsClient({ initialData }: JobsClientProps) {
                   <p className="text-sm font-bold text-gray-900 uppercase tracking-tighter">No jobs found</p>
                   <p className="text-[11px] text-gray-400 font-medium">Try adjusting your search criteria or post a new job.</p>
                </div>
-               <Link href="/dashboard/employer/post-job">
+               <Link href={`${basePath}/post-job`}>
                   <Button size="sm" className="h-9 px-6 rounded-xl font-bold text-[11px] uppercase tracking-widest shadow-md">Post Job</Button>
                </Link>
             </div>

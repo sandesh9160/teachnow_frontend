@@ -58,7 +58,19 @@ export function DashboardSidebar({
     { label: "Settings", href: "/dashboard/employer/settings", icon: Settings },
   ];
 
-  const links = userRole === "employer" ? employerLinks : seekerLinks;
+  const recruiterLinks = [
+    { label: "Overview", href: "/dashboard/recruiter", icon: LayoutDashboard },
+    { label: "Company Profile", href: "/dashboard/recruiter/company-profile", icon: Building2 },
+    { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
+    { label: "My Job Postings", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
+    { label: "Manage Applicants", href: "/dashboard/recruiter/applicants", icon: User },
+    { label: "Recruiters", href: "/dashboard/recruiter/recruiters", icon: Users },
+  ];
+
+  const links = 
+    userRole === "employer" ? employerLinks : 
+    userRole === "recruiter" ? recruiterLinks : 
+    seekerLinks;
 
   return (
     <>

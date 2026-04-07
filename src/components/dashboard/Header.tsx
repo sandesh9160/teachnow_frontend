@@ -73,8 +73,10 @@ export function DashboardHeader({
                 {user?.raw?.title && <span className="text-slate-400 font-medium mx-1.5 opacity-50">•</span>}
                 {user?.raw?.title && <span className="text-[11px] font-medium text-slate-400 italic">{user.raw.title}</span>}
               </p>
-              <p className="text-[10px] font-medium text-primary mt-0.5">
-                {user?.role === "employer" ? "Institutional Authority" : "Job Professional"}
+              <p className="text-[10px] font-medium text-primary mt-0.5 capitalize">
+                {user?.role === "employer" ? "Institutional Authority" : 
+                 user?.role === "recruiter" ? "Recruiter" : 
+                 "Job Professional"}
               </p>
             </div>
             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-500 ${showProfileMenu ? 'rotate-180' : ''}`} />

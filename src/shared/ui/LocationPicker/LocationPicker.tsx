@@ -175,6 +175,7 @@ import {
   Autocomplete,
 } from "@react-google-maps/api";
 import { MapPin, Search, LocateFixed } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Library = "places" | "drawing" | "geometry" | "visualization";
 const libraries: Library[] = ["places"];
@@ -183,6 +184,7 @@ interface LocationPickerProps {
   value?: string;
   onChange: (value: string) => void;
   className?: string;
+  hideControls?: boolean;
 }
 
 const DEFAULT_CENTER = {
@@ -194,6 +196,7 @@ export function LocationPicker({
   value,
   onChange,
   className = "",
+  hideControls = false,
 }: LocationPickerProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey:
@@ -273,41 +276,41 @@ export function LocationPicker({
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={cn("space-y-2", className)}>
 
-      {/* Top Controls */}
-      <div className="flex flex-col sm:flex-row gap-1.5">
+      {!hideControls && (
+        <div className="flex flex-col sm:flex-row gap-1.5">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Autocomplete
+              onLoad={(a) => setAutocomplete(a)}
+              onPlaceChanged={onPlaceChanged}
+            >
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search location..."
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </Autocomplete>
+          </div>
 
-        {/* Search */}
-        <div className="relative flex-1">
-          <Autocomplete
-            onLoad={(a) => setAutocomplete(a)}
-            onPlaceChanged={onPlaceChanged}
+          {/* My Location Button */}
+          <button
+            type="button"
+            onClick={handleCurrentLocation}
+            className="flex items-center justify-center gap-1 px-3 py-2 text-xs rounded-xl border bg-white hover:bg-gray-100 transition"
           >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search location..."
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </Autocomplete>
+            <LocateFixed className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">My Location</span>
+          </button>
         </div>
-
-        {/* My Location Button */}
-        <button
-          type="button"
-          onClick={handleCurrentLocation}
-          className="flex items-center justify-center gap-1 px-3 py-2 text-xs rounded-xl border bg-white hover:bg-gray-100 transition"
-        >
-          <LocateFixed className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">My Location</span>
-        </button>
-      </div>
+      )}
 
       {/* Map */}
-      <div className="relative w-full h-[180px] rounded-xl overflow-hidden border">
+      <div className="relative w-full h-full rounded-xl overflow-hidden border">
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
           center={position}
