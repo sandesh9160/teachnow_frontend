@@ -7,30 +7,37 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   const { id } = await params;
 
-  // Try to fetch applications for this specific job
-  // We'll try the likely endpoints for the applicant list
-  const response = await dashboardServerFetch(`recruiter/applications?job_id=${id}`);
-  const jobResponse = await dashboardServerFetch(`recruiter/jobs`); 
+  // Primary synchronization attempt via the direct resource endpoint
+  const jobDetails = await dashboardServerFetch(`recruiter/jobs/${id}`);
+  
+  // Handle tiered resolution: Prefer direct data, fallback to master list on 404/500
+  let job = jobDetails?.data;
+  const questions = jobDetails?.data?.questions || [];
 
-  // Find the specific job from the inventory
-  const job = jobResponse?.data?.find((j: any) => j.id.toString() === id) || {
-    id: parseInt(id),
-    title: "Job Loading...",
-    status: "unknown"
-  };
+  // Reliable fallback if the individual lookup fails
+  if (!job || jobDetails?.status === false) {
+    const allJobsRes = await dashboardServerFetch("recruiter/jobs");
+    job = allJobsRes?.data?.find((j: any) => j.id.toString() === id);
+  }
 
-  // If the query param doesn't work, we might need to filter a full list
-  // but we'll stick to the standard pattern first.
-  const applications = response?.data?.data || response?.data || [];
-  const total = response?.total_applications || response?.total || applications.length;
+  // Fetch applications for this specific job for the count
+  const appsResponse = await dashboardServerFetch(`recruiter/applications?job_id=${id}`);
+  const totalApplications = appsResponse?.total_applications || appsResponse?.total || 0;
+
+  if (!job) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 px-6 text-center text-primary font-bold">
+        <h1 className="text-xl leading-tight tracking-tight">Requirement unavailable</h1>
+        <p className="text-sm font-medium">Job ID: {id} - Could not be synchronized with active listings.</p>
+        <p className="text-xs text-gray-400">Please verify the ID or refresh your requirement center.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <RecruiterJobViewClient 
-        job={job}
-        applications={applications}
-        totalApplications={total}
-      />
-    </div>
+    <RecruiterJobViewClient 
+      job={job}
+      totalApplications={totalApplications}
+    />
   );
 }

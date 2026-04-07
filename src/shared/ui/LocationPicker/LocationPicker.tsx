@@ -351,8 +351,8 @@ export function LocationPicker({
               Selected Location
             </p>
             <p className="text-gray-500">
-              {position.lat.toFixed(5)},{" "}
-              {position.lng.toFixed(5)}
+              {(position?.lat || 0).toFixed(5)},{" "}
+              {(position?.lng || 0).toFixed(5)}
             </p>
           </div>
         </div>

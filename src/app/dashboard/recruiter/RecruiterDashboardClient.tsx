@@ -3,7 +3,6 @@
 import { 
   Users, 
   Briefcase, 
-  TrendingUp,
   PlusCircle,
   Clock,
   ArrowRight,
@@ -108,14 +107,14 @@ export default function RecruiterDashboardClient({
       {/* Compact Dashboard Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-primary">Recruiter Dashboard</h1>
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">
+          <h1 className="text-xl font-semibold  text-primary">Recruiter Dashboard</h1>
+          <p className="text-sm text-gray-500 font-semibold">
              Access Portal • <span className="text-gray-900">{welcomeName}</span>
           </p>
         </div>
         
         <Link href="/dashboard/recruiter/post-job">
-          <Button size="sm" className="h-9 px-6 rounded-lg font-bold text-xs tracking-tight shadow-lg shadow-primary/20 flex items-center gap-2 uppercase">
+          <Button size="sm" className="h-9 px-6 rounded-lg font-semibold text-sm  shadow-lg shadow-primary/20 flex items-center gap-2">
             <PlusCircle className="w-4 h-4" /> New Opening
           </Button>
         </Link>
@@ -138,7 +137,7 @@ export default function RecruiterDashboardClient({
                   <stat.icon className="w-4.5 h-4.5" />
                 </div>
                 <span className={cn(
-                  "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border truncate max-w-[80px]",
+                  "text-xs font-semibold  px-2 py-0.5 rounded-full border truncate max-w-[100px]",
                   stat.color === 'blue' && "text-blue-400 border-blue-50",
                   stat.color === 'indigo' && "text-indigo-400 border-indigo-50",
                   stat.color === 'emerald' && "text-emerald-400 border-emerald-50",
@@ -147,8 +146,8 @@ export default function RecruiterDashboardClient({
              </div>
              
              <div className="space-y-0.5 relative z-10">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{stat.label}</p>
-                <h3 className="text-xl font-bold text-slate-900 tracking-tight">{stat.value}</h3>
+                <p className="text-xs font-semibold text-slate-900">{stat.label}</p>
+                <h3 className="text-xl font-bold text-slate-900">{stat.value}</h3>
              </div>
           </div>
         ))}
@@ -161,9 +160,9 @@ export default function RecruiterDashboardClient({
             <div className="px-5 py-3.5 border-b bg-gray-50/30 flex items-center justify-between">
                <div className="flex items-center gap-2.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                  <h2 className="text-[11px] font-bold text-slate-800 uppercase tracking-tight">Recent Applications</h2>
+                  <h2 className="text-xs font-semibold text-emerald-600 ">Recent Applications</h2>
                </div>
-               <Link href="/dashboard/recruiter/applicants" className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1.5 uppercase transition-all hover:gap-2">
+               <Link href="/dashboard/recruiter/applicants" className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1.5  transition-all hover:gap-2">
                   View All <ArrowRight className="w-3 h-3" />
                </Link>
             </div>
@@ -186,21 +185,21 @@ export default function RecruiterDashboardClient({
                               )}
                            </div>
                            <div className="flex-1 min-w-0">
-                              <h4 className="text-xs font-bold text-slate-900 truncate flex items-center flex-wrap uppercase tracking-tight">
+                              <h4 className="text-sm font-semibold text-slate-900 truncate flex items-center flex-wrap ">
                                  {app.job_seeker?.user?.name || "Applicant"}
-                                 <span className="text-slate-300 font-bold mx-1.5 opacity-50">•</span>
-                                 <span className="text-[10px] font-bold text-slate-400 italic lowercase tracking-tight">{app.job_seeker?.title}</span>
+                                 <span className="text-slate-300 font-semibold mx-1.5 opacity-50">•</span>
+                                 <span className="text-xs font-semibold text-slate-400 italic lowercase ">{app.job_seeker?.title}</span>
                               </h4>
-                              <p className="text-[10px] text-gray-500 truncate mt-0.5 font-semibold">Applied for <span className="text-primary">{app.job?.title}</span></p>
+                              <p className="text-xs text-gray-500 truncate mt-0.5 font-semibold">Applied for <span className="text-primary">{app.job?.title}</span></p>
                            </div>
                            <div className="text-right shrink-0">
                               <span className={cn(
-                                 "inline-flex px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-tight border shadow-sm",
+                                 "inline-flex px-2 py-0.5 rounded-full text-xs font-semibold  border shadow-sm",
                                  app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-white text-slate-400 border-slate-100"
                               )}>
                                  {app.status}
                               </span>
-                              <p className="text-[8px] text-slate-300 mt-1.5 font-bold uppercase tracking-widest">{new Date(app.created_at).toLocaleDateString()}</p>
+                              <p className="text-xs text-slate-300 mt-1.5 font-semibold">{new Date(app.created_at).toLocaleDateString()}</p>
                            </div>
                         </div>
                      ))}
@@ -210,8 +209,8 @@ export default function RecruiterDashboardClient({
                      <div className="w-16 h-16 bg-white border border-slate-50 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
                         <Users className="w-8 h-8 text-slate-200" />
                      </div>
-                     <h3 className="text-base font-bold text-slate-900 mb-1 uppercase tracking-tight">No Applications</h3>
-                     <p className="text-[10px] text-slate-400 max-w-xs mb-6 font-bold uppercase tracking-tight leading-relaxed">Applications will appear here as soon as teachers apply.</p>
+                     <h3 className="text-base font-bold text-slate-900 mb-1 ">No Applications</h3>
+                     <p className="text-[10px] text-slate-400 max-w-xs mb-6 font-semibold leading-relaxed">Applications will appear here as soon as teachers apply.</p>
                   </div>
                )}
             </div>
@@ -221,23 +220,23 @@ export default function RecruiterDashboardClient({
          <div className="space-y-4">
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
                <div className="px-5 py-3 border-b bg-gray-50/30 flex items-center justify-between">
-                  <h2 className="text-[10px] font-bold text-slate-900 tracking-tight uppercase">Recent Jobs</h2>
-                  <Link href="/dashboard/recruiter/jobs" className="text-[9px] font-bold text-primary tracking-tight hover:underline flex items-center gap-1 uppercase transition-all hover:gap-1.5">Manage All <ArrowRight className="w-3 h-3" /></Link>
+                  <h2 className="text-xs font-bold text-indigo-600 ">Recent Jobs</h2>
+                  <Link href="/dashboard/recruiter/jobs" className="text-xs font-semibold text-primary  hover:underline flex items-center gap-1  transition-all hover:gap-1.5">Manage All <ArrowRight className="w-3 h-3" /></Link>
                </div>
                <div className="divide-y max-h-[400px] overflow-y-auto custom-scrollbar">
                   {dashboardData?.recent_jobs && dashboardData.recent_jobs.length > 0 ? (
                      dashboardData.recent_jobs.map((job) => (
                         <div key={job.id} className="p-3.5 hover:bg-indigo-50/30 transition-all group">
                            <div className="flex items-start justify-between">
-                              <h4 className="text-[11px] font-bold text-slate-800 group-hover:text-primary transition-colors truncate pr-4 uppercase tracking-tight">{job.title}</h4>
+                              <h4 className="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors truncate pr-4 ">{job.title}</h4>
                               <span className={cn(
-                                 "text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-tight border",
+                                 "text-xs font-semibold px-1.5 py-0.5 rounded-full",
                                  job.job_status === 'open' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-rose-50 text-rose-600 border-rose-100"
                               )}>
                                  {job.job_status}
                               </span>
                            </div>
-                           <div className="flex items-center gap-3 mt-2 text-[9px] text-slate-400 font-bold tracking-tight uppercase">
+                           <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 font-semibold">
                               <span className="flex items-center gap-1.5 text-primary">
                                 <Users className="w-3 h-3" /> {job.job_applications_count} Applicants
                               </span>
@@ -246,7 +245,7 @@ export default function RecruiterDashboardClient({
                         </div>
                      ))
                   ) : (
-                     <div className="p-8 text-center text-[10px] text-slate-300 font-bold uppercase tracking-tight leading-relaxed">No jobs found.</div>
+                     <div className="p-8 text-center text-[10px] text-slate-300 font-semibold  leading-relaxed">No jobs found.</div>
                   )}
                </div>
             </div>
@@ -254,17 +253,17 @@ export default function RecruiterDashboardClient({
             {/* Credit Info */}
             <div className="p-5 bg-primary rounded-xl shadow-xl shadow-primary/20 text-white space-y-3">
                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Subscription Usage</p>
+                  <p className="text-sm font-semibold   text-white/60">Subscription Usage</p>
                   <CreditCard className="w-4 h-4 text-white/60" />
                </div>
                <div className="flex items-end justify-between">
                   <div>
                     <h3 className="text-2xl font-bold tracking-tight">{dashboardData?.credits?.remaining_credits || 0}</h3>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/60 mt-0.5">Remaining Credits</p>
+                    <p className="text-xs font-semibold   text-white/60 mt-0.5">Remaining Credits</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold">{dashboardData?.credits?.used_credits || 0} / {dashboardData?.credits?.total_credits || 0}</p>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/60 mt-0.5">Used Credits</p>
+                    <p className="text-xs font-semibold   text-white/60 mt-0.5">Used Credits</p>
                   </div>
                </div>
                <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">

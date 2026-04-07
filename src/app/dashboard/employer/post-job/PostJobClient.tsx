@@ -17,10 +17,10 @@ import {
   HelpCircle,
   ToggleLeft,
   Hash,
-  FileText,
   DollarSign,
   Edit3,
-  Users
+  Users,
+  ChevronLeft
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -129,6 +129,14 @@ export default function PostJobClient({
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-4 space-y-4 font-sans">
+      {/* Back Button */}
+      <button 
+        onClick={() => window.history.back()} 
+        className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-primary transition-colors mb-2 group w-fit"
+      >
+        <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Overview
+      </button>
+
       {/* Professional Compact Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4 bg-white p-4 rounded-xl border shadow-sm">
         <div className="flex items-center gap-3">
@@ -276,9 +284,11 @@ export default function PostJobClient({
                 <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Category</Label>
                 <select 
                   name="category_id" 
-                  defaultValue={job?.category_id}
+                  defaultValue={job?.category_id || ""}
                   className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                  required
                 >
+                  <option value="" disabled>Select Category</option>
                   {metadata.categories.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -289,9 +299,11 @@ export default function PostJobClient({
                 <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Job Type</Label>
                 <select 
                   name="job_type" 
-                  defaultValue={job?.job_type}
+                  defaultValue={job?.job_type || ""}
                   className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                  required
                 >
+                  <option value="" disabled>Select Job Type</option>
                   <option value="full_time">Full-time</option>
                   <option value="part_time">Part-time</option>
                   <option value="contract">Project</option>
@@ -304,9 +316,11 @@ export default function PostJobClient({
                   <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Experience</Label>
                   <select 
                     name="experience_type" 
-                    defaultValue={job?.experience_type}
+                    defaultValue={job?.experience_type || ""}
                     className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                    required
                   >
+                    <option value="" disabled>Select Exp.</option>
                     <option value="fresher">Fresher</option>
                     <option value="experienced">Experienced</option>
                   </select>
@@ -349,9 +363,11 @@ export default function PostJobClient({
                 <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Work Location</Label>
                 <select 
                   name="location" 
-                  defaultValue={job?.location}
+                  defaultValue={job?.location || ""}
                   className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                  required
                 >
+                  <option value="" disabled>Select Location</option>
                   {metadata.locations.map((loc, idx) => (
                     <option key={idx} value={loc.name}>{loc.name}</option>
                   ))}

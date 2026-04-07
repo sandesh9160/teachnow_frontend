@@ -5,66 +5,50 @@ import {
   Briefcase, 
   MapPin, 
   Calendar, 
+  Edit3, 
+  Trash2, 
   Search, 
   PlusCircle, 
   Clock,
   TrendingUp,
   Layout,
-  MoreVertical,
-  Edit2,
-  RefreshCcw,
-  CheckSquare,
-  Square,
   AlertCircle,
-  Activity,
-  DollarSign
+  ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { cn } from "@/lib/utils";
 
 interface Job {
   id: number;
-  employer_id: number;
-  created_by: number;
-  category_id: number;
   title: string;
-  description: string;
-  salary_min: string;
-  salary_max: string;
-  vacancies: number;
+  slug: string;
   location: string;
-  experience_required: number;
-  experience_type: string;
   job_type: string;
   job_status: string;
   status: string;
-  featured: number;
-  admin_featured: number;
-  application_deadline: string | null;
-  slug: string;
+  vacancies: number;
+  salary_min: string;
+  salary_max: string;
   created_at: string;
-  updated_at: string;
-  keywords: string;
-  gender: string;
   expires_at: string;
   is_active: number;
+  featured: number;
 }
 
 const StatusBadge = ({ status }: { status: string }) => {
-  const isApproved = status === 'approved' || status === 'open';
-  const isExpired = status.toLowerCase().includes('expired');
+  const isOpen = status.toLowerCase() === 'open' || status.toLowerCase() === 'approved';
+  const isPending = status.toLowerCase() === 'pending';
   
   return (
     <span className={cn(
-      "px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight border",
-      isApproved 
-        ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" 
-        : isExpired
-        ? "bg-gray-100 text-gray-400 border-gray-200"
-        : "bg-amber-50 text-amber-600 border-amber-100/50"
+      "px-2 py-0.5 rounded-md text-xs font-semibold tracking-normal border",
+      isOpen 
+      ? "bg-green-50 text-green-600 border-green-100/50" 
+      : isPending
+      ? "bg-amber-50 text-amber-600 border-amber-100/50"
+      : "bg-gray-100 text-gray-400 border border-gray-200"
     )}>
       {status}
     </span>
@@ -72,199 +56,189 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default function RecruiterJobsClient({ 
-  jobs, 
+  jobs,
   totalJobs 
 }: { 
-  jobs: Job[]; 
+  jobs: Job[];
   totalJobs: number;
 }) {
-  const router = useRouter();
+  const userRole = "recruiter";
+  const basePath = `/dashboard/${userRole}`;
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedJobs, setSelectedJobs] = useState<number[]>([]);
-  const [activeTab, setActiveTab] = useState('Active');
+  const [activeTab, setActiveTab] = useState<'Active' | 'Pending' | 'Expired' | 'Featured'>('Active');
+  
+  const now = new Date();
 
-  const filteredJobs = useMemo(() => {
-    const now = new Date();
-    
-    return jobs.filter((job) => {
-      const matchesSearch = job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-                          job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase());
-      
-      if (!matchesSearch) return false;
+  // Partition jobs based on status and dates
+  const partitionedJobs = useMemo(() => {
+    return {
+      active: jobs.filter(j => (j.status === 'approved' || j.status === 'open') && (j.expires_at ? new Date(j.expires_at) >= now : true)),
+      pending: jobs.filter(j => j.status === 'pending'),
+      expired: jobs.filter(j => j.expires_at ? new Date(j.expires_at) < now : false),
+      featured: jobs.filter(j => j.featured === 1)
+    };
+  }, [jobs, now]);
 
-      const isExpired = job.expires_at ? new Date(job.expires_at) < now : false;
-      const isApproved = job.status === 'approved';
-      const isPending = job.status === 'pending';
-
-      switch (activeTab) {
-        case 'Active': return isApproved && !isExpired;
-        case 'Pending': return isPending;
-        case 'Expired': return isExpired;
-        case 'Featured': return job.featured === 1;
-        default: return true;
-      }
-    });
-  }, [jobs, searchTerm, activeTab]);
-
-  const toggleSelect = (id: number) => {
-    setSelectedJobs(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
-
-  const handleJobClick = (id: number) => {
-    router.push(`/dashboard/recruiter/jobs/view/${id}`);
-  };
+  const jobsSource = 
+    activeTab === 'Active' ? partitionedJobs.active : 
+    activeTab === 'Pending' ? partitionedJobs.pending : 
+    activeTab === 'Expired' ? partitionedJobs.expired : 
+    partitionedJobs.featured;
+  
+  const filteredJobs = jobsSource.filter((job) => 
+    job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+    job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 font-sans pb-10 px-4">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
+      {/* Back Button */}
+      <button 
+        onClick={() => window.history.back()} 
+        className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-primary transition-colors mb-2 group w-fit"
+      >
+        <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Overview
+      </button>
+
+      {/* Compact Header */}
+      <div className="flex items-center justify-between gap-4 border-b pb-4 border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Job Inventory</h1>
-          <p className="text-sm text-gray-400 font-medium mt-1 italic">Manage your {totalJobs} job listings</p>
+          <h1 className="text-xl font-semibold text-primary ">Job Inventory</h1>
+          <p className="text-sm text-gray-400 font-medium ">Review and control your {totalJobs} job listings</p>
         </div>
-        <Link href="/dashboard/recruiter/post-job">
-          <button className="h-10 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs tracking-tight shadow-md transition-all">
-            Create Job Post
-          </button>
+        
+        <Link href={`${basePath}/post-job`}>
+           <Button size="sm" className="h-9 px-4 rounded-lg font-semibold text-xs  shadow-md whitespace-nowrap">
+             <PlusCircle className="mr-2 w-3.5 h-3.5" />
+             <span className="hidden xs:inline">Post Job</span>
+             <span className="xs:hidden">Post</span>
+           </Button>
         </Link>
       </div>
 
-      {/* Control Panel */}
-      <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full md:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-          <Input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search jobs..."
-            className="pl-10 h-10 rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all text-sm font-medium"
-          />
-        </div>
-
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-gray-50 border border-gray-100 overflow-x-auto no-scrollbar max-w-full">
-          {['Active', 'Pending', 'Expired', 'Featured'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "px-5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap",
-                activeTab === tab
-                  ? "bg-white text-blue-600 shadow-sm border border-gray-100"
-                  : "text-gray-400 hover:text-gray-600"
-              )}>
-              {tab}
-            </button>
-          ))}
-        </div>
+      {/* Mini Stats Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: "Active", value: partitionedJobs.active.length, icon: Briefcase, color: "emerald" },
+          { label: "Pending", value: partitionedJobs.pending.length, icon: AlertCircle, color: "amber" },
+          { label: "Expired", value: partitionedJobs.expired.length, icon: Clock, color: "gray" },
+          { label: "Featured", value: partitionedJobs.featured.length, icon: TrendingUp, color: "indigo" },
+        ].map((s, i) => (
+          <div key={i} className={cn(
+            "bg-white p-3 rounded-xl border shadow-sm flex items-center gap-3",
+            i > 1 ? "hidden lg:flex" : "flex" 
+          )}>
+            <div className={cn(
+               "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+               s.color === 'gray' && "bg-gray-100 text-gray-500",
+               s.color === 'emerald' && "bg-emerald-50 text-emerald-600",
+               s.color === 'amber' && "bg-amber-50 text-amber-600",
+               s.color === 'indigo' && "bg-indigo-50 text-indigo-600",
+            )}>
+              <s.icon className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-400">{s.label}</p>
+              <h3 className="text-base font-semibold text-slate-900 leading-none">{s.value}</h3>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Results List */}
-      <div className="grid grid-cols-1 gap-4">
-        {filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => {
-            const isExpired = job.expires_at ? new Date(job.expires_at) < new Date() : false;
-            const hasAlert = isExpired && job.status === 'approved';
+      {/* Control Bar */}
+      <div className="bg-white p-2 rounded-xl border shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+         <div className="flex-1 w-full md:max-w-xs relative scale-[0.98]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <Input 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Filter listings..." 
+              className="h-8.5 pl-10 border-transparent bg-gray-50/50 focus:bg-white rounded-lg text-xs font-semibold focus:ring-1 focus:ring-primary/10" 
+            />
+         </div>
 
-            return (
-              <div key={job.id} className="relative group">
-                <div 
-                  onClick={() => handleJobClick(job.id)}
+         <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl border border-gray-100 font-semibold overflow-x-auto no-scrollbar max-w-full">
+            {[
+                { id: 'Active', label: 'Active', count: partitionedJobs.active.length },
+                { id: 'Pending', label: 'Pending', count: partitionedJobs.pending.length },
+                { id: 'Expired', label: 'Expired', count: partitionedJobs.expired.length },
+                { id: 'Featured', label: 'Featured', count: partitionedJobs.featured.length },
+            ].map((tab) => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "bg-white border rounded-2xl transition-all duration-300 flex flex-col sm:flex-row items-center p-5 gap-6 cursor-pointer",
-                    selectedJobs.includes(job.id) ? "border-blue-200 bg-blue-50/10 shadow-inner" : "border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200"
+                    "px-4 py-1.5 rounded-lg text-xs font-semibold  transition-all whitespace-nowrap",
+                    activeTab === tab.id 
+                    ? "bg-white text-primary shadow-sm border border-gray-100" 
+                    : "text-gray-400 hover:text-gray-600"
                   )}
                 >
-                  {/* Selection Checkbox */}
-                  <div className="shrink-0">
-                    <button
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        toggleSelect(job.id); 
-                      }}
-                      className={cn(
-                        "transition-colors",
-                        selectedJobs.includes(job.id) ? "text-blue-500" : "text-gray-200 hover:text-blue-300"
-                      )}
-                    >
-                      {selectedJobs.includes(job.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
-                    </button>
+                  {tab.label} ({tab.count})
+                </button>
+            ))}
+         </div>
+      </div>
+
+      {/* Jobs Grid */}
+      <div className="grid grid-cols-1 gap-3 pb-10">
+         {filteredJobs.length > 0 ? filteredJobs.map((job) => (
+            <div key={job.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-4 group">
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                     <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+                        job.featured ? "bg-amber-50 text-amber-500 border-amber-100" : "bg-gray-50 text-gray-400 border-gray-100"
+                     )}>
+                        {job.featured ? <TrendingUp className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
+                     </div>
+                     <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                           <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors truncate max-w-[200px] sm:max-w-none">{job.title}</h3>
+                           <div className="flex items-center gap-1.5">
+                              <StatusBadge status={job.job_status} />
+                              <StatusBadge status={job.status} />
+                           </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><MapPin className="w-3 h-3" /> {job.location}</span>
+                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3 h-3" /> Expires {job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'}</span>
+                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                        </div>
+                     </div>
                   </div>
 
-                  {/* Main Info */}
-                  <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                    <div className="md:col-span-5 space-y-1.5">
-                       <h3 className="text-lg font-bold text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
-                          {job.title}
-                       </h3>
-                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400 font-medium">
-                          <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {job.location}</span>
-                          <span className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5" /> {job.job_type.replace('_', ' ')}</span>
-                       </div>
-                       <div className="flex gap-2 pt-1">
-                          <StatusBadge status={job.status} />
-                          <StatusBadge status={job.job_status} />
-                       </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="md:col-span-4 flex items-center justify-around border-x border-gray-50 px-4">
-                       <div className="text-center group-hover:scale-105 transition-transform duration-300">
-                          <div className="flex items-center justify-center gap-1">
-                             <span className="text-xl font-bold text-blue-600">48</span>
-                             <span className="bg-blue-600/10 text-[9px] text-blue-600 px-1.5 py-0.5 rounded-full font-bold">New</span>
-                          </div>
-                          <p className="text-[10px] text-gray-400 font-semibold mt-1">Applicants</p>
-                       </div>
-                       <div className="text-center">
-                          <span className="text-xl font-bold text-gray-800">12</span>
-                          <p className="text-[10px] text-gray-400 font-semibold mt-1">Shortlisted</p>
-                       </div>
-                    </div>
-
-                    {/* Meta/Budget */}
-                    <div className="md:col-span-3 flex flex-col items-end text-right space-y-1">
-                       <p className="text-[10px] text-gray-300 font-bold uppercase tracking-tight">Post Data</p>
-                       <p className="text-xs font-semibold text-gray-600">₹{(parseInt(job.salary_max) / 100000).toFixed(1)}L Salary</p>
-                       <p className="text-[10px] text-gray-400 font-medium">Experience: {job.experience_required}+ yrs</p>
-                    </div>
+                  <div className="flex items-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-50">
+                     <Link href={`${basePath}/jobs/view/${job.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-sm font-semibold text-emerald-600 border-emerald-100 hover:bg-emerald-50 whitespace-nowrap">
+                           <Layout className="w-3.5 h-3.5 mr-1.5" /> View
+                        </Button>
+                     </Link>
+                     <Link href={`${basePath}/jobs/edit/${job.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-sm font-semibold text-primary border-primary/10 hover:bg-primary/5 whitespace-nowrap">
+                           <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit
+                        </Button>
+                     </Link>
+                     <Button variant="ghost" className="h-8 px-2 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                     </Button>
                   </div>
-                </div>
-
-                {/* Contextual Action Notice */}
-                {hasAlert && (
-                  <div className="mt-2 mx-6 bg-white border border-dashed border-amber-200 rounded-xl p-3 flex items-center justify-between shadow-sm animate-in fade-in duration-500">
-                    <div className="flex items-center gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-                      <p className="text-xs text-gray-600 font-medium">Job #{job.id} has expired. Would you like to close it?</p>
-                    </div>
-                    <div className="flex gap-2">
-                       <button 
-                         onClick={(e) => e.stopPropagation()}
-                         className="text-[10px] font-bold text-amber-600 px-3 py-1 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
-                        >
-                          Yes, Close
-                        </button>
-                       <button 
-                         onClick={(e) => e.stopPropagation()}
-                         className="text-[10px] font-bold text-gray-400 px-3 py-1 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          Dismiss
-                        </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <div className="py-24 bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-center">
-            <Briefcase className="w-12 h-12 text-gray-200 mb-4" />
-            <h3 className="text-lg font-bold text-gray-900">No Postings Found</h3>
-            <p className="text-sm text-gray-400 mt-1">No jobs match your current search criteria.</p>
-          </div>
-        )}
+               </div>
+            </div>
+         )) : (
+            <div className="bg-white rounded-xl border border-dashed border-gray-200 py-16 flex flex-col items-center justify-center text-center gap-4">
+               <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-200">
+                  <Briefcase className="w-8 h-8" />
+               </div>
+               <div className="space-y-1">
+                  <p className="text-sm font-semibold text-gray-900 ">No jobs found</p>
+                  <p className="text-sm text-gray-400 font-medium">Try adjusting your search criteria or post a new job.</p>
+               </div>
+               <Link href={`${basePath}/post-job`}>
+                  <Button size="sm" className="h-9 px-6 rounded-xl font-semibold text-sm  shadow-md">Post Job</Button>
+               </Link>
+            </div>
+         )}
       </div>
     </div>
   );

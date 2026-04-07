@@ -60,7 +60,6 @@ export function DashboardSidebar({
     { label: "Company Profile", href: "/dashboard/recruiter/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
-    { label: "Recruiters", href: "/dashboard/recruiter/recruiters", icon: Users },
   ];
 
   const links = 
@@ -149,7 +148,7 @@ export function DashboardSidebar({
             {collapsed ? <ChevronRight size={18} className="group-hover:text-primary" /> : (
               <div className="flex items-center gap-2">
                 <ChevronLeft size={18} className="group-hover:text-primary" />
-                <span className="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Collapse Sidebar</span>
+                <span className="text-xs font-medium text-slate-400 group-hover:text-primary transition-colors">Collapse Sidebar</span>
               </div>
             )}
           </button>

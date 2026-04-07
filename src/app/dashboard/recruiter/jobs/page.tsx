@@ -8,11 +8,9 @@ export default async function RecruiterJobsPage() {
   const response = await dashboardServerFetch("recruiter/jobs");
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <RecruiterJobsClient 
-        jobs={response?.data || []} 
-        totalJobs={response?.total_jobs || 0}
-      />
-    </div>
+    <RecruiterJobsClient 
+      jobs={response?.data || []} 
+      totalJobs={response?.total_jobs || 0}
+    />
   );
 }
