@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { 
   Building2,
   Globe, 
@@ -9,10 +10,7 @@ import {
   Mail,
   ShieldCheck,
   MapPin,
-  Linkedin,
-  Twitter,
-  Facebook,
-  Instagram
+
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -30,14 +28,30 @@ export default function CompanyProfileClient({
 }: {
   initialData: EmployerProfile | null;
 }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<EmployerProfile | null>(initialData);
   const [activeTab, setActiveTab] = useState<TabType>("identity");
-  const [mapLink, setMapLink] = useState(initialData?.map_link || "");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  const handleMapChange = (newValue: string) => {
-    setMapLink(newValue);
-    if (profile) setProfile({ ...profile, map_link: newValue });
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleMapChange = (lat: number, lng: number) => {
+    if (profile) {
+      setProfile({ 
+        ...profile, 
+        latitude: String(lat), 
+        longitude: String(lng),
+        map_link: `https://www.google.com/maps?q=${lat},${lng}`
+      });
+    }
   };
 
   const getLogoUrl = (path: string | null) => {
@@ -49,31 +63,42 @@ export default function CompanyProfileClient({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!profile) return;
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const data = {
+    formData.append("_method", "PUT");
+    if (logoFile) {
+      formData.append("company_logo", logoFile);
+    }
+    
+    // User requested format for backend: lattitude (double t), longitude, mapLink (CamelCase)
+    formData.append("lattitude", profile.latitude || "");
+    formData.append("longitude", profile.longitude || "");
+    formData.append("mapLink", profile.map_link || "");
+
+    // Log the data being sent
+    console.log("Saving Profile Data:", {
+      lattitude: formData.get("lattitude"),
+      longitude: formData.get("longitude"),
+      mapLink: formData.get("mapLink"),
       company_name: formData.get("company_name"),
-      industry: formData.get("industry"),
-      institution_type: formData.get("institution_type"),
-      company_description: formData.get("company_description"),
-      website: formData.get("website"),
-      phone: formData.get("phone"),
-      address: formData.get("address"),
-      city: formData.get("city"),
-      country: formData.get("country"),
-      map_link: mapLink,
-    };
+      industry: formData.get("industry")
+    });
 
     try {
-      const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
-      const result = await dashboardServerFetch("employer/Update-Company", {
-        method: "PUT",
-        data,
+      const { uploadFile } = await import("@/actions/FileUpload");
+      const result = await uploadFile("employer/Update-Company", {
+        method: "POST",
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
       });
 
       if (result.status === true) {
         alert("Profile updated successfully!");
+        router.refresh();
       } else {
         alert(result.message || "Failed to update profile.");
       }
@@ -100,7 +125,7 @@ export default function CompanyProfileClient({
         <div className="flex items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-normal whitespace-nowrap">Institution Profile</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-normal whitespace-nowrap">{profile.company_name || 'Institution Profile'}</h1>
               {profile.is_verified === 1 && (
                 <span className="hidden xs:inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-700 rounded-md text-[8px] font-semibold border border-green-100 tracking-normal ">
                   <ShieldCheck className="w-2 h-2" /> Verified
@@ -168,20 +193,38 @@ export default function CompanyProfileClient({
               {activeTab === "identity" && (
                 <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
                   <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gray-50/30 p-4 sm:p-6 border rounded-xl">
-                  <div className="relative w-20 h-20 rounded-xl bg-white border shadow-sm overflow-hidden group shrink-0">
-                    {profile.company_logo ? (
-                      <Image src={getLogoUrl(profile.company_logo)!} alt="Logo" fill className="object-cover" />
+                  <div 
+                    className="relative w-20 h-20 rounded-xl bg-white border shadow-sm overflow-hidden group shrink-0 cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => document.getElementById("logo-upload")?.click()}
+                  >
+                    {logoPreview || profile.company_logo ? (
+                      <Image src={logoPreview || getLogoUrl(profile.company_logo)!} alt="Logo" fill className="object-cover" />
                     ) : (
                       <Building2 className="w-8 h-8 text-gray-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     )}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Upload className="text-white w-4 h-4" />
                     </div>
                   </div>
                   <div className="space-y-0.5 text-center sm:text-left">
                     <h4 className="text-sm font-bold text-gray-900">Institution Logo</h4>
                     <p className="text-xs text-gray-500 max-w-sm">JPG/PNG recommended. Square aspect ratio.</p>
-                    <Button variant="outline" size="sm" type="button" className="mt-2 h-8 px-4 rounded-lg text-[10px] font-bold border-gray-200">Change Logo</Button>
+                    <input 
+                      id="logo-upload" 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleLogoChange}
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      type="button" 
+                      onClick={() => document.getElementById("logo-upload")?.click()}
+                      className="mt-2 h-8 px-4 rounded-lg text-[10px] font-bold border-gray-200"
+                    >
+                      Change Logo
+                    </Button>
                   </div>
                 </div>
 
@@ -253,24 +296,7 @@ export default function CompanyProfileClient({
                   </div>
                 </div>
 
-                <div className="bg-gray-50/50 p-6 border rounded-xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-gray-900 border-l-2 border-primary pl-2 tracking-wide">Social Ecosystem</h3>
-                    <span className="text-[10px] font-bold text-gray-400 tracking-normal">Connect Soon</span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 opacity-60">
-                    {[
-                      { icon: Linkedin, color: "text-blue-700" },
-                      { icon: Twitter, color: "text-sky-500" },
-                      { icon: Facebook, color: "text-indigo-600" },
-                      { icon: Instagram, color: "text-pink-600" }
-                    ].map((s, idx) => (
-                      <div key={idx} className="bg-white px-3 py-2.5 rounded-lg flex items-center justify-center border shadow-sm">
-                        <s.icon className={cn("w-5 h-5", s.color)} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
               </div>
             )}
 
@@ -296,7 +322,12 @@ export default function CompanyProfileClient({
                     <span className="text-[8px] font-bold text-blue-500 tracking-normaler">Live GIS Pin</span>
                   </div>
                   <div className="rounded-xl overflow-hidden border shadow-sm">
-                    <LocationPicker value={mapLink} onChange={handleMapChange} className="w-full" />
+                    <LocationPicker 
+                      lat={profile.latitude} 
+                      lng={profile.longitude} 
+                      onChange={handleMapChange} 
+                      className="w-full" 
+                    />
                   </div>
                 </div>
               </div>

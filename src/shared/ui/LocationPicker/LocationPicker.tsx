@@ -181,8 +181,9 @@ type Library = "places" | "drawing" | "geometry" | "visualization";
 const libraries: Library[] = ["places"];
 
 interface LocationPickerProps {
-  value?: string;
-  onChange: (value: string) => void;
+  lat?: number | string | null;
+  lng?: number | string | null;
+  onChange: (lat: number, lng: number) => void;
   className?: string;
   hideControls?: boolean;
 }
@@ -193,7 +194,8 @@ const DEFAULT_CENTER = {
 };
 
 export function LocationPicker({
-  value,
+  lat,
+  lng,
   onChange,
   className = "",
   hideControls = false,
@@ -213,17 +215,17 @@ export function LocationPicker({
 
   // Sync external value
   useEffect(() => {
-    if (value) {
-      const [lat, lng] = value.split(",").map(Number);
-      if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
-        setPosition({ lat, lng });
-      }
+    const latNum = typeof lat === "string" ? parseFloat(lat) : lat;
+    const lngNum = typeof lng === "string" ? parseFloat(lng) : lng;
+    
+    if (latNum !== null && lngNum !== null && !Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+      setPosition({ lat: latNum as number, lng: lngNum as number });
     }
-  }, [value]);
+  }, [lat, lng]);
 
   const updateLocation = (lat: number, lng: number) => {
     setPosition({ lat, lng });
-    onChange(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+    onChange(lat, lng);
     map?.panTo({ lat, lng });
   };
 
@@ -310,7 +312,7 @@ export function LocationPicker({
       )}
 
       {/* Map */}
-      <div className="relative w-full h-full rounded-xl overflow-hidden border">
+      <div className="relative w-full h-[350px] rounded-xl overflow-hidden border">
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
           center={position}

@@ -74,14 +74,7 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
  * Current session from cookie-backed API. Tries /auth/profile then /jobseeker/profile.
  */
 export async function getSessionProfile(): Promise<ServerSessionUser | null> {
-  // Fast-path: if we have a userData cookie (set on login), use it as a fallback
-  // so dashboards can render even if the profile probe endpoints vary by role.
-  const cookieUser = await tryUserDataCookie();
-  if (cookieUser) {
-    const user = toSessionUser(cookieUser);
-    if (user) return user;
-  }
-
+  // First try the API endpoints to get fresh data
   const endpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
   for (const ep of endpoints) {
     try {
@@ -94,6 +87,14 @@ export async function getSessionProfile(): Promise<ServerSessionUser | null> {
       /* next endpoint */
     }
   }
+
+  // Fallback to cookie if API endpoints fail or are unavailable
+  const cookieUser = await tryUserDataCookie();
+  if (cookieUser) {
+    const user = toSessionUser(cookieUser);
+    if (user) return user;
+  }
+
   return null;
 }
 

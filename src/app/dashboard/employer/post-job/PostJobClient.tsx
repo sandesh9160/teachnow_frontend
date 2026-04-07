@@ -110,7 +110,7 @@ export default function PostJobClient({
         : "employer/jobs/create";
 
       const result = await dashboardServerFetch(endpoint, {
-        method: "PUT",
+        method: isEdit ? "PUT" : "POST",
         data,
       });
 

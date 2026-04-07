@@ -63,6 +63,8 @@ export function DashboardHeader({
             <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden border border-white/20">
               {user?.avatar && (user.avatar.startsWith('http') || user.avatar.includes('/')) ? (
                 <img src={normalizeMediaUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
+              ) : user?.role === "employer" && companyLogo ? (
+                <img src={companyLogo} alt={companyName} className="w-full h-full object-cover" />
               ) : (
                 user?.role === "employer" ? <Building2 className="w-4.5 h-4.5" /> : <User className="w-4.5 h-4.5" />
               )}
@@ -74,7 +76,7 @@ export function DashboardHeader({
                 {user?.raw?.title && <span className="text-[11px] font-medium text-slate-400 italic">{user.raw.title}</span>}
               </p>
               <p className="text-[10px] font-medium text-primary mt-0.5 capitalize">
-                {user?.role === "employer" ? "Institutional Authority" : 
+                {user?.role === "employer" ? "Employer" : 
                  user?.role === "recruiter" ? "Recruiter" : 
                  "Job Professional"}
               </p>

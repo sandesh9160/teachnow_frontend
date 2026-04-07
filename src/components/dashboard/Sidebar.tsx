@@ -14,7 +14,6 @@ import {
   ClipboardList,
   Building2,
   // CheckCircle,
-  Settings,
   CreditCard,
   LogOut,
   ChevronLeft,
@@ -51,11 +50,9 @@ export function DashboardSidebar({
     { label: "Company Profile", href: "/dashboard/employer/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/employer/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/employer/jobs", icon: ClipboardList },
-    { label: "Manage Applicants", href: "/dashboard/employer/applicants", icon: User },
     { label: "Recruiters", href: "/dashboard/employer/recruiters", icon: Users },
     { label: "Documents", href: "/dashboard/employer/institution-verification", icon: FileText },
     { label: "Subscription", href: "/dashboard/employer/purchase-history", icon: CreditCard },
-    { label: "Settings", href: "/dashboard/employer/settings", icon: Settings },
   ];
 
   const recruiterLinks = [
@@ -63,7 +60,6 @@ export function DashboardSidebar({
     { label: "Company Profile", href: "/dashboard/recruiter/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
-    { label: "Manage Applicants", href: "/dashboard/recruiter/applicants", icon: User },
     { label: "Recruiters", href: "/dashboard/recruiter/recruiters", icon: Users },
   ];
 

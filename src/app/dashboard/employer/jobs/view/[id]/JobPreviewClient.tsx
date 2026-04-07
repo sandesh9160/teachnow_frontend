@@ -110,6 +110,11 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
          </div>
 
          <div className="flex items-center gap-2 relative">
+            <Link href={`/dashboard/employer/jobs/view/${job.id}/applicants`}>
+               <Button variant="outline" size="sm" className="h-9 px-5 rounded-xl text-[10px] font-bold uppercase tracking-tight text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all shadow-sm">
+                  <Users className="w-3.5 h-3.5 mr-2" /> View Applicants
+               </Button>
+            </Link>
             {job.job_status !== 'filled' && (
               <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
                  <Button variant="outline" size="sm" className="h-9 px-5 rounded-xl text-[10px] font-bold uppercase tracking-tight border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
