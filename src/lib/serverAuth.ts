@@ -3,6 +3,7 @@ import "server-only";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { redirect } from "next/navigation";
 import type { DashboardRole } from "@/types/session";
+import { cookies } from "next/headers";
 
 export type ServerSessionUser = {
   id: number;
@@ -18,7 +19,21 @@ function normalizeDashboardRole(raw: unknown): DashboardRole {
     .toLowerCase()
     .replace(/\s+/g, "_");
   if (s.includes("employer")) return "employer";
+  if (s.includes("recruiter")) return "recruiter";
   return "job_seeker";
+}
+
+async function tryUserDataCookie(): Promise<Record<string, unknown> | null> {
+  try {
+    const cookieStore = await cookies();
+    const raw = cookieStore.get("userData")?.value;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
 }
 
 function pickProfilePayload(res: unknown): Record<string, unknown> | null {
@@ -59,6 +74,14 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
  * Current session from cookie-backed API. Tries /auth/profile then /jobseeker/profile.
  */
 export async function getSessionProfile(): Promise<ServerSessionUser | null> {
+  // Fast-path: if we have a userData cookie (set on login), use it as a fallback
+  // so dashboards can render even if the profile probe endpoints vary by role.
+  const cookieUser = await tryUserDataCookie();
+  if (cookieUser) {
+    const user = toSessionUser(cookieUser);
+    if (user) return user;
+  }
+
   const endpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
   for (const ep of endpoints) {
     try {
@@ -102,4 +125,12 @@ export async function requireSessionRole(expected: DashboardRole): Promise<Serve
     );
   }
   return profile;
+}
+
+
+export async function getRole(): Promise<DashboardRole | null> {
+  const cookieStore = await cookies();
+  const userData = cookieStore.get("userData");
+  const user = userData ? JSON.parse(userData.value) : null;
+  return user?.user_type as DashboardRole | null;
 }

@@ -171,6 +171,7 @@ export const config = {
     "/dashboard/:path*",
     // "/auth/:path*",
     "/jobseeker/:path*",
-    "/employer/:path*"
+    "/employer/:path*",
+    "/recruiter/:path*"
   ],
 };

@@ -22,10 +22,10 @@ function LoginContent() {
     e.preventDefault();
     try {
       setAuthLoading(true);
-      const res = await EmailSignInAction({ 
-        email, 
-        password, 
-        role: role === "job_seeker" ? "jobseeker" : role 
+      const res = await EmailSignInAction({
+        email,
+        password,
+        role: role === "job_seeker" ? "jobseeker" : role
       });
 
       if (!res.status) {

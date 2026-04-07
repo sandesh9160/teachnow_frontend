@@ -357,8 +357,8 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
     }
   );
 
-  console.log("signIn response is ", res);
   const responseData = res.data;
+  console.log("signIn response is ", responseData);
 
   // Extract and set cookies from login response
   // const loginSetCookieHeaders = res.headers["set-cookie"];
@@ -393,7 +393,8 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
 
   // Check if user is admin
 
-
+  const role = responseData.user.user_type || responseData.user.role || responseData.role;
+  console.log("role is ", role);
   // Set userData cookie for middleware compatibility
   const user = responseData.user;
   const userData = {
@@ -401,7 +402,7 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
     f_name: user.f_name || user.name || user.company_name || user.full_name || "",
     email: user.email,
     profile_pic: user.profile_pic || user.company_logo || "",
-    user_type: user.user_type || user.role || "",
+    user_type: role,
   };
 
   cookieStore.set("userData", JSON.stringify(userData), cookieOptions);
@@ -413,11 +414,11 @@ export const signOut = async () => {
   // Call role-specific logout endpoint to handle server-side session cleanup
   try {
     const cookieStore = await cookies();
-    
+
     // Determine the logout endpoint based on user type
     const userDataStr = cookieStore.get("userData")?.value;
     let endpoint = "/logout";
-    
+
     if (userDataStr) {
       try {
         const userData = JSON.parse(userDataStr);

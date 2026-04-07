@@ -1,1 +1,1 @@
-export type DashboardRole = "employer" | "job_seeker";
+export type DashboardRole = "employer" | "job_seeker" | "recruiter";

@@ -9,5 +9,8 @@ export default async function DashboardIndexPage() {
   if (profile.role === "employer") {
     redirect("/dashboard/employer");
   }
+  if (profile.role === "recruiter") {
+    redirect("/dashboard/recruiter");
+  }
   redirect("/dashboard/jobseeker");
 }

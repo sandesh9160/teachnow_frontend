@@ -17,6 +17,7 @@ function normalizeRole(raw: unknown): DashboardRole {
     .toLowerCase()
     .replace(/\s+/g, "_");
   if (s.includes("employer")) return "employer";
+  if (s.includes("recruiter")) return "recruiter";
   return "job_seeker";
 }
 
