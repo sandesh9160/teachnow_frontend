@@ -9,13 +9,9 @@ import {
   Trash2, 
   Search, 
   PlusCircle, 
-  Filter,
-  CheckCircle2,
   Clock,
-  MoreVertical,
   TrendingUp,
-  Layout,
-  FileText
+  Layout
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -47,15 +43,15 @@ interface JobsClientProps {
   };
 }
 
-const StatusBadge = ({ status }: { type: 'job' | 'admin', status: string }) => {
+const StatusBadge = ({ status }: { status: string }) => {
   const isOpen = status.toLowerCase() === 'open' || status.toLowerCase() === 'approved';
   
   return (
     <span className={cn(
-      "px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest",
+      "px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-normal",
       isOpen 
-      ? "bg-green-50 text-green-600 border border-green-100" 
-      : "bg-gray-100 text-gray-500 border border-gray-200"
+      ? "bg-green-50 text-green-600 border border-green-100/50" 
+      : "bg-gray-100 text-gray-400 border border-gray-200"
     )}>
       {status}
     </span>
@@ -66,207 +62,155 @@ export default function JobsClient({ initialData }: JobsClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<'active' | 'expired' | 'featured'>('active');
   
-  // High-resilience job discovery engine
   const activeJobs: Job[] = (initialData as any)?.active_jobs?.data || [];
   const expiredJobs: Job[] = (initialData as any)?.expired_jobs?.data || [];
   const featuredJobs = [...activeJobs, ...expiredJobs].filter(j => j.featured === 1);
   
-  const jobs = activeTab === 'active' ? activeJobs : (activeTab === 'expired' ? expiredJobs : featuredJobs);
+  const jobsSource = activeTab === 'active' ? activeJobs : (activeTab === 'expired' ? expiredJobs : featuredJobs);
   
-  const filteredJobs = jobs.filter((job: any) => 
+  const filteredJobs = jobsSource.filter((job: any) => 
     job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
     job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
-  const stats = [
-    { 
-      label: "Active Postings", 
-      value: (initialData as any)?.active_jobs?.total || activeJobs.length, 
-      icon: Briefcase, 
-      color: "emerald" 
-    },
-    { 
-      label: "Expired Listings", 
-      value: (initialData as any)?.expired_jobs?.total || expiredJobs.length, 
-      icon: Clock, 
-      color: "gray" 
-    },
-    { 
-      label: "Verified", 
-      value: jobs.filter(j => j?.status === 'approved').length, 
-      icon: CheckCircle2, 
-      color: "indigo" 
-    },
-  ];
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
       {/* Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+      <div className="flex items-center justify-between gap-4 border-b pb-4 border-gray-100">
         <div>
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">Manage Jobs</h1>
-          <p className="text-xs text-gray-500 font-medium">Keep track of your current job listings and applications.</p>
+          <p className="text-[11px] text-gray-400 font-medium tracking-tight">Review and control your job listings</p>
         </div>
         
         <Link href="/dashboard/employer/post-job">
-           <Button size="sm" className="h-10 px-6 rounded-lg font-bold text-xs tracking-widest shadow-md">
-             <PlusCircle className="mr-2 w-4 h-4" />
-             Post a New Job
+           <Button size="sm" className="h-9 px-4 rounded-lg font-black text-[10px] uppercase tracking-widest shadow-md whitespace-nowrap">
+             <PlusCircle className="mr-2 w-3.5 h-3.5" />
+             <span className="hidden xs:inline">Post Job</span>
+             <span className="xs:hidden">Post</span>
            </Button>
         </Link>
       </div>
 
-      {/* Mini Stats Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {stats.map((s, i) => (
-          <div key={i} className="bg-white p-4 rounded-xl border shadow-sm flex items-center gap-4">
+      {/* Mini Stats Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        {[
+          { label: "Active", value: activeJobs.length, icon: Briefcase, color: "emerald" },
+          { label: "Expired", value: expiredJobs.length, icon: Clock, color: "gray" },
+          { label: "Featured", value: featuredJobs.length, icon: TrendingUp, color: "indigo" },
+        ].map((s, i) => (
+          <div key={i} className={cn(
+            "bg-white p-3 rounded-xl border shadow-sm flex items-center gap-3",
+            i === 2 ? "hidden lg:flex" : "" 
+          )}>
             <div className={cn(
-               "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-               s.color === 'blue' && "bg-blue-50 text-blue-600",
+               "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+               s.color === 'gray' && "bg-gray-100 text-gray-500",
                s.color === 'emerald' && "bg-emerald-50 text-emerald-600",
                s.color === 'indigo' && "bg-indigo-50 text-indigo-600",
             )}>
-              <s.icon className="w-5 h-5" />
+              <s.icon className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[9px] font-bold text-gray-400 tracking-widest">{s.label}</p>
-              <h3 className="text-xl font-black text-gray-900">{s.value}</h3>
+              <p className="text-[10px] font-medium text-slate-400">{s.label}</p>
+              <h3 className="text-base font-bold text-slate-900 leading-none">{s.value}</h3>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Control Bar Controls */}
-      <div className="bg-white p-2 rounded-xl border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-         <div className="flex-1 w-full sm:max-w-md relative scale-[0.98]">
+      {/* Control Bar */}
+      <div className="bg-white p-2 rounded-xl border shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+         <div className="flex-1 w-full md:max-w-xs relative scale-[0.98]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <Input 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by title or location..." 
-              className="h-8.5 pl-10 border-transparent bg-gray-50/50 focus:bg-white rounded-lg text-xs font-semibold" 
+              placeholder="Filter listings..." 
+              className="h-8.5 pl-10 border-transparent bg-gray-50/50 focus:bg-white rounded-lg text-xs font-semibold focus:ring-1 focus:ring-primary/10" 
             />
          </div>
 
-         <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl border border-gray-100 font-bold">
-            <button 
-              onClick={() => setActiveTab('active')}
-              className={cn(
-                "px-5 py-1.5 rounded-lg text-[10px] transition-all",
-                activeTab === 'active' 
-                ? "bg-white text-primary shadow-sm border border-gray-100" 
-                : "text-gray-400 hover:text-gray-600"
-              )}
-            >
-              Active Postings ({activeJobs.length})
-            </button>
-            <button 
-              onClick={() => setActiveTab('expired')}
-              className={cn(
-                "px-5 py-1.5 rounded-lg text-[10px] transition-all",
-                activeTab === 'expired' 
-                ? "bg-white text-gray-900 shadow-sm border border-gray-100" 
-                : "text-gray-400 hover:text-gray-600"
-              )}
-            >
-              Expired Listings ({expiredJobs.length})
-            </button>
-            <button 
-              onClick={() => setActiveTab('featured')}
-              className={cn(
-                "px-5 py-1.5 rounded-lg text-[10px] transition-all flex items-center gap-1.5",
-                activeTab === 'featured' 
-                ? "bg-white text-indigo-600 shadow-sm border border-gray-100" 
-                : "text-gray-400 hover:text-indigo-600 font-bold"
-              )}
-            >
-              <TrendingUp className="w-3 h-3 text-indigo-400" />
-              Featured Jobs ({featuredJobs.length})
-            </button>
+         <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl border border-gray-100 font-bold overflow-x-auto no-scrollbar max-w-full">
+            {[
+                { id: 'active', label: 'Active', count: activeJobs.length },
+                { id: 'expired', label: 'Expired', count: expiredJobs.length },
+                { id: 'featured', label: 'Featured', count: featuredJobs.length },
+            ].map((tab) => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-lg text-[10px] font-bold tracking-tight transition-all whitespace-nowrap",
+                    activeTab === tab.id 
+                    ? "bg-white text-primary shadow-sm border border-gray-100" 
+                    : "text-gray-400 hover:text-gray-600"
+                  )}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+            ))}
          </div>
       </div>
 
-      {/* Jobs Hub Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-         <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[1000px]">
-                <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-100">
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Job Post</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Hiring Status</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">System Status</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide">Featured</th>
-                     <th className="px-6 py-4 text-xs font-bold text-gray-400 tracking-wide text-right">Actions</th>
-                  </tr>
-               </thead>
-               <tbody className="divide-y divide-gray-100">
-                  {filteredJobs.length > 0 ? filteredJobs.map((job) => (
-                    <tr key={job.id} className="hover:bg-gray-50/30 transition-colors group">
-                       <td className="px-6 py-5">
-                          <div className="flex flex-col gap-1">
-                             <span className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight">{job.title}</span>
-                             <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400">
-                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {job.location}</span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
-                             </div>
-                          </div>
-                       </td>
-                       <td className="px-6 py-5">
-                          <StatusBadge type="job" status={job.job_status} />
-                       </td>
-                       <td className="px-6 py-5">
-                          <StatusBadge type="admin" status={job.status} />
-                       </td>
-                       <td className="px-6 py-5">
-                          <div className={cn(
-                             "w-8 h-8 rounded-lg flex items-center justify-center border",
-                             job.featured 
-                             ? "bg-amber-50 text-amber-500 border-amber-100 shadow-sm" 
-                             : "bg-gray-50 text-gray-300 border-gray-100 grayscale opacity-40"
-                          )}>
-                             <TrendingUp className="w-4 h-4" />
-                          </div>
-                       </td>
-                       <td className="px-6 py-5 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                             <Link href={`/dashboard/employer/jobs/view/${job.id}`}>
-                                <Button size="sm" variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold text-green-600 border-green-100 hover:bg-green-50 transition-colors">
-                                   <Layout className="w-4 h-4 mr-2" /> View
-                                </Button>
-                             </Link>
-                             <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
-                                <Button size="sm" variant="outline" className="h-9 px-4 rounded-lg text-xs font-bold text-primary border-primary/10 hover:bg-primary/5 transition-colors">
-                                   <Edit3 className="w-4 h-4 mr-2" /> Edit
-                                </Button>
-                             </Link>
-                             <Button size="sm" variant="ghost" className="h-9 px-4 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                                <Trash2 className="w-4 h-4 mr-2" /> Delete
-                             </Button>
-                          </div>
-                       </td>
-                    </tr>
-                  )) : (
-                    <tr>
-                       <td colSpan={5} className="px-6 py-24 text-center">
-                          <div className="flex flex-col items-center gap-4">
-                             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-200">
-                                <Briefcase className="w-8 h-8" />
-                             </div>
-                             <div className="space-y-1">
-                                <p className="text-sm text-gray-900 font-bold">No active requirements</p>
-                                <p className="text-xs text-gray-400 font-medium">Start launching new jobs to attract top teaching talent.</p>
-                             </div>
-                             <Link href="/dashboard/employer/post-job">
-                                <Button size="sm" className="h-10 px-6 rounded-lg text-xs font-bold shadow-sm">Post new job</Button>
-                             </Link>
-                          </div>
-                       </td>
-                    </tr>
-                  )}
-               </tbody>
-            </table>
-         </div>
+      {/* Jobs Grid (Responsive) */}
+      <div className="grid grid-cols-1 gap-3">
+         {filteredJobs.length > 0 ? filteredJobs.map((job) => (
+            <div key={job.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-4 group">
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                     <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+                        job.featured ? "bg-amber-50 text-amber-500 border-amber-100" : "bg-gray-50 text-gray-400 border-gray-100"
+                     )}>
+                        {job.featured ? <TrendingUp className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
+                     </div>
+                     <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                           <h3 className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors truncate max-w-[200px] sm:max-w-none">{job.title}</h3>
+                           <div className="flex items-center gap-1.5">
+                              <StatusBadge status={job.job_status} />
+                              <StatusBadge status={job.status} />
+                           </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                           <span className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><MapPin className="w-3 h-3" /> {job.location}</span>
+                           <span className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><Calendar className="w-3 h-3" /> Expires {new Date(job.expires_at).toLocaleDateString()}</span>
+                           <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-50">
+                     <Link href={`/dashboard/employer/jobs/view/${job.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-[11px] font-bold text-emerald-600 border-emerald-100 hover:bg-emerald-50 whitespace-nowrap">
+                           <Layout className="w-3.5 h-3.5 mr-1.5" /> View
+                        </Button>
+                     </Link>
+                     <Link href={`/dashboard/employer/jobs/edit/${job.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-[11px] font-bold text-primary border-primary/10 hover:bg-primary/5 whitespace-nowrap">
+                           <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit
+                        </Button>
+                     </Link>
+                     <Button variant="ghost" className="h-8 px-2 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                     </Button>
+                  </div>
+               </div>
+            </div>
+         )) : (
+            <div className="bg-white rounded-xl border border-dashed border-gray-200 py-16 flex flex-col items-center justify-center text-center gap-4">
+               <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-200">
+                  <Briefcase className="w-8 h-8" />
+               </div>
+               <div className="space-y-1">
+                  <p className="text-sm font-bold text-gray-900 uppercase tracking-tighter">No jobs found</p>
+                  <p className="text-[11px] text-gray-400 font-medium">Try adjusting your search criteria or post a new job.</p>
+               </div>
+               <Link href="/dashboard/employer/post-job">
+                  <Button size="sm" className="h-9 px-6 rounded-xl font-bold text-[11px] uppercase tracking-widest shadow-md">Post Job</Button>
+               </Link>
+            </div>
+         )}
       </div>
     </div>
   );

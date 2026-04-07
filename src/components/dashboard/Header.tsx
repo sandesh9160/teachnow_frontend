@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { User, LogOut, Settings, ChevronDown, Menu } from "lucide-react";
+import { User, LogOut, ChevronDown, Menu, Building2 } from "lucide-react";
 import { useState } from "react";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
+import { normalizeMediaUrl } from "@/services/api/client";
 
 export function DashboardHeader({ 
   user, 
@@ -46,7 +47,7 @@ export function DashboardHeader({
               <span className="text-base md:text-lg font-bold">{companyName[0] || "T"}</span>
             </div>
           )}
-          <span className="font-display text-lg md:text-xl font-bold text-slate-900 tracking-tight leading-none overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px] sm:max-w-none">
+          <span className="font-display text-lg md:text-xl font-bold text-slate-900 leading-none overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px] sm:max-w-none">
             {brandSecondaryPart}
             {brandPrimaryPart && <span className="text-primary ml-1">{brandPrimaryPart}</span>}
           </span>
@@ -59,13 +60,21 @@ export function DashboardHeader({
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-50 transition-all duration-300 group"
           >
-            <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
+            <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden border border-white/20">
+              {user?.avatar && (user.avatar.startsWith('http') || user.avatar.includes('/')) ? (
+                <img src={normalizeMediaUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                user?.role === "employer" ? <Building2 className="w-4.5 h-4.5" /> : <User className="w-4.5 h-4.5" />
+              )}
             </div>
             <div className="hidden lg:block text-left pr-2">
-              <p className="text-[13px] font-semibold text-slate-900 leading-tight">{user?.name || "User Account"}</p>
-              <p className="text-[10px] font-medium text-primary uppercase tracking-widest mt-0.5">
-                {user?.role === "employer" ? "Institution" : "Job Seeker"}
+              <p className="text-[13.5px] font-semibold text-slate-800 leading-tight">
+                {user?.name || "User Account"}
+                {user?.raw?.title && <span className="text-slate-400 font-medium mx-1.5 opacity-50">•</span>}
+                {user?.raw?.title && <span className="text-[11px] font-medium text-slate-400 italic">{user.raw.title}</span>}
+              </p>
+              <p className="text-[10px] font-medium text-primary mt-0.5">
+                {user?.role === "employer" ? "Institutional Authority" : "Job Professional"}
               </p>
             </div>
             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-500 ${showProfileMenu ? 'rotate-180' : ''}`} />
@@ -76,15 +85,6 @@ export function DashboardHeader({
               <div className="px-5 py-4 border-b border-slate-50 mb-1.5 bg-slate-50/50">
                 <p className="text-[10px] font-bold text-slate-400 tracking-wider mb-1.5">Account verified as</p>
                 <p className="text-[14px] font-semibold text-slate-900 truncate leading-relaxed">{user?.email}</p>
-              </div>
-
-              <div className="px-2">
-                <Link href="/dashboard/jobseeker/profile" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13.5px] font-medium text-slate-600 hover:bg-primary/5 hover:text-primary transition-all duration-200 group">
-                  <User className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" /> Profile Settings
-                </Link>
-                <Link href="/dashboard/employer/settings" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13.5px] font-medium text-slate-600 hover:bg-primary/5 hover:text-primary transition-all duration-200 group">
-                  <Settings className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" /> Preferences
-                </Link>
               </div>
 
               <div className="h-px bg-slate-50 my-1.5 mx-5"></div>

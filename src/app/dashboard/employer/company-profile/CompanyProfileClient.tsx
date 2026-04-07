@@ -12,8 +12,7 @@ import {
   Linkedin,
   Twitter,
   Facebook,
-  Instagram,
-  Layers
+  Instagram
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -97,21 +96,31 @@ export default function CompanyProfileClient({
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
       {/* Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">Institution Profile</h1>
-            {profile.is_verified === 1 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded-md text-[9px] font-bold border border-green-100 tracking-wider">
-                <ShieldCheck className="w-2.5 h-2.5" /> Verified
-              </span>
-            )}
+      <div className="flex flex-col gap-4 border-b pb-4 border-gray-100">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-normal whitespace-nowrap">Institution Profile</h1>
+              {profile.is_verified === 1 && (
+                <span className="hidden xs:inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-700 rounded-md text-[8px] font-semibold border border-green-100 tracking-normal ">
+                  <ShieldCheck className="w-2 h-2" /> Verified
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] sm:text-xs text-gray-400 font-medium tracking-normal">Manage your branding presence</p>
           </div>
-          <p className="text-xs text-gray-500 font-medium">Manage your branding and digital presence.</p>
+          <div className="xs:hidden">
+              {profile.is_verified === 1 && (
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              )}
+          </div>
+          <div className="hidden sm:block text-[9px] font-bold text-gray-400 tracking-normal bg-gray-50 border px-2 py-1 rounded">
+             Draft State
+          </div>
         </div>
         
         {/* Compact Nav Tabs */}
-        <div className="bg-gray-50 p-1 rounded-xl border flex items-center gap-0.5">
+        <div className="bg-gray-50 p-1 rounded-xl border flex items-center gap-0.5 overflow-x-auto no-scrollbar max-w-full sm:max-w-none shadow-inner">
           {[
             { id: "identity", label: "Identity", icon: Building2 },
             { id: "contact", label: "Contact", icon: Globe },
@@ -121,7 +130,7 @@ export default function CompanyProfileClient({
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
               className={cn(
-                "flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200",
+                "flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 whitespace-nowrap",
                 activeTab === tab.id 
                 ? "bg-white text-primary shadow-sm border border-gray-200" 
                 : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
@@ -136,9 +145,9 @@ export default function CompanyProfileClient({
 
       {/* Main Content Card (Simple & Compact) */}
       <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b bg-gray-50/20 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-b bg-gray-50/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-             <div className="w-8 h-8 rounded-lg bg-white border flex items-center justify-center text-primary">
+             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border flex items-center justify-center text-primary">
                 {activeTab === "identity" && <Building2 className="w-4 h-4" />}
                 {activeTab === "contact" && <Globe className="w-4 h-4" />}
                 {activeTab === "location" && <MapPin className="w-4 h-4" />}
@@ -149,16 +158,16 @@ export default function CompanyProfileClient({
                 {activeTab === "location" && "Physical Presence"}
              </h2>
           </div>
-          <div className="text-[9px] font-bold text-gray-400 tracking-widest bg-white border px-2 py-1 rounded">
+          <div className="text-[9px] font-bold text-gray-400 tracking-normal bg-white border px-2 py-1 rounded">
              Draft State
           </div>
         </div>
         
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {activeTab === "identity" && (
-              <div className="space-y-8 animate-in fade-in duration-200">
-                <div className="flex flex-col sm:flex-row items-center gap-6 bg-gray-50/30 p-6 border rounded-xl">
+          <div className="p-4 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+              {activeTab === "identity" && (
+                <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gray-50/30 p-4 sm:p-6 border rounded-xl">
                   <div className="relative w-20 h-20 rounded-xl bg-white border shadow-sm overflow-hidden group shrink-0">
                     {profile.company_logo ? (
                       <Image src={getLogoUrl(profile.company_logo)!} alt="Logo" fill className="object-cover" />
@@ -247,7 +256,7 @@ export default function CompanyProfileClient({
                 <div className="bg-gray-50/50 p-6 border rounded-xl space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-gray-900 border-l-2 border-primary pl-2 tracking-wide">Social Ecosystem</h3>
-                    <span className="text-[10px] font-bold text-gray-400 tracking-widest">Connect Soon</span>
+                    <span className="text-[10px] font-bold text-gray-400 tracking-normal">Connect Soon</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 opacity-60">
                     {[
@@ -284,7 +293,7 @@ export default function CompanyProfileClient({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-[10px] font-bold text-gray-500">Map Integration</Label>
-                    <span className="text-[8px] font-bold text-blue-500 tracking-tighter">Live GIS Pin</span>
+                    <span className="text-[8px] font-bold text-blue-500 tracking-normaler">Live GIS Pin</span>
                   </div>
                   <div className="rounded-xl overflow-hidden border shadow-sm">
                     <LocationPicker value={mapLink} onChange={handleMapChange} className="w-full" />
@@ -296,10 +305,10 @@ export default function CompanyProfileClient({
             <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-[10px] text-gray-400 font-bold tracking-wider">Save required to confirm change</p>
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" type="button" onClick={() => window.location.reload()} className="flex-1 sm:flex-initial h-10 px-6 rounded-lg text-[10px] font-bold tracking-widest text-gray-400 border-gray-200">Discard</Button>
-                <Button size="sm" type="submit" disabled={loading} className="flex-1 sm:flex-initial h-10 px-8 rounded-lg text-[11px] font-bold tracking-widest shadow-md min-w-[160px]">
+                <Button variant="outline" size="sm" type="button" onClick={() => window.location.reload()} className="flex-1 sm:flex-initial h-10 px-4 rounded-lg text-[10px] font-bold tracking-normal text-gray-400 border-gray-200  whitespace-nowrap">Discard</Button>
+                <Button size="sm" type="submit" disabled={loading} className="flex-1 sm:flex-initial h-10 px-5 rounded-lg text-[11px] font-bold tracking-normal shadow-md  whitespace-nowrap min-w-0 sm:min-w-[160px] flex items-center justify-center gap-2">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                  Update Profile
+                  <span className="truncate">Update Profile</span>
                 </Button>
               </div>
             </div>

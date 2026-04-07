@@ -34,9 +34,11 @@ export function DashboardShell({
   const rawLogo = rawCompany?.company_logo || rawCompany?.logo || rawCompany?.brand_logo;
   const companyLogo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
   
-  const brandNameParts = companyName.split(" ").filter(Boolean);
-  const brandSecondaryPart = brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : "Teach";
-  const brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "Now";
+  const brandName = companyName.toLowerCase() === 'teachnow' ? 'Teach Now' : companyName;
+  const brandNameParts = brandName.split(" ").filter(Boolean);
+  
+  const brandSecondaryPart = brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : brandNameParts[0] || "Teach";
+  const brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
 
   const brandingData = {
     logo: companyLogo,

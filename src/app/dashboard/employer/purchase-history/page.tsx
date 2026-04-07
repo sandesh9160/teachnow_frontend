@@ -1,1 +1,5 @@
-export default function PurchasehistoryPage() { return <div>PurchasehistoryPage</div>; }
+import PurchaseHistoryClient from "./PurchaseHistoryClient";
+
+export default function PurchasehistoryPage() {
+  return <PurchaseHistoryClient />;
+}

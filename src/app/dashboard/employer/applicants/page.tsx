@@ -1,10 +1,10 @@
 
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import ApplicantsClient from "./ApplicantsClient";
 
-export default function EmployerApplicantsPage() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Applicants</h1>
-      <p className="text-muted-foreground">This page displays a list of applicants for your jobs. (Coming soon)</p>
-    </div>
-  );
+export default async function EmployerApplicantsPage() {
+  // Fetch employer's applications list
+  const appsData = await dashboardServerFetch("employer/applications");
+  
+  return <ApplicantsClient initialData={appsData} />;
 }

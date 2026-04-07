@@ -13,7 +13,7 @@ import {
   PlusCircle,
   ClipboardList,
   Building2,
-  CheckCircle,
+  // CheckCircle,
   Settings,
   CreditCard,
   LogOut,
@@ -53,7 +53,7 @@ export function DashboardSidebar({
     { label: "My Job Postings", href: "/dashboard/employer/jobs", icon: ClipboardList },
     { label: "Manage Applicants", href: "/dashboard/employer/applicants", icon: User },
     { label: "Recruiters", href: "/dashboard/employer/recruiters", icon: Users },
-    { label: "Institution Verif.", href: "/dashboard/employer/institution-verification", icon: CheckCircle },
+    { label: "Documents", href: "/dashboard/employer/institution-verification", icon: FileText },
     { label: "Subscription", href: "/dashboard/employer/purchase-history", icon: CreditCard },
     { label: "Settings", href: "/dashboard/employer/settings", icon: Settings },
   ];
@@ -141,7 +141,7 @@ export function DashboardSidebar({
             {collapsed ? <ChevronRight size={18} className="group-hover:text-primary" /> : (
               <div className="flex items-center gap-2">
                 <ChevronLeft size={18} className="group-hover:text-primary" />
-                <span className="text-[10px] uppercase font-semibold tracking-widest opacity-50 group-hover:opacity-100 transition-opacity">Collapse Sidebar</span>
+                <span className="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Collapse Sidebar</span>
               </div>
             )}
           </button>

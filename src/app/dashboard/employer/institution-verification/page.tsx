@@ -1,1 +1,5 @@
-export default function InstitutionverificationPage() { return <div>InstitutionverificationPage</div>; }
+import DocumentsClient from "./DocumentsClient";
+
+export default async function InstitutionverificationPage() {
+  return <DocumentsClient />;
+}
