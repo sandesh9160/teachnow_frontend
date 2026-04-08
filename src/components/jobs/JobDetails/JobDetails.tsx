@@ -118,6 +118,27 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${title} | TeachNow`,
+      text: `Check out this job opening: ${title} at ${employerName}`,
+      url: typeof window !== "undefined" ? window.location.href : "",
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareData.url);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        toast.error("Could not share this job.");
+      }
+    }
+  };
+
   const title = job.title || "Job Opening";
   const employerName = job.employer?.company_name || "Confidential School";
   const employerLogo = job.employer?.company_logo || null;
@@ -236,7 +257,12 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-primary' : ''}`} />
                     <span className="font-bold">{isBookmarked ? "Saved" : "Save"}</span>
                   </Button>
-                  <Button variant="outline" size="lg" className="h-11 rounded-lg px-5 flex items-center gap-2 border-slate-200">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="h-11 rounded-lg px-5 flex items-center gap-2 border-slate-200"
+                    onClick={handleShare}
+                  >
                     <Share2 className="h-4 w-4" />
                     <span className="font-bold">Share</span>
                   </Button>
