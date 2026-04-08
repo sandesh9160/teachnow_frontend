@@ -459,5 +459,6 @@ export const signOut = async () => {
   const cookieStore = await cookies();
   cookieStore.delete("userData");
   cookieStore.delete("laravel-session");
+  cookieStore.delete("laravel_session");
   cookieStore.delete("XSRF-TOKEN");
 };

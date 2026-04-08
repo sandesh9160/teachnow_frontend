@@ -12,7 +12,7 @@ export function dashboardUrlAfterLogin(user: { user_type?: string } | null | und
   if (t.includes("recruiter")) {
     return "/dashboard/recruiter";
   }
-  if (t.includes("jobseeker")) {
+  if (t.includes("jobseeker") || t.includes("job_seeker") || t.includes("candidate")) {
     return "/dashboard/jobseeker";
   }
   return "/auth/login?message=" + encodeURIComponent("Please login to access this page");

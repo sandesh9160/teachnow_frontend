@@ -134,7 +134,7 @@ export function proxy(req: NextRequest) {
   if (pathname.startsWith("/auth/login")) return NextResponse.next();
 
   // 3. Cookie Detection (get() returns { name, value } — coerce for logs and checks)
-  const sessionCookie = req.cookies.get("laravel-session");
+  const sessionCookie = req.cookies.get("laravel-session") || req.cookies.get("laravel_session");
   const xsrfCookie = req.cookies.get("XSRF-TOKEN");
   const hasSession = Boolean(sessionCookie?.value);
   const hasXsrf = Boolean(xsrfCookie?.value);
