@@ -84,6 +84,21 @@ export async function getFeaturedJobs(): Promise<Job[]> {
 }
 
 /**
+ * Fetch all open jobs.
+ * Endpoint: /open/jobs
+ */
+export async function getAllJobs(): Promise<Job[]> {
+  try {
+    const res = await fetchAPI<ApiResponse<any>>("/open/jobs");
+    const data = res.data || res;
+    return toArray<Job>(data).map(normalizeJob);
+  } catch (error) {
+    //console.error("Error in getAllJobs hook:", error);
+    return [];
+  }
+}
+
+/**
  * Fetch featured institutions.
  * Endpoint: /open/home/featured-companies
  */

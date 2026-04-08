@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-import { applyJob as applyJobRequest } from "@/services/api/application.service";
 import type { ApplicationAnswer, ApplicationPayload } from "@/types/application";
 
 function extractErrorMessage(e: unknown): string {
@@ -56,7 +55,10 @@ export function useApplications() {
       setLoading(true);
       setError(null);
       const payload: ApplicationPayload = { answers };
-      await applyJobRequest(jobId, payload);
+      return await dashboardServerFetch<unknown>(`jobseeker/jobs/${jobId}/apply`, {
+        method: "POST",
+        data: payload,
+      });
     } catch (err: unknown) {
       const msg = extractErrorMessage(err);
       setError(msg);

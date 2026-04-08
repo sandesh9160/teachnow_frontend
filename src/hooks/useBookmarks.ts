@@ -13,9 +13,17 @@ export function useBookmarks() {
     try {
       setLoading(true);
       setError(null);
-      const res = await dashboardServerFetch<any>("jobseeker/bookmarks", { method: "GET" });
-      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-      setBookmarks(data);
+      // Calling the correct endpoint as per user request
+      const res = await dashboardServerFetch<any>("jobseeker/saved-jobs", { method: "GET" });
+      
+      // The API returns { data: [ { job: {...}, id: ... } ] }
+      const rawData = res?.data || [];
+      const mappedJobs = rawData.map((item: any) => ({
+        ...item.job,
+        bookmarkId: item.id // Keep the relationship ID if needed for deletion
+      }));
+
+      setBookmarks(mappedJobs);
     } catch (err: any) {
       setBookmarks([]);
       setError(err?.message || "Failed to fetch saved jobs");

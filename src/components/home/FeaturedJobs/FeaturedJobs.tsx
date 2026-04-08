@@ -24,10 +24,10 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-left mb-10 pl-2">
           <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            Featured <span className="text-primary/80">Job</span> Opportunities
+            Trending <span className="text-primary/80">Opportunities</span>
           </h2>
           <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-            Hand-picked opportunities from top educational institutions
+            Explore all open roles from top educational institutions
           </p>
         </div>
         
