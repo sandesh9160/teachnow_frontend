@@ -11,12 +11,16 @@ import {
   PlusCircle, 
   Clock,
   TrendingUp,
-  Layout
+  Layout,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { cn } from "@/lib/utils";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Job {
   id: number;
@@ -48,10 +52,10 @@ const StatusBadge = ({ status }: { status: string }) => {
   
   return (
     <span className={cn(
-      "px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-normal",
+      "px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-normal whitespace-nowrap",
       isOpen 
       ? "bg-green-50 text-green-600 border border-green-100/50" 
-      : "bg-gray-100 text-gray-400 border border-gray-200"
+      : "bg-slate-50 text-slate-400 border border-slate-200"
     )}>
       {status}
     </span>
@@ -65,9 +69,11 @@ export default function JobsClient({
   initialData?: JobsClientProps["initialData"],
   userRole?: string
 }) {
+  const router = useRouter();
   const basePath = `/dashboard/${userRole}`;
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<'active' | 'expired' | 'featured'>('active');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   
   const activeJobs: Job[] = (initialData as any)?.active_jobs?.data || [];
   const expiredJobs: Job[] = (initialData as any)?.expired_jobs?.data || [];
@@ -80,20 +86,51 @@ export default function JobsClient({
     job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this job listing? This action cannot be undone.")) return;
+    
+    setDeletingId(id);
+    try {
+      const res = await dashboardServerFetch<any>(`employer/jobs/delete/${id}`, {
+        method: "DELETE"
+      });
+
+      if (res?.status) {
+        toast.success("Job deleted successfully");
+        router.refresh();
+      } else {
+        toast.error(res?.message || "Failed to delete job");
+        if (res?.message?.includes("Method Not Allowed")) {
+           const retryRes = await dashboardServerFetch<any>(`employer/jobs/delete/${id}`, {
+             method: "POST"
+           });
+           if (retryRes?.status) {
+             toast.success("Job deleted successfully");
+             router.refresh();
+             return;
+           }
+        }
+      }
+    } catch (e) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
-      {/* Compact Header */}
-      <div className="flex items-center justify-between gap-4 border-b pb-4 border-gray-100">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Manage Jobs</h1>
-          <p className="text-[11px] text-gray-400 font-medium tracking-tight">Review and control your job listings</p>
+    <div className="max-w-6xl mx-auto px-4 py-4 space-y-4 font-sans text-slate-700 pb-20">
+      {/* Responsive Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5 border-slate-100">
+        <div className="space-y-1">
+          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Manage jobs</h1>
+          <p className="text-xs font-medium text-slate-400">Review and control your job listings</p>
         </div>
         
-        <Link href={`${basePath}/post-job`}>
-           <Button size="sm" className="h-9 px-4 rounded-lg font-black text-[10px] uppercase tracking-widest shadow-md whitespace-nowrap">
-             <PlusCircle className="mr-2 w-3.5 h-3.5" />
-             <span className="hidden xs:inline">Post Job</span>
-             <span className="xs:hidden">Post</span>
+        <Link href={`${basePath}/post-job`} className="w-full sm:w-auto">
+           <Button size="sm" className="h-10 w-full px-5 rounded-xl font-semibold text-xs transition-all shadow-sm">
+             <PlusCircle className="mr-2 w-4 h-4" />
+             Post a job
            </Button>
         </Link>
       </div>
@@ -106,38 +143,38 @@ export default function JobsClient({
           { label: "Featured", value: featuredJobs.length, icon: TrendingUp, color: "indigo" },
         ].map((s, i) => (
           <div key={i} className={cn(
-            "bg-white p-3 rounded-xl border shadow-sm flex items-center gap-3",
+            "bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 transition-transform active:scale-[0.98]",
             i === 2 ? "hidden lg:flex" : "" 
           )}>
             <div className={cn(
-               "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-               s.color === 'gray' && "bg-gray-100 text-gray-500",
+               "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-inner",
+               s.color === 'gray' && "bg-slate-100 text-slate-500",
                s.color === 'emerald' && "bg-emerald-50 text-emerald-600",
                s.color === 'indigo' && "bg-indigo-50 text-indigo-600",
             )}>
-              <s.icon className="w-4 h-4" />
+              <s.icon className="w-4.5 h-4.5" />
             </div>
             <div>
               <p className="text-[10px] font-medium text-slate-400">{s.label}</p>
-              <h3 className="text-base font-bold text-slate-900 leading-none">{s.value}</h3>
+              <h3 className="text-base font-semibold text-slate-900 leading-none">{s.value}</h3>
             </div>
           </div>
         ))}
       </div>
 
       {/* Control Bar */}
-      <div className="bg-white p-2 rounded-xl border shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-         <div className="flex-1 w-full md:max-w-xs relative scale-[0.98]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+      <div className="bg-white p-2 rounded-xl border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+         <div className="flex-1 w-full md:max-w-xs relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Filter listings..." 
-              className="h-8.5 pl-10 border-transparent bg-gray-50/50 focus:bg-white rounded-lg text-xs font-semibold focus:ring-1 focus:ring-primary/10" 
+              placeholder="Search listings..." 
+              className="h-10 pl-10 border-transparent bg-slate-50/50 focus:bg-white rounded-xl text-xs font-medium" 
             />
          </div>
 
-         <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-xl border border-gray-100 font-bold overflow-x-auto no-scrollbar max-w-full">
+         <div className="flex items-center gap-1 bg-slate-50/50 p-1 rounded-xl border border-slate-100 font-medium overflow-x-auto no-scrollbar max-w-full">
             {[
                 { id: 'active', label: 'Active', count: activeJobs.length },
                 { id: 'expired', label: 'Expired', count: expiredJobs.length },
@@ -147,10 +184,10 @@ export default function JobsClient({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "px-4 py-1.5 rounded-lg text-[10px] font-bold tracking-tight transition-all whitespace-nowrap",
+                    "px-4 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
                     activeTab === tab.id 
-                    ? "bg-white text-primary shadow-sm border border-gray-100" 
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "bg-white text-primary shadow-sm border border-slate-100" 
+                    : "text-slate-400 hover:text-slate-600"
                   )}
                 >
                   {tab.label} ({tab.count})
@@ -160,61 +197,69 @@ export default function JobsClient({
       </div>
 
       {/* Jobs Grid (Responsive) */}
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-4">
          {filteredJobs.length > 0 ? filteredJobs.map((job) => (
-            <div key={job.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-4 group">
-               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1">
+            <div key={job.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-4 group relative overflow-hidden">
+               <div className="flex flex-col gap-4">
+                  <div className="flex items-start gap-4">
                      <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
-                        job.featured ? "bg-amber-50 text-amber-500 border-amber-100" : "bg-gray-50 text-gray-400 border-gray-100"
+                        "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border shadow-inner transition-transform group-hover:scale-105",
+                        job.featured ? "bg-amber-50 text-amber-500 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
                      )}>
-                        {job.featured ? <TrendingUp className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
+                        {job.featured ? <TrendingUp className="w-6 h-6" /> : <Briefcase className="w-6 h-6" />}
                      </div>
-                     <div className="space-y-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                           <h3 className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors truncate max-w-[200px] sm:max-w-none">{job.title}</h3>
-                           <div className="flex items-center gap-1.5">
+                     <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 pr-8 sm:pr-0">
+                           <h3 className="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors truncate max-w-full">{job.title}</h3>
+                           <div className="flex flex-wrap items-center gap-1.5">
                               <StatusBadge status={job.job_status} />
                               <StatusBadge status={job.status} />
                            </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                           <span className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><MapPin className="w-3 h-3" /> {job.location}</span>
-                           <span className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><Calendar className="w-3 h-3" /> Expires {new Date(job.expires_at).toLocaleDateString()}</span>
-                           <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><MapPin className="w-3.5 h-3.5" /> {job.location}</span>
+                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3.5 h-3.5" /> Expires {new Date(job.expires_at).toLocaleDateString()}</span>
+                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3.5 h-3.5" /> Posted {new Date(job.created_at).toLocaleDateString()}</span>
                         </div>
+                     </div>
+                     
+                     <div className="absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
+                        <Button 
+                          onClick={() => handleDelete(job.id)}
+                          disabled={deletingId === job.id}
+                          variant="ghost" 
+                          className="h-9 w-9 p-0 rounded-xl text-red-500 hover:bg-red-50 transition-all font-semibold border border-transparent hover:border-red-100 active:scale-95"
+                        >
+                           {deletingId === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        </Button>
                      </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-50">
-                     <Link href={`${basePath}/jobs/view/${job.id}`} className="flex-1 sm:flex-none">
-                        <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-[11px] font-bold text-emerald-600 border-emerald-100 hover:bg-emerald-50 whitespace-nowrap">
-                           <Layout className="w-3.5 h-3.5 mr-1.5" /> View
+                  <div className="grid grid-cols-2 gap-2 pt-4 border-t border-slate-50">
+                     <Link href={`${basePath}/jobs/view/${job.id}`}>
+                        <Button variant="outline" className="w-full h-11 px-3 rounded-xl text-xs font-semibold text-emerald-600 border-emerald-100 hover:bg-emerald-50 active:scale-[0.98] transition-all shadow-sm">
+                           <Layout className="w-4 h-4 mr-2" /> View
                         </Button>
                      </Link>
-                     <Link href={`${basePath}/jobs/edit/${job.id}`} className="flex-1 sm:flex-none">
-                        <Button variant="outline" className="w-full h-8 px-3 rounded-lg text-[11px] font-bold text-primary border-primary/10 hover:bg-primary/5 whitespace-nowrap">
-                           <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit
+                     <Link href={`${basePath}/jobs/edit/${job.id}`}>
+                        <Button variant="outline" className="w-full h-11 px-3 rounded-xl text-xs font-semibold text-primary border-primary/10 hover:bg-primary/5 active:scale-[0.98] transition-all shadow-sm">
+                           <Edit3 className="w-4 h-4 mr-2" /> Edit
                         </Button>
                      </Link>
-                     <Button variant="ghost" className="h-8 px-2 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                     </Button>
                   </div>
                </div>
             </div>
          )) : (
-            <div className="bg-white rounded-xl border border-dashed border-gray-200 py-16 flex flex-col items-center justify-center text-center gap-4">
-               <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-200">
-                  <Briefcase className="w-8 h-8" />
+            <div className="bg-white rounded-xl border border-dashed border-slate-200 py-16 flex flex-col items-center justify-center text-center gap-4">
+               <div className="w-20 h-20 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-200 border border-slate-100 shadow-inner">
+                  <Briefcase className="w-10 h-10" />
                </div>
-               <div className="space-y-1">
-                  <p className="text-sm font-bold text-gray-900 uppercase tracking-tighter">No jobs found</p>
-                  <p className="text-[11px] text-gray-400 font-medium">Try adjusting your search criteria or post a new job.</p>
+               <div className="space-y-1.5">
+                  <p className="text-base font-semibold text-slate-900 tracking-tight">No jobs found</p>
+                  <p className="text-xs text-slate-400 font-medium">Try adjusting your search criteria or post a new job.</p>
                </div>
-               <Link href={`${basePath}/post-job`}>
-                  <Button size="sm" className="h-9 px-6 rounded-xl font-bold text-[11px] uppercase tracking-widest shadow-md">Post Job</Button>
+               <Link href={`${basePath}/post-job`} className="w-full max-w-[200px]">
+                  <Button size="sm" className="h-11 w-full px-6 rounded-xl font-semibold text-xs shadow-md transition-all">Post a job</Button>
                </Link>
             </div>
          )}

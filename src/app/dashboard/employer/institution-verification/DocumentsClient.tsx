@@ -2,21 +2,18 @@
 
 import { 
   FileText, 
-  Upload, 
-  Trash2, 
   Loader2, 
   ShieldCheck, 
   AlertCircle,
   Clock,
-  Download,
   Eye,
   PlusCircle,
   FileUp,
-  X
+  X,
+  ChevronLeft
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
 import { cn, normalizeMediaUrl } from "@/lib/utils";
 import { uploadFile } from "@/actions/FileUpload";
@@ -26,7 +23,7 @@ import { toast } from "sonner";
 interface EmployerDocument {
   id: number;
   employer_id: number;
-  document_name: string;
+  document_type: string;
   document_file: string;
   is_verified: number;
   status: string;
@@ -39,16 +36,15 @@ export default function DocumentsClient() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<EmployerDocument[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedDocType, setSelectedDocType] = useState<string>("");
 
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<{ url: string; original: string; name: string } | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const res = await dashboardServerFetch<any>("employer/documents");
       if (res?.status && Array.isArray(res.data)) {
         setDocuments(res.data);
@@ -85,12 +81,12 @@ export default function DocumentsClient() {
     try {
       setUploading(true);
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("document_name", selectedDocType);
+      formData.append("document_file", file);
+      formData.append("document_type", selectedDocType);
 
-      const res = await uploadFile<any>("employer/documents", {
+      const res = await uploadFile<any>("employer/documents/upload", {
         method: "POST",
-        data: formData
+        data: formData,
       });
 
       if (res?.status) {
@@ -107,37 +103,24 @@ export default function DocumentsClient() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure? This document will be permanently removed from your profile.")) return;
-    
-    try {
-      setLoading(true);
-      const res = await dashboardServerFetch(`employer/documents/${id}`, {
-        method: "DELETE"
-      });
-      if (res?.status) {
-        toast.success("Document deleted successfully");
-        void fetchDocuments();
-      } else {
-        toast.error(res?.message || "Failed to delete document.");
-      }
-    } catch (err) {
-      toast.error("Error deleting document.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handlePreview = (path?: string | null) => {
-    if (!path) return;
-    const fullUrl = normalizeMediaUrl(path);
-    const ext = (path || "").split('.').pop()?.toLowerCase();
+  const handlePreview = (doc: EmployerDocument) => {
+    if (!doc.document_file) return;
+    const fullUrl = normalizeMediaUrl(doc.document_file);
+    const ext = (doc.document_file || "").split('.').pop()?.toLowerCase();
     
-    if (ext === 'doc' || ext === 'docx') {
-      setPreviewUrl(`https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`);
-    } else {
-      setPreviewUrl(fullUrl);
+    let preview = fullUrl;
+    // Use Google Docs Viewer for PDF and Office documents for professional preview and to bypass X-Frame-Options
+    if (ext === 'doc' || ext === 'docx' || ext === 'pdf') {
+      preview = `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`;
     }
+    
+    setIsPreviewLoading(true);
+    setPreviewData({
+      url: preview,
+      original: fullUrl,
+      name: (doc.document_type || "Document").replace(/_/g, " ")
+    });
   };
 
   const docTypes = [
@@ -151,15 +134,15 @@ export default function DocumentsClient() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 space-y-4 relative">
       {/* Right Sidebar Preview Panel */}
-      {previewUrl && (
-        <div className="fixed inset-0 z-[100] overflow-hidden group">
+      {previewData && (
+        <div className="fixed inset-0 z-[100] overflow-hidden group font-sans">
            <div 
-             className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px] transition-opacity animate-in fade-in duration-500" 
-             onClick={() => setPreviewUrl(null)}
+             className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] transition-opacity animate-in fade-in duration-500" 
+             onClick={() => setPreviewData(null)}
            />
            
            <div className="absolute inset-y-0 right-0 max-w-full flex">
-              <div className="w-screen max-w-2xl bg-white shadow-[0_0_80px_rgba(0,0,0,0.15)] flex flex-col animate-in slide-in-from-right duration-500 ease-out border-l border-slate-100">
+              <div className="w-screen max-w-2xl bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out border-l border-slate-100">
                  
                  <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
                     <div className="flex items-center gap-4">
@@ -167,10 +150,10 @@ export default function DocumentsClient() {
                           <FileText className="w-5.5 h-5.5" />
                        </div>
                        <div>
-                          <h3 className="text-base font-bold text-slate-800 tracking-tight uppercase">Viewing Document</h3>
+                          <h3 className="text-base font-semibold text-slate-800 tracking-tight capitalize">{previewData.name}</h3>
                           <div className="flex items-center gap-2 mt-0.5">
-                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                             <p className="text-[10px] font-bold text-slate-400 tracking-tight truncate max-w-[200px] uppercase">Record Integrity Verified</p>
+                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm" />
+                             <p className="text-xs font-medium text-slate-400">Record integrity verified</p>
                           </div>
                        </div>
                     </div>
@@ -179,55 +162,70 @@ export default function DocumentsClient() {
                          variant="ghost" 
                          size="sm" 
                          className="h-10 w-10 p-0 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group"
-                         onClick={() => setPreviewUrl(null)}
+                         onClick={() => setPreviewData(null)}
                        >
                           <X className="w-5 h-5 text-slate-400 group-hover:text-slate-800" />
                        </Button>
                     </div>
                  </div>
                  
-                 <div className="flex-1 overflow-y-auto bg-slate-50/30 p-6 flex items-start justify-center custom-scrollbar">
-                    <div className="w-full bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-full flex items-center justify-center">
-                       {previewUrl.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif|svg)$/) || !previewUrl.includes('docs.google.com') && previewUrl.match(/\.(jpg|jpeg|png|webp|gif|svg)/i) ? (
+                 <div className="flex-1 overflow-y-auto bg-slate-50/10 p-6 flex items-start justify-center custom-scrollbar">
+                    <div className="w-full bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-full flex items-center justify-center relative">
+                       {isPreviewLoading && (
+                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-[1px] z-10 animate-in fade-in duration-300">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary/30" />
+                            <p className="text-xs font-medium text-slate-400 mt-3">Syncing preview...</p>
+                         </div>
+                       )}
+                       
+                       {previewData.url.match(/\.(jpg|jpeg|png|webp|gif|svg)/i) && !previewData.url.includes('docs.google.com') ? (
                           <img 
-                            src={previewUrl} 
-                            alt="Document Path" 
-                            className="w-full h-auto object-contain pointer-events-none"
+                            src={previewData.url} 
+                            alt="Document Preview" 
+                            onLoad={() => setIsPreviewLoading(false)}
+                            className={cn(
+                              "w-full h-auto object-contain pointer-events-none p-4 transition-opacity duration-500",
+                              isPreviewLoading ? "opacity-0" : "opacity-100"
+                            )}
                           />
                        ) : (
                           <iframe 
-                            src={previewUrl} 
-                            className="w-full h-[85vh] border-none bg-slate-50"
+                            src={previewData.url} 
+                            onLoad={() => setIsPreviewLoading(false)}
+                            className={cn(
+                              "w-full h-[85vh] border-none bg-slate-50 transition-opacity duration-500",
+                              isPreviewLoading ? "opacity-0" : "opacity-100"
+                            )}
                             title="Document Content"
                           />
                        )}
                     </div>
                  </div>
-
+ 
                  <div className="px-6 py-6 border-t border-slate-100 bg-white shrink-0 flex items-center justify-between gap-4">
                     <div className="space-y-1">
                        <div className="flex items-center gap-2 text-emerald-600">
                           <ShieldCheck className="w-3.5 h-3.5" />
-                          <span className="text-[9px] font-bold tracking-tight uppercase">Secure Encryption Active</span>
+                          <span className="text-xs font-medium">Secure Encryption Active</span>
                        </div>
-                       <p className="text-[10px] font-bold text-slate-300 leading-none uppercase">Private institutional data vault</p>
+                       <p className="text-xs font-medium text-slate-300 leading-none">Private institutional data vault</p>
                     </div>
                     <div className="flex items-center gap-3">
                        <Button 
                          variant="outline" 
                          size="sm" 
-                         className="h-11 px-6 rounded-2xl font-bold text-[11px] tracking-tight border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shadow-sm uppercase"
-                         onClick={() => window.open(previewUrl, "_blank")}
+                         className="h-10 px-5 rounded-xl font-medium text-xs border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+                         onClick={() => window.open(previewData.original, "_blank")}
                        >
                           <Eye className="w-4 h-4 mr-2" /> Pop-out
                        </Button>
                        <Button 
                          variant="default" 
                          size="sm" 
-                         className="h-11 px-10 rounded-2xl font-bold text-[11px] tracking-tight shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 transition-all uppercase"
-                         onClick={() => setPreviewUrl(null)}
+                         className="h-10 px-8 rounded-xl font-medium text-xs shadow-lg shadow-primary/10 bg-primary hover:bg-primary/90 transition-all"
+                         onClick={() => setPreviewData(null)}
                        >
-                          Close Preview
+                          Close
                        </Button>
                     </div>
                  </div>
@@ -236,23 +234,36 @@ export default function DocumentsClient() {
         </div>
       )}
 
+      {/* Back Button */}
+      <div className="flex items-center gap-2 mb-2">
+        <button 
+          onClick={() => window.history.back()}
+          className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-primary transition-all group"
+        >
+          <div className="w-6 h-6 rounded-lg border bg-white flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/5 transition-all shadow-sm">
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </div>
+          Back to Overview
+        </button>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner">
             <FileText className="w-5 h-5" />
           </div>
           <div className="space-y-0.5">
-            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Document Management</h1>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
-               Institutional credentials & verification records
+            <h1 className="text-lg font-semibold text-gray-900 tracking-tight">Institutional Verification</h1>
+            <p className="text-xs font-medium text-gray-400">
+               Manage credentials & verification records
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
            <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-emerald-100 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-              <span className="text-[10px] font-bold text-emerald-700 tracking-tight uppercase">Account Trust Synchronized</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-emerald-100" />
+              <span className="text-xs font-medium text-emerald-700">Records Synchronized</span>
            </div>
         </div>
       </div>
@@ -262,18 +273,18 @@ export default function DocumentsClient() {
            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
               <div className="flex items-center gap-2 border-l-4 border-indigo-500 pl-3">
                  <ShieldCheck className="w-4 h-4 text-indigo-500" />
-                 <h2 className="text-xs font-bold text-gray-900 tracking-tight uppercase">Credential Upload</h2>
+                 <h2 className="text-sm font-semibold text-gray-900">Credential Upload</h2>
               </div>
 
               <div className="space-y-4">
-                 <div className="space-y-1.5 font-bold">
-                    <Label className="text-[10px] text-gray-400 tracking-tight ml-0.5 uppercase">Category</Label>
+                 <div className="space-y-1.5 font-medium">
+                    <Label className="text-xs text-gray-400 ml-0.5">Category</Label>
                     <select 
                       value={selectedDocType}
                       onChange={(e) => setSelectedDocType(e.target.value)}
-                      className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50/50 px-3 text-xs font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:bg-gray-50 transition-colors uppercase"
+                      className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50/50 px-3 text-xs font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:bg-gray-50 transition-colors"
                     >
-                      <option value="">SELECT CATEGORY...</option>
+                      <option value="">Select category...</option>
                       {docTypes.map(type => (
                         <option key={type.value} value={type.value}>{type.label}</option>
                       ))}
@@ -284,7 +295,7 @@ export default function DocumentsClient() {
                    onClick={() => fileInputRef.current?.click()}
                    className={cn(
                      "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group",
-                     uploading ? "opacity-50 cursor-not-allowed bg-gray-50/50" : "hover:bg-primary/5 hover:border-primary/30 border-gray-100 scale-[0.99] hover:scale-[1]"
+                     uploading ? "opacity-50 cursor-not-allowed bg-gray-50/50" : "hover:bg-primary/5 hover:border-primary/30 border-gray-100"
                    )}
                  >
                     <input 
@@ -299,19 +310,19 @@ export default function DocumentsClient() {
                        {uploading ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <FileUp className="w-6 h-6" />}
                     </div>
                     <div className="text-center space-y-1">
-                       <p className="text-xs font-bold text-gray-900 leading-none uppercase tracking-tight">
+                       <p className="text-xs font-semibold text-gray-900 leading-none">
                          {uploading ? "Processing..." : "Select Document"}
                        </p>
-                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight opacity-60">PDF, JPG up to 10MB</p>
+                       <p className="text-[10px] text-gray-400 font-medium opacity-60">PDF, JPG up to 10MB</p>
                     </div>
                  </div>
 
                  <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl space-y-2 shadow-sm">
                     <div className="flex items-center gap-2 text-amber-600">
                        <AlertCircle className="w-3.5 h-3.5" />
-                       <span className="text-[9px] font-bold tracking-tight uppercase">Security Notice</span>
+                       <span className="text-xs font-semibold">Security Notice</span>
                     </div>
-                    <p className="text-[10px] text-amber-900 font-bold leading-relaxed tracking-tight uppercase opacity-70">
+                    <p className="text-xs text-amber-900 font-medium leading-relaxed opacity-70">
                        Verification SLA: 24-48 Hours. Ensure clarity for faster approval.
                     </p>
                  </div>
@@ -324,10 +335,10 @@ export default function DocumentsClient() {
               <div className="flex items-center justify-between mb-6">
                  <div className="flex items-center gap-2 border-l-4 border-primary pl-3">
                     <PlusCircle className="w-4 h-4 text-primary" />
-                    <h2 className="text-xs font-bold text-gray-900 tracking-tight uppercase">Credential Vault</h2>
+                    <h2 className="text-sm font-semibold text-gray-900">Credential Vault</h2>
                  </div>
-                 <div className="text-[9px] font-bold text-primary tracking-tight bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10 uppercase shadow-sm">
-                    {documents.length} Records Stored
+                 <div className="text-xs font-medium text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10 shadow-sm">
+                    {documents.length} Records
                  </div>
               </div>
 
@@ -335,7 +346,7 @@ export default function DocumentsClient() {
                  {loading && documents.length === 0 ? (
                    <div className="h-full flex items-center justify-center flex-col gap-3 py-20">
                       <Loader2 className="w-8 h-8 animate-spin text-primary/10" />
-                      <p className="text-[10px] font-bold text-gray-300 tracking-tight uppercase">Syncing Records...</p>
+                      <p className="text-xs font-medium text-gray-300">Syncing records...</p>
                    </div>
                  ) : documents.length > 0 ? (
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -348,38 +359,29 @@ export default function DocumentsClient() {
                            )}>
                              <FileText className="w-5 h-5" />
                            </div>
-                           <div className="flex-1 min-w-0 font-bold relative z-10 pt-0.5">
+                           <div className="flex-1 min-w-0 relative z-10 pt-0.5">
                               <div className="flex items-center justify-between mb-0.5">
-                                 <h4 className="text-[11px] text-gray-900 truncate pr-2 uppercase tracking-tight">
-                                   {(doc.document_name || "File").replace(/_/g, " ")}
+                                 <h4 className="text-sm font-semibold text-gray-900 truncate pr-2">
+                                   {(doc.document_type || "File").replace(/_/g, " ")}
                                  </h4>
                                  {(doc.is_verified === 1 || doc.status === 'verified') ? (
-                                   <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] border border-white" />
+                                   <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm border border-white" />
                                  ) : (
-                                   <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse border border-white shadow-sm" />
+                                   <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse border border-white" />
                                  )}
                               </div>
                               <p className={cn(
-                                "text-[9px] font-bold truncate mb-2 uppercase tracking-tight",
+                                "text-[10px] font-medium truncate mb-2",
                                 (doc.is_verified === 1 || doc.status === 'verified') ? "text-emerald-500" : "text-amber-500"
                               )}>{doc.status || 'Under Review'}</p>
                               <div className="flex items-center gap-1">
                                  <Button 
-                                   onClick={() => handlePreview(doc.document_file)}
+                                   onClick={() => handlePreview(doc)}
                                    size="sm" 
                                    variant="ghost" 
-                                   className="h-7 px-2.5 rounded-lg text-[9px] font-bold tracking-tight text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/10 uppercase shadow-sm"
+                                   className="h-7 px-2.5 rounded-lg text-[10px] font-medium text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/10 shadow-sm"
                                  >
                                     <Eye className="w-3.5 h-3.5 mr-1.5" /> View
-                                 </Button>
-                                 <div className="w-px h-3 bg-gray-100 mx-1" />
-                                 <Button 
-                                   onClick={() => handleDelete(doc.id)}
-                                   size="sm" 
-                                   variant="ghost" 
-                                   className="h-7 px-2.5 rounded-lg text-[9px] font-bold tracking-tight text-rose-500 bg-rose-50 hover:bg-rose-100 transition-all border border-rose-100 uppercase shadow-sm"
-                                 >
-                                    <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Remove
                                  </Button>
                               </div>
                            </div>
@@ -391,28 +393,28 @@ export default function DocumentsClient() {
                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 border border-gray-100 shadow-inner text-gray-200">
                           <PlusCircle className="w-8 h-8" />
                        </div>
-                       <h3 className="text-base font-bold text-gray-900 mb-1 uppercase tracking-tight">Vault Empty</h3>
-                       <p className="text-[10px] text-gray-400 font-bold max-w-[200px] leading-relaxed mx-auto tracking-tight uppercase">
+                       <h3 className="text-sm font-semibold text-gray-900 mb-1">Vault Empty</h3>
+                       <p className="text-xs text-gray-400 font-medium max-w-[200px] leading-relaxed mx-auto opacity-60">
                           Upload institution certificates for account trust synchronization.
                        </p>
                     </div>
                  )}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between bg-slate-50/20 -mx-6 -mb-6 px-6 pb-6 rounded-b-xl">
+              <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between bg-slate-50/10 -mx-6 -mb-6 px-6 pb-6 rounded-b-xl">
                  <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-inner">
                        <ShieldCheck className="w-5 h-5" />
                     </div>
                     <div className="space-y-0.5">
-                       <p className="text-[10px] font-bold text-gray-900 uppercase tracking-tight">Encryption Status</p>
-                       <p className="text-[9px] font-bold text-gray-400 leading-none uppercase tracking-tight opacity-60">End-to-end institutional protection</p>
+                       <p className="text-xs font-semibold text-gray-900">Encryption Status</p>
+                       <p className="text-[10px] font-medium text-gray-400 leading-none opacity-60">Institutional protection active</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-2">
                     <div className="text-right">
-                       <p className="text-[10px] font-bold text-gray-900 uppercase tracking-tight">Approval SLA</p>
-                       <p className="text-[10px] font-bold text-blue-500 leading-none uppercase tracking-tight">24 - 48 Hours</p>
+                       <p className="text-xs font-semibold text-gray-900">Approval SLA</p>
+                       <p className="text-[10px] font-semibold text-blue-500 leading-none">24 - 48 Hours</p>
                     </div>
                     <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center border border-blue-100 shadow-inner">
                        <Clock className="w-5 h-5" />

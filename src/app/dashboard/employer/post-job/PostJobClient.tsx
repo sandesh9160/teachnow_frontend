@@ -20,7 +20,8 @@ import {
   DollarSign,
   Edit3,
   Users,
-  ChevronLeft
+  ChevronLeft,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -127,122 +128,155 @@ export default function PostJobClient({
     }
   };
 
+  const handleRepublish = async () => {
+    if (!confirm("Are you sure you want to republish this job? It will be active for another 30 days.")) return;
+    
+    setLoading(true);
+    try {
+      const result = await dashboardServerFetch(`employer/jobs/${job?.id}/republish`, {
+        method: "PUT",
+      });
+
+      if (result.status === true) {
+        alert("Job republished successfully!");
+        window.location.reload();
+      } else {
+        alert(result.message || "Failed to republish job.");
+      }
+    } catch (error) {
+      alert("An unexpected error occurred while republishing.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isExpired = isEdit && (
+    job?.status?.toLowerCase() === 'expired' || 
+    job?.job_status?.toLowerCase() === 'expired' ||
+    (job?.expires_at && new Date(job.expires_at) < new Date())
+  );
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-4 space-y-4 font-sans">
+    <div className="max-w-5xl mx-auto px-4 py-4 space-y-4 font-sans text-slate-700 pb-20">
       {/* Back Button */}
       <button 
         onClick={() => window.history.back()} 
-        className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-primary transition-colors mb-2 group w-fit"
+        className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-primary transition-colors mb-2 group w-fit active:scale-95"
       >
         <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Overview
       </button>
 
       {/* Professional Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4 bg-white p-4 rounded-xl border shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 bg-white p-4 rounded-xl border shadow-sm">
         <div className="flex items-center gap-3">
           <div className={cn(
-             "w-10 h-10 rounded-lg flex items-center justify-center border transition-all",
-             isEdit ? "bg-amber-50 text-amber-600 border-amber-100 shadow-amber-600/5 shadow-inner" : "bg-primary/5 text-primary border-primary/10"
+             "w-12 h-12 rounded-xl flex items-center justify-center border transition-all shadow-inner shrink-0",
+             isEdit ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-primary/5 text-primary border-primary/10"
           )}>
-            {isEdit ? <Edit3 className="w-5 h-5" /> : <PlusCircle className="w-5 h-5" />}
+            {isEdit ? <Edit3 className="w-6 h-6" /> : <PlusCircle className="w-6 h-6" />}
           </div>
-          <div className="space-y-0.5">
-            <h1 className="text-lg font-bold text-gray-900 tracking-tight">
-              {isEdit ? "Edit Your Job" : "Create a Job Post"}
+          <div className="space-y-0.5 min-w-0">
+            <h1 className="text-lg font-semibold text-slate-900 truncate">
+              {isEdit ? "Edit your job" : "Create a job post"}
             </h1>
-            <p className="text-[11px] font-semibold text-gray-400 capitalize">
+            <p className="text-xs text-slate-400 truncate">
               {isEdit ? `Updating: ${job?.title}` : "Fill in the details to find the best teachers."}
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-1.5 bg-gray-50/50 p-1 rounded-xl border border-gray-100 font-bold text-gray-300">
-           <button type="button" className="px-4 py-1.5 rounded-lg text-[10px] text-primary bg-white shadow-sm border border-gray-200 flex items-center gap-2">
-             <Layers className="w-3.5 h-3.5" /> Job Details
+        <div className="flex items-center gap-1.5 bg-slate-50/50 p-1 rounded-xl border border-slate-100 w-full sm:w-auto">
+           <button type="button" className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-primary bg-white shadow-sm border border-slate-200 flex items-center justify-center gap-2">
+             <Layers className="w-4 h-4" /> <span className="sm:inline">Details</span>
            </button>
-           <button type="button" disabled className="px-4 py-1.5 rounded-lg text-[10px] flex items-center gap-2 cursor-not-allowed">
-             <Sparkles className="w-3.5 h-3.5" /> AI Assistant
+           <button type="button" disabled className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-50">
+             <Sparkles className="w-4 h-4" /> <span className="sm:inline">AI assistant</span>
            </button>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Detailed Content Hub */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-5">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold text-gray-400 ml-0.5 uppercase tracking-wider">Job Title</Label>
+          <div className="lg:col-span-2 space-y-5">
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-400 ml-0.5">Job title</Label>
                 <div className="relative group">
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-primary transition-colors" />
+                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-primary transition-colors" />
                   <input type="hidden" name="id" value={job?.id} />
                   <Input 
                     name="title" 
                     defaultValue={job?.title}
                     placeholder="e.g. Senior Physics Teacher" 
-                    className="h-10 pl-10 rounded-lg text-sm border-gray-100 focus:bg-gray-50/20" 
+                    className="h-12 pl-11 rounded-xl border-gray-100 text-sm font-medium focus:ring-1 focus:ring-primary/10" 
                     required 
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between ml-0.5">
-                  <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Job Description</Label>
-                  <span className="text-[9px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">Bold text supported</span>
+                  <Label className="text-xs font-medium text-slate-400">Job description</Label>
+                  <span className="text-[10px] font-medium text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">Editor active</span>
                 </div>
-                <TipTapEditor value={description} onChange={setDescription} />
+                <div className="min-h-[300px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-primary/10 transition-all">
+                  <TipTapEditor value={description} onChange={setDescription} />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-              <div className="flex items-center justify-between border-b border-gray-50 p-5 bg-gray-50/30">
-                 <div className="flex items-center gap-2 border-l-3 border-primary pl-3">
-                    <ListTodo className="w-4 h-4 text-primary" />
-                    <h2 className="text-xs font-bold text-gray-900 tracking-tight">Interview Questions</h2>
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-50 p-4 sm:p-5 bg-slate-50/30 gap-4">
+                 <div className="flex items-center gap-2 border-l-2 border-primary pl-3">
+                    <ListTodo className="w-4.5 h-4.5 text-primary" />
+                    <h2 className="text-sm font-semibold text-slate-900">Screening questions</h2>
                  </div>
-                 <div className="flex items-center gap-1.5 font-bold">
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-7 px-2.5 text-[9px] rounded-lg border-gray-200 hover:bg-white transition-all bg-white/50">
-                      <ToggleLeft className="w-3 h-3 mr-1" /> Add Yes/No
+                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-8 px-3 text-[11px] rounded-xl border-slate-200 hover:bg-white transition-all bg-white/50 shrink-0">
+                      <ToggleLeft className="w-3.5 h-3.5 mr-1.5" /> Yes/No
                     </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-7 px-2.5 text-[9px] rounded-lg border-gray-200 hover:bg-white transition-all bg-white/50">
-                      <Hash className="w-3 h-3 mr-1" /> Add Number
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-8 px-3 text-[11px] rounded-xl border-slate-200 hover:bg-white transition-all bg-white/50 shrink-0">
+                      <Hash className="w-3.5 h-3.5 mr-1.5" /> Number
                     </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-7 px-2.5 text-[9px] rounded-lg border-gray-200 hover:bg-white transition-all bg-white/50">
-                      <PlusCircle className="w-3 h-3 mr-1" /> Add Text
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-8 px-3 text-[11px] rounded-xl border-slate-200 hover:bg-white transition-all bg-white/50 shrink-0">
+                      <PlusCircle className="w-3.5 h-3.5 mr-1.5" /> Text
                     </Button>
                  </div>
               </div>
 
-              <div className="p-5 space-y-3">
+              <div className="p-4 sm:p-6 space-y-4">
                 {questions.length === 0 ? (
-                  <div className="py-8 text-center border border-dashed rounded-xl border-gray-100 flex flex-col items-center gap-2 bg-gray-50/20">
-                     <HelpCircle className="w-6 h-6 text-gray-200" />
-                     <p className="text-[10px] font-bold text-gray-400">Add some questions to filter out applicants faster.</p>
+                  <div className="py-12 text-center border border-dashed rounded-2xl border-slate-100 flex flex-col items-center gap-3 bg-slate-50/30">
+                     <HelpCircle className="w-8 h-8 text-slate-100" />
+                     <div className="space-y-1">
+                       <p className="text-sm font-semibold text-slate-400">No questions added</p>
+                       <p className="text-xs text-slate-300">Add filters to sort through applicants faster.</p>
+                     </div>
                   </div>
                 ) : (
                   questions.map((q, i) => (
-                    <div key={i} className="group bg-gray-50/20 p-3.5 rounded-xl border border-gray-100 space-y-3 relative hover:border-primary/20 transition-all">
-                       <button onClick={() => removeQuestion(i)} type="button" className="absolute top-4 right-4 text-gray-200 hover:text-red-500 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" />
+                    <div key={i} className="group bg-slate-50/30 p-4 rounded-xl border border-slate-100 space-y-4 relative hover:border-primary/20 transition-all">
+                       <button onClick={() => removeQuestion(i)} type="button" className="absolute top-4 right-4 text-slate-200 hover:text-red-500 transition-colors active:scale-90">
+                          <Trash2 className="w-4 h-4" />
                        </button>
-                       <div className="space-y-1.5">
-                          <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">Question {i + 1} ({q.question_type})</Label>
+                       <div className="space-y-2 pr-8">
+                          <Label className="text-[10px] font-medium text-slate-400">Question {i + 1} ({q.question_type})</Label>
                           <Input 
                             value={q.question} 
                             onChange={(e) => updateQuestion(i, "question", e.target.value)}
                             placeholder="e.g. Do you have experience with JEE coaching?" 
-                            className="h-8.5 rounded-lg text-xs" 
+                            className="h-10 rounded-xl text-sm font-medium" 
                           />
                        </div>
                        <div className="flex items-center gap-4">
-                          <div className="space-y-1.5 flex-1 max-w-[200px]">
-                             <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">Correct Answer</Label>
+                          <div className="space-y-2 flex-1 max-w-[240px]">
+                             <Label className="text-[10px] font-medium text-slate-400">Correct criteria</Label>
                              {q.question_type === "boolean" ? (
                                <select 
                                  value={q.recruiter_answer}
                                  onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
-                                 className="h-8.5 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold outline-none cursor-pointer"
+                                 className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold outline-none cursor-pointer focus:ring-1 focus:ring-primary/10 transition-all"
                                >
                                   <option value="yes">Must be Yes</option>
                                   <option value="no">Must be No</option>
@@ -253,14 +287,14 @@ export default function PostJobClient({
                                  value={q.recruiter_answer}
                                  onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
                                  placeholder="Threshold"
-                                 className="h-8.5 rounded-lg text-xs"
+                                 className="h-10 rounded-xl text-sm font-medium"
                                />
                              ) : (
                                <Input 
                                  value={q.recruiter_answer}
                                  onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
-                                 placeholder="Expected criteria"
-                                 className="h-8.5 rounded-lg text-xs"
+                                 placeholder="Expected answer"
+                                 className="h-10 rounded-xl text-sm font-medium"
                                />
                              )}
                           </div>
@@ -273,101 +307,101 @@ export default function PostJobClient({
           </div>
 
           {/* Logistics Tracking Sidebar */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-5">
-              <div className="flex items-center gap-2 border-l-3 border-indigo-500 pl-3">
-                 <Tag className="w-4 h-4 text-indigo-500" />
-                 <h2 className="text-xs font-bold text-gray-900 tracking-tight">Basic Info</h2>
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+              <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
+                 <Tag className="w-4.5 h-4.5 text-indigo-500" />
+                 <h2 className="text-sm font-semibold text-slate-900">Basic information</h2>
               </div>
               
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Category</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-400">Category</Label>
                 <select 
                   name="category_id" 
                   defaultValue={job?.category_id || ""}
-                  className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                  className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer group-hover:bg-slate-50 transition-all"
                   required
                 >
-                  <option value="" disabled>Select Category</option>
+                  <option value="" disabled>Select category</option>
                   {metadata.categories.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Job Type</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-400">Job type</Label>
                 <select 
                   name="job_type" 
                   defaultValue={job?.job_type || ""}
-                  className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                  className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
                   required
                 >
-                  <option value="" disabled>Select Job Type</option>
+                  <option value="" disabled>Select job type</option>
                   <option value="full_time">Full-time</option>
                   <option value="part_time">Part-time</option>
-                  <option value="contract">Project</option>
+                  <option value="contract">Project base</option>
                   <option value="internship">Internship</option>
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Experience</Label>
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-400">Requirement</Label>
                   <select 
                     name="experience_type" 
                     defaultValue={job?.experience_type || ""}
-                    className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                    className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
                     required
                   >
-                    <option value="" disabled>Select Exp.</option>
+                    <option value="" disabled>Select</option>
                     <option value="fresher">Fresher</option>
                     <option value="experienced">Experienced</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Years Req.</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-400">Years req.</Label>
                   <Input 
                     name="experience_required" 
                     type="number" 
                     defaultValue={job?.experience_required}
                     placeholder="5" 
-                    className="h-9 rounded-lg text-xs" 
+                    className="h-11 rounded-xl text-sm font-medium" 
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-1 border-t border-gray-50 mt-2">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-gray-50/50 border border-gray-100">
+              <div className="space-y-2 pt-1 border-t border-slate-50 mt-2">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all cursor-pointer group">
                    <div className="flex items-center gap-2">
-                      <Sparkles className={cn("w-3.5 h-3.5", featured ? "text-amber-500" : "text-gray-200")} />
-                      <Label className="text-[10px] font-bold text-gray-700 cursor-pointer" htmlFor="featured-toggle">Feature on Home Page</Label>
+                      <Sparkles className={cn("w-4 h-4", featured ? "text-amber-500" : "text-slate-200")} />
+                      <Label className="text-xs font-medium text-slate-700 cursor-pointer" htmlFor="featured-toggle">Feature on home page</Label>
                    </div>
                    <input 
                      id="featured-toggle"
                      type="checkbox" 
                      checked={featured}
                      onChange={(e) => setFeatured(e.target.checked)}
-                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                     className="w-4.5 h-4.5 rounded-lg border-slate-300 text-primary focus:ring-primary cursor-pointer transition-transform active:scale-90"
                    />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
-              <div className="flex items-center gap-2 border-l-3 border-emerald-500 pl-3">
-                 <MapPin className="w-4 h-4 text-emerald-500" />
-                 <h2 className="text-xs font-bold text-gray-900 tracking-tight">Location</h2>
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+              <div className="flex items-center gap-2 border-l-2 border-emerald-500 pl-3">
+                 <MapPin className="w-4.5 h-4.5 text-emerald-500" />
+                 <h2 className="text-sm font-semibold text-slate-900">Location</h2>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Work Location</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-400">Work location</Label>
                 <select 
                   name="location" 
                   defaultValue={job?.location || ""}
-                  className="h-9 w-full rounded-lg border border-gray-100 bg-white px-3 text-[11px] font-bold focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                  className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
                   required
                 >
-                  <option value="" disabled>Select Location</option>
+                  <option value="" disabled>Select location</option>
                   {metadata.locations.map((loc, idx) => (
                     <option key={idx} value={loc.name}>{loc.name}</option>
                   ))}
@@ -375,44 +409,44 @@ export default function PostJobClient({
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 flex flex-col">
-              <div className="flex items-center gap-2 border-l-3 border-amber-500 pl-3">
-                 <DollarSign className="w-4 h-4 text-amber-500" />
-                 <h2 className="text-xs font-bold text-gray-900 tracking-tight">Salary & Openings</h2>
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+              <div className="flex items-center gap-2 border-l-2 border-amber-500 pl-3">
+                 <DollarSign className="w-4.5 h-4.5 text-amber-500" />
+                 <h2 className="text-sm font-semibold text-slate-900">Salary & openings</h2>
               </div>
               
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-xs tracking-tighter">Min Salary</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-400">Min salary</Label>
                   <Input 
                     name="salary_min" 
                     type="number" 
                     defaultValue={job?.salary_min?.split('.')[0]}
-                    placeholder="400000" 
-                    className="h-9 rounded-lg text-xs font-bold" 
+                    placeholder="400,000" 
+                    className="h-11 rounded-xl text-sm font-semibold" 
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-xs tracking-tighter">Max Salary</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-400">Max salary</Label>
                   <Input 
                     name="salary_max" 
                     type="number" 
                     defaultValue={job?.salary_max?.split('.')[0]}
-                    placeholder="1200000" 
-                    className="h-9 rounded-lg text-xs font-bold" 
+                    placeholder="1,200,000" 
+                    className="h-11 rounded-xl text-sm font-semibold" 
                   />
                 </div>
               </div>
               
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Number of Openings</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-slate-400">Number of openings</Label>
                 <div className="relative">
-                   <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-200" />
+                   <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-200" />
                    <Input 
                      name="vacancies" 
                      type="number" 
                      defaultValue={job?.vacancies || 1} 
-                     className="h-9 pl-10 rounded-lg text-xs font-bold bg-gray-50/30" 
+                     className="h-11 pl-11 rounded-xl text-sm font-semibold bg-slate-50/30" 
                      required 
                    />
                 </div>
@@ -422,36 +456,48 @@ export default function PostJobClient({
         </div>
 
         {/* Action Center Footer */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-bold pb-20">
-           <div className="flex items-center gap-3 text-gray-200">
-              <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
-                <Clock className="w-4 h-4" />
-              </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest leading-none">Job goes live instantly</span>
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-5 font-medium pb-24">
+           <div className="flex items-center gap-3 text-slate-400 bg-slate-50/50 px-4 py-2 rounded-full border border-slate-100">
+              <Clock className="w-4 h-4 text-emerald-500" />
+              <span className="text-[11px] font-semibold leading-none tracking-tight">Your job goes live instantly</span>
            </div>
            
-           <div className="flex items-center gap-3 w-full sm:w-auto">
+           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 size="sm" 
                 type="button" 
-                className="h-10 px-6 rounded-lg text-[10px] font-bold text-gray-400 border-gray-100 hover:bg-gray-50 transition-all flex-1 sm:flex-initial"
+                className="h-12 w-full sm:w-auto px-8 rounded-xl text-xs font-semibold text-slate-500 border-slate-200 hover:bg-slate-50 transition-all active:scale-95"
                 onClick={() => window.history.back()}
               >
                 Cancel
               </Button>
+
+              {isExpired && (
+                <Button 
+                  size="sm" 
+                  type="button" 
+                  disabled={loading} 
+                  onClick={handleRepublish}
+                  className="h-12 w-full sm:w-auto px-10 rounded-xl text-xs font-bold shadow-lg bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10 transition-all active:scale-95 text-white"
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                  Republish job
+                </Button>
+              )}
+
               <Button 
                 size="sm" 
                 type="submit" 
                 disabled={loading} 
                 className={cn(
-                  "h-10 px-10 rounded-lg text-[10px] font-bold tracking-wider shadow-lg flex-1 sm:flex-initial min-w-[200px] transition-all",
-                  isEdit ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/10" : "shadow-primary/10"
+                  "h-12 w-full sm:w-auto px-12 rounded-xl text-xs font-bold shadow-xl transition-all active:scale-95 text-white",
+                  isEdit ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/10" : "bg-primary hover:bg-primary/90 shadow-primary/20"
                 )}
               >
-                {loading ? <Loader2 className="w-3 w-3 animate-spin mr-2" /> : <Save className="w-3.5 h-3.5 mr-2" />}
-                {isEdit ? "Save Changes" : "Post This Job"}
-                <ChevronRight className="w-3.5 h-3.5 ml-2 opacity-30" />
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                {isEdit ? "Update job details" : "Post this job now"}
+                <ChevronRight className="w-4.5 h-4.5 ml-2 opacity-30" />
               </Button>
            </div>
         </div>
