@@ -5,13 +5,10 @@ import {
    Briefcase,
    TrendingUp,
    PlusCircle,
-   CheckCircle2,
    AlertCircle,
    ArrowRight,
    UserCheck,
-   Calendar,
-   Quote,
-   Star
+   Calendar
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -127,25 +124,6 @@ export default function EmployerDashboardClient({
          color: dashboardData?.company_verification === 1 ? "green" : "purple",
          trend: "Status"
       },
-   ];
-
-   const mockTestimonials = [
-      {
-         id: 1,
-         name: "Dr. Sarah Johnson",
-         role: "Principal",
-         institution: "St. Xavier's Academy",
-         message: "TeachNow has revolutionized how we find specialized teaching staff. The quality of candidates is unparalleled.",
-         rating: 5
-      },
-      {
-         id: 2,
-         name: "Robert Chen",
-         role: "HR Director",
-         institution: "International School Group",
-         message: "The dashboard is incredibly intuitive. Managing multiple job postings and applicants has never been easier.",
-         rating: 5
-      }
    ];
 
    return (
@@ -264,7 +242,7 @@ export default function EmployerDashboardClient({
                                  )}>
                                     {app.status}
                                  </span>
-                                 <p className="text-[10px] text-slate-300 mt-1.5 font-medium">{new Date(app.created_at).toLocaleDateString()}</p>
+                                 <p className="text-[10px] text-slate-300 mt-1.5 font-medium">{new Date(app.created_at).toLocaleDateString('en-GB')}</p>
                               </div>
                            </div>
                         ))}
@@ -311,7 +289,7 @@ export default function EmployerDashboardClient({
                                     </span>
                                  </div>
                                  <p className="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-400 font-medium">
-                                    <Calendar className="w-3 h-3 text-slate-300" /> Posted on {new Date(job.created_at).toLocaleDateString()}
+                                    <Calendar className="w-3 h-3 text-slate-300" /> Posted on {new Date(job.created_at).toLocaleDateString('en-GB')}
                                  </p>
                               </div>
                            </div>
@@ -335,42 +313,6 @@ export default function EmployerDashboardClient({
                      </div>
                   </div>
                </Link>
-            </div>
-         </div>
-
-         {/* Dashboard Testimonials Section */}
-         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center gap-2.5 font-medium">
-               <Quote className="w-4 h-4 text-primary" />
-               <h2 className="text-xs font-semibold text-slate-800 uppercase tracking-tight">What other employers say</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-50">
-               {mockTestimonials.map((testimonial) => (
-                  <div key={testimonial.id} className="p-6 space-y-4 hover:bg-slate-50/20 transition-colors">
-                     <div className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                           <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        ))}
-                     </div>
-                     
-                     <p className="text-sm text-slate-600 leading-relaxed font-medium italic">
-                        "{testimonial.message}"
-                     </p>
-                     
-                     <div className="flex items-center gap-3 pt-2">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
-                           {testimonial.name.charAt(0)}
-                        </div>
-                        <div className="min-w-0">
-                           <p className="text-xs font-bold text-slate-900 truncate">{testimonial.name}</p>
-                           <p className="text-[10px] font-semibold text-slate-400 truncate uppercase tracking-tighter">
-                              {testimonial.role} at {testimonial.institution}
-                           </p>
-                        </div>
-                     </div>
-                  </div>
-               ))}
             </div>
          </div>
       </div>

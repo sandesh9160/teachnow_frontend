@@ -41,6 +41,9 @@ export type Institution = {
   industry?: string;
   founded_in?: string;
   employee_count?: string;
+  institution_type?: string;
+  is_verified?: number;
+  is_featured?: number;
   associated_jobs?: Job[];
   jobs_count?: number;
 };

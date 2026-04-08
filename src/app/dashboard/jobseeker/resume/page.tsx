@@ -323,7 +323,7 @@ export default function ResumeManagementPage() {
                               )}
                             </div>
                             <p className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-                              <Monitor className="w-3 h-3" /> Indexed on {new Date(resume.created_at).toLocaleDateString()}
+                              <Monitor className="w-3 h-3" /> Indexed on {new Date(resume.created_at).toLocaleDateString('en-GB')}
                             </p>
                           </div>
                         </div>

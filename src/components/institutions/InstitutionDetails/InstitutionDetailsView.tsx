@@ -1,23 +1,20 @@
 "use client";
 import Link from "next/link";
 import { Institution, Job } from "@/types/homepage";
-import { Button } from "@/shared/ui/Buttons/Buttons";
 import { normalizeMediaUrl } from "@/services/api/client";
 import {
   MapPin,
-  Users,
-  Calendar,
   Building,
   Briefcase,
   ChevronRight,
   ShieldCheck,
   Globe,
-  TrendingUp,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { sanitizeSlug } from "@/lib/utils";
+import JobCard from "@/shared/cards/JobCard/JobCard";
 
 interface InstitutionDetailsViewProps {
   readonly company: Institution;
@@ -106,8 +103,8 @@ export default function InstitutionDetailsView({
                   <h2 className="text-xl font-bold text-slate-900">About {company.company_name}</h2>
                 </div>
                 <div className="prose prose-slate max-w-none">
-                  <p className="text-[15px] leading-relaxed text-slate-600 font-medium">
-                    {company.company_description || `Join ${company.company_name}, a leading educational institution dedicated to academic excellence. We provide modern facilities and a supportive environment for our educators to grow and inspire students.`}
+                  <p className="text-[15px] leading-relaxed text-slate-600 font-medium whitespace-pre-line">
+                    {company.company_description || company.description || `Join ${company.company_name}, a leading educational institution dedicated to academic excellence. We provide modern facilities and a supportive environment for our educators to grow and inspire students.`}
                   </p>
                 </div>
               </div>
@@ -121,50 +118,27 @@ export default function InstitutionDetailsView({
                 <p className="text-xs font-bold text-slate-400">{companyJobs.length} Results Found</p>
               </div>
 
-              <div className="grid gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {companyJobs.map((job) => (
-                  <Link
+                  <JobCard
                     key={job.id}
-                    href={`/${sanitizeSlug(job.slug || job.id.toString())}`}
-                    className="group relative flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border border-white bg-white p-5 shadow-lg shadow-slate-200/40 transition-all hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <h3 className="text-base font-bold text-slate-900 group-hover:text-primary transition-colors truncate">
-                          {job.title}
-                        </h3>
-                        <span className="inline-flex items-center rounded-md bg-slate-50 px-2 py-0.5 text-[9px] font-bold text-slate-500 ring-1 ring-slate-100 group-hover:ring-primary/20 group-hover:text-primary transition-all">
-                          {String(job.job_type).replace("_", " ")}
-                        </span>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                        <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
-                          <MapPin className="h-3.5 w-3.5" />
-                          {job.location}
-                        </p>
-                        <p className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                          <TrendingUp className="h-3.5 w-3.5" />
-                          {(() => {
-                            const min = Number(job.salary_min || 0);
-                            const max = Number(job.salary_max || 0);
-                            if (!min && !max) return "Not disclosed";
-                            const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
-                            return `₹${fmt(min)} - ${fmt(max)}`;
-                          })()}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-4 sm:pt-0 border-t sm:border-none border-slate-50">
-                      <p className="text-[10px] font-medium text-slate-400 sm:mr-4">
-                        {Math.floor(Math.random() * 5) + 1} candidates applied
-                      </p>
-                      <Button variant="outline" size="sm" className="h-9 gap-2 px-4 border-slate-200 rounded-lg group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
-                        Details <ChevronRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </Link>
+                    id={job.id}
+                    title={job.title}
+                    company={company.company_name}
+                    location={job.location}
+                    type={job.job_type}
+                    salary={(() => {
+                      const min = Number(job.salary_min || 0);
+                      const max = Number(job.salary_max || 0);
+                      if (!min && !max) return "Not disclosed";
+                      const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+                      return `${fmt(min)} - ${fmt(max)}`;
+                    })()}
+                    tags={[job.job_type, `${job.experience_required}y Exp`]}
+                    posted={new Date(job.created_at || Date.now()).toLocaleDateString('en-GB')}
+                    slug={job.slug}
+                    logo={company.company_logo}
+                  />
                 ))}
                 
                 {companyJobs.length === 0 && (
@@ -184,10 +158,9 @@ export default function InstitutionDetailsView({
               
               <div className="space-y-5">
                 {[
-                  { icon: Users, label: "Organization Size", value: company.employee_count || "Growing Team" },
-                  { icon: Building, label: "Business Sector", value: company.industry || "K-12 Education" },
+                  { icon: Building, label: "Institution Type", value: (company as any).institution_type || "School/College" },
+                  { icon: Briefcase, label: "Business Sector", value: company.industry || "Education Institution" },
                   { icon: MapPin, label: "Principal City", value: company.city || "Main Hub" },
-                  { icon: Calendar, label: "Active Network", value: "Verified Since 2024" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-4 group/stat">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400 shadow-inner group-hover/stat:bg-primary/5 group-hover/stat:text-primary transition-all">
@@ -199,12 +172,6 @@ export default function InstitutionDetailsView({
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-slate-50">
-                <Button variant="outline" className="w-full h-11 border-slate-200 font-bold gap-2 text-slate-600 hover:text-primary hover:border-primary">
-                  Follow Institution <Briefcase className="h-4 w-4" />
-                </Button>
               </div>
             </section>
 

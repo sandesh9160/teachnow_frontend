@@ -218,8 +218,8 @@ export default function JobsClient({
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
                            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><MapPin className="w-3.5 h-3.5" /> {job.location}</span>
-                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3.5 h-3.5" /> Expires {new Date(job.expires_at).toLocaleDateString()}</span>
-                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3.5 h-3.5" /> Posted {new Date(job.created_at).toLocaleDateString()}</span>
+                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3.5 h-3.5" /> Expires {new Date(job.expires_at).toLocaleDateString('en-GB')}</span>
+                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3.5 h-3.5" /> Posted {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
                         </div>
                      </div>
                      

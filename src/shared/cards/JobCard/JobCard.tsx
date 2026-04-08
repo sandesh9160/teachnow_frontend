@@ -15,6 +15,8 @@ import { normalizeMediaUrl } from "@/services/api/client";
 const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo }: JobCardProps) => {
   const [saved, setSaved] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [authReason, setAuthReason] = useState<"apply" | "save">("apply");
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
   
@@ -26,6 +28,8 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
     e.preventDefault();
     e.stopPropagation();
     if (!isLoggedIn) {
+      toast.info("Need to login as job seeker to apply for this job");
+      setAuthReason("apply");
       setShowAuthModal(true);
       return;
     }
@@ -40,16 +44,46 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
     router.push(`/apply/${jobPath}`);
   };
 
-  const handleSave = (e: React.MouseEvent) => {
+  const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (saved) {
-      toast.info(`${title} removed from saved jobs.`);
-    } else {
-      toast.success(`${title} saved to your list.`);
+
+    if (!isLoggedIn) {
+      toast.info("Need to login as job seeker to save this job");
+      setAuthReason("save");
+      setShowAuthModal(true);
+      return;
     }
-    setSaved(!saved);
+
+    if (user?.role === "employer") {
+      toast.error("Employers cannot bookmark jobs.");
+      return;
+    }
+
+    try {
+      // Optimistic UI update
+      setSaved(!saved);
+      
+      const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
+      // Standard toggle endpoint for bookmarks
+      const res = await dashboardServerFetch<any>(`jobseeker/jobs/${id}/bookmark`, { 
+        method: "POST" 
+      });
+
+      if (res.status === true) {
+        toast.success(saved ? "Removed from saved jobs" : "Job saved successfully!");
+      } else {
+        // Rollback on failure
+        setSaved(saved);
+        toast.error(res.message || "Failed to update bookmark.");
+      }
+    } catch (error) {
+      setSaved(saved);
+      toast.error("An error occurred while saving the job.");
+    }
   };
+
+  const logoUrl = logo ? normalizeMediaUrl(logo) : null;
 
   return (
     <>
@@ -60,10 +94,15 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
           <Link href={jobHref} className="flex gap-4 flex-1">
             <div className="absolute inset-0 z-0" aria-hidden="true" />
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-display font-bold text-lg transition-transform duration-300 group-hover:scale-110 relative z-10 overflow-hidden">
-              {logo ? (
-                <img src={normalizeMediaUrl(logo)} alt={company} className="h-full w-full object-contain" />
+              {logoUrl && !logoError ? (
+                <img 
+                  src={logoUrl} 
+                  alt={company} 
+                  className="h-full w-full object-contain" 
+                  onError={() => setLogoError(true)}
+                />
               ) : (
-                company[0]
+                <span className="uppercase">{company && company[0]}</span>
               )}
             </div>
             <div className="relative z-10">
@@ -112,8 +151,11 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
-        title="Apply for this Job"
-        submitText="Login to Apply"
+        title={authReason === "save" ? "Save Job" : "Apply for this Job"}
+        subTitle={authReason === "save" 
+          ? "Need to login as job seeker to save this job" 
+          : "Need to login as job seeker to apply for this job"}
+        submitText={authReason === "save" ? "Login to Save" : "Login to Apply"}
       />
     </>
   );

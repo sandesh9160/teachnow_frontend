@@ -220,8 +220,8 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                
                <div className="space-y-3 relative z-10">
                   {[
-                    { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString(), icon: Calendar, color: 'blue' },
-                    { label: 'Deadline', value: job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "Rolling", icon: Clock, color: 'amber' },
+                    { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'blue' },
+                    { label: 'Deadline', value: job.expires_at ? new Date(job.expires_at).toLocaleDateString('en-GB') : "Rolling", icon: Clock, color: 'amber' },
                     { label: 'Live State', value: job.job_status, icon: CheckCircle2, color: 'emerald' }
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between group/row">

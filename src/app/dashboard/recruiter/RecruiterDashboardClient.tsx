@@ -220,7 +220,7 @@ export default function RecruiterDashboardClient({
                               )}>
                                  {app.status}
                               </span>
-                              <p className="text-xs text-slate-300 mt-1.5 font-semibold">{new Date(app.created_at).toLocaleDateString()}</p>
+                              <p className="text-xs text-slate-300 mt-1.5 font-semibold">{new Date(app.created_at).toLocaleDateString('en-GB')}</p>
                            </div>
                         </div>
                      ))}
@@ -261,7 +261,7 @@ export default function RecruiterDashboardClient({
                               <span className="flex items-center gap-1.5 text-primary">
                                  <Users className="w-3 h-3" /> {job.job_applications_count} Applicants
                               </span>
-                              <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-slate-300" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                              <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-slate-300" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
                            </div>
                         </div>
                      ))

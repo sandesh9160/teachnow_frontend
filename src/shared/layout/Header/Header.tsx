@@ -6,9 +6,7 @@ import {
   X,
   ChevronDown,
   LayoutDashboard,
-  Settings,
   LogOut,
-  User,
   ChevronRight,
   ArrowUpRight,
 } from "lucide-react";
@@ -333,6 +331,8 @@ const DesktopAuth = ({
   setUserDropdownOpen: (open: boolean) => void;
   userDropdownRef: React.RefObject<HTMLDivElement | null>;
 }>) => {
+  const [avatarError, setAvatarError] = useState(false);
+
   if (!mounted) return <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100" />;
 
   if (!isLoggedIn) {
@@ -348,7 +348,7 @@ const DesktopAuth = ({
     );
   }
 
-  const avatarSrc = user?.avatar && (user.avatar.startsWith("http") || user.avatar.includes("/")) ? user.avatar : null;
+  const avatarSrc = user?.avatar ? normalizeMediaUrl(user.avatar) : null;
 
   return (
     <div className="relative" ref={userDropdownRef}>
@@ -357,8 +357,13 @@ const DesktopAuth = ({
         className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-gray-50 transition-all group"
       >
         <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden">
-          {avatarSrc ? (
-            <img src={avatarSrc} alt={user.name} className="h-full w-full object-cover" />
+          {avatarSrc && !avatarError ? (
+            <img 
+              src={avatarSrc} 
+              alt={user.name} 
+              className="h-full w-full object-cover" 
+              onError={() => setAvatarError(true)}
+            />
           ) : (
             user?.name?.charAt(0).toUpperCase() || "U"
           )}
@@ -380,11 +385,7 @@ const DesktopAuth = ({
           </div>
           
           <Link href={user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-primary/5 hover:text-primary transition-all">
-            <LayoutDashboard className="h-4 w-4" /> Go to Dashboard
-          </Link>
-          <Link href={user?.role === "employer" ? "/dashboard/employer/settings" : "/dashboard/jobseeker/profile"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-primary/5 hover:text-primary transition-all">
-            {user?.role === "employer" ? <Settings className="h-4 w-4" /> : <User className="h-4 w-4" />}
-            Manage {user?.role === "employer" ? "Settings" : "Profile"}
+            <LayoutDashboard className="h-4 w-4" /> My Dashboard
           </Link>
 
           <div className="h-px bg-gray-50 my-1 mx-4"></div>

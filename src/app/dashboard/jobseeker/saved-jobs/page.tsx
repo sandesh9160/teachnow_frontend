@@ -48,7 +48,7 @@ export default function SavedJobsPage() {
                   type={job.job_type || ""}
                   salary={job.salary_min ? `₹${job.salary_min} - ₹${job.salary_max}` : "Not Disclosed"}
                   tags={[job.job_type, `${job.experience_required || 0} Yrs Exp`].filter(Boolean)}
-                  posted={job.created_at ? new Date(job.created_at).toLocaleDateString() : ""}
+                  posted={job.created_at ? new Date(job.created_at).toLocaleDateString('en-GB') : ""}
                   slug={job.slug}
                   logo={job.employer?.company_logo}
                 />

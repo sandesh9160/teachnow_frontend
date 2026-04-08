@@ -7,7 +7,6 @@ import {
   Plus, 
   Trash2, 
   Edit2, 
-  Quote,
   X,
   UserCheck,
   Award,
@@ -91,18 +90,18 @@ export default function EmployerTestimonialsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12 px-4 md:px-0">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-slate-900 tracking-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
              My Testimonials
           </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest mt-0.5">Manage your platform feedback</p>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Manage your platform feedback</p>
         </div>
         
         <Button 
           variant={showForm ? "outline" : "default"} 
           onClick={() => { setShowForm(!showForm); if (!showForm) setEditingId(null); }}
-          className="rounded font-bold h-9 px-5 active:scale-95 transition-all text-xs"
+          className="rounded font-bold h-10 sm:h-9 px-5 active:scale-95 transition-all text-xs w-full sm:w-auto shadow-sm"
         >
           {showForm ? <><X className="w-3.5 h-3.5 mr-1.5" /> Cancel</> : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Share Experience</>}
         </Button>

@@ -202,8 +202,8 @@ export default function RecruiterJobsClient({
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><MapPin className="w-3 h-3" /> {job.location}</span>
-                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3 h-3" /> Expires {job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'}</span>
-                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3 h-3" /> Expires {job.expires_at ? new Date(job.expires_at).toLocaleDateString('en-GB') : 'N/A'}</span>
+                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
                         </div>
                      </div>
                   </div>

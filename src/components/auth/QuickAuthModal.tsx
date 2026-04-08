@@ -16,6 +16,7 @@ interface QuickAuthModalProps {
   onClose: () => void;
   onSuccess: () => void;
   title?: string;
+  subTitle?: string;
   submitText?: string;
   initialMode?: "login" | "register";
 }
@@ -29,6 +30,7 @@ export default function QuickAuthModal({
   onClose,
   onSuccess,
   title = "Authentication Required",
+  subTitle,
   submitText = "Continue",
   initialMode = "login"
 }: QuickAuthModalProps) {
@@ -126,7 +128,7 @@ export default function QuickAuthModal({
           </DialogTitle>
           <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-0.5">
             {mode === "login" 
-              ? "Sign in to access your account." 
+              ? (subTitle || "Sign in to access your account.") 
               : `Create your free account.`}
           </p>
         </DialogHeader>
