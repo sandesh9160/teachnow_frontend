@@ -14,15 +14,15 @@ import {
   List, 
   ListOrdered, 
   AlignLeft, 
-  AlignCenter, 
-  AlignRight,
-  Heading1,
-  Heading2,
+  // AlignCenter, 
+  // AlignRight,
+  // Heading1,
+  // Heading2,
   Undo,
   Redo,
-  Quote,
+  // Quote,
   Link as LinkIcon,
-  Unlink,
+  // Unlink,
   Code,
   Minus,
   Maximize2,
@@ -300,7 +300,7 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)] animate-pulse" />
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Ready for submission</span>
+               <span className="text-[10px] font-bold text-slate-400 ">Ready for submission</span>
             </div>
             <div className="w-px h-3 bg-slate-200" />
             <div className="flex items-center gap-1.5">

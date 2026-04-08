@@ -2,7 +2,7 @@
 
 import { useRef, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import JobCard from "@/shared/cards/JobCard/JobCard";
 import { formatDate } from "@/lib/utils";
@@ -20,7 +20,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
   if (!jobs || !Array.isArray(jobs) || jobs.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 bg-white">
+    <section className="py-12 md:py-16 bg-white overflow-hidden relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-left mb-10 pl-2">
           <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
@@ -30,16 +30,27 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
             Hand-picked opportunities from top educational institutions
           </p>
         </div>
+        
         <div className="relative group/carousel">
-          <button
-            onClick={() => scrollCarousel('left')}
-            aria-label="Previous jobs"
-            suppressHydrationWarning={true}
-            className="absolute -left-5 md:-left-5 lg:-left-6 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background shadow-lg flex items-center justify-center text-muted-foreground cursor-pointer transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 max-md:left-2 max-md:top-auto max-md:bottom-2 max-md:translate-y-0"
-          >
-            <ArrowLeft className="h-[18px] w-[18px]" />
-          </button>
-          <div ref={jobsRef} className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {/* Circular Navigation Buttons */}
+          <div className="absolute inset-y-0 -left-4 -right-4 flex items-center justify-between pointer-events-none z-20">
+            <button
+               onClick={() => scrollCarousel('left')}
+               aria-label="Previous jobs"
+               className="pointer-events-auto w-12 h-12 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-primary hover:scale-110 active:scale-90 transition-all ml-1 md:ml-0"
+            >
+               <ChevronLeft className="w-7 h-7" />
+            </button>
+            <button
+               onClick={() => scrollCarousel('right')}
+               aria-label="Next jobs"
+               className="pointer-events-auto w-12 h-12 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-primary hover:scale-110 active:scale-90 transition-all mr-1 md:mr-0"
+            >
+               <ChevronRight className="w-7 h-7" />
+            </button>
+          </div>
+
+          <div ref={jobsRef} className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {jobs.map((job) => {
               const companyName = job.employer?.company_name || "Confidential School";
               const companyLogo = job.employer?.company_logo || "";
@@ -62,17 +73,10 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               );
             })}
           </div>
-          <button
-            onClick={() => scrollCarousel('right')}
-            aria-label="Next jobs"
-            suppressHydrationWarning={true}
-            className="absolute -right-5 md:-right-5 lg:-right-6 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background shadow-lg flex items-center justify-center text-muted-foreground cursor-pointer transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 max-md:right-2 max-md:top-auto max-md:bottom-2 max-md:translate-y-0"
-          >
-            <ArrowRight className="h-[18px] w-[18px]" />
-          </button>
         </div>
+
         <div className="mt-10 text-center">
-          <Button asChild variant="outline" className="gap-2 text-primary border-primary/20 hover:bg-primary/5">
+          <Button asChild variant="outline" className="gap-2 text-primary border-primary/20 hover:bg-primary/5 h-11 px-8 rounded-xl font-semibold">
             <Link href="/jobs">
               View All Jobs <ArrowRight className="h-4 w-4" />
             </Link>

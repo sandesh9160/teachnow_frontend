@@ -7,19 +7,28 @@ export type Testimonial = {
   designation: string;
   company: string;
   message: string;
+  rating?: number;
   [key: string]: unknown;
 };
 
-export function useTestimonials() {
+/**
+ * Flexible hook for managing testimonials across different user roles
+ * @param role 'jobseeker' | 'employer' | 'recruiter'
+ */
+export function useTestimonials(role: string = "jobseeker") {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Normalize recruiter to employer if the API expects 'employer' for recruiters too
+  // Based on your provided endpoints, 'employer/testimonials' is likely shared or specific
+  const endpointBase = role === 'jobseeker' ? 'jobseeker/testimonials' : 'employer/testimonials';
 
   const fetchTestimonials = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await dashboardServerFetch<any>("jobseeker/testimonials", { method: "GET" });
+      const res = await dashboardServerFetch<any>(endpointBase, { method: "GET" });
       const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
       setTestimonials(data);
     } catch (err: any) {
@@ -29,14 +38,14 @@ export function useTestimonials() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [endpointBase]);
 
   const createTestimonial = useCallback(
     async (payload: Omit<Testimonial, "id">) => {
       try {
         setLoading(true);
         setError(null);
-        await dashboardServerFetch<any>("jobseeker/testimonials", {
+        await dashboardServerFetch<any>(endpointBase, {
           method: "POST",
           data: payload,
         });
@@ -48,7 +57,7 @@ export function useTestimonials() {
         setLoading(false);
       }
     },
-    [fetchTestimonials]
+    [endpointBase, fetchTestimonials]
   );
 
   const updateTestimonial = useCallback(
@@ -56,7 +65,7 @@ export function useTestimonials() {
       try {
         setLoading(true);
         setError(null);
-        await dashboardServerFetch<any>(`jobseeker/testimonials/${id}`, {
+        await dashboardServerFetch<any>(`${endpointBase}/${id}`, {
           method: "PUT",
           data: payload,
         });
@@ -68,7 +77,7 @@ export function useTestimonials() {
         setLoading(false);
       }
     },
-    [fetchTestimonials]
+    [endpointBase, fetchTestimonials]
   );
 
   const deleteTestimonial = useCallback(
@@ -76,7 +85,7 @@ export function useTestimonials() {
       try {
         setLoading(true);
         setError(null);
-        await dashboardServerFetch<any>(`jobseeker/testimonials/${id}`, {
+        await dashboardServerFetch<any>(`${endpointBase}/${id}`, {
           method: "DELETE",
         });
         await fetchTestimonials();
@@ -87,7 +96,7 @@ export function useTestimonials() {
         setLoading(false);
       }
     },
-    [fetchTestimonials]
+    [endpointBase, fetchTestimonials]
   );
 
   return {

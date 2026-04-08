@@ -11,8 +11,7 @@ import {
   ShieldCheck, 
   Search,
   X,
-  User,
-  Clock
+  User
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -223,7 +222,7 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
                     onClick={() => handleDelete(u.id)}
                     variant="ghost" 
                     size="sm"
-                    className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl text-red-500 hover:bg-red-50 transition-all p-0 border border-transparent hover:border-red-100 active:scale-95 inline-flex items-center justify-center flex-shrink-0"
+                    className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl text-red-500 hover:bg-red-50 transition-all p-0 border border-transparent hover:border-red-100 active:scale-95 inline-flex items-center justify-center shrink-0"
                   >
                     <Trash2 className="w-4.5 h-4.5" />
                   </Button>

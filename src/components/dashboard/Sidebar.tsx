@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import {
-  LayoutDashboard,
+  LayoutGrid,
   User,
   Briefcase,
   Bookmark,
@@ -13,7 +13,6 @@ import {
   PlusCircle,
   ClipboardList,
   Building2,
-  // CheckCircle,
   CreditCard,
   LogOut,
   ChevronLeft,
@@ -37,7 +36,7 @@ export function DashboardSidebar({
   const [collapsed, setCollapsed] = useState(false);
 
   const seekerLinks = [
-    { label: "Overview", href: "/dashboard/jobseeker", icon: LayoutDashboard },
+    { label: "Overview", href: "/dashboard/jobseeker", icon: LayoutGrid },
     { label: "My Profile", href: "/dashboard/jobseeker/profile", icon: User },
     { label: "My Applications", href: "/dashboard/jobseeker/applied-jobs", icon: Briefcase },
     { label: "Saved Jobs", href: "/dashboard/jobseeker/saved-jobs", icon: Bookmark },
@@ -46,20 +45,22 @@ export function DashboardSidebar({
   ];
 
   const employerLinks = [
-    { label: "Overview", href: "/dashboard/employer", icon: LayoutDashboard },
+    { label: "Overview", href: "/dashboard/employer", icon: LayoutGrid },
     { label: "Company Profile", href: "/dashboard/employer/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/employer/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/employer/jobs", icon: ClipboardList },
     { label: "Recruiters", href: "/dashboard/employer/recruiters", icon: Users },
     { label: "Documents", href: "/dashboard/employer/institution-verification", icon: FileText },
+    { label: "Testimonials", href: "/dashboard/employer/testimonials", icon: MessageSquare },
     { label: "Subscription", href: "/dashboard/employer/purchase-history", icon: CreditCard },
   ];
 
   const recruiterLinks = [
-    { label: "Overview", href: "/dashboard/recruiter", icon: LayoutDashboard },
+    { label: "Overview", href: "/dashboard/recruiter", icon: LayoutGrid },
     { label: "Company Profile", href: "/dashboard/recruiter/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
+    { label: "Testimonials", href: "/dashboard/recruiter/testimonials", icon: MessageSquare },
   ];
 
   const links = 
@@ -72,37 +73,43 @@ export function DashboardSidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 md:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-300"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed md:relative inset-y-0 left-0 bg-white border-r border-slate-100 flex flex-col transition-all duration-300 z-50 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)] ${
+        className={`fixed md:sticky inset-y-0 left-0 h-screen bg-white border-r border-slate-100 flex flex-col transition-all duration-300 z-50 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)] ${
           collapsed ? "w-[80px]" : "w-64"
         } ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-        {/* Branding on Mobile */}
-        {branding && (
-          <div className="flex md:hidden items-center gap-3 p-6 border-b border-slate-50">
-            {branding.logo ? (
-              <div className="h-9 w-9 rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-100">
-                <img src={branding.logo} alt={branding.name} className="h-full w-full object-contain" />
-              </div>
-            ) : (
-              <div className="h-9 w-9 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shrink-0">
-                {branding.name[0]}
-              </div>
-            )}
-            <span className="font-display text-lg font-bold text-slate-900 tracking-tight leading-none truncate">
-              {branding.secondary}
-              <span className="text-primary ml-0.5">{branding.primary}</span>
-            </span>
-          </div>
-        )}
+        {/* Branding Area - Desk & Mobile */}
+        <div className="flex items-center gap-3 p-6 border-b border-slate-50 min-h-[81px]">
+          {branding ? (
+            <>
+              {branding.logo ? (
+                <div className="h-10 w-10 rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-100 bg-slate-50 flex items-center justify-center p-1">
+                  <img src={branding.logo} alt={branding.name} className="h-full w-full object-contain" />
+                </div>
+              ) : (
+                <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-lg shadow-primary/20">
+                  {branding.name[0]}
+                </div>
+              )}
+              {!collapsed && (
+                <span className="font-display text-lg font-bold text-slate-900 tracking-tight leading-none truncate select-none">
+                  {branding.secondary}
+                  <span className="text-primary ml-0.5">{branding.primary}</span>
+                </span>
+              )}
+            </>
+          ) : (
+             <div className="h-10 w-10 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-center animate-pulse" />
+          )}
+        </div>
 
         {/* Nav Content */}
-        <nav className="flex-1 overflow-y-auto pt-6 px-4 space-y-1 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto pt-6 px-4 space-y-1.5 custom-scrollbar">
           {links.map((link) => {
             const isActive = pathname === link.href;
             const Icon = link.icon;
@@ -112,20 +119,21 @@ export function DashboardSidebar({
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-300 group relative ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all duration-300 group relative ${
                   isActive
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-primary/5 text-primary shadow-[inset_0_0_0_1px_rgba(var(--primary-rgb),0.1)]"
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <Icon 
-                  className={`h-[18px] w-[18px] transition-colors duration-300 ${
-                    isActive ? "text-primary" : "text-slate-400 group-hover:text-primary"
+                  className={`h-[18px] w-[18px] shrink-0 transition-all duration-300 ${
+                    isActive ? "text-primary scale-110" : "text-slate-400 group-hover:text-primary group-hover:scale-110"
                   }`} 
                 />
-                {!collapsed && <span className="tracking-tight">{link.label}</span>}
+                {!collapsed && <span className="tracking-tight truncate">{link.label}</span>}
+                
                 {isActive && !collapsed && (
-                  <div className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />
+                  <div className="absolute left-0 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" />
                 )}
               </Link>
             );
@@ -135,9 +143,9 @@ export function DashboardSidebar({
         {/* Bottom Actions */}
         <div className="p-4 border-t border-slate-50 space-y-2">
           <LogoutSubmitButton
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 group"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 group"
           >
-            <LogOut className="h-[18px] w-[18px] text-slate-400 group-hover:text-rose-500" />
+            <LogOut className="h-[18px] w-[18px] text-slate-400 group-hover:text-rose-500 group-hover:scale-110 transition-transform" />
             {!collapsed && <span>Log Out</span>}
           </LogoutSubmitButton>
 
@@ -147,8 +155,8 @@ export function DashboardSidebar({
           >
             {collapsed ? <ChevronRight size={18} className="group-hover:text-primary" /> : (
               <div className="flex items-center gap-2">
-                <ChevronLeft size={18} className="group-hover:text-primary" />
-                <span className="text-xs font-medium text-slate-400 group-hover:text-primary transition-colors">Collapse Sidebar</span>
+                <ChevronLeft size={18} className="group-hover:text-primary transition-transform group-hover:-translate-x-0.5" />
+                <span className="text-xs font-semibold text-slate-400 group-hover:text-primary transition-colors">Collapse Sidebar</span>
               </div>
             )}
           </button>

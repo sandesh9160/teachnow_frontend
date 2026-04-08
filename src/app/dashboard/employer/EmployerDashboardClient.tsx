@@ -9,7 +9,9 @@ import {
    AlertCircle,
    ArrowRight,
    UserCheck,
-   Calendar
+   Calendar,
+   Quote,
+   Star
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -127,8 +129,27 @@ export default function EmployerDashboardClient({
       },
    ];
 
+   const mockTestimonials = [
+      {
+         id: 1,
+         name: "Dr. Sarah Johnson",
+         role: "Principal",
+         institution: "St. Xavier's Academy",
+         message: "TeachNow has revolutionized how we find specialized teaching staff. The quality of candidates is unparalleled.",
+         rating: 5
+      },
+      {
+         id: 2,
+         name: "Robert Chen",
+         role: "HR Director",
+         institution: "International School Group",
+         message: "The dashboard is incredibly intuitive. Managing multiple job postings and applicants has never been easier.",
+         rating: 5
+      }
+   ];
+
    return (
-      <div className="max-w-6xl mx-auto px-4 py-4 space-y-5 font-sans text-slate-700">
+      <div className="max-w-6xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-700 pb-12">
          {/* Simple Header */}
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
             <div className="space-y-1">
@@ -314,6 +335,42 @@ export default function EmployerDashboardClient({
                      </div>
                   </div>
                </Link>
+            </div>
+         </div>
+
+         {/* Dashboard Testimonials Section */}
+         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center gap-2.5 font-medium">
+               <Quote className="w-4 h-4 text-primary" />
+               <h2 className="text-xs font-semibold text-slate-800 uppercase tracking-tight">What other employers say</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-50">
+               {mockTestimonials.map((testimonial) => (
+                  <div key={testimonial.id} className="p-6 space-y-4 hover:bg-slate-50/20 transition-colors">
+                     <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                           <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                        ))}
+                     </div>
+                     
+                     <p className="text-sm text-slate-600 leading-relaxed font-medium italic">
+                        "{testimonial.message}"
+                     </p>
+                     
+                     <div className="flex items-center gap-3 pt-2">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs border border-primary/20">
+                           {testimonial.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                           <p className="text-xs font-bold text-slate-900 truncate">{testimonial.name}</p>
+                           <p className="text-[10px] font-semibold text-slate-400 truncate uppercase tracking-tighter">
+                              {testimonial.role} at {testimonial.institution}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
             </div>
          </div>
       </div>

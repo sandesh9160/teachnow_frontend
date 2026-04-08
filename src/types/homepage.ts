@@ -58,6 +58,7 @@ export type Category = {
   id: number;
   name: string;
   slug: string;
+  icon?: string | null;
   jobs_count?: number;
 };
 
@@ -115,8 +116,9 @@ export type TestimonialData = {
   name: string;
   designation: string;
   company: string;
-  photo: string;
+  photo?: string | null;
   message: string;
+  rating?: number | null;
 };
 
 export type FAQData = {

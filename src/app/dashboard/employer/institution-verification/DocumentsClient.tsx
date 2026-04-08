@@ -135,7 +135,7 @@ export default function DocumentsClient() {
     <div className="max-w-6xl mx-auto px-4 py-4 space-y-4 relative">
       {/* Right Sidebar Preview Panel */}
       {previewData && (
-        <div className="fixed inset-0 z-[100] overflow-hidden group font-sans">
+        <div className="fixed inset-0 z-100 overflow-hidden group font-sans">
            <div 
              className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] transition-opacity animate-in fade-in duration-500" 
              onClick={() => setPreviewData(null)}
