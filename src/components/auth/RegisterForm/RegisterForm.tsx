@@ -16,6 +16,7 @@ const RegisterForm = () => {
   const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -40,20 +41,35 @@ const RegisterForm = () => {
 
     try {
       setIsLoading(true);
-      const endpoint = role === "employer" ? "/auth/create-employer" : "/auth/register";
-      await fetchAPI(endpoint, {
+      const isEmployer = role === "employer";
+      const endpoint = isEmployer ? "/auth/create-employer" : "/auth/register";
+      
+      const payload: any = isEmployer ? {
+        company_name: name,
+        email,
+        phone,
+        password,
+        password_confirmation: confirmPassword,
+        role: role,
+        captcha_token: captchaToken
+      } : {
+        name: name,
+        email,
+        password,
+        password_confirmation: confirmPassword,
+        role: role,
+        captcha_token: captchaToken
+      };
+
+      const res = await fetchAPI<any>(endpoint, {
         method: "POST",
-        body: {
-          full_name: name,
-          email,
-          password,
-          password_confirmation: confirmPassword,
-          role: role,
-          captcha_token: captchaToken
-        },
+        body: payload,
       });
-      toast.success("Account created successfully!");
-      router.push("/auth/login");
+
+      if (res.status || res.success) {
+        toast.success("Account created successfully!");
+        router.push("/auth/login?message=Registration successful. Please login to continue.");
+      }
     } catch (err: any) {
       toast.error(err?.message || "Registration failed");
       // Reset captcha on failure
@@ -129,6 +145,27 @@ const RegisterForm = () => {
             />
           </div>
         </div>
+
+        {role === "employer" && (
+          <div className="space-y-2 animate-in slide-in-from-left-2 duration-300">
+            <Label htmlFor="reg-phone" className="text-slate-700 font-bold ml-1">Phone Number</Label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors flex items-center justify-center font-bold text-[10px]">
+                +91
+              </div>
+              <Input
+                id="reg-phone"
+                type="tel"
+                placeholder="10 digit mobile number"
+                className="pl-12 h-12 bg-slate-50 border-slate-100 rounded-2xl focus:bg-white transition-all font-medium"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                disabled={isLoading}
+                required={role === "employer"}
+              />
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
