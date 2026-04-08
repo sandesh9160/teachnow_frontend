@@ -22,14 +22,27 @@ export function useTestimonials(role: string = "jobseeker") {
 
   // Normalize recruiter to employer if the API expects 'employer' for recruiters too
   // Based on your provided endpoints, 'employer/testimonials' is likely shared or specific
-  const endpointBase = role === 'jobseeker' ? 'jobseeker/testimonials' : 'employer/testimonials';
+  const endpointBase = role === 'jobseeker' 
+    ? 'jobseeker/testimonials' 
+    : role === 'recruiter' 
+      ? 'recruiter/testimonials' 
+      : 'employer/testimonials';
 
   const fetchTestimonials = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await dashboardServerFetch<any>(endpointBase, { method: "GET" });
-      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const res = await dashboardServerFetch<any>(`${endpointBase}?t=${Date.now()}`, { method: "GET" });
+      
+      // Attempt to find the array in common property names
+      const data = Array.isArray(res?.data) 
+        ? res.data 
+        : Array.isArray(res?.testimonials) 
+          ? res.testimonials 
+          : Array.isArray(res) 
+            ? res 
+            : [];
+            
       setTestimonials(data);
     } catch (err: any) {
       setTestimonials([]);

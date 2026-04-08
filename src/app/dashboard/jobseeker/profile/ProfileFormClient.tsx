@@ -28,6 +28,7 @@ function toEducationPayload(form: {
     start_year: form.start_date?.slice(0, 4) ?? "",
     end_year: form.end_date?.slice(0, 4) ?? "",
     grade: form.grade?.trim() ?? "",
+    description: form.description,
   };
 }
 
@@ -57,8 +58,8 @@ function mapServerProfile(initial: Record<string, any>) {
     email: String(data.user?.email || data.email || ""),
     phone: String(data.phone || ""),
     location: String(data.location || ""),
-    title: String(data.title || ""),
-    bio: String(data.bio || ""),
+    title: String(data.title || data.job_title || data.headline || ""),
+    bio: String(data.bio || data.about || data.summary || ""),
     experience_years: Number(data.experience_years || 0),
     availability: String(data.availability || "open"),
     dob: data.dob ? String(data.dob).split("T")[0] : "",
@@ -329,29 +330,38 @@ export default function ProfileFormClient({
       });
 
       // Sync Education
-      for (const edu of localEduList) {
+      const eduResults = await Promise.all(localEduList.map(async (edu) => {
         if ((edu as any).is_deleted) {
-          await deleteEducation(edu.id);
+          return deleteEducation(edu.id);
         } else if ((edu as any).is_new) {
           const { is_new, is_dirty, is_deleted, id, ...payload } = edu as any;
-          await createEducation(toEducationPayload(payload as any));
+          return createEducation(toEducationPayload(payload as any));
         } else if ((edu as any).is_dirty) {
           const { is_new, is_dirty, is_deleted, id, ...payload } = edu as any;
-          await updateEducation(edu.id, toEducationPayload(payload as any));
+          return updateEducation(edu.id, toEducationPayload(payload as any));
         }
-      }
+        return { status: true };
+      }));
 
       // Sync Experience
-      for (const exp of localExpList) {
+      const expResults = await Promise.all(localExpList.map(async (exp) => {
         if ((exp as any).is_deleted) {
-          await deleteExperience(exp.id);
+          return deleteExperience(exp.id);
         } else if ((exp as any).is_new) {
           const { is_new, is_dirty, is_deleted, id, ...payload } = exp as any;
-          await createExperience(toExperiencePayload(payload as any));
+          return createExperience(toExperiencePayload(payload as any));
         } else if ((exp as any).is_dirty) {
           const { is_new, is_dirty, is_deleted, id, ...payload } = exp as any;
-          await updateExperience(exp.id, toExperiencePayload(payload as any));
+          return updateExperience(exp.id, toExperiencePayload(payload as any));
         }
+        return { status: true };
+      }));
+
+      // Check if any sync failed
+      const hasSyncErrors = [...eduResults, ...expResults].some(r => r && (r as any).status === false);
+      if (hasSyncErrors) {
+        toast.error("Some records failed to sync. Please try again.");
+        // Continue but with warning, or abort? Let's check profile update anyway.
       }
 
       // Sync Profile
@@ -362,8 +372,9 @@ export default function ProfileFormClient({
         Object.entries(profileData).forEach(([key, value]) => {
           if (key === 'skills') {
             skillNames.forEach((name: any) => formData.append("skills[]", String(name)));
-          } else if (key !== 'profile_photo' && key !== 'skills') {
+          } else if (key !== 'profile_photo' && key !== 'skills' && key !== 'email') {
             formData.append(key, value !== null && value !== undefined ? String(value) : "");
+            if (key === 'title') formData.append('job_title', String(value));
           }
         });
         formData.append("profile_photo", photoFile);
@@ -371,7 +382,13 @@ export default function ProfileFormClient({
         const result = await uploadFile("jobseeker/profile", { method: "POST", data: formData });
         processResponse(result);
       } else {
-        const payload = { ...profileData, skills: skillNames };
+        // Exclude internal/read-only fields from the update payload
+        const { email, profile_photo, ...safeData } = profileData;
+        const payload = { 
+          ...safeData, 
+          job_title: safeData.title, // Alias for backend compatibility
+          skills: skillNames 
+        };
         const result = await updateProfile(payload);
         processResponse(result);
       }
@@ -808,6 +825,16 @@ export default function ProfileFormClient({
                     className="rounded-lg h-9 bg-white text-sm"
                   />
                 </div>
+              </div>
+              <div className="md:col-span-2 space-y-1">
+                <Label className="text-[11px] text-gray-400">Description / Highlights</Label>
+                <textarea
+                  value={eduFormData.description}
+                  onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
+                  rows={2}
+                  className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
+                  placeholder="e.g. Relevant coursework, key projects, or achievements..."
+                />
               </div>
             </div>
             <div className="flex justify-end pt-2">

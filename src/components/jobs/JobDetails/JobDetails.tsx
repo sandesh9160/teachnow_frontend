@@ -17,9 +17,6 @@ import {
   Sparkles,
   Zap,
   ArrowRight,
-  CheckCircle2,
-  Heart,
-  Award,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -28,6 +25,8 @@ import { sanitizeSlug } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { toast } from "sonner";
+import { useClientSession } from "@/hooks/useClientSession";
+import QuickAuthModal from "@/components/auth/QuickAuthModal";
 
 type JobDetailsProps = Readonly<{
   job: Job;
@@ -80,80 +79,33 @@ function formatPostedDate(date?: string): string {
   })}`;
 }
 
-function getResponsibilities(job: Job, employerName: string): string[] {
-  if (job.description) {
-    const sections = job.description.split(/(?=Responsibilities|Key Responsibilities|What You'll Do)/i);
-    const responsibilitiesSection = sections.find(s => /Responsibilities|Key Responsibilities|What You'll Do/i.test(s));
-    if (responsibilitiesSection) {
-      return responsibilitiesSection
-        .replace(/Responsibilities|Key Responsibilities|What You'll Do/i, "")
-        .split(/[•\n*-]/)
-        .map(s => s.trim().replace(/^[: -]+/, ""))
-        .filter(s => s.length > 5);
-    }
-  }
-  return [
-    `Deliver high-quality instruction as a ${job.title || "teaching professional"} at ${employerName}.`,
-    `Support students with lesson planning, classroom engagement, and academic progress.`,
-    `Collaboration with the academic team to improve learning outcomes and curriculum delivery.`,
-  ];
-}
-
-function getRequirements(job: Job): string[] {
-  if (job.description) {
-    const sections = job.description.split(/(?=Requirements|Eligibility|What We're Looking For|Necessary Skills)/i);
-    const requirementsSection = sections.find(s => /Requirements|Eligibility|What We're Looking For/i.test(s));
-    if (requirementsSection) {
-      return requirementsSection
-        .replace(/Requirements|Eligibility|What We're Looking For|Necessary Skills/i, "")
-        .split(/[•\n*-]/)
-        .map(s => s.trim().replace(/^[: -]+/, ""))
-        .filter(s => s.length > 5);
-    }
-  }
-  return [
-    job.experience_required
-      ? `${job.experience_required}+ years of relevant teaching experience.`
-      : "Relevant teaching or subject expertise preferred.",
-    "Strong communication, planning, and learner engagement skills.",
-    `Comfort working in a ${formatJobType(job.job_type).toLowerCase()} role based in ${job.location || "India"}.`,
-  ];
-}
-
-function getBenefits(job: Job): string[] {
-  if (job.description) {
-    const sections = job.description.split(/(?=Benefits|What We Offer|Perks)/i);
-    const benefitsSection = sections.find(s => /Benefits|What We Offer|Perks/i.test(s));
-    if (benefitsSection) {
-      return benefitsSection
-        .replace(/Benefits|What We Offer|Perks/i, "")
-        .split(/[•\n*-]/)
-        .map(s => s.trim().replace(/^[: -]+/, ""))
-        .filter(s => s.length > 5);
-    }
-  }
-  return [
-    `Competitive compensation: ${formatSalaryRange(job)}.`,
-    "Opportunity to work with a growing academic team and motivated learners.",
-    job.vacancies ? `${job.vacancies} active openings for this role.` : "Quick application process and active hiring support.",
-  ];
-}
 
 
 export default function JobDetails({ job, slug }: JobDetailsProps) {
-  const [activeTab, setActiveTab] = useState("Description");
   const [mounted, setMounted] = useState(false);
+  const { isLoggedIn, user } = useClientSession();
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     void fetchBookmarks();
   }, [job.id, fetchBookmarks]);
 
-  const isBookmarked = bookmarks.some((b) => b.id === job.id);
+  const isBookmarked = bookmarks.some((b) => String(b.id) === String(job?.id));
 
   const handleToggleBookmark = async () => {
+    if (!isLoggedIn) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (user?.role === "employer") {
+      toast.error("Employers cannot bookmark jobs.");
+      return;
+    }
+
     const wasBookmarked = isBookmarked;
     try {
       setBookmarkBusy(true);
@@ -180,16 +132,10 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
     { label: "Jobs", href: "/jobs" },
     { label: title, isCurrent: true },
   ];
-  const description =
-    job.description ||
-    `${employerName} is looking for a skilled ${title} to join the team in ${job.location || "India"}. This role is ideal for someone who enjoys delivering meaningful outcomes and working in a learner-focused environment.`;
+  const description = job.description || "";
 
-  const responsibilities = getResponsibilities(job, employerName);
-  const requirements = getRequirements(job);
-  const benefits = getBenefits(job);
+  // No longer using split sections
   const similarJobs = Array.isArray(job.similar_jobs) ? job.similar_jobs : [];
-
-  const tabs = ["Description", "Responsibilities", "Requirements", "Benefits"];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-16">
@@ -303,86 +249,27 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               </div>
             </section>
 
-            {/* Content Tabs Section */}
+            {/* Job Content Section */}
             <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/50">
-              <div className="flex overflow-x-auto border-b border-slate-100 bg-slate-50/20 px-2 no-scrollbar">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`relative px-5 py-4 text-[13px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === tab
-                        ? "text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
-                        : "text-slate-500 hover:text-slate-700"
-                      }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
+              <div className="border-b border-slate-100 bg-slate-50/20 px-8 py-4">
+                <h2 className="text-[13px] font-bold uppercase tracking-wider text-primary">Job Overview & Details</h2>
               </div>
 
               <div className="p-6 sm:p-8">
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  {activeTab === "Description" && (
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-bold text-slate-900">Work Environment & Role</h2>
-                      <p className="text-[15px] leading-relaxed text-slate-600 font-medium">{description}</p>
-                    </div>
-                  )}
-
-                  {activeTab === "Responsibilities" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-bold text-slate-900">Key Deliverables</h3>
-                      <ul className="grid gap-3 sm:grid-cols-2">
-                        {responsibilities.map((item, idx) => (
-                          <li key={idx} className="flex gap-3 rounded-lg border border-slate-50 bg-slate-50/50 p-4">
-                            <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/40" />
-                            <span className="text-[14px] font-semibold text-slate-700 leading-tight">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {activeTab === "Requirements" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-bold text-slate-900">Preferred Qualifications</h3>
-                      <div className="space-y-3">
-                        {requirements.map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-3">
-                            <div className="mt-1 h-5 w-5 shrink-0 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                            </div>
-                            <span className="text-[15px] font-semibold text-slate-600 leading-snug">{item}</span>
-                          </div>
-                        ))}
+                  <div className="prose prose-slate max-w-none">
+                    {description ? (
+                      <div 
+                        className="text-[15px] leading-relaxed text-slate-600 font-medium space-y-4"
+                        dangerouslySetInnerHTML={{ __html: description }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                        <Briefcase className="w-8 h-8 opacity-20 mb-2" />
+                        <p className="text-sm font-semibold italic">No detailed description provided for this opening.</p>
                       </div>
-                    </div>
-                  )}
-
-                  {activeTab === "Benefits" && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-bold text-slate-900">Employee Benefits</h3>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {benefits.map((item, idx) => {
-                          let Icon = Sparkles;
-                          const l = item.toLowerCase();
-                          if (l.includes("compens") || l.includes("salary") || l.includes("opening")) Icon = Award;
-                          else if (l.includes("health") || l.includes("medical") || l.includes("perk") || l.includes("benefit")) Icon = Heart;
-                          else if (l.includes("team") || l.includes("environment") || l.includes("support")) Icon = Users;
-                          else if (l.includes("growth") || l.includes("opportunity")) Icon = TrendingUp;
-
-                          return (
-                            <div key={idx} className="flex items-center gap-3 rounded-xl border border-slate-100 p-4 transition-colors hover:bg-slate-50">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400 group-hover:text-primary transition-colors">
-                                <Icon className="h-4 w-4" />
-                              </div>
-                              <p className="text-[14px] font-bold text-slate-700">{item}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </section>
@@ -494,6 +381,18 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
           </div>
         </section>
       )}
+
+      <QuickAuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          setShowAuthModal(false);
+          void fetchBookmarks();
+        }}
+        title="Save Job"
+        subTitle="Need to login as job seeker to save this job"
+        submitText="Login to Save"
+      />
     </div>
   );
 }

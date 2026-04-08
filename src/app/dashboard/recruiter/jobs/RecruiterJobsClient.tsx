@@ -13,7 +13,8 @@ import {
   TrendingUp,
   Layout,
   AlertCircle,
-  ChevronLeft
+  ChevronLeft,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -35,6 +36,7 @@ interface Job {
   expires_at: string;
   is_active: number;
   featured: number;
+  applications_count?: number;
 }
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -188,7 +190,9 @@ export default function RecruiterJobsClient({
                   <div className="flex items-start gap-4 flex-1">
                      <div className={cn(
                         "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
-                        job.featured ? "bg-amber-50 text-amber-500 border-amber-100" : "bg-gray-50 text-gray-400 border-gray-100"
+                        job.featured 
+                          ? "bg-amber-50 text-amber-600 border-amber-100 shadow-sm" 
+                          : "bg-blue-50 text-blue-600 border-blue-100/50"
                      )}>
                         {job.featured ? <TrendingUp className="w-5 h-5" /> : <Briefcase className="w-5 h-5" />}
                      </div>
@@ -200,10 +204,19 @@ export default function RecruiterJobsClient({
                               <StatusBadge status={job.status} />
                            </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><MapPin className="w-3 h-3" /> {job.location}</span>
-                           <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400"><Calendar className="w-3 h-3" /> Expires {job.expires_at ? new Date(job.expires_at).toLocaleDateString('en-GB') : 'N/A'}</span>
-                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-400"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1">
+                           <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                             <MapPin className="w-3.5 h-3.5 text-indigo-500 shrink-0" /> {job.location}
+                           </span>
+                           <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                             <Calendar className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> Expires {job.expires_at ? new Date(job.expires_at).toLocaleDateString('en-GB') : 'N/A'}
+                           </span>
+                           <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                             <Users className="w-3.5 h-3.5 text-blue-500 shrink-0" /> {job.applications_count ?? 0} Applied
+                           </span>
+                           <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                             <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" /> Posted on {new Date(job.created_at).toLocaleDateString('en-GB')}
+                           </span>
                         </div>
                      </div>
                   </div>
@@ -219,7 +232,7 @@ export default function RecruiterJobsClient({
                            <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit
                         </Button>
                      </Link>
-                     <Button variant="ghost" className="h-8 px-2 rounded-lg text-gray-300 hover:text-red-500 transition-colors">
+                     <Button variant="ghost" className="h-8 px-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
                         <Trash2 className="w-4 h-4" />
                      </Button>
                   </div>

@@ -39,7 +39,7 @@ export function useBookmarks() {
         setLoading(true);
         setError(null);
 
-        const isAlreadyBookmarked = bookmarks.some((job) => job.id === jobId);
+        const isAlreadyBookmarked = bookmarks.some((job) => String(job.id) === String(jobId));
         const method = isAlreadyBookmarked ? "DELETE" : "POST";
 
         await dashboardServerFetch<any>(`jobseeker/jobs/${jobId}/bookmark`, { method });

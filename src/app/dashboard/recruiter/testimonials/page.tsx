@@ -7,7 +7,6 @@ import {
   Plus, 
   Trash2, 
   Edit2, 
-  Quote,
   X,
   UserCheck,
   Award,
@@ -27,7 +26,7 @@ export default function RecruiterTestimonialsPage() {
     createTestimonial,
     updateTestimonial,
     deleteTestimonial,
-  } = useTestimonials("employer");
+  } = useTestimonials("recruiter");
 
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);

@@ -24,10 +24,12 @@ import {
   Loader2,
   Plus,
   Star,
+  Bookmark,
 } from "lucide-react";
 import { getJobBySlug } from "@/lib/jobs/api";
 import { useApplications } from "@/hooks/useApplications";
 import { useResumes } from "@/hooks/useResumes";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
@@ -40,6 +42,8 @@ export default function ApplyJobPage() {
   const { isLoggedIn, user } = useClientSession();
   const { apply } = useApplications();
   const { resumes } = useResumes({ enabled: isLoggedIn });
+  const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
+  const [bookmarkBusy, setBookmarkBusy] = useState(false);
 
   const [step, setStep] = useState(0);
   const [candidate, setCandidate] = useState({
@@ -97,6 +101,27 @@ export default function ApplyJobPage() {
     }
     loadJob();
   }, [slug]);
+
+  const isBookmarked = bookmarks.some((b) => String(b.id) === String(job?.id));
+
+  useEffect(() => {
+    if (isLoggedIn && job?.id) {
+      void fetchBookmarks();
+    }
+  }, [isLoggedIn, job?.id, fetchBookmarks]);
+
+  const handleToggleBookmark = async () => {
+    if (!job?.id) return;
+    try {
+      setBookmarkBusy(true);
+      await toggleBookmark(job.id);
+      toast.success(isBookmarked ? "Job removed from saved." : "Job saved!");
+    } catch (err) {
+      toast.error("Failed to update saved jobs.");
+    } finally {
+      setBookmarkBusy(false);
+    }
+  };
 
   // 2. Fetch Jobseeker Profile for pre-filling
   useEffect(() => {
@@ -306,12 +331,24 @@ export default function ApplyJobPage() {
                       (jobDetails.employer?.company_name || "J")[0]
                     )}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <h3 className="font-display text-base md:text-lg font-bold text-foreground truncate">{jobDetails.title}</h3>
                     <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
                       <Building2 className="h-3.5 w-3.5 text-primary/60 shrink-0" /> <span className="truncate">{jobDetails.employer?.company_name}</span>
                     </p>
                   </div>
+                  <button
+                    onClick={handleToggleBookmark}
+                    disabled={bookmarkBusy || bookmarksHookLoading}
+                    className={`shrink-0 rounded-xl p-2.5 transition-all duration-200 border ${
+                      isBookmarked 
+                        ? "bg-primary/10 border-primary/20 text-primary" 
+                        : "bg-white border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:shadow-sm"
+                    }`}
+                    title={isBookmarked ? "Remove from saved" : "Save for later"}
+                  >
+                    <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-primary" : ""}`} />
+                  </button>
                 </div>
                 <div className="mt-5 grid grid-cols-1 min-[450px]:grid-cols-2 gap-y-3 gap-x-6">
                   {[

@@ -5,6 +5,7 @@ export type EducationPayload = {
   start_year: string;
   end_year: string;
   grade: string;
+  description?: string;
 };
 
 /** Record as returned on profile or education endpoints (may include legacy date fields). */
