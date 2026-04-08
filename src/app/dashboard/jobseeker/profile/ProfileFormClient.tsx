@@ -19,6 +19,7 @@ function toEducationPayload(form: {
   field_of_study: string;
   start_date: string;
   end_date: string;
+  grade: string;
   description: string;
 }): EducationPayload {
   return {
@@ -111,13 +112,14 @@ export default function ProfileFormClient({
   // If initialResponse.skills contains the user's skills (not just suggestions), 
   // ensure they are in profileData.skills
   useEffect(() => {
-    if (Array.isArray(initialResponse.skills) && initialResponse.skills.length > 0) {
+    const skills = (initialResponse as any).skills;
+    if (Array.isArray(skills) && skills.length > 0) {
       setProfileData(prev => ({
         ...prev,
-        skills: initialResponse.skills.map((s: any) => s.id || s)
+        skills: skills.map((s: any) => s.id || s)
       }));
     }
-  }, [initialResponse.skills]);
+  }, [initialResponse]);
 
   const [eduFormData, setEduFormData] = useState({
     institution: "",
@@ -442,7 +444,7 @@ export default function ProfileFormClient({
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-linear-to-r from-primary/5 via-primary/[0.02] to-transparent p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+        <div className="bg-linear-to-r from-primary/5 via-primary/2 to-transparent p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row items-center gap-4 md:gap-6">
           <div className="relative group">
             <div
               className="w-24 h-24 rounded-2xl bg-white border-2 border-white shadow-xl overflow-hidden relative group cursor-pointer"

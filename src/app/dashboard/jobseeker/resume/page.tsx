@@ -447,7 +447,7 @@ export default function ResumeManagementPage() {
 
       {/* Template Preview Sidebar */}
       {previewTemplate && (
-        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-100 flex justify-end animate-in fade-in duration-300">
           <div
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm cursor-pointer"
             onClick={() => setPreviewTemplate(null)}
@@ -469,7 +469,7 @@ export default function ResumeManagementPage() {
 
             {/* Sidebar Content */}
             <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-              <div className="aspect-[4/5.5] w-full bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden group relative">
+              <div className="aspect-4/5.5 w-full bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden group relative">
                 {(previewTemplate.preview_image || previewTemplate.preview_url) ? (
                   <img
                     src={normalizeMediaUrl(previewTemplate.preview_image || previewTemplate.preview_url || "")}
@@ -483,7 +483,7 @@ export default function ResumeManagementPage() {
                   </div>
                 )}
                 {/* Scroll hint/decoration */}
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/10 to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-slate-900/10 to-transparent pointer-events-none" />
               </div>
 
               <div className="mt-8 space-y-6 pb-24">

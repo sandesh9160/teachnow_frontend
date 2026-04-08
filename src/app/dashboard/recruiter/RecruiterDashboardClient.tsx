@@ -147,7 +147,7 @@ export default function RecruiterDashboardClient({
                   <div className="divide-y border-t border-gray-50">
                      {dashboardData.recent_applications.slice(0, 5).map((app) => (
                         <div key={app.id} className="p-4 hover:bg-gray-50/50 transition-colors flex items-center gap-4 group">
-                           <div className="relative w-11 h-11 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform flex items-center justify-center font-bold text-indigo-600 bg-indigo-50">
+                           <div className="relative w-11 h-11 rounded-xl border border-slate-100 overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform flex items-center justify-center font-bold text-indigo-600 bg-indigo-50">
                               {app.job_seeker?.profile_photo ? (
                                  <Image 
                                     src={getFullImageUrl(app.job_seeker.profile_photo)!} 
