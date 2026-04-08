@@ -11,6 +11,7 @@ import { Mail, Lock, User, Building2 } from "lucide-react";
 import Link from "next/link";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 
+
 const RegisterForm = () => {
   const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
   const [name, setName] = useState("");
@@ -22,6 +23,8 @@ const RegisterForm = () => {
   const router = useRouter();
   const captchaRef = useRef<any>(null);
 
+
+  // Register handler
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -37,7 +40,8 @@ const RegisterForm = () => {
 
     try {
       setIsLoading(true);
-      await fetchAPI("/auth/register", {
+      const endpoint = role === "employer" ? "/auth/create-employer" : "/auth/register";
+      await fetchAPI(endpoint, {
         method: "POST",
         body: {
           full_name: name,
