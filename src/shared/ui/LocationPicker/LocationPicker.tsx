@@ -277,6 +277,10 @@ export function LocationPicker({
     );
   }
 
+  const safePosition = (Number.isFinite(position.lat) && Number.isFinite(position.lng)) 
+    ? position 
+    : DEFAULT_CENTER;
+
   return (
     <div className={cn("space-y-2", className)}>
 
@@ -315,7 +319,7 @@ export function LocationPicker({
       <div className="relative w-full h-[350px] rounded-xl overflow-hidden border">
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
-          center={position}
+          center={safePosition}
           zoom={13}
           onClick={handleMapClick}
           onLoad={(map) => setMap(map)}
@@ -327,7 +331,7 @@ export function LocationPicker({
           }}
         >
           <Marker
-            position={position}
+            position={safePosition}
             draggable
             onDragEnd={(e) => {
               if (e.latLng) {

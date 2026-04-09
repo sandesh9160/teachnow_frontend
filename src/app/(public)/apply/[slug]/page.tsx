@@ -20,7 +20,6 @@ import {
   Mail,
   Phone,
   Clock,
-  Wand2,
   Loader2,
   Plus,
   Star,
@@ -33,13 +32,13 @@ import { useBookmarks } from "@/hooks/useBookmarks";
 import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
-const STEPS = ["Review Job", "Your Details", "Resume", "Cover Letter", "Submit"];
+const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
 
 export default function ApplyJobPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const router = useRouter();
-  const { isLoggedIn, user } = useClientSession();
+  const { isLoggedIn, user, loading: sessionLoading } = useClientSession();
   const { apply } = useApplications();
   const { resumes } = useResumes({ enabled: isLoggedIn });
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
@@ -75,13 +74,8 @@ export default function ApplyJobPage() {
   }, [user]);
 
   const [submitted, setSubmitted] = useState(false);
-  const [coverLetter, setCoverLetter] = useState("");
-  const [isRewriting, setIsRewriting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState<string | number>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<number>(1);
 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -158,23 +152,35 @@ export default function ApplyJobPage() {
   }, [resumes]);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !sessionLoading) {
       if (!isLoggedIn) {
-        router.push("/auth/login");
+        router.push("/auth/login?redirect=" + encodeURIComponent(`/apply/${slug}`));
       } else if (user?.role === "employer") {
         router.back();
       }
     }
-  }, [loading, isLoggedIn, user, router]);
+  }, [loading, sessionLoading, isLoggedIn, user, router, slug]);
 
   if (loading || !job) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm font-medium text-muted-foreground animate-pulse">
-            {!loading && !job ? "Job not found" : "Connecting to backend..."}
-          </p>
+      <div className="bg-[#F8FAFC] min-h-screen">
+        <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
+          <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+            <Breadcrumb items={[{ label: "Jobs", href: "/jobs" }, { label: "Apply", isCurrent: true }]} />
+          </div>
+        </div>
+        <div className="flex h-[70vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              </div>
+            </div>
+            <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">
+              {!loading && !job ? "Job not found" : "Synchronizing..."}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -188,15 +194,6 @@ export default function ApplyJobPage() {
     try {
       setIsSubmitting(true);
       const answers: { question_id: number; candidate_answer: string }[] = [];
-      
-      // Handle screening questions if available from JobDetails type
-      const anyJob = jobDetails as any;
-      if (anyJob.cover_letter_question_id != null && coverLetter.trim()) {
-        answers.push({
-          question_id: anyJob.cover_letter_question_id,
-          candidate_answer: coverLetter,
-        });
-      }
       const response = await apply(jobDetails.id, answers);
       console.log("DEBUG: Application successful response:", response);
 
@@ -207,53 +204,6 @@ export default function ApplyJobPage() {
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleRewriteWithAI = async () => {
-    if (!coverLetter.trim()) return;
-    setIsRewriting(true);
-    try {
-      // Feature placeholder/Coming soon
-      toast.info("AI Improvement feature coming soon!");
-      setTimeout(() => {
-        setIsRewriting(false);
-      }, 500);
-    } catch (error) {
-       setIsRewriting(false);
-    }
-  };
-
-  const handleGenerateWithAI = async () => {
-    if (!jobDetails?.id) return;
-    setIsGenerating(true);
-    try {
-      const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
-      // Calling the specific API with template_id
-      const res = await dashboardServerFetch<any>("jobseeker/cv/generate-base", {
-        method: "POST",
-        data: { 
-          job_id: jobDetails.id,
-          template_id: selectedTemplateId 
-        }
-      });
-
-      if (res?.data?.content || res?.content || res?.data) {
-        // Handle different possible response shapes
-        const content = res?.data?.content || res?.content || (typeof res.data === 'string' ? res.data : "");
-        if (content) {
-          setCoverLetter(content);
-          toast.success(`AI Cover Letter generated using Template ${selectedTemplateId}!`);
-        } else {
-          toast.error("AI returned empty content. Please try again.");
-        }
-      } else {
-        toast.error(res?.message || "Failed to generate AI content.");
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "An error occurred during AI generation.");
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -273,7 +223,7 @@ export default function ApplyJobPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-6 py-8 sm:px-10">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-10">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-bold text-foreground">
             {submitted ? "Application Complete" : "Apply for Position"}
@@ -371,7 +321,10 @@ export default function ApplyJobPage() {
               {jobDetails.description && (
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-2">Job Description</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-6">{jobDetails.description}</p>
+                  <div 
+                    className="text-sm text-muted-foreground leading-relaxed rich-text"
+                    dangerouslySetInnerHTML={{ __html: jobDetails.description }}
+                  />
                 </div>
               )}
 
@@ -483,93 +436,13 @@ export default function ApplyJobPage() {
                   }
                   setStep(3);
                 }}>
-                  Next <ArrowRight className="ml-2 h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-          {step === 3 && !submitted && (
-            <div className="space-y-4 md:space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border/50">
-                <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 w-full sm:w-auto">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">Template</span>
-                  <select
-                    value={selectedTemplateId}
-                    onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
-                    className="bg-transparent text-xs font-bold text-primary focus:outline-none cursor-pointer flex-1 sm:flex-none"
-                  >
-                    {[1, 2, 3, 4].map(id => (
-                      <option key={id} value={id}>#{id}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRewriteWithAI}
-                    disabled={isRewriting || !coverLetter.trim()}
-                    className="flex-1 sm:flex-none h-8 rounded-lg text-[9px] font-bold gap-2 text-primary border-primary/20"
-                  >
-                    {isRewriting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />} Rewrite
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateWithAI}
-                    disabled={isGenerating}
-                    className="flex-1 sm:flex-none h-8 rounded-lg text-[9px] font-bold gap-2 text-accent border-accent/20"
-                  >
-                    {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} AI Generate
-                  </Button>
-                </div>
-              </div>
-
-              {aiSuggestion && (
-                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 md:p-6 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <span className="text-[10px] font-bold text-primary uppercase">AI Suggestion</span>
-                  </div>
-                  <div className="text-sm text-foreground whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                    {aiSuggestion}
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button size="sm" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => { setCoverLetter(aiSuggestion); setAiSuggestion(null); toast.success("AI version applied"); }}>Apply AI Version</Button>
-                    <Button variant="outline" size="sm" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setAiSuggestion(null)}>Keep Original</Button>
-                  </div>
-                </div>
-              ) || (
-                  <div className="space-y-1.5">
-                    <label htmlFor="cover-letter" className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Cover Letter (Optional)</label>
-                    <textarea
-                      id="cover-letter"
-                      value={coverLetter}
-                      onChange={(e) => { if (e.target.value.length <= 1500) setCoverLetter(e.target.value); }}
-                      placeholder="Share why you're the perfect fit for this role..."
-                      rows={8}
-                      className="w-full rounded-2xl border border-border bg-background p-4 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all focus:outline-none resize-none min-h-[180px]"
-                    />
-                    <div className="flex justify-between items-center px-1">
-                      <span className="text-[10px] text-muted-foreground/60">AI can help you generate this.</span>
-                      <span className={`text-[10px] font-bold ${coverLetter.length > 1400 ? 'text-orange-500' : 'text-muted-foreground'}`}>{coverLetter.length} / 1500</span>
-                    </div>
-                  </div>
-                )}
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(2)}>
-                  <ArrowLeft className="mr-2 h-3 w-3" /> Back
-                </Button>
-                <Button className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={() => setStep(4)}>
                   Next Step <ArrowRight className="ml-2 h-3 w-3" />
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 4 && !submitted && (
+          {step === 3 && !submitted && (
             <div className="space-y-6 md:space-y-8">
               <div className="rounded-2xl border border-border bg-muted/20 p-5 md:p-6 space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-8">
@@ -608,30 +481,21 @@ export default function ApplyJobPage() {
                   </div>
                 )}
 
-                {(candidate.bio || coverLetter.trim()) && (
+                {candidate.bio && (
                   <div className="pt-6 border-t border-border/50 space-y-5">
-                    {candidate.bio && (
-                      <div className="bg-background/50 rounded-xl p-4 border border-border/30">
-                        <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-2">Professional Bio</span>
-                        <p className="text-sm text-muted-foreground italic leading-relaxed font-medium">
-                          "{candidate.bio}"
-                        </p>
-                      </div>
-                    )}
-                    {coverLetter.trim() && (
-                      <div className="space-y-2">
-                        <span className="block text-[10px] uppercase font-bold text-muted-foreground/60">Final Cover Letter</span>
-                        <div className="rounded-xl bg-background p-4 md:p-5 text-sm text-muted-foreground leading-relaxed whitespace-pre-line max-h-48 overflow-y-auto border border-border shadow-inner">
-                          {coverLetter}
-                        </div>
-                      </div>
-                    )}
+                    <div className="bg-background/50 rounded-xl p-4 border border-border/30">
+                      <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-2">Professional Bio</span>
+                      <div 
+                        className="text-sm text-muted-foreground leading-relaxed rich-text"
+                        dangerouslySetInnerHTML={{ __html: candidate.bio.replace(/\n/g, '<br/>') }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(3)}>
+                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(2)}>
                   <ArrowLeft className="mr-2 h-3 w-3" /> Back
                 </Button>
                 <Button variant="hero" className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={handleSubmit} disabled={isSubmitting}>
@@ -641,7 +505,6 @@ export default function ApplyJobPage() {
               </div>
             </div>
           )}
-
 
           {submitted && (
             <div className="text-center py-6">

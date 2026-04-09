@@ -141,7 +141,36 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
     return `${STORAGE_BASE_URL}${cleanPath}`;
   };
 
+  const shortlistApplicant = async (appId: number) => {
+    setLoading(appId);
+    try {
+      const res = await dashboardServerFetch(`employer/shortlist/${appId}`, {
+        method: "PATCH"
+      });
+
+      if (res.status) {
+        setApps(prev => prev.map(app => 
+          app.id === appId ? { ...app, status: 'shortlisted' } : app
+        ));
+        if (selectedApplicant?.id === appId) {
+          setSelectedApplicant(prev => prev ? { ...prev, status: 'shortlisted' } : null);
+        }
+        toast.success(`Applicant shortlisted successfully!`);
+      } else {
+        toast.error(res.message || "Failed to shortlist applicant");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong during shortlisting");
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const updateStatus = async (appId: number, status: string) => {
+    if (status === 'shortlisted') {
+      return shortlistApplicant(appId);
+    }
     setLoading(appId);
     try {
       const res = await dashboardServerFetch("employer/applications/update-status", {

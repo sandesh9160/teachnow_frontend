@@ -24,7 +24,10 @@ interface RecruiterDashboardStats {
     total_credits: number;
     used_credits: number;
     remaining_credits: number;
-    current_plan: string | null;
+    current_plan?: {
+      plan_name: string;
+      expires_at: string;
+    } | null;
   };
   recent_jobs: any[];
   recent_applications: any[];
@@ -64,7 +67,7 @@ export default function RecruiterDashboardClient({
       value: dashboardData?.credits?.remaining_credits?.toString() || "0", 
       icon: CreditCard, 
       color: "purple",
-      trend: dashboardData?.credits?.current_plan || "Credits"
+      trend: dashboardData?.credits?.current_plan?.plan_name || "Credits"
     },
   ];
 

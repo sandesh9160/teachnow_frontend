@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTestimonials } from "@/hooks/useTestimonials";
+import { useClientSession } from "@/hooks/useClientSession";
 import { 
   Loader2, 
   Plus, 
@@ -28,6 +29,8 @@ export default function EmployerTestimonialsPage() {
     deleteTestimonial,
   } = useTestimonials("employer");
 
+  const { user } = useClientSession();
+
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | string | null>(null);
@@ -44,6 +47,16 @@ export default function EmployerTestimonialsPage() {
     void fetchTestimonials();
   }, [fetchTestimonials]);
 
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || "",
+        designation: user.role === 'employer' ? 'Employer' : (user.role === 'recruiter' ? 'Recruiter' : 'Member')
+      }));
+    }
+  }, [user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -55,7 +68,13 @@ export default function EmployerTestimonialsPage() {
         await createTestimonial(formData);
         toast.success("Testimonial added! It will be reviewed by our team.");
       }
-      setFormData({ name: "", designation: "", company: "", message: "", rating: 5 });
+      setFormData({ 
+        name: user?.name || "", 
+        designation: user?.role === 'employer' ? 'Employer' : (user?.role === 'recruiter' ? 'Recruiter' : 'Member'), 
+        company: "", 
+        message: "", 
+        rating: 5 
+      });
       setShowForm(false);
       setEditingId(null);
     } catch (error) {
@@ -67,7 +86,7 @@ export default function EmployerTestimonialsPage() {
 
   const handleEdit = (testimonial: any) => {
     setFormData({
-      name: testimonial.name || "",
+      name: testimonial.name || user?.name || "",
       designation: testimonial.designation || "",
       company: testimonial.company || "",
       message: testimonial.message || "",
@@ -121,14 +140,13 @@ export default function EmployerTestimonialsPage() {
                 <Input 
                   id="name" 
                   value={formData.name} 
-                  onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                  readOnly
                   placeholder="Your full name"
-                  className="rounded-lg border-slate-200 focus:border-primary transition-all h-10 text-sm font-medium"
-                  required
+                  className="rounded-lg border-slate-200 bg-slate-50 focus:border-slate-200 cursor-not-allowed transition-all h-10 text-sm font-medium"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Your Title</Label>
+                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px]  pl-0.5">Designation</Label>
                 <Input 
                   id="designation" 
                   value={formData.designation} 

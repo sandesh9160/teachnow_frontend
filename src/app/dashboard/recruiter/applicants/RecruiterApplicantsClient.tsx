@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Users, 
   MapPin, 
@@ -102,11 +102,57 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
   const [selectedApplicant, setSelectedApplicant] = useState<Application | null>(null);
   const [showPhone, setShowPhone] = useState(false);
 
-  const initialApps = (initialData as any)?.data?.data || (initialData as any)?.data || [];
+  // Debug logging to troubleshoot "not getting anything"
+  console.log("RecruiterApplicantsClient initialData:", initialData);
+
+  // More robust data path resolution
+  const getInitialApps = () => {
+    if (!initialData) return [];
+    
+    // Case 1: standard status-wrapped data { status: true, data: [...] }
+    if ((initialData as any).status && Array.isArray((initialData as any).data)) {
+        return (initialData as any).data;
+    }
+    
+    // Case 2: Paginated data { status: true, data: { data: [...] } }
+    if ((initialData as any).status && (initialData as any).data?.data && Array.isArray((initialData as any).data.data)) {
+        return (initialData as any).data.data;
+    }
+
+    // Case 3: Just the array itself
+    if (Array.isArray(initialData)) {
+        return initialData;
+    }
+
+    // Case 4: Deeply nested data (sometimes seen in Laravel)
+    if ((initialData as any).data && Array.isArray((initialData as any).data)) {
+        return (initialData as any).data;
+    }
+
+    // Case 5: Single object that looks like an application (Laravel sometimes returns object instead of array of 1)
+    if ((initialData as any).status && (initialData as any).data && !Array.isArray((initialData as any).data)) {
+        const item = (initialData as any).data;
+        if (item.id || item.application_id || item.job_seeker_id) {
+            return [item];
+        }
+    }
+
+    return [];
+  };
+
+  const initialApps = getInitialApps();
+  console.log("Resulting initialApps (Final):", initialApps);
+
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [loading, setLoading] = useState<number | null>(null);
   const [selectedApplicantFullData, setSelectedApplicantFullData] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
+
+  // Sync state if initialData changes (useful for navigation/pagination)
+  useEffect(() => {
+    const updatedApps = getInitialApps();
+    setApps(updatedApps);
+  }, [initialData]);
 
   const getCandidateName = (app: Application) => app.job_seeker?.user?.name || app.job_seeker?.name || "Applicant";
 
@@ -143,7 +189,36 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
     return `${STORAGE_BASE_URL}${cleanPath}`;
   };
 
+  const shortlistApplicant = async (appId: number) => {
+    setLoading(appId);
+    try {
+      const res = await dashboardServerFetch(`recruiter/applications/${appId}/shortlist`, {
+        method: "POST"
+      });
+
+      if (res.status) {
+        setApps(prev => prev.map(app => 
+          app.id === appId ? { ...app, status: 'shortlisted' } : app
+        ));
+        if (selectedApplicant?.id === appId) {
+          setSelectedApplicant(prev => prev ? { ...prev, status: 'shortlisted' } : null);
+        }
+        toast.success(`Applicant shortlisted successfully!`);
+      } else {
+        toast.error(res.message || "Failed to shortlist applicant");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong during shortlisting");
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const updateStatus = async (appId: number, status: string) => {
+    if (status === 'shortlisted') {
+      return shortlistApplicant(appId);
+    }
     setLoading(appId);
     try {
       const res = await dashboardServerFetch("recruiter/applications/update-status", {
@@ -337,9 +412,16 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                       </h3>
                       {app.status && <StatusBadge status={app.status} />}
                     </div>
-                    <p className="text-sm font-semibold text-gray-700">
-                      Applied for <span className="text-primary">{app.job?.title}</span>
-                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Applied for <span className="text-primary">{app.job?.title}</span>
+                      </p>
+                      {(app.job_seeker?.email || app.job_seeker?.user?.email) && (
+                        <p className="text-[10px] font-medium text-slate-400">
+                          {app.job_seeker?.email || app.job_seeker?.user?.email}
+                        </p>
+                      )}
+                    </div>
                   
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
                     <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400"><MapPin className="w-3 h-3 text-slate-300" /> {app.job_seeker?.location || "India"}</span>
@@ -591,11 +673,11 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                     </div>
                     
                     <div className="space-y-3">
-                       {selectedApplicant.resume?.file_url ? (
+                       {(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url) ? (
                          <>
                            <div className="rounded-2xl border border-slate-100 bg-white p-2 overflow-hidden aspect-4/3 group relative shadow-inner">
                               <iframe 
-                                src={`${getFullUrl(selectedApplicant.resume.file_url)}#toolbar=0&view=FitH`} 
+                                src={`${getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url)}#toolbar=0&view=FitH`} 
                                 className="w-full h-full border-none rounded-xl bg-slate-50"
                                 title="Resume"
                               />
@@ -606,13 +688,13 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                                     <FileText className="w-5 h-5" />
                                  </div>
                                  <div className="min-w-0">
-                                    <p className="text-xs font-semibold text-slate-900 truncate ">{selectedApplicant.resume?.file_name || "Resume_FileName.pdf"}</p>
+                                    <p className="text-xs font-semibold text-slate-900 truncate ">{selectedApplicantFullData?.resume?.file_name || selectedApplicant.resume?.file_name || "Resume_FileName.pdf"}</p>
                                     <p className="text-xs font-semibold text-slate-400  opacity-60">Verified Document • PDF</p>
                                  </div>
                               </div>
                               <Button 
                                 onClick={() => {
-                                  const url = getFullUrl(selectedApplicant.resume?.file_url);
+                                  const url = getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url);
                                   if (url) window.open(url, "_blank");
                                 }}
                                 variant="outline" 

@@ -40,7 +40,18 @@ function pickProfilePayload(res: unknown): Record<string, unknown> | null {
   if (!res || typeof res !== "object") return null;
   const r = res as Record<string, unknown>;
   if (r.status === false) return null;
-  const inner = (r.data ?? r.user ?? r) as unknown;
+  
+  // Exhaustive check for the actual user/profile data in the response
+  // Responses can be { data: { employer: {...} } } or { data: {...} } or { user: {...} } or {...}
+  const inner = (
+    (r.data as any)?.employer ?? 
+    (r.data as any)?.job_seeker ?? 
+    (r.data as any)?.recruiter ?? 
+    r.data ?? 
+    r.user ?? 
+    r
+  ) as unknown;
+  
   if (!inner || typeof inner !== "object") return null;
   return inner as Record<string, unknown>;
 }

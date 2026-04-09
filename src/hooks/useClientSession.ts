@@ -46,12 +46,20 @@ export function getSharedClientSession(): Promise<ClientSessionUser | null> {
     const tryEndpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
     for (const ep of tryEndpoints) {
       try {
-        // Try server-action probe (server-side fetches have better cookie access)
         const res = await dashboardServerFetch<unknown>(ep, { method: "GET" });
         const body = res as Record<string, unknown>;
         if (body?.status === false) continue;
 
-        const data = (body?.data ?? body?.user ?? body) as unknown;
+        // Extract nested profile data: { data: { employer: {...} } } etc.
+        const data = (
+          (body?.data as any)?.employer ?? 
+          (body?.data as any)?.job_seeker ?? 
+          (body?.data as any)?.recruiter ?? 
+          body?.data ?? 
+          body?.user ?? 
+          body
+        ) as unknown;
+
         if (!data || typeof data !== "object") continue;
         const mapped = mapPayload(data as Record<string, unknown>);
         if (mapped) return mapped;

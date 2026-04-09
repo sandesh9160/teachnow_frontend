@@ -125,17 +125,26 @@ async function fetchHeroCTA(): Promise<HeroCTAData | null> {
 }
 
 const getGlobalLayoutDataCached = cache(async () => {
-  const [navigation, footer, heroCTA] = await Promise.all([
-    fetchNavigation(),
-    fetchFooter(),
-    fetchHeroCTA(),
-  ]);
+  try {
+    const [navigation, footer, heroCTA] = await Promise.all([
+      fetchNavigation(),
+      fetchFooter(),
+      fetchHeroCTA(),
+    ]);
 
-  return {
-    navigation,
-    footer,
-    heroCTA,
-  };
+    return {
+      navigation,
+      footer,
+      heroCTA,
+    };
+  } catch (error) {
+    //console.error("[LayoutData] Global fetch failed:", error);
+    return {
+      navigation: null,
+      footer: null,
+      heroCTA: null,
+    };
+  }
 });
 
 export async function getGlobalLayoutData(): Promise<{

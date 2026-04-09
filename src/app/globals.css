@@ -247,6 +247,27 @@
 }
 
 @layer utilities {
+  .rich-text {
+    @apply space-y-3;
+  }
+  .rich-text p {
+    @apply mb-3 leading-relaxed;
+  }
+  .rich-text li p {
+    @apply mb-0 inline;
+  }
+  .rich-text ul {
+    @apply list-disc list-outside ml-6 space-y-1.5;
+  }
+  .rich-text ol {
+    @apply list-decimal list-outside ml-6 space-y-1.5;
+  }
+  .rich-text li {
+    @apply pl-1 leading-relaxed;
+  }
+  .rich-text strong {
+    @apply font-bold text-slate-900;
+  }
 
   .gradient-primary {
     @apply bg-linear-to-br from-primary to-secondary;

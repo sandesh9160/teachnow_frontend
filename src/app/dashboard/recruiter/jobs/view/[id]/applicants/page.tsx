@@ -7,7 +7,7 @@ export default async function JobApplicantsPage({ params }: { params: Promise<{ 
   const { id } = await params;
   
   // Fetch specific job's applications
-  const appsData = await dashboardServerFetch(`recruiter/applications?job_id=${id}`);
+  const appsData = await dashboardServerFetch(`recruiter/jobs/${id}/applications`);
   
   return <RecruiterApplicantsClient initialData={appsData} />;
 }
