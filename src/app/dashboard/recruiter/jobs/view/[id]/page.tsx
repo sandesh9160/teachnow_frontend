@@ -12,7 +12,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   
   // Handle tiered resolution: Prefer direct data, fallback to master list on 404/500
   let job = jobDetails?.data;
-  const questions = jobDetails?.data?.questions || [];
 
   // Reliable fallback if the individual lookup fails
   if (!job || jobDetails?.status === false) {

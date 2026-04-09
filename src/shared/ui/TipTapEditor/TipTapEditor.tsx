@@ -32,7 +32,6 @@ import {
   Palette,
   Highlighter,
   ChevronDown,
-  Code2,
   FileCode2,
   Columns
 } from "lucide-react";

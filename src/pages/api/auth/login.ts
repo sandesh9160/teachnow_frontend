@@ -37,9 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 4. Return user data
-    res.status(200).json({ user: loginRes.data.user });
+    return res.status(200).json({ user: loginRes.data.user });
   } catch (error: any) {
-    res.status(401).json({ message: error?.response?.data?.message || "Login failed" });
+    return res.status(401).json({ message: error?.response?.data?.message || "Login failed" });
   }
 }
 

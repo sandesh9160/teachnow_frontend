@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { Loader2, BookmarkX, MapPin, Briefcase, Calendar, Search, Building2, Trash2, ArrowRight, ExternalLink } from "lucide-react";
+import { Loader2, BookmarkX, MapPin, Calendar, Search, Building2, Trash2, ArrowRight, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";

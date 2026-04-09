@@ -1,6 +1,6 @@
 .env.local
 .env*.local
-.env
+.env*
 .next/
 node_modules/
 dist/

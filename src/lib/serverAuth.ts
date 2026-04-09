@@ -46,14 +46,22 @@ function pickProfilePayload(res: unknown): Record<string, unknown> | null {
 }
 
 function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null {
-  const id = Number(data.id ?? data.user_id ?? 0);
-  const email = String(data.email ?? "").trim();
+  const id = Number(data.id ?? data.user_id ?? (data.user as any)?.id ?? 0);
+  const email = String(data.email ?? (data.user as any)?.email ?? "").trim();
   if (!id && !email) return null;
+
   const name =
-    String(data.f_name ?? data.name ?? data.full_name ?? data.company_name ?? "").trim() ||
-    (email ? email.split("@")[0] : "User");
-  const role = normalizeDashboardRole(data.user_type ?? data.role);
-  const pic = data.profile_pic ?? data.company_logo;
+    String(
+      data.name ??
+      (data.user as any)?.name ??
+      data.f_name ??
+      data.full_name ??
+      data.company_name ??
+      ""
+    ).trim() || (email ? email.split("@")[0] : "User");
+
+  const role = normalizeDashboardRole(data.user_type ?? data.role ?? (data.user as any)?.user_type);
+  const pic = data.profile_pic ?? data.profile_photo ?? data.company_logo ?? (data.user as any)?.profile_pic;
   const avatar =
     typeof pic === "string" && pic
       ? pic
@@ -71,12 +79,20 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
 }
 
 /**
- * Current session from cookie-backed API. Tries /auth/profile then /jobseeker/profile.
+ * Current session from cookie-backed API. Tries the role-specific profile first if known.
  */
 export async function getSessionProfile(): Promise<ServerSessionUser | null> {
-  // First try the API endpoints to get fresh data
-  const endpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
-  for (const ep of endpoints) {
+  const role = await getRole();
+  const endpoints = ["auth/profile"];
+  
+  if (role === "job_seeker") endpoints.unshift("jobseeker/profile");
+  else if (role === "employer") endpoints.unshift("employer/profile");
+  else if (role === "recruiter") endpoints.unshift("recruiter/profile");
+
+  // Also include the others as fallback
+  const allEndpoints = Array.from(new Set([...endpoints, "jobseeker/profile", "employer/profile", "recruiter/profile", "auth/profile"]));
+
+  for (const ep of allEndpoints) {
     try {
       const res = await dashboardServerFetch<unknown>(ep, { method: "GET" });
       const data = pickProfilePayload(res);
@@ -103,6 +119,7 @@ export function sessionUserForHeader(user: ServerSessionUser | null): {
   email: string;
   role: DashboardRole;
   avatar?: string;
+  isActive?: boolean;
 } | null {
   if (!user) return null;
   return {
@@ -110,6 +127,7 @@ export function sessionUserForHeader(user: ServerSessionUser | null): {
     email: user.email,
     role: user.role,
     avatar: user.avatar,
+    isActive: Boolean(user.raw?.is_active || (user.raw?.user as any)?.is_active),
   };
 }
 

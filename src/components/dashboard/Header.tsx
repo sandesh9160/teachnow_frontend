@@ -63,6 +63,8 @@ export function DashboardHeader({
             <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden border border-white/20">
               {user?.avatar && (user.avatar.startsWith('http') || user.avatar.includes('/')) ? (
                 <img src={normalizeMediaUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
+              ) : user?.avatar && user.avatar.length === 1 ? (
+                <span className="uppercase text-white font-bold">{user.avatar}</span>
               ) : user?.role === "employer" && companyLogo ? (
                 <img src={companyLogo} alt={companyName} className="w-full h-full object-cover" />
               ) : (
@@ -75,10 +77,15 @@ export function DashboardHeader({
                 {user?.raw?.title && <span className="text-slate-400 font-medium mx-1.5 opacity-50">•</span>}
                 {user?.raw?.title && <span className="text-[11px] font-medium text-slate-400 italic">{user.raw.title}</span>}
               </p>
-              <p className="text-[10px] font-medium text-primary mt-0.5 capitalize">
+              <p className="text-[10px] font-medium text-primary mt-0.5  flex items-center">
                 {user?.role === "employer" ? "Employer" : 
                  user?.role === "recruiter" ? "Recruiter" : 
                  "Job Professional"}
+                {user?.isActive && (
+                  <span className="inline-flex items-center gap-1 ml-1.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-[8px] font-bold text-emerald-600 border border-emerald-100 uppercase tracking-tighter">
+                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" /> Active
+                  </span>
+                )}
               </p>
             </div>
             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-500 ${showProfileMenu ? 'rotate-180' : ''}`} />

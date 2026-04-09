@@ -6,7 +6,7 @@ import Link from "next/link";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { useClientSession, getSharedClientSession } from "@/hooks/useClientSession";
+import { useClientSession } from "@/hooks/useClientSession";
 import { normalizeMediaUrl } from "@/services/api/client";
 import {
   FileText,

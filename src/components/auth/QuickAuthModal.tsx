@@ -9,7 +9,7 @@ import { EmailSignInAction } from "@/lib/sign-in";
 import { fetchAPI } from "@/services/api/client";
 import { toast } from "sonner";
 import { resetSharedClientSession } from "@/hooks/useClientSession";
-import { Mail, Lock, User, Phone, ArrowLeft, Building2, Check, X } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, Building2 } from "lucide-react";
 
 interface QuickAuthModalProps {
   open: boolean;
