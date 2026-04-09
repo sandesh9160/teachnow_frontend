@@ -109,21 +109,21 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
             </div>
          </div>
 
-         <div className="flex items-center gap-2 relative">
-            <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-               <Button variant="outline" size="sm" className="h-9 px-5 rounded-xl text-xs font-semibold  text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all shadow-sm">
+         <div className="flex flex-col sm:flex-row items-center gap-2 relative w-full sm:w-auto">
+            <Link href={`${basePath}/jobs/view/${job.id}/applicants`} className="w-full sm:w-auto">
+               <Button variant="outline" size="sm" className="w-full h-9 px-5 rounded-xl text-xs font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all shadow-sm">
                   <Users className="w-3.5 h-3.5 mr-2" /> View {totalApplications} Applicants
                </Button>
             </Link>
             {job.job_status !== 'filled' && (
-              <Link href={`${basePath}/jobs/edit/${job.id}`}>
-                 <Button variant="outline" size="sm" className="h-9 px-5 rounded-xl text-xs font-semibold  border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
+              <Link href={`${basePath}/jobs/edit/${job.id}`} className="w-full sm:w-auto">
+                 <Button variant="outline" size="sm" className="w-full h-9 px-5 rounded-xl text-xs font-semibold border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
                     <Edit3 className="w-3.5 h-3.5 mr-2" /> Edit Requirement
                  </Button>
               </Link>
             )}
-            <Link href={`/jobs/${job.slug}`} target="_blank">
-               <Button size="sm" className="h-9 px-6 rounded-xl text-xs font-semibold  shadow-xl shadow-primary/20 transition-all hover:scale-[1.02]">
+            <Link href={`/jobs/${job.slug}`} target="_blank" className="w-full sm:w-auto">
+               <Button size="sm" className="w-full h-9 px-6 rounded-xl text-xs font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02]">
                   Live Preview <ExternalLink className="w-3.5 h-3.5 ml-2" />
                </Button>
             </Link>
@@ -135,14 +135,14 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
          <div className="lg:col-span-2 space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                <div className="p-6 space-y-5">
-                  <div className="flex items-center justify-between border-b border-gray-50 pb-4">
-                    <div className="flex items-center gap-3">
-                       <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner">
-                          <FileText className="w-5 h-5" />
-                       </div>
-                       <h2 className="text-xs font-semibold text-indigo-600 ">Full Requirement Brief</h2>
-                    </div>
-                  </div>
+                     <div className="flex flex-col xs:flex-row xs:items-center justify-between border-b border-gray-50 pb-4 gap-3">
+                        <div className="flex items-center gap-3">
+                           <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner">
+                              <FileText className="w-5 h-5" />
+                           </div>
+                           <h2 className="text-xs font-semibold text-indigo-600 ">Full Requirement Brief</h2>
+                        </div>
+                     </div>
                   
                   <div 
                     className="prose prose-sm max-w-none text-slate-600 leading-relaxed font-semibold tiptap-preview px-1 text-sm opacity-90 "
@@ -184,7 +184,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
 
          {/* Compact Sidebar */}
          <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                <DetailItem 
                   label="Category" 
                   value={job.category?.name || "General Teaching"} 

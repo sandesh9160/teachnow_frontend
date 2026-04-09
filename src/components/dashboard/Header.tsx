@@ -61,14 +61,14 @@ export function DashboardHeader({
             className="flex items-center gap-3 p-1 rounded-xl hover:bg-slate-50 transition-all duration-300 group"
           >
             <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden border border-white/20">
-              {user?.avatar && (user.avatar.startsWith('http') || user.avatar.includes('/')) ? (
+              {user?.avatar && (user.avatar.startsWith('http') || user.avatar.includes('/') || user.avatar.includes('storage')) ? (
                 <img src={normalizeMediaUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
+              ) : (user?.role === "employer" || user?.role === "recruiter") && companyLogo ? (
+                <img src={companyLogo} alt={companyName} className="w-full h-full object-cover" />
               ) : user?.avatar && user.avatar.length === 1 ? (
                 <span className="uppercase text-white font-bold">{user.avatar}</span>
-              ) : user?.role === "employer" && companyLogo ? (
-                <img src={companyLogo} alt={companyName} className="w-full h-full object-cover" />
               ) : (
-                user?.role === "employer" ? <Building2 className="w-4.5 h-4.5" /> : <User className="w-4.5 h-4.5" />
+                (user?.role === "employer" || user?.role === "recruiter") ? <Building2 className="w-4.5 h-4.5" /> : <User className="w-4.5 h-4.5" />
               )}
             </div>
             <div className="hidden lg:block text-left pr-2">

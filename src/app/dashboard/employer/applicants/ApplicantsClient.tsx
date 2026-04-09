@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Users, 
   MapPin, 
@@ -13,7 +13,12 @@ import {
   Download,
   CheckCircle2,
   Clock,
-  Loader2
+  Loader2,
+  ExternalLink,
+  Phone,
+  MessageSquare,
+  PhoneOff,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -54,6 +59,7 @@ interface Application {
       name: string;
       email: string;
     }
+    role?: string;
   };
   resume?: {
     id: number;
@@ -95,13 +101,76 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
+const ContactStatusBadge = ({ status }: { status: string | null | undefined }) => {
+  if (!status) return null;
+  const s = status.toLowerCase();
+  
+  const styles: Record<string, { bg: string, icon: any }> = {
+    called: { bg: "bg-violet-50 text-violet-600 border-violet-100", icon: Phone },
+    messaged: { bg: "bg-sky-50 text-sky-600 border-sky-100", icon: MessageSquare },
+    not_picked: { bg: "bg-orange-50 text-orange-600 border-orange-100", icon: PhoneOff },
+    not_reached: { bg: "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100", icon: AlertCircle },
+    default: { bg: "bg-slate-50 text-slate-400 border-slate-100", icon: AlertCircle }
+  };
+
+  const config = styles[s] || styles.default;
+  const Icon = config.icon;
+  const label = status.replace(/_/g, ' ');
+
+  return (
+    <span className={cn(
+      "px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-tight lowercase border shadow-sm flex items-center gap-1.5",
+      config.bg
+    )}>
+      <Icon className="w-3 h-3 opacity-70" />
+      {label}
+    </span>
+  );
+};
+
 export default function ApplicantsClient({ initialData }: ApplicantsClientProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<'all' | 'shortlisted' | 'called' | 'messaged' | 'not_picked' | 'not_reached' | 'rejected'>('all');
   const [selectedApplicant, setSelectedApplicant] = useState<Application | null>(null);
   const [showPhone, setShowPhone] = useState(false);
 
-  const [apps, setApps] = useState<Application[]>((initialData as any)?.data?.data || (initialData as any)?.data || []);
+  // Sync state if initialData changes
+  const getInitialApps = () => {
+    if (!initialData) return [];
+    
+    if ((initialData as any).status && Array.isArray((initialData as any).data)) {
+        return (initialData as any).data;
+    }
+    
+    if ((initialData as any).status && (initialData as any).data?.data && Array.isArray((initialData as any).data.data)) {
+        return (initialData as any).data.data;
+    }
+
+    if (Array.isArray(initialData)) {
+        return initialData;
+    }
+
+    if ((initialData as any).data && Array.isArray((initialData as any).data)) {
+        return (initialData as any).data;
+    }
+
+    if ((initialData as any).status && (initialData as any).data && !Array.isArray((initialData as any).data)) {
+        const item = (initialData as any).data;
+        if (item.id || item.application_id || item.job_seeker_id) {
+            return [item];
+        }
+    }
+
+    return [];
+  };
+
+  const initialApps = getInitialApps();
+  const [apps, setApps] = useState<Application[]>(initialApps);
+
+  useEffect(() => {
+    setApps(getInitialApps());
+  }, [initialData]);
+
   const [loading, setLoading] = useState<number | null>(null); // application id being updated
   const [selectedApplicantFullData, setSelectedApplicantFullData] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -355,6 +424,7 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                         <span className="text-[10px] font-semibold text-slate-600 italic lowercase ">{app.job_seeker?.title || "Teacher"}</span>
                       </h3>
                       {app.status && <StatusBadge status={app.status} />}
+                      {app.contact_status && <ContactStatusBadge status={app.contact_status} />}
                     </div>
                     <p className="text-[11px] font-semibold text-gray-700">
                       Applied for <span className="text-primary">{app.job?.title}</span>
@@ -363,7 +433,11 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
                     <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><MapPin className="w-3 h-3 text-slate-300" /> {app.job_seeker?.location || "India"}</span>
                     <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><Briefcase className="w-3 h-3 text-slate-300" /> {app.job_seeker?.experience_years || "0"}y Exp</span>
-                    <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-slate-400"><Clock className="w-3 h-3 text-slate-300" /> {app.created_at ? formatDistanceToNow(new Date(app.created_at)) : 'Now'}</span>
+                    <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                      <Clock className="w-3 h-3 text-slate-300" /> {app.created_at ? formatDistanceToNow(new Date(app.created_at)) : 'now'}
+                      <span className="text-slate-200/60 font-medium mx-1">/</span>
+                      <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100/60 lowercase text-[9px] font-extrabold text-slate-400/80">{app.job_seeker?.role || "job_seeker"}</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -371,13 +445,39 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
               <div className="flex items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 md:pl-4">
                 <Button 
                    variant="outline" 
-                   className="flex-1 md:flex-none h-8.5 px-4 rounded-lg text-[10px] font-bold text-slate-500 border-slate-100 hover:bg-slate-50 flex items-center justify-center gap-2 uppercase tracking-tight"
-                   onClick={() => {
-                     const resumeUrl = getFullUrl(app.resume?.file_url);
-                     if (resumeUrl) window.open(resumeUrl, '_blank');
+                   className="flex-1 md:flex-none h-8.5 px-4 rounded-lg text-xs font-bold text-slate-500 border-slate-100 hover:bg-slate-50 flex items-center justify-center gap-2 uppercase tracking-tight disabled:opacity-50"
+                   disabled={loading === app.id}
+                   onClick={async () => {
+                     let resumeUrl = getFullUrl(app.resume?.file_url);
+                     
+                     if (!resumeUrl) {
+                        setLoading(app.id);
+                        try {
+                           const res = await dashboardServerFetch(`employer/profile/${app.id}`);
+                           if (res.status && res.data?.resume?.file_url) {
+                              resumeUrl = getFullUrl(res.data.resume.file_url);
+                              setApps(prev => prev.map(a => a.id === app.id ? { ...a, resume: res.data.resume } : a));
+                           }
+                        } catch (e) {
+                           console.error(e);
+                        } finally {
+                           setLoading(null);
+                        }
+                     }
+
+                     if (resumeUrl) {
+                        window.open(resumeUrl, '_blank');
+                     } else {
+                        toast.error("Resume file not found");
+                     }
                    }}
                 >
-                  <Download className="w-3.5 h-3.5 text-slate-400" /> Resume
+                  {loading === app.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                  Resume
                 </Button>
                 <Button 
                    className="flex-1 md:flex-none h-8.5 px-4 rounded-lg text-[10px] font-bold shadow-sm flex items-center justify-center gap-2 uppercase tracking-tight"
@@ -650,14 +750,23 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                     </div>
                     
                     <div className="space-y-3">
-                       {selectedApplicant.resume?.file_url ? (
+                       {(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url) ? (
                          <>
-                           <div className="rounded-2xl border border-slate-100 bg-white p-2 overflow-hidden aspect-4/3 group relative shadow-inner">
+                           <div className="rounded-2xl border border-slate-100 bg-white p-1 overflow-hidden aspect-3/4 group relative shadow-inner">
                               <iframe 
-                                src={`${getFullUrl(selectedApplicant.resume.file_url)}#toolbar=0&view=FitH`} 
+                                src={`https://docs.google.com/viewer?url=${encodeURIComponent(getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url))}&embedded=true`} 
                                 className="w-full h-full border-none rounded-xl bg-slate-50"
-                                title="Resume"
+                                title="Resume Preview"
                               />
+                              <div className="absolute inset-x-0 bottom-4 px-4 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <a 
+                                   href={getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url)} 
+                                   target="_blank" 
+                                   className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg border shadow-sm text-[10px] font-bold text-primary flex items-center gap-2"
+                                 >
+                                    <ExternalLink className="w-3 h-3" /> Full View
+                                 </a>
+                              </div>
                            </div>
                            <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-center justify-between gap-4">
                               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -665,18 +774,18 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                                     <FileText className="w-5 h-5" />
                                  </div>
                                  <div className="min-w-0">
-                                    <p className="text-[10px] font-bold text-slate-900 truncate uppercase tracking-tight">{selectedApplicant.resume?.file_name || "Resume_FileName.pdf"}</p>
+                                    <p className="text-[10px] font-bold text-slate-900 truncate uppercase tracking-tight">{selectedApplicantFullData?.resume?.file_name || selectedApplicant.resume?.file_name || "Resume_FileName.pdf"}</p>
                                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight opacity-60">Verified Document • PDF</p>
                                  </div>
                               </div>
                               <Button 
                                 onClick={() => {
-                                  const url = getFullUrl(selectedApplicant.resume?.file_url);
-                                  if (url) window.open(url, "_blank");
+                                  const url = getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url);
+                                    if (url) window.open(url, "_blank");
                                 }}
                                 variant="outline" 
-                                className="h-8 px-3 rounded-lg text-[9px] font-bold border-slate-200 hover:bg-slate-50 flex items-center gap-2 uppercase tracking-tight"
-                              >
+                                className="h-8 px-3 rounded-lg text-[9px] font-bold border-slate-200 hover:bg-slate-50 flex items-center gap-2 ">
+                    
                                  <Download className="w-3.5 h-3.5" /> Download
                               </Button>
                            </div>
@@ -709,31 +818,33 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                     </select>
 
                     <div className="flex flex-1 justify-end items-center gap-2">
-                      <Button 
-                        className="h-8 px-4 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 font-semibold text-[10px] transition-all flex items-center justify-center gap-1.5 shadow-sm border border-rose-100"
-                        onClick={() => rejectApplication(selectedApplicant.id)}
-                        disabled={loading === selectedApplicant.id}
-                      >
-                         {loading === selectedApplicant.id && selectedApplicant.status === 'rejected' ? (
-                           <Loader2 className="w-3 h-3 animate-spin" />
-                         ) : (
-                           <X className="w-3 h-3" />
-                         )}
-                         {selectedApplicant.status?.toLowerCase() === 'rejected' ? 'Rejected' : 'Reject'}
-                      </Button>
-
-                      {selectedApplicant.status?.toLowerCase() !== 'rejected' && (
-                        <Button 
-                          className="h-8 px-5 rounded-lg bg-emerald-600 text-white font-semibold text-[10px] shadow-md shadow-emerald-200/50 hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5"
-                          onClick={() => updateStatus(selectedApplicant.id, "shortlisted")}
-                          disabled={loading === selectedApplicant.id}
-                        >
-                           {loading === selectedApplicant.id && selectedApplicant.status === 'shortlisted' && (
-                             <Loader2 className="w-3 h-3 animate-spin" />
-                           )}
-                           {selectedApplicant.status?.toLowerCase() === 'shortlisted' ? 'Shortlisted' : 'Shortlist'}
-                        </Button>
-                      )}
+                       <Button 
+                         className="h-8 px-4 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 font-semibold text-[10px] transition-all flex items-center justify-center gap-1.5 shadow-sm border border-rose-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                         onClick={() => rejectApplication(selectedApplicant.id)}
+                         disabled={loading === selectedApplicant.id || selectedApplicant.status?.toLowerCase() === 'rejected'}
+                       >
+                          {loading === selectedApplicant.id && selectedApplicant.status !== 'rejected' ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <X className="w-3 h-3" />
+                          )}
+                          {selectedApplicant.status?.toLowerCase() === 'rejected' ? 'Rejected' : 'Reject'}
+                       </Button>
+ 
+                       {selectedApplicant.status?.toLowerCase() !== 'rejected' && (
+                         <Button 
+                           className="h-8 px-5 rounded-lg bg-emerald-600 text-white font-semibold text-[10px] shadow-md shadow-emerald-200/50 hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-emerald-700/50"
+                           onClick={() => updateStatus(selectedApplicant.id, "shortlisted")}
+                           disabled={loading === selectedApplicant.id || selectedApplicant.status?.toLowerCase() === 'shortlisted'}
+                         >
+                            {loading === selectedApplicant.id && selectedApplicant.status !== 'shortlisted' ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-3 h-3" />
+                            )}
+                            {selectedApplicant.status?.toLowerCase() === 'shortlisted' ? 'Shortlisted' : 'Shortlist'}
+                         </Button>
+                       )}
                     </div>
                 </div>
               </div>

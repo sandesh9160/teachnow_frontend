@@ -14,8 +14,12 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
+  ExternalLink,
   ChevronLeft,
-  ExternalLink
+  Phone,
+  MessageSquare,
+  PhoneOff,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -56,6 +60,7 @@ interface Application {
       name: string;
       email: string;
     }
+    role?: string;
   };
   resume?: {
     id: number;
@@ -93,6 +98,33 @@ const StatusBadge = ({ status }: { status: string }) => {
       currentStyle
     )}>
       {status}
+    </span>
+  );
+};
+
+const ContactStatusBadge = ({ status }: { status: string | null | undefined }) => {
+  if (!status) return null;
+  const s = status.toLowerCase();
+  
+  const styles: Record<string, { bg: string, icon: any }> = {
+    called: { bg: "bg-violet-50 text-violet-600 border-violet-100", icon: Phone },
+    messaged: { bg: "bg-sky-50 text-sky-600 border-sky-100", icon: MessageSquare },
+    not_picked: { bg: "bg-orange-50 text-orange-600 border-orange-100", icon: PhoneOff },
+    not_reached: { bg: "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100", icon: AlertCircle },
+    default: { bg: "bg-slate-50 text-slate-400 border-slate-100", icon: AlertCircle }
+  };
+
+  const config = styles[s] || styles.default;
+  const Icon = config.icon;
+  const label = status.replace(/_/g, ' ');
+
+  return (
+    <span className={cn(
+      "px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-tight lowercase border shadow-sm flex items-center gap-1.5",
+      config.bg
+    )}>
+      <Icon className="w-3 h-3 opacity-70" />
+      {label}
     </span>
   );
 };
@@ -142,8 +174,6 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
   };
 
   const initialApps = getInitialApps();
-  console.log("Resulting initialApps (Final):", initialApps);
-
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [loading, setLoading] = useState<number | null>(null);
   const [selectedApplicantFullData, setSelectedApplicantFullData] = useState<any>(null);
@@ -412,6 +442,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                         <span className="text-xs font-semibold text-slate-600 italic lowercase ">{app.job_seeker?.title || "Teacher"}</span>
                       </h3>
                       {app.status && <StatusBadge status={app.status} />}
+                      {app.contact_status && <ContactStatusBadge status={app.contact_status} />}
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <p className="text-sm font-semibold text-gray-700">
@@ -424,11 +455,16 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                       )}
                     </div>
                   
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
-                    <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400"><MapPin className="w-3 h-3 text-slate-300" /> {app.job_seeker?.location || "India"}</span>
-                    <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400"><Briefcase className="w-3 h-3 text-slate-300" /> {app.job_seeker?.experience_years || "0"}y Exp</span>
-                    <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-400"><Clock className="w-3 h-3 text-slate-300" /> {app.created_at ? formatDistanceToNow(new Date(app.created_at)) : 'Now'}</span>
-                  </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400"><MapPin className="w-3 h-3 text-slate-300" /> {app.job_seeker?.location || "India"}</span>
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400"><Briefcase className="w-3 h-3 text-slate-300" /> {app.job_seeker?.experience_years || "0"}y Exp</span>
+                      <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+                        <Clock className="w-3 h-3 text-slate-300" /> 
+                        {app.created_at ? formatDistanceToNow(new Date(app.created_at)) : 'now'}
+                        <span className="text-slate-200/60 font-medium mx-1">/</span>
+                        <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100/60 lowercase text-[9px] font-extrabold text-slate-400/80">{app.job_seeker?.role || "job_seeker"}</span>
+                      </span>
+                    </div>
                 </div>
               </div>
 

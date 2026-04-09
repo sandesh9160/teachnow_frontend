@@ -16,7 +16,7 @@ import type { AxiosRequestConfig, AxiosResponse } from "axios";
  */
 export async function dashboardServerFetch<T = any>(
     endpoint: string,
-    options?: AxiosRequestConfig & { data?: any }
+    options?: AxiosRequestConfig & { data?: any; silentStatusCodes?: number[] }
 ): Promise<T> {
     try {
         const cookieStore = await cookies();
@@ -75,6 +75,7 @@ export async function dashboardServerFetch<T = any>(
         return response.data;
     } catch (error: any) {
         const errStatus = error?.response?.status;
+        const silentCodes = options?.silentStatusCodes || [];
         const isPublicEndpoint = 
             endpoint.startsWith("open/") || 
             endpoint.startsWith("/open/") || 
@@ -83,8 +84,8 @@ export async function dashboardServerFetch<T = any>(
             endpoint === "employer/profile" ||
             endpoint === "recruiter/profile";
 
-        // Only log errors that are critical (not 401/404, or not public probes)
-        if (errStatus !== 401 && errStatus !== 404 && !isPublicEndpoint) {
+        // Only log errors that are critical (not 401/404, not in silent list, or not public probes)
+        if (errStatus !== 401 && errStatus !== 404 && !silentCodes.includes(errStatus) && !isPublicEndpoint) {
             console.error(`[DashboardServerFetch Error] ${endpoint}: ${error?.message || error}`, error?.response?.data || "");
         }
         

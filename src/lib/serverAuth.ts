@@ -72,7 +72,17 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
     ).trim() || (email ? email.split("@")[0] : "User");
 
   const role = normalizeDashboardRole(data.user_type ?? data.role ?? (data.user as any)?.user_type);
-  const pic = data.profile_pic ?? data.profile_photo ?? data.company_logo ?? (data.user as any)?.profile_pic;
+  const pic =
+    data.profile_photo ??
+    data.profile_pic ??
+    data.profile_image ??
+    data.avatar ??
+    data.image ??
+    data.company_logo ??
+    (data.user as any)?.profile_photo ??
+    (data.user as any)?.profile_pic ??
+    (data.user as any)?.avatar;
+
   const avatar =
     typeof pic === "string" && pic
       ? pic

@@ -8,14 +8,22 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
 
   // Primary synchronization attempt via the direct resource endpoint
-  const jobDetails = await dashboardServerFetch(`recruiter/jobs/${id}`);
+  let jobDetails = await dashboardServerFetch(`recruiter/jobs/${id}`, { silentStatusCodes: [405, 404] });
   
-  // Handle tiered resolution: Prefer direct data, fallback to master list on 404/500
-  let job = jobDetails?.data;
+  // Secondary: Attempt common variants if direct lookup is restricted or misrouted
+  if (jobDetails?.status !== true) {
+    jobDetails = await dashboardServerFetch(`recruiter/jobs/show/${id}`, { silentStatusCodes: [404, 405] });
+  }
+  if (jobDetails?.status !== true) {
+    jobDetails = await dashboardServerFetch(`recruiter/jobs/edit/${id}`, { silentStatusCodes: [404, 405] });
+  }
 
-  // Reliable fallback if the individual lookup fails
+  // Handle tiered resolution: Prefer direct data, fallback to master list on 404/500
+  let job = jobDetails?.data?.job || jobDetails?.data;
+
+  // Reliable fallback if the individual lookup variants fail
   if (!job || jobDetails?.status === false) {
-    const allJobsRes = await dashboardServerFetch("recruiter/jobs");
+    const allJobsRes = await dashboardServerFetch("recruiter/jobs", { silentStatusCodes: [404] });
     job = allJobsRes?.data?.find((j: any) => j.id.toString() === id);
   }
 
