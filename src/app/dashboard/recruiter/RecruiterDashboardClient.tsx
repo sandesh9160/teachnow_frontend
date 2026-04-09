@@ -5,7 +5,6 @@ import {
   Briefcase, 
   PlusCircle,
   Clock,
-  ArrowRight,
   CreditCard,
   Target,
   User
@@ -135,14 +134,11 @@ export default function RecruiterDashboardClient({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
          {/* Latest Applications */}
          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[400px] overflow-hidden">
-            <div className="px-5 py-3.5 border-b bg-gray-50/30 flex items-center justify-between">
+            <div className="px-5 py-3.5 border-b bg-gray-50/30">
                <div className="flex items-center gap-2.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                   <h2 className="text-xs font-semibold text-emerald-600 ">Recent Applications</h2>
                </div>
-               <Link href="/dashboard/recruiter/applicants" className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1.5  transition-all hover:gap-2">
-                  View All <ArrowRight className="w-3 h-3" />
-               </Link>
             </div>
             
             <div className="flex-1 overflow-hidden">
@@ -156,6 +152,7 @@ export default function RecruiterDashboardClient({
                                     src={getFullImageUrl(app.job_seeker.profile_photo)!} 
                                     alt={app.job_seeker.user?.name || "User"} 
                                     fill 
+                                    sizes="44px"
                                     className="object-cover" 
                                  />
                               ) : (
@@ -199,9 +196,8 @@ export default function RecruiterDashboardClient({
          {/* Latest Jobs */}
          <div className="space-y-4">
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
-               <div className="px-5 py-3 border-b bg-gray-50/30 flex items-center justify-between">
+               <div className="px-5 py-3 border-b bg-gray-50/30">
                   <h2 className="text-xs font-bold text-indigo-600 ">Recent Jobs</h2>
-                  <Link href="/dashboard/recruiter/jobs" className="text-xs font-semibold text-primary  hover:underline flex items-center gap-1  transition-all hover:gap-1.5">Manage All <ArrowRight className="w-3 h-3" /></Link>
                </div>
                <div className="divide-y max-h-[400px] overflow-y-auto custom-scrollbar">
                   {dashboardData?.recent_jobs && dashboardData.recent_jobs.length > 0 ? (

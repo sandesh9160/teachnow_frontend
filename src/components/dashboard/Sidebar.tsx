@@ -21,22 +21,18 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { normalizeMediaUrl } from "@/services/api/client";
 
 export function DashboardSidebar({ 
   userRole, 
   isOpen, 
   onClose,
-  branding
 }: { 
   userRole: string; 
   isOpen?: boolean; 
   onClose?: () => void;
-  branding?: { logo: string | null; name: string; secondary: string; primary: string };
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [logoError, setLogoError] = useState(false);
 
   // ... (links definitions remain unchanged)
   const seekerLinks = [
@@ -72,8 +68,6 @@ export function DashboardSidebar({
     userRole === "recruiter" ? recruiterLinks : 
     seekerLinks;
 
-  const logoUrl = branding?.logo ? normalizeMediaUrl(branding.logo) : null;
-
   return (
     <>
       {/* Mobile Overlay */}
@@ -89,42 +83,12 @@ export function DashboardSidebar({
           collapsed ? "w-[80px]" : "w-64"
         } ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-        {/* Branding Area - Desk & Mobile */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-50 min-h-[81px]">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {branding ? (
-              <>
-                {logoUrl && !logoError ? (
-                  <div className="h-10 w-10 rounded-xl overflow-hidden shrink-0 shadow-sm border border-slate-100 bg-white flex items-center justify-center p-1">
-                    <img 
-                      src={logoUrl} 
-                      alt={branding.name} 
-                      className="h-full w-full object-contain" 
-                      onError={() => setLogoError(true)}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-lg shadow-primary/20">
-                    {branding.name[0]}
-                  </div>
-                )}
-                {!collapsed && (
-                  <span className="font-display text-lg font-bold text-slate-900 tracking-tight leading-none truncate select-none">
-                    {branding.secondary}
-                    <span className="text-primary ml-0.5">{branding.primary}</span>
-                  </span>
-                )}
-              </>
-            ) : (
-               <div className="h-10 w-10 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-center animate-pulse" />
-            )}
-          </div>
-
-          {/* Mobile Close Button */}
+        {/* Header - Mobile Only Close Button */}
+        <div className="flex items-center justify-end p-4 md:hidden border-b border-slate-50 min-h-[64px]">
           {onClose && (
             <button 
               onClick={onClose}
-              className="md:hidden p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+              className="p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-colors"
               aria-label="Close sidebar"
             >
               <X size={20} />

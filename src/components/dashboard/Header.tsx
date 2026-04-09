@@ -63,8 +63,6 @@ export function DashboardHeader({
             <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden border border-white/20">
               {user?.avatar && (user.avatar.startsWith('http') || user.avatar.includes('/') || user.avatar.includes('storage')) ? (
                 <img src={normalizeMediaUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
-              ) : (user?.role === "employer" || user?.role === "recruiter") && companyLogo ? (
-                <img src={companyLogo} alt={companyName} className="w-full h-full object-cover" />
               ) : user?.avatar && user.avatar.length === 1 ? (
                 <span className="uppercase text-white font-bold">{user.avatar}</span>
               ) : (

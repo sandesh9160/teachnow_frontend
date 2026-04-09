@@ -24,6 +24,7 @@ export function DashboardShell({
   
   // Exhaustive search for brand data in navigation and footer responses
   const rawCompany = 
+    navData?.companies || 
     navData?.company_logos?.[0] || 
     footerData?.company_logos?.[0] || 
     navData?.company || 
@@ -60,7 +61,6 @@ export function DashboardShell({
           userRole={userRole} 
           isOpen={isSidebarOpen} 
           onClose={() => setIsSidebarOpen(false)} 
-          branding={brandingData}
         />
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 custom-scrollbar">
           <div className="max-w-6xl mx-auto min-h-full">
