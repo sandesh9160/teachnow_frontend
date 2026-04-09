@@ -207,16 +207,16 @@ export default function TestimonialsPage() {
                    ))}
                  </div>
                  
-                 <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-0.5">
                     <button 
                       onClick={() => handleEdit(t)}
-                      className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                      className="p-1 text-blue-500 hover:bg-blue-50 rounded transition-all"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button 
                       onClick={() => handleDelete(t.id)}
-                      className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-all"
+                      className="p-1 text-red-500 hover:bg-red-50 rounded transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
