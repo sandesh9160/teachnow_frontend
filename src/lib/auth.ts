@@ -411,9 +411,9 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
 };
 
 export const signOut = async () => {
+  const cookieStore = await cookies();
   // Call role-specific logout endpoint to handle server-side session cleanup
   try {
-    const cookieStore = await cookies();
 
     // Determine the logout endpoint based on user type
     const userDataStr = cookieStore.get("userData")?.value;
