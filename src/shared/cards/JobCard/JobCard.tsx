@@ -125,11 +125,13 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
         </div>
 
         <div className="relative z-10">
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{location}</span>
-            <span className="flex items-center gap-1"><Briefcase className="h-3.5 w-3.5" />{type}</span>
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{posted}</span>
-            <span className="ml-auto font-semibold text-foreground text-sm uppercase">₹ {salary}</span>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-y-3 gap-x-4 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{location}</span>
+              <span className="flex items-center gap-1"><Briefcase className="h-3.5 w-3.5 shrink-0" />{type}</span>
+              <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 shrink-0" />{posted}</span>
+            </div>
+            <span className="font-bold text-slate-900 text-[13px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100 italic">₹ {salary}</span>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">

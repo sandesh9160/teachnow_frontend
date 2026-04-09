@@ -161,21 +161,21 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-16">
       {/* Sticky Breadcrumb Bar */}
-      <div className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+      <div className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-20 z-40">
+        <div className="mx-auto max-w-7xl px-3 py-2 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-6 sm:py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           <div className="space-y-8">
             {/* Professional Header Section */}
-            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md ring-1 ring-slate-200/50">
-              <div className="p-6 sm:p-8">
+            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md ring-1 ring-slate-200/50 w-full">
+              <div className="p-3.5 sm:p-8">
                 <div className="flex flex-col gap-6 md:flex-row md:items-start lg:gap-8">
                   {/* Logo Container */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 border border-slate-100 p-2 shadow-sm sm:h-20 sm:w-20">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 border border-slate-100 p-2 shadow-sm sm:h-20 sm:w-20 mx-auto md:mx-0">
                     {employerLogo ? (
                       <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
                     ) : (
@@ -183,8 +183,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     )}
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <div className="min-w-0 flex-1 text-center md:text-left">
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
                       <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 border border-blue-100">
                         <Sparkles className="h-3 w-3" /> Featured
                       </span>
@@ -193,21 +193,21 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                       </span>
                     </div>
 
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
                       {title}
                     </h1>
 
-                    <div className="mt-2 flex items-center gap-2">
-                      <Link href={institutionHref} className="text-base font-semibold text-primary/80 hover:text-primary transition-colors hover:underline">
+                    <div className="mt-2 flex items-center justify-center md:justify-start gap-2">
+                      <Link href={institutionHref} className="text-sm sm:text-base font-semibold text-primary/80 hover:text-primary transition-colors hover:underline">
                         {employerName}
                       </Link>
                     </div>
 
                     {/* Compact Meta Grid */}
-                    <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-50 pt-6">
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 border-t border-slate-50 pt-6">
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Location</p>
-                        <p className="text-sm font-semibold text-slate-600 flex items-center gap-1">
+                        <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
                           <MapPin className="h-3.5 w-3.5 text-slate-400" />
                           {job.location || "India"}
                         </p>
@@ -215,15 +215,15 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Salary</p>
-                        <p className="text-sm font-semibold text-slate-700 flex items-center gap-1">
-                          <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                          {salaryRange}
-                        </p>
+                        <div className="text-sm font-semibold text-slate-700 flex items-center justify-center md:justify-start gap-1">
+                          <TrendingUp className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                          <span className="leading-tight">{salaryRange}</span>
+                        </div>
                       </div>
 
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Experience</p>
-                        <p className="text-sm font-semibold text-slate-600 flex items-center gap-1">
+                        <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
                           <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                           {job.experience_required ? `${job.experience_required}+ Yrs` : "Fresher"}
                         </p>
@@ -231,7 +231,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
                       <div className="space-y-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Type</p>
-                        <p className="text-sm font-semibold text-slate-600 flex items-center gap-1">
+                        <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
                           <Briefcase className="h-3.5 w-3.5 text-slate-400" />
                           {jobType}
                         </p>
@@ -240,36 +240,33 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   </div>
                 </div>
 
-                {/* Compact Action Bar */}
-                <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-slate-50 pt-6">
-                  <Link href={`/apply/${jobSegment}`} className="sm:flex-1">
-                    <Button variant="hero" size="lg" className="h-11 w-full rounded-lg font-bold shadow-lg shadow-primary/10">
+                {/* Action Bar */}
+                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-slate-50 pt-6">
+                  <Link href={`/apply/${jobSegment}`} className="flex-1">
+                    <Button variant="hero" size="lg" className="h-12 w-full rounded-xl font-bold shadow-lg shadow-primary/10 text-base">
                       Apply Now
                     </Button>
                   </Link>
-                  <Button
-                    variant={isBookmarked ? "secondary" : "outline"}
-                    size="lg"
-                    className={`h-11 rounded-lg px-5 flex items-center gap-2 border-slate-200 ${isBookmarked ? 'text-primary bg-primary/5 border-primary/20' : ''}`}
-                    onClick={handleToggleBookmark}
-                    disabled={bookmarkBusy || bookmarksHookLoading}
-                  >
-                    <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-primary' : ''}`} />
-                    <span className="font-bold">{isBookmarked ? "Saved" : "Save"}</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="h-11 rounded-lg px-5 flex items-center gap-2 border-slate-200"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="h-4 w-4" />
-                    <span className="font-bold">Share</span>
-                  </Button>
-                  <div className="ml-auto hidden md:block">
-                    <p className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-                      <Clock3 className="h-3.5 w-3.5" /> {postedText}
-                    </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant={isBookmarked ? "secondary" : "outline"}
+                      size="lg"
+                      className={`h-12 flex-1 sm:flex-none rounded-xl px-6 flex items-center justify-center gap-2 border-slate-200 ${isBookmarked ? 'text-primary bg-primary/5 border-primary/20' : ''}`}
+                      onClick={handleToggleBookmark}
+                      disabled={bookmarkBusy || bookmarksHookLoading}
+                    >
+                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-primary' : ''}`} />
+                      <span className="font-bold">{isBookmarked ? "Saved" : "Save"}</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="h-12 flex-1 sm:flex-none rounded-xl px-6 flex items-center justify-center gap-2 border-slate-200"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="h-4 w-4" />
+                      <span className="font-bold">Share</span>
+                    </Button>
                   </div>
                 </div>
               </div>

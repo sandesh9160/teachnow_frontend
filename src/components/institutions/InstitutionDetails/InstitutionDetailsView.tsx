@@ -38,13 +38,13 @@ export default function InstitutionDetailsView({
   return (
     <div className="min-h-screen bg-[#F1F5F9] pb-20">
       {/* Premium Glass Sticky Breadcrumb */}
-      <div className="border-b border-slate-200/60 bg-white/70 backdrop-blur-md sticky top-16 z-40 transition-shadow">
+      <div className="border-b border-slate-200/60 bg-white/70 backdrop-blur-md sticky top-20 z-40 transition-shadow">
         <div className="mx-auto max-w-7xl px-4 py-2.5 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           <div className="space-y-12">
             {/* Professional Institution Header Card */}

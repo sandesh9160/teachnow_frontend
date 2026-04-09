@@ -25,7 +25,7 @@ export const Breadcrumb = ({ items, className }: BreadcrumbProps) => {
       </Link>
 
       {items.map((item, index) => (
-        <div key={`${item.label}-${index}`} className="flex items-center gap-2 md:gap-2.5 shrink-0">
+        <div key={`${item.label}-${index}`} className="flex items-center gap-2 md:gap-2.5">
           <ChevronRight className="h-4 w-4 text-slate-300" />
           {item.href && !item.isCurrent ? (
             <Link 

@@ -5,8 +5,10 @@ import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type { Job } from "@/types/homepage";
 import type { JobDetails } from "@/types/jobs";
 
+import { normalizeJob, toArray } from "@/lib/jobs/normalizeJob";
+
 /** Re-export for client-only modules; Server Components should import from `@/lib/jobs/api`. */
-export { normalizeJob, toArray } from "@/lib/jobs/normalizeJob";
+export { normalizeJob, toArray };
 export {
   getJobs,
   getJobDetails,
@@ -35,7 +37,11 @@ export function useJobs() {
       if (loc) query.push(`location=${encodeURIComponent(loc)}`);
       if (query.length) endpoint += `?${query.join("&")}`;
       const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
-      const jobsList = Array.isArray(res?.data) ? res.data : [];
+      
+      // Use toArray to handle nested paginated data and normalize results
+      const rawData = res?.data ?? res;
+      const jobsList = toArray<any>(rawData).map(normalizeJob);
+      
       setJobs(jobsList);
     } catch (e: unknown) {
       setJobs([]);
