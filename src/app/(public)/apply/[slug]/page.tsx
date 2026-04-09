@@ -24,13 +24,16 @@ import {
   Plus,
   Star,
   Bookmark,
+  X,
 } from "lucide-react";
 import { getJobBySlug } from "@/lib/jobs/api";
 import { useApplications } from "@/hooks/useApplications";
 import { useResumes } from "@/hooks/useResumes";
+import { useCV } from "@/hooks/useCV";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+import ResumeTemplatePreview, { templatePreviews } from "@/components/ai-resume-builder/ResumeTemplatePreview";
 
 const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
 
@@ -40,8 +43,15 @@ export default function ApplyJobPage() {
   const router = useRouter();
   const { isLoggedIn, user, loading: sessionLoading } = useClientSession();
   const { apply } = useApplications();
-  const { resumes } = useResumes({ enabled: isLoggedIn });
+  const { resumes, fetchResumes, generatedResumes } = useResumes({ enabled: isLoggedIn });
+  const { fetchTemplates, templates: cvTemplates, generateCVWithJob, generatedCVs, fetchGeneratedCVs } = useCV();
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      void fetchGeneratedCVs();
+    }
+  }, [isLoggedIn, fetchGeneratedCVs]);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
 
   const [step, setStep] = useState(0);
@@ -151,15 +161,37 @@ export default function ApplyJobPage() {
     else setSelectedResumeId(resumes[0].id);
   }, [resumes]);
 
-  useEffect(() => {
-    if (!loading && !sessionLoading) {
-      if (!isLoggedIn) {
-        router.push("/auth/login?redirect=" + encodeURIComponent(`/apply/${slug}`));
-      } else if (user?.role === "employer") {
-        router.back();
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  
+  const [showTemplateOverlay, setShowTemplateOverlay] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateResume = async (templateName: string) => {
+    if (!jobDetails?.id) return;
+    try {
+      setIsGenerating(true);
+      const res = await generateCVWithJob({
+        template_id: templateName,
+        job_id: jobDetails.id,
+      });
+      
+      if (res?.status) {
+        toast.success("Resume generated with AI!");
+        await fetchResumes(); 
+        setShowTemplateOverlay(false);
       }
+    } catch (err: any) {
+      toast.error(err?.message || "Generation failed");
+    } finally {
+      setIsGenerating(false);
     }
-  }, [loading, sessionLoading, isLoggedIn, user, router, slug]);
+  };
+
+  useEffect(() => {
+    if (showTemplateOverlay) {
+      void fetchTemplates();
+    }
+  }, [showTemplateOverlay, fetchTemplates]);
 
   if (loading || !job) {
     return (
@@ -377,8 +409,9 @@ export default function ApplyJobPage() {
           {step === 2 && !submitted && (
             <div className="space-y-5 md:space-y-6">
               <p className="text-sm text-muted-foreground font-medium">Select your preferred resume for this application.</p>
-              {resumes.length > 0 ? (
+              {(resumes.length > 0 || generatedResumes.length > 0) ? (
                 <div className="grid grid-cols-1 gap-3 md:gap-4">
+                  {/* Uploaded Resumes */}
                   {resumes.map((resume) => (
                     <label
                       key={resume.id}
@@ -410,6 +443,39 @@ export default function ApplyJobPage() {
                       </div>
                     </label>
                   ))}
+
+                  {/* Generated Resumes */}
+                  {generatedResumes.map((cv) => (
+                    <label
+                      key={`cv-${cv.id}`}
+                      className={`flex items-start md:items-center gap-4 rounded-xl border p-4 md:p-5 cursor-pointer transition-all duration-200 ${selectedResumeId === `cv-${cv.id}`
+                          ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
+                          : "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/30"
+                        }`}
+                    >
+                      <input
+                        type="radio"
+                        checked={selectedResumeId === `cv-${cv.id}`}
+                        onChange={() => setSelectedResumeId(`cv-${cv.id}`)}
+                        className="sr-only"
+                      />
+                      <div className={`flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl transition-colors ${selectedResumeId === `cv-${cv.id}` ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+                        <Sparkles className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-sm font-bold text-foreground truncate">{cv.title || "AI Generated Resume"}</p>
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-[8px] font-black text-emerald-700 uppercase tracking-widest">AI Tailored</span>
+                        </div>
+                        <p className="text-[11px] font-medium text-muted-foreground/80 uppercase tracking-tight">
+                          Tailored for this career path • {new Date(cv.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${selectedResumeId === `cv-${cv.id}` ? 'border-emerald-500 bg-emerald-500' : 'border-border'}`}>
+                        {selectedResumeId === `cv-${cv.id}` && <div className="h-2 w-2 rounded-full bg-white shadow-sm" />}
+                      </div>
+                    </label>
+                  ))}
                 </div>
               ) : (
                 <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center bg-muted/20">
@@ -421,9 +487,20 @@ export default function ApplyJobPage() {
                 </div>
               )}
 
-              <Button variant="outline" className="w-full h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
-                <Plus className="h-3 w-3" /> Manage Resumes
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
+                  <Plus className="h-3 w-3" /> Manage Resumes
+                </Button>
+                <Button 
+                  variant="hero" 
+                  className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20 gap-2" 
+                  onClick={() => setShowTemplateOverlay(true)}
+                  disabled={isGenerating}
+                >
+                  <Sparkles className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} /> 
+                  {isGenerating ? "Generating..." : "Generate CV with AI"}
+                </Button>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(1)}>
@@ -456,7 +533,18 @@ export default function ApplyJobPage() {
                     { label: "Location", value: candidate.location || "—" },
                     { label: "Date of Birth", value: candidate.dob || "—" },
                     { label: "Portfolio", value: candidate.portfolio_website || "—" },
-                    { label: "Selected Resume", value: resumes.find((r) => r.id === selectedResumeId)?.title ?? resumes.find((r) => r.id === selectedResumeId)?.file_name ?? "Not linked" },
+                    { 
+                      label: "Selected Resume", 
+                      value: (function() {
+                        const rid = String(selectedResumeId);
+                        if (rid.startsWith("cv-")) {
+                           const id = rid.replace("cv-", "");
+                           return generatedResumes.find(cv => String(cv.id) === id)?.title || "AI Generated Resume";
+                        }
+                        const r = resumes.find(r => String(r.id) === rid);
+                        return r?.title || r?.file_name || "Not linked";
+                      })()
+                    },
                   ].map((item) => (
                     <div key={item.label} className="min-w-0 group">
                       <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-1 group-hover:text-primary transition-colors">{item.label}</span>
@@ -527,6 +615,92 @@ export default function ApplyJobPage() {
           )}
         </div>
       </div>
+
+      {/* Template Selection Overlay */}
+      {showTemplateOverlay && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+              <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                 <div>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                       <Sparkles className="w-6 h-6 text-primary animate-pulse" /> 
+                       Generate AI Enhanced CV
+                    </h2>
+                    <p className="text-slate-500 font-medium text-sm mt-1">Select a template to tailor your success story for this position.</p>
+                 </div>
+                 <button onClick={() => setShowTemplateOverlay(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                    <X className="w-6 h-6 text-slate-400" />
+                 </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {cvTemplates.map((template) => (
+                       <div 
+                         key={template.id}
+                         className={`group relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
+                           selectedTemplate === String(template.id) ? "border-primary shadow-lg shadow-primary/20 scale-[1.02]" : "border-slate-100 hover:border-primary/30 hover:shadow-md"
+                         }`}
+                         onClick={() => setSelectedTemplate(String(template.id))}
+                       >
+                          <div className="aspect-[3/4] p-2 bg-slate-50 group-hover:bg-primary/5 transition-colors overflow-hidden">
+                             {template.preview_image ? (
+                               <img 
+                                 src={template.preview_image} 
+                                 alt={template.name} 
+                                 className="w-full h-full object-cover rounded-lg shadow-sm border border-slate-200"
+                               />
+                             ) : (
+                               <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-300">
+                                 <FileText className="w-10 h-10" />
+                                 <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
+                               </div>
+                             )}
+                          </div>
+                          <div className="p-4 flex items-center justify-between bg-white">
+                             <div className="min-w-0">
+                                <span className="text-[10px] font-black text-primary/60 uppercase tracking-tighter block mb-0.5">Template</span>
+                                <span className="text-xs font-bold text-slate-700 truncate block">{template.name}</span>
+                             </div>
+                             {selectedTemplate === String(template.id) && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
+                          </div>
+                          
+                          {/* Selected Overlay */}
+                          {selectedTemplate === String(template.id) && (
+                            <div className="absolute inset-x-0 bottom-[68px] flex items-center justify-center p-4">
+                               <div className="bg-white rounded-lg py-1.5 px-3 shadow-xl border border-primary/20 animate-in slide-in-from-bottom-2">
+                                  <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5">
+                                    <Sparkles className="w-3 h-3" /> Selected 
+                                  </span>
+                               </div>
+                            </div>
+                          )}
+                       </div>
+                    ))}
+                 </div>
+              </div>
+
+              <div className="px-8 py-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                 <div className="text-center sm:text-left">
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-0.5">Selected Style</p>
+                    <p className="text-sm font-bold text-slate-900">{cvTemplates.find(t => String(t.id) === selectedTemplate)?.name || "Please select a template"}</p>
+                 </div>
+                 <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <Button variant="outline" className="flex-1 sm:flex-none h-11 px-6 rounded-xl" onClick={() => setShowTemplateOverlay(false)}>Cancel</Button>
+                    <Button 
+                      variant="hero" 
+                      className="flex-1 sm:flex-none h-11 px-8 rounded-xl shadow-xl shadow-primary/20" 
+                      disabled={!selectedTemplate || isGenerating}
+                      onClick={() => selectedTemplate && handleGenerateResume(selectedTemplate)}
+                    >
+                       {isGenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                       {isGenerating ? "Analyzing JD & Generating..." : "Generate My CV"}
+                    </Button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

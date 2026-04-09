@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { 
   Users, 
   Briefcase, 
@@ -7,13 +8,16 @@ import {
   Clock,
   CreditCard,
   Target,
-  User
+  User,
+  Sparkles,
+  MapPin,
+  Building2,
+  ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-
 
 interface RecruiterDashboardStats {
   active_jobs: number;
@@ -39,6 +43,22 @@ export default function RecruiterDashboardClient({
   welcomeName: string,
   dashboardData?: RecruiterDashboardStats 
 }) {
+  const [featuredJobs, setFeaturedJobs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchFeaturedJobs = async () => {
+      try {
+        const response = await fetch("https://teachnowbackend.jobsvedika.in/api/open/home/featured-jobs");
+        const res = await response.json();
+        if (res.status && res.data) {
+          setFeaturedJobs(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch featured jobs:", error);
+      }
+    };
+    fetchFeaturedJobs();
+  }, []);
   const stats = [
     { 
       label: "Active Openings", 
@@ -222,6 +242,61 @@ export default function RecruiterDashboardClient({
                      ))
                   ) : (
                      <div className="p-8 text-center text-[10px] text-slate-300 font-semibold  leading-relaxed">No jobs found.</div>
+                  )}
+               </div>
+            </div>
+
+            {/* Trending Opportunities */}
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
+               <div className="px-5 py-3 border-b bg-gray-50/30 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
+                    <h2 className="text-xs font-bold text-amber-600 ">Trending Opportunities</h2>
+                  </div>
+               </div>
+               <div className="divide-y max-h-[400px] overflow-y-auto custom-scrollbar">
+                  {featuredJobs.length > 0 ? (
+                     featuredJobs.map((job) => (
+                        <div key={job.id} className="p-3.5 hover:bg-amber-50/20 transition-all group">
+                           <div className="flex gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 shrink-0 overflow-hidden flex items-center justify-center p-1.5">
+                                 {job.companies?.company_logo ? (
+                                    <Image 
+                                       src={getFullImageUrl(job.companies.company_logo)!} 
+                                       alt={job.companies.company_name}
+                                       width={40}
+                                       height={40}
+                                       className="object-contain"
+                                    />
+                                 ) : (
+                                    <Building2 className="w-5 h-5 text-slate-300" />
+                                 )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                 <h4 className="text-sm font-semibold text-slate-800 line-clamp-1 group-hover:text-amber-600 transition-colors">{job.title}</h4>
+                                 <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{job.companies?.company_name}</p>
+                                 <div className="flex items-center gap-2 mt-1.5">
+                                    <span className="flex items-center gap-1 text-[9px] font-bold text-slate-400">
+                                       <MapPin className="w-2.5 h-2.5" /> {job.location || "Remote"}
+                                    </span>
+                                    <a 
+                                      href={`https://teachnow.lovable.app/jobs/${job.slug || job.id}`} 
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-auto text-primary hover:text-primary-dark transition-colors"
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     ))
+                  ) : (
+                     <div className="p-8 text-center">
+                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                        <p className="text-[10px] text-slate-400 font-semibold italic">Fetching opportunities...</p>
+                     </div>
                   )}
                </div>
             </div>

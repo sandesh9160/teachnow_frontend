@@ -66,17 +66,38 @@ export function useCV() {
       try {
         setLoading(true);
         setError(null);
-        // Call the generation endpoint provided by the user
         const res = await dashboardServerFetch<any>("jobseeker/cv/generate-base", {
           method: "POST",
           data: payload,
         });
-        
-        // After success, sync the history immediately
         await fetchGeneratedCVs();
         return res;
       } catch (err: any) {
         const msg = err?.message || "Failed to generate CV";
+        setError(msg);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchGeneratedCVs]
+  );
+
+  const generateCVWithJob = useCallback(
+    async (payload: { template_id: number | string; job_id: number | string }) => {
+      try {
+        setLoading(true);
+        setError(null);
+        // Specialized endpoint for job-tailored CVs
+        const res = await dashboardServerFetch<any>("jobseeker/cv/generate-job", {
+          method: "POST",
+          data: payload,
+        });
+        
+        await fetchGeneratedCVs();
+        return res;
+      } catch (err: any) {
+        const msg = err?.message || "Failed to generate tailored CV";
         setError(msg);
         throw err;
       } finally {
@@ -94,6 +115,7 @@ export function useCV() {
     fetchTemplates,
     fetchGeneratedCVs,
     generateCV,
+    generateCVWithJob,
   };
 }
 
