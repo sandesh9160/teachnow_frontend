@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useCallback } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import CompanyCard from "@/shared/cards/CompanyCard/CompanyCard";
 import { normalizeMediaUrl } from "@/services/api/client";
 import { FeaturedInstitutionsProps } from "@/types/components";
@@ -10,11 +10,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
   const { institutions } = props;
   const companiesRef = useRef<HTMLDivElement>(null);
 
-  const scrollCarousel = useCallback((direction: 'left' | 'right') => {
-    if (!companiesRef.current) return;
-    const scrollAmount = 280;
-    companiesRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
-  }, []);
+
 
   if (!institutions || !Array.isArray(institutions) || institutions.length === 0) return null;
 
@@ -33,11 +29,13 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
         <div className="relative group/carousel">
           {/* Navigation Arrows */}
           <button 
-            onClick={() => scrollCarousel('left')} 
-            suppressHydrationWarning={true} 
-            className="absolute -left-6 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-400 hover:text-primary transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 -translate-x-4 group-hover/carousel:translate-x-0 border border-slate-100"
+            onClick={() => {
+              if (companiesRef.current) companiesRef.current.scrollBy({ left: -companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+            }}
+            className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+            title="Previous"
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ChevronLeft className="h-6 w-6" />
           </button>
 
           <div 
@@ -65,11 +63,13 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
           </div>
 
           <button 
-            onClick={() => scrollCarousel('right')} 
-            suppressHydrationWarning={true} 
-            className="absolute -right-6 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-white shadow-xl flex items-center justify-center text-slate-400 hover:text-primary transition-all duration-300 opacity-0 group-hover/carousel:opacity-100 translate-x-4 group-hover/carousel:translate-x-0 border border-slate-100"
+            onClick={() => {
+              if (companiesRef.current) companiesRef.current.scrollBy({ left: companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+            }}
+            className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+            title="Next"
           >
-            <ArrowRight className="h-6 w-6" />
+            <ChevronRight className="h-6 w-6" />
           </button>
 
           {/* Pagination Dots Indicator */}

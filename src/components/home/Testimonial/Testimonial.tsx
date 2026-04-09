@@ -36,15 +36,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
   
   if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) return null;
 
-  const handleManualScroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 350;
-      scrollRef.current.scrollBy({ 
-        left: direction === 'left' ? -scrollAmount : scrollAmount, 
-        behavior: 'smooth' 
-      });
-    }
-  };
+
 
   return (
     <section className="py-12 md:py-16 bg-slate-50/50 overflow-hidden relative">
@@ -60,24 +52,26 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
       </div>
       
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative group">
-        {/* Floating Navigation Arrows - Always Visible */}
-        <div className="absolute inset-y-0 -left-4 -right-4 flex items-center justify-between pointer-events-none z-20">
-          <button 
-            onClick={() => handleManualScroll('left')}
-            className="pointer-events-auto w-12 h-12 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-primary hover:scale-110 active:scale-90 transition-all ml-1 md:ml-0"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="w-7 h-7" />
-          </button>
-          
-          <button 
-            onClick={() => handleManualScroll('right')}
-            className="pointer-events-auto w-12 h-12 rounded-full bg-white shadow-xl border border-slate-100 flex items-center justify-center text-slate-400 hover:text-primary hover:scale-110 active:scale-90 transition-all mr-1 md:mr-0"
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="w-7 h-7" />
-          </button>
-        </div>
+        {/* Navigation Arrows */}
+        <button 
+          onClick={() => {
+            if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+          }}
+          className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+          title="Previous"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+
+        <button 
+          onClick={() => {
+            if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+          }}
+          className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+          title="Next"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
 
         <div 
           ref={scrollRef} 

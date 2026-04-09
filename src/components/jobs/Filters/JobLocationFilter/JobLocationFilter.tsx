@@ -15,12 +15,12 @@ export const JobLocationFilter = ({ locations, selected, onToggle }: JobLocation
 
   return (
     <div className="mb-8">
-      <h4 className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-800 uppercase tracking-widest">
+      <h4 className="flex items-center gap-2 mb-4 text-sm font-semibold text-slate-800">
         <MapPin className="h-4 w-4 text-primary" /> Location
       </h4>
       
       <div className="relative mb-4 group">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-primary transition-colors" />
         <input
           type="text"
           placeholder="Search city..."
@@ -43,7 +43,7 @@ export const JobLocationFilter = ({ locations, selected, onToggle }: JobLocation
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`h-2 w-2 rounded-full transition-all duration-300 ${isSelected ? "bg-primary scale-125 shadow-sm shadow-primary/40" : "bg-slate-300 group-hover:bg-slate-400"}`} />
+                <div className={`h-2 w-2 rounded-full transition-all duration-300 ${isSelected ? "bg-primary scale-125 shadow-sm shadow-primary/40" : "bg-slate-300 group-hover:bg-slate-600"}`} />
                 <span className="truncate">{loc}</span>
               </div>
               <input type="checkbox" checked={isSelected} onChange={() => onToggle(loc)} className="sr-only" />

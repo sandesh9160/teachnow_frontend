@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, Search } from "lucide-react";
+import { AlertCircle, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getResources } from "@/hooks/useHomepage";
 import { ResourceData } from "@/types/homepage";
 import ResourceCard from "@/shared/cards/ResourceCard/ResourceCard";
@@ -74,12 +74,10 @@ export default function ResourcesPage() {
               ].map((label) => (
                 <button
                   key={label}
-                  className="flex items-center gap-4 px-5 py-2.5 bg-white border border-slate-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
+                  className="group flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
                 >
                   {label}
-                  <svg className="h-3 w-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <ChevronDown className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-all duration-300" />
                 </button>
               ))}
             </div>
@@ -142,45 +140,46 @@ export default function ResourcesPage() {
                     {items.length} Items
                   </span>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => {
-                      const el = document.getElementById(`carousel-${sectionIndex}`);
-                      if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
-                    }}
-                    className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      const el = document.getElementById(`carousel-${sectionIndex}`);
-                      if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
-                    }}
-                    className="p-2 rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
               </div>
 
-              <div 
-                id={`carousel-${sectionIndex}`}
-                className="flex gap-4 overflow-x-auto pb-6 px-2 scroll-smooth no-scrollbar scroll-snap-x snap-mandatory"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {items.map((resource) => (
-                  <div key={resource.slug} className="w-[160px] sm:w-[205px] shrink-0 snap-start">
-                    <ResourceCard
-                      resource={resource}
-                    />
-                  </div>
-                ))}
+              <div className="relative group/carousel">
+                {/* Left Navigation Button */}
+                <button 
+                  onClick={() => {
+                    const el = document.getElementById(`carousel-${sectionIndex}`);
+                    if (el) el.scrollBy({ left: -el.offsetWidth * 0.8, behavior: 'smooth' });
+                  }}
+                  className="absolute -left-4 xl:-left-12 top-[40%] -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+                  title="Previous"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+
+                {/* Right Navigation Button */}
+                <button 
+                  onClick={() => {
+                    const el = document.getElementById(`carousel-${sectionIndex}`);
+                    if (el) el.scrollBy({ left: el.offsetWidth * 0.8, behavior: 'smooth' });
+                  }}
+                  className="absolute -right-4 xl:-right-12 top-[40%] -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+                  title="Next"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+
+                <div 
+                  id={`carousel-${sectionIndex}`}
+                  className="flex gap-4 overflow-x-auto pb-6 px-2 scroll-smooth no-scrollbar scroll-snap-x snap-mandatory"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {items.map((resource) => (
+                    <div key={resource.slug} className="w-[160px] sm:w-[205px] shrink-0 snap-start">
+                      <ResourceCard
+                        resource={resource}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))
