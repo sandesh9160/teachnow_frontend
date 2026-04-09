@@ -33,7 +33,7 @@ import { useCV } from "@/hooks/useCV";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
-import ResumeTemplatePreview, { templatePreviews } from "@/components/ai-resume-builder/ResumeTemplatePreview";
+// import ResumeTemplatePreview, { templatePreviews } from "@/components/ai-resume-builder/ResumeTemplatePreview";
 
 const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
 
@@ -41,10 +41,10 @@ export default function ApplyJobPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const router = useRouter();
-  const { isLoggedIn, user, loading: sessionLoading } = useClientSession();
+  const { isLoggedIn, user } = useClientSession();
   const { apply } = useApplications();
   const { resumes, fetchResumes, generatedResumes } = useResumes({ enabled: isLoggedIn });
-  const { fetchTemplates, templates: cvTemplates, generateCVWithJob, generatedCVs, fetchGeneratedCVs } = useCV();
+  const { fetchTemplates, templates: cvTemplates, generateCVWithJob, fetchGeneratedCVs } = useCV();
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
 
   useEffect(() => {

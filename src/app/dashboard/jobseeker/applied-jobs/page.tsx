@@ -67,8 +67,7 @@ export default function AppliedJobsPage() {
 
     const [showAll, setShowAll] = useState(false);
     const mobileLimit = 3;
-    const displayedApps = showAll ? applications : applications.slice(0, applications.length); // Default to all on desktop
-    
+
     // For mobile specifically, we can use a separate variable or logic
     const mobileApps = showAll ? applications : applications.slice(0, mobileLimit);
 
@@ -130,7 +129,7 @@ export default function AppliedJobsPage() {
                                 <div className="flex items-center justify-between border-t border-slate-50 pt-3">
                                     <span className="text-[10px] text-slate-400">Applied {new Date(app.created_at).toLocaleDateString()}</span>
                                     <div className="flex items-center gap-2">
-                                        <Link href={`/jobs/${app.job?.slug || app.job_id}`}>
+                                        <Link href={`/dashboard/jobseeker/applied-jobs/${app.id}`}>
                                             <button className="h-7 px-3 rounded-lg text-[10px] font-bold text-primary border border-primary/20">Details</button>
                                         </Link>
                                         <button onClick={() => handleWithdraw(app.id)} className="h-7 w-7 flex items-center justify-center rounded-lg border border-rose-100 text-rose-500"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -192,7 +191,7 @@ export default function AppliedJobsPage() {
                                         </td>
                                         <td className="px-6 py-4 pr-8 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Link href={`/jobs/${app.job?.slug || app.job_id}`}>
+                                                <Link href={`/dashboard/jobseeker/applied-jobs/${app.id}`}>
                                                     <button className="h-8 px-4 rounded-lg text-[11px] font-bold text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all">Details</button>
                                                 </Link>
                                                 <button onClick={() => handleWithdraw(app.id)} className="h-8 w-8 flex items-center justify-center rounded-lg border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"><Trash2 className="w-4 h-4" /></button>
