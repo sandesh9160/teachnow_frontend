@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+export const dynamic = "force-dynamic";
 import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
