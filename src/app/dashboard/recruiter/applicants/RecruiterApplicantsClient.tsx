@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  ChevronLeft
+  ChevronLeft,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -434,13 +435,40 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
               <div className="flex items-center gap-2 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 md:pl-4">
                 <Button 
                    variant="outline" 
-                   className="flex-1 md:flex-none h-8.5 px-4 rounded-lg text-xs font-semibold text-slate-500 border-slate-100 hover:bg-slate-50 flex items-center justify-center gap-2 "
-                   onClick={() => {
-                     const resumeUrl = getFullUrl(app.resume?.file_url);
-                     if (resumeUrl) window.open(resumeUrl, '_blank');
+                   className="flex-1 md:flex-none h-8.5 px-4 rounded-lg text-xs font-semibold text-slate-500 border-slate-100 hover:bg-slate-50 flex items-center justify-center gap-2 disabled:opacity-50"
+                   disabled={loading === app.id}
+                   onClick={async () => {
+                     let resumeUrl = getFullUrl(app.resume?.file_url);
+                     
+                     if (!resumeUrl) {
+                        setLoading(app.id);
+                        try {
+                           const res = await dashboardServerFetch(`recruiter/applications/${app.id}`);
+                           if (res.status && res.data?.resume?.file_url) {
+                              resumeUrl = getFullUrl(res.data.resume.file_url);
+                              // Silently update apps list with the fetched resume so it's cached
+                              setApps(prev => prev.map(a => a.id === app.id ? { ...a, resume: res.data.resume } : a));
+                           }
+                        } catch (e) {
+                           console.error(e);
+                        } finally {
+                           setLoading(null);
+                        }
+                     }
+
+                     if (resumeUrl) {
+                        window.open(resumeUrl, '_blank');
+                     } else {
+                        toast.error("Resume file not found for this candidate.");
+                     }
                    }}
                 >
-                  <Download className="w-3.5 h-3.5 text-slate-400" /> Resume
+                  {loading === app.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5 text-slate-400" />
+                  )}
+                  Resume
                 </Button>
                 <Button 
                    className="flex-1 md:flex-none h-8.5 px-4 rounded-lg text-xs font-semibold shadow-sm flex items-center justify-center gap-2 "
@@ -449,7 +477,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                      setSelectedApplicantFullData(null);
                      setLoadingProfile(true);
                      try {
-                        const res = await dashboardServerFetch(`recruiter/profile/${app.id}`);
+                        const res = await dashboardServerFetch(`recruiter/applications/${app.id}`);
                         if (res.status && res.data) {
                            setSelectedApplicantFullData(res.data);
                         }
@@ -669,18 +697,27 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                   <div className="space-y-4 pt-1">
                     <div className="flex items-center gap-3">
                        <div className="w-1 h-5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.3)]" />
-                       <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">Resume</h3>
+                       <h3 className="text-[11px] font-bold text-slate-900">Resume</h3>
                     </div>
                     
                     <div className="space-y-3">
                        {(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url) ? (
                          <>
-                           <div className="rounded-2xl border border-slate-100 bg-white p-2 overflow-hidden aspect-4/3 group relative shadow-inner">
+                           <div className="rounded-2xl border border-slate-100 bg-white p-1 overflow-hidden aspect-3/4 group relative shadow-inner">
                               <iframe 
-                                src={`${getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url)}#toolbar=0&view=FitH`} 
+                                src={`https://docs.google.com/viewer?url=${encodeURIComponent(getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url))}&embedded=true`} 
                                 className="w-full h-full border-none rounded-xl bg-slate-50"
-                                title="Resume"
+                                title="Resume Preview"
                               />
+                              <div className="absolute inset-x-0 bottom-4 px-4 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                 <a 
+                                   href={getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url)} 
+                                   target="_blank" 
+                                   className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg border shadow-sm text-[10px] font-bold text-primary flex items-center gap-2"
+                                 >
+                                    <ExternalLink className="w-3 h-3" /> Full View
+                                 </a>
+                              </div>
                            </div>
                            <div className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex items-center justify-between gap-4">
                               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -733,11 +770,11 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
 
                     <div className="flex flex-1 justify-end items-center gap-2">
                       <Button 
-                        className="h-8 px-4 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm border border-rose-100"
+                        className="h-8 px-4 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 font-semibold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm border border-rose-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => rejectApplication(selectedApplicant.id)}
-                        disabled={loading === selectedApplicant.id}
+                        disabled={loading === selectedApplicant.id || selectedApplicant.status?.toLowerCase() === 'rejected'}
                       >
-                         {loading === selectedApplicant.id && selectedApplicant.status === 'rejected' ? (
+                         {loading === selectedApplicant.id && selectedApplicant.status !== 'rejected' ? (
                            <Loader2 className="w-3 h-3 animate-spin" />
                          ) : (
                            <X className="w-3 h-3" />
@@ -747,12 +784,14 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
 
                       {selectedApplicant.status?.toLowerCase() !== 'rejected' && (
                         <Button 
-                          className="h-8 px-5 rounded-lg bg-emerald-600 text-white font-semibold text-xs shadow-md shadow-emerald-200/50 hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5"
+                          className="h-8 px-5 rounded-lg bg-emerald-600 text-white font-semibold text-xs shadow-md shadow-emerald-200/50 hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-emerald-700/50"
                           onClick={() => updateStatus(selectedApplicant.id, "shortlisted")}
-                          disabled={loading === selectedApplicant.id}
+                          disabled={loading === selectedApplicant.id || selectedApplicant.status?.toLowerCase() === 'shortlisted'}
                         >
-                           {loading === selectedApplicant.id && selectedApplicant.status === 'shortlisted' && (
+                           {loading === selectedApplicant.id && selectedApplicant.status !== 'shortlisted' ? (
                              <Loader2 className="w-3 h-3 animate-spin" />
+                           ) : (
+                             <CheckCircle2 className="w-3 h-3" />
                            )}
                            {selectedApplicant.status?.toLowerCase() === 'shortlisted' ? 'Shortlisted' : 'Shortlist'}
                         </Button>
