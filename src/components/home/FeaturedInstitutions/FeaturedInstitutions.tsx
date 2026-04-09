@@ -32,7 +32,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
             onClick={() => {
               if (companiesRef.current) companiesRef.current.scrollBy({ left: -companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
             }}
-            className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+            className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
             title="Previous"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -40,14 +40,14 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
 
           <div 
             ref={companiesRef} 
-            className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-12 pt-2 px-2" 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-6 lg:overflow-x-auto lg:scrollbar-hide lg:scroll-smooth pb-12 pt-2 px-1 lg:px-2 gap-6" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {institutions.map((institution) => {
               const imageUrl = normalizeMediaUrl(institution.company_logo);
 
               return (
-                <div key={institution.id} className="shrink-0 w-[280px]">
+                <div key={institution.id} className="w-full lg:w-[280px] shrink-0">
                   <CompanyCard
                     name={institution.company_name}
                     location={institution.location || ""}
@@ -66,7 +66,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
             onClick={() => {
               if (companiesRef.current) companiesRef.current.scrollBy({ left: companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
             }}
-            className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+            className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
             title="Next"
           >
             <ChevronRight className="h-6 w-6" />

@@ -57,7 +57,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           onClick={() => {
             if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth * 0.8, behavior: 'smooth' });
           }}
-          className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+          className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
           title="Previous"
         >
           <ChevronLeft className="h-6 w-6" />
@@ -67,7 +67,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           onClick={() => {
             if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth * 0.8, behavior: 'smooth' });
           }}
-          className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+          className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
           title="Next"
         >
           <ChevronRight className="h-6 w-6" />
@@ -75,14 +75,14 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
 
         <div 
           ref={scrollRef} 
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-2"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-4 lg:overflow-x-auto lg:scrollbar-hide lg:scroll-smooth pb-4 px-1 lg:px-2 gap-4"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {/* Use unique items for manual scroll section */}
           {Array.from(new Map(testimonials.map((t) => [t.id, t])).values()).map((t) => (
             <div
               key={t.id}
-              className="shrink-0 w-80 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300"
+              className="w-full lg:w-80 shrink-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300"
             >
               {/* Star Rating Section */}
               <div className="flex gap-0.5 mb-4">

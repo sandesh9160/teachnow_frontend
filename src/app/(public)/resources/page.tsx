@@ -149,7 +149,7 @@ export default function ResourcesPage() {
                     const el = document.getElementById(`carousel-${sectionIndex}`);
                     if (el) el.scrollBy({ left: -el.offsetWidth * 0.8, behavior: 'smooth' });
                   }}
-                  className="absolute -left-4 xl:-left-12 top-[40%] -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+                  className="absolute -left-4 xl:-left-12 top-[40%] -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
                   title="Previous"
                 >
                   <ChevronLeft className="h-6 w-6" />
@@ -161,7 +161,7 @@ export default function ResourcesPage() {
                     const el = document.getElementById(`carousel-${sectionIndex}`);
                     if (el) el.scrollBy({ left: el.offsetWidth * 0.8, behavior: 'smooth' });
                   }}
-                  className="absolute -right-4 xl:-right-12 top-[40%] -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden md:flex active:scale-90"
+                  className="absolute -right-4 xl:-right-12 top-[40%] -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
                   title="Next"
                 >
                   <ChevronRight className="h-6 w-6" />
@@ -169,11 +169,11 @@ export default function ResourcesPage() {
 
                 <div 
                   id={`carousel-${sectionIndex}`}
-                  className="flex gap-4 overflow-x-auto pb-6 px-2 scroll-smooth no-scrollbar scroll-snap-x snap-mandatory"
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:gap-4 lg:overflow-x-auto pb-6 px-1 lg:px-2 lg:scroll-smooth lg:no-scrollbar lg:scroll-snap-x lg:snap-mandatory gap-3"
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   {items.map((resource) => (
-                    <div key={resource.slug} className="w-[160px] sm:w-[205px] shrink-0 snap-start">
+                    <div key={resource.slug} className="w-full lg:w-[205px] shrink-0 lg:snap-start">
                       <ResourceCard
                         resource={resource}
                       />
