@@ -3,12 +3,16 @@
 import {
    Users,
    Briefcase,
-   TrendingUp,
+   // TrendingUp,
    PlusCircle,
    AlertCircle,
    ArrowRight,
-   UserCheck,
-   Calendar
+   // UserCheck,
+   Calendar,
+   // Settings,
+   Star,
+   Zap,
+   Verified
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -44,7 +48,13 @@ interface DashboardStats {
    total_applications?: number;
    shortlisted_candidates?: number;
    total_recruiters?: number;
+   total_remaining_credits?: number;
+   active_featured_jobs?: number;
+   subscription?: any;
+   subscription_expiring_soon?: boolean;
    company_verification?: number;
+   company_featured?: boolean;
+   company_featured_until?: string;
    latest_jobs?: LatestJob[];
    latest_applications?: LatestApplication[];
    employer_profile?: {
@@ -97,32 +107,32 @@ export default function EmployerDashboardClient({
 
    const stats = [
       {
-         label: "Open listings",
+         label: "Active Listings",
          value: dashboardData?.total_jobs?.toString() || "0",
          icon: Briefcase,
          color: "blue",
-         trend: "Active"
+         trend: "Total Jobs"
       },
       {
-         label: "Total applicants",
+         label: "Total Applicants",
          value: dashboardData?.total_applications?.toString() || "0",
          icon: Users,
          color: "indigo",
          trend: "Engagement"
       },
       {
-         label: "Shortlisted",
-         value: dashboardData?.shortlisted_candidates?.toString() || "0",
-         icon: UserCheck,
-         color: "emerald",
-         trend: "Pool"
+         label: "Recruiters",
+         value: dashboardData?.total_recruiters?.toString() || "0",
+         icon: Users,
+         color: "purple",
+         trend: "Team Size"
       },
       {
-         label: "Account Status",
-         value: dashboardData?.company_verification === 1 ? "Verified" : "Pending",
-         icon: TrendingUp,
-         color: dashboardData?.company_verification === 1 ? "green" : "purple",
-         trend: "Status"
+         label: "Featured Jobs",
+         value: dashboardData?.active_featured_jobs?.toString() || "0",
+         icon: Star,
+         color: "amber",
+         trend: "Premium"
       },
    ];
 
@@ -140,7 +150,7 @@ export default function EmployerDashboardClient({
             </div>
 
             <Link href={`${basePath}/post-job`}>
-               <Button size="sm" className="h-10 px-6 rounded-xl font-semibold text-xs transition-all shadow-sm active:scale-95 text-white">
+               <Button size="sm" className="h-10 px-6 rounded-xl font-medium text-xs transition-all shadow-sm active:scale-95 text-white">
                   <PlusCircle className="w-4 h-4 mr-2" /> Post a job
                </Button>
             </Link>
@@ -160,6 +170,7 @@ export default function EmployerDashboardClient({
                         stat.color === 'emerald' && "bg-emerald-50 text-emerald-600 border-emerald-100",
                         stat.color === 'green' && "bg-emerald-50 text-emerald-600 border-emerald-100",
                         stat.color === 'purple' && "bg-purple-50 text-purple-600 border-purple-100",
+                        stat.color === 'amber' && "bg-amber-50 text-amber-600 border-amber-100",
                      )}>
                         <stat.icon className="w-5 h-5" />
                      </div>
@@ -170,34 +181,96 @@ export default function EmployerDashboardClient({
                         stat.color === 'emerald' && "text-emerald-500 border-emerald-100 bg-emerald-50/30",
                         stat.color === 'green' && "text-emerald-500 border-emerald-100 bg-emerald-50/30",
                         stat.color === 'purple' && "text-purple-500 border-purple-100 bg-purple-50/30",
+                        stat.color === 'amber' && "text-amber-500 border-amber-100 bg-amber-50/30",
                      )}>{stat.trend}</span>
                   </div>
 
                   <div className="space-y-0.5 relative z-10">
                      <p className="text-[11px] font-medium text-slate-400">{stat.label}</p>
-                     <h3 className="text-xl font-bold text-slate-900 leading-tight">{stat.value}</h3>
+                     <h3 className="text-xl font-semibold text-slate-900 leading-tight">{stat.value}</h3>
                   </div>
                </div>
             ))}
          </div>
 
+         {/* Subscription & Multi-info Section */}
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Credit Balance Card */}
+            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
+               <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-inner shrink-0">
+                  <Zap className="w-6 h-6" />
+               </div>
+               <div className="flex-1">
+                  <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none mb-1.5">Posting credits</p>
+                  <div className="flex items-center justify-between">
+                     <h3 className="text-xl font-bold text-slate-900">{dashboardData?.total_remaining_credits || 0}</h3>
+                     <Link href={`${basePath}/purchase-history`}>
+                        <span className="text-[10px] font-medium text-primary bg-primary/5 px-2 py-1 rounded-md border border-primary/10 hover:bg-primary/10 transition-colors">Buy more</span>
+                     </Link>
+                  </div>
+               </div>
+            </div>
+
+            {/* Featured Status Card */}
+            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
+               <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0",
+                  dashboardData?.company_featured ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-300 border-slate-100"
+               )}>
+                  <Star className={cn("w-6 h-6", dashboardData?.company_featured && "fill-amber-500/20")} />
+               </div>
+               <div className="flex-1">
+                  <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none mb-1.5">Premium status</p>
+                  <div className="flex flex-col">
+                     <h3 className={cn("text-sm font-semibold", dashboardData?.company_featured ? "text-amber-600" : "text-slate-400")}>
+                        {dashboardData?.company_featured ? "Featured institution" : "Standard account"}
+                     </h3>
+                     {dashboardData?.company_featured_until && (
+                        <p className="text-[9px] text-slate-400 font-medium">Expires: {new Date(dashboardData.company_featured_until).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
+                     )}
+                  </div>
+               </div>
+            </div>
+
+            {/* Verification Status Card */}
+            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
+               <div className={cn(
+                  "w-12 h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0",
+                  dashboardData?.company_verification === 1 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-500 border-amber-100"
+               )}>
+                  {dashboardData?.company_verification === 1 ? <Verified className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+               </div>
+               <div className="flex-1">
+                  <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none mb-1.5">Identity match</p>
+                  <div className="flex flex-col">
+                     <h3 className={cn("text-sm font-semibold", dashboardData?.company_verification === 1 ? "text-emerald-700" : "text-amber-600")}>
+                        {dashboardData?.company_verification === 1 ? "Verified institution" : "Verification pending"}
+                     </h3>
+                     <Link href={`${basePath}/institution-verification`} className="w-fit">
+                        <span className="text-[9px] font-medium text-slate-400 hover:text-primary transition-colors underline underline-offset-2 decoration-slate-200">Manage details</span>
+                     </Link>
+                  </div>
+               </div>
+            </div>
+         </div>
+
          {/* Admin Notice */}
          {dashboardData?.company_verification !== 1 && (
-            <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-500">
                <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-amber-500 border border-amber-100 shadow-inner shrink-0">
                      <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="space-y-0.5">
-                     <p className="text-xs font-semibold text-amber-900">Verification in progress</p>
+                     <p className="text-xs font-semibold text-amber-900">Account under review</p>
                      <p className="text-xs text-amber-800/70 font-medium leading-relaxed">
-                        Your institution profile is currently under review by our administration.
+                        Complete your institution verification to unlock all features.
                      </p>
                   </div>
                </div>
                <Link href={`${basePath}/institution-verification`} className="w-full sm:w-auto">
                   <Button size="sm" variant="outline" className="h-9 w-full px-5 rounded-xl bg-white text-amber-600 border-amber-200 hover:bg-amber-50 text-xs font-semibold transition-all">
-                     View status
+                     Verify now
                   </Button>
                </Link>
             </div>
@@ -207,14 +280,9 @@ export default function EmployerDashboardClient({
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {/* Recent Applications */}
             <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[460px] overflow-hidden">
-               <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between font-medium">
-                  <div className="flex items-center gap-2.5">
-                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm" />
-                     <h2 className="text-xs font-semibold text-slate-800">Recent applications</h2>
-                  </div>
-                  <Link href={`${basePath}/applicants`} className="text-[11px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1.5 transition-all active:scale-95">
-                     View all <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+               <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center gap-2.5 font-medium">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm" />
+                  <h2 className="text-xs font-semibold text-slate-800">Recent applications</h2>
                </div>
 
                <div className="flex-1">
@@ -305,8 +373,8 @@ export default function EmployerDashboardClient({
                   <div className="bg-primary p-5 rounded-xl shadow-xl shadow-primary/10 flex items-center justify-between hover:translate-y-[-2px] transition-all relative overflow-hidden text-white">
                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12" />
                      <div className="space-y-1 relative z-10">
-                        <p className="text-[10px] font-semibold text-white/50">Grow your team</p>
-                        <h4 className="text-sm font-bold tracking-tight">Post a new opening</h4>
+                        <p className="text-[10px] font-medium text-white/50">Grow your team</p>
+                        <h4 className="text-sm font-semibold tracking-tight">Post a new opening</h4>
                      </div>
                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform relative z-10 shadow-lg">
                         <PlusCircle className="w-6 h-6" />

@@ -57,7 +57,7 @@ export function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-4">
-        {user?.role === "job_seeker" && <NotificationBell role={user.role} />}
+        {["job_seeker", "employer", "recruiter"].includes(user?.role) && <NotificationBell role={user.role} />}
         <div className="relative">
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}

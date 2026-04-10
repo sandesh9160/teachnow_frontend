@@ -15,7 +15,11 @@ import {
   Trash2,
   CheckCircle2,
   ExternalLink,
-  Calendar
+  Calendar,
+  ShieldCheck,
+  Star,
+  Users2,
+  RefreshCw
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -101,30 +105,43 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                  {job.job_type?.replace('_', ' ')}
                </span>
                <span className={cn(
-                  "px-2.5 py-1 rounded-lg text-xs font-medium border shadow-sm",
-                  job.status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
+                  "px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold border uppercase tracking-widest shadow-sm whitespace-nowrap",
+                  job.status === 'approved' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"
                )}>
-                  {job.status}
+                  {job.status === 'approved' ? "Admin Approved" : "Pending Approval"}
+               </span>
+               {job.featured && (
+                 <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold border uppercase tracking-widest shadow-sm whitespace-nowrap bg-amber-500 text-white border-amber-600 flex items-center gap-1">
+                   <Star className="w-2.5 h-2.5 fill-white" /> Featured
+                 </span>
+               )}
+               <span className={cn(
+                  "px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold border uppercase tracking-widest shadow-sm whitespace-nowrap",
+                  job.job_status === 'open' ? "bg-indigo-50 text-indigo-700 border-indigo-200" : 
+                  job.job_status === 'filled' ? "bg-rose-50 text-rose-700 border-rose-200" : 
+                  "bg-slate-50 text-slate-700 border-slate-200"
+               )}>
+                  {job.job_status === 'open' ? "Live" : job.job_status}
                </span>
             </div>
          </div>
 
-         <div className="flex items-center gap-2 relative">
+         <div className="flex items-center gap-1.5 sm:gap-2 relative w-full sm:w-auto mt-2 sm:mt-0 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
             <Link href={`/dashboard/employer/jobs/view/${job.id}/applicants`}>
-               <Button variant="outline" size="sm" className="h-10 px-5 rounded-xl text-xs font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all shadow-sm">
-                  <Users className="w-3.5 h-3.5 mr-2" /> Applicants
+               <Button variant="outline" size="sm" className="h-8 sm:h-10 px-3 sm:px-5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all shadow-sm shrink-0">
+                  <Users className="w-3 sm:w-3.5 h-3 sm:h-3.5 mr-1 sm:mr-2" /> Applicants
                </Button>
             </Link>
             {job.job_status !== 'filled' && (
               <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
-                 <Button variant="outline" size="sm" className="h-10 px-5 rounded-xl text-xs font-semibold border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
-                    <Edit3 className="w-3.5 h-3.5 mr-2" /> Edit
+                 <Button variant="outline" size="sm" className="h-8 sm:h-10 px-3 sm:px-5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold border-slate-200 hover:bg-slate-50 transition-all shadow-sm shrink-0">
+                    <Edit3 className="w-3 sm:w-3.5 h-3 sm:h-3.5 mr-1 sm:mr-2" /> Edit
                  </Button>
               </Link>
             )}
             <Link href={`/jobs/${job.slug}`} target="_blank">
-               <Button size="sm" className="h-10 px-6 rounded-xl text-xs font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] text-white">
-                  Live preview <ExternalLink className="w-3.5 h-3.5 ml-2" />
+               <Button size="sm" className="h-8 sm:h-10 px-4 sm:px-6 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] text-white shrink-0">
+                  Preview <ExternalLink className="w-3 sm:w-3.5 h-3 sm:h-3.5 ml-1 sm:mr-2" />
                </Button>
             </Link>
          </div>
@@ -213,6 +230,18 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   icon={Briefcase} 
                   colorClass="bg-purple-50 text-purple-600 border-purple-100"
                />
+               <DetailItem 
+                  label="Gender preference" 
+                  value={job.gender || "Any"} 
+                  icon={Users2} 
+                  colorClass="bg-pink-50 text-pink-600 border-pink-100"
+               />
+               <DetailItem 
+                  label={job.featured ? "Featured until" : "Featured job"} 
+                  value={job.featured ? (job.featured_until ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Premium active") : "No"} 
+                  icon={Star} 
+                  colorClass={job.featured ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"}
+               />
             </div>
             
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-5 relative overflow-hidden">
@@ -221,26 +250,29 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   <h3 className="text-xs font-semibold text-slate-900">Job milestones</h3>
                </div>
                
-               <div className="space-y-4 relative z-10">
+               <div className="space-y-3 relative z-10">
                   {[
-                    { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString(), icon: Calendar, color: 'blue' },
-                    { label: 'Expires on', value: job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "Rolling", icon: Clock, color: 'amber' },
-                    { label: 'Job status', value: job.job_status, icon: CheckCircle2, color: 'emerald' }
+                    { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
+                    { label: 'Deadline', value: job.deadline || job.application_deadline ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Rolling", icon: Clock, color: 'rose' },
+                    { label: 'Approval', value: job.status === 'approved' ? "Verified" : "Pending", icon: ShieldCheck, color: job.status === 'approved' ? 'emerald' : 'amber' },
+                    { label: 'Status', value: job.job_status === 'open' ? "Live" : job.job_status === 'filled' ? "Filled" : job.job_status, icon: RefreshCw, color: job.job_status === 'open' ? 'indigo' : 'rose' }
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between group/row">
-                       <p className="text-[11px] font-medium text-slate-400 group-hover/row:text-slate-600 transition-colors">{item.label}</p>
-                       <div className="flex items-center gap-2">
+                    <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 p-2.5 sm:p-0 rounded-xl sm:rounded-none bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-0 group/row">
+                       <p className="text-[10px] font-bold text-slate-400 group-hover/row:text-slate-600 transition-colors uppercase tracking-tight">{item.label}</p>
+                       <div className="flex items-center gap-2 min-w-0">
                           <item.icon className={cn(
-                            "w-3.5 h-3.5",
-                            item.color === 'blue' && "text-blue-400",
-                            item.color === 'amber' && "text-amber-400",
-                            item.color === 'emerald' && "text-emerald-400"
+                            "w-3.5 h-3.5 shrink-0",
+                            item.color === 'indigo' && "text-indigo-400",
+                            item.color === 'rose' && "text-rose-400",
+                            item.color === 'emerald' && "text-emerald-400",
+                            item.color === 'amber' && "text-amber-400"
                           )} />
                           <p className={cn(
-                            "text-xs font-semibold px-2.5 py-1 rounded-lg border shadow-sm",
-                            item.color === 'blue' && "bg-blue-50 text-blue-600 border-blue-100",
-                            item.color === 'amber' && "bg-amber-50 text-amber-600 border-amber-100",
-                            item.color === 'emerald' && "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            "text-[10px] font-bold px-2.5 py-1 rounded-lg border shadow-sm truncate capitalize",
+                            item.color === 'indigo' && "bg-indigo-50 text-indigo-700 border-indigo-100",
+                            item.color === 'rose' && "bg-rose-50 text-rose-700 border-rose-100",
+                            item.color === 'emerald' && "bg-emerald-50 text-emerald-700 border-emerald-100",
+                            item.color === 'amber' && "bg-amber-50 text-amber-700 border-amber-100"
                           )}>
                             {item.value}
                           </p>

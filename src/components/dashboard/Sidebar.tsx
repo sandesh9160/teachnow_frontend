@@ -53,6 +53,7 @@ export function DashboardSidebar({
     { label: "My Job Postings", href: "/dashboard/employer/jobs", icon: ClipboardList },
     { label: "Recruiters", href: "/dashboard/employer/recruiters", icon: Users },
     { label: "Documents", href: "/dashboard/employer/institution-verification", icon: FileText },
+    { label: "Notifications", href: "/dashboard/employer/notifications", icon: Bell },
     { label: "Testimonials", href: "/dashboard/employer/testimonials", icon: MessageSquare },
     { label: "Subscription", href: "/dashboard/employer/purchase-history", icon: CreditCard },
   ];
@@ -62,6 +63,7 @@ export function DashboardSidebar({
     { label: "Company Profile", href: "/dashboard/recruiter/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
     { label: "My Job Postings", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
+    { label: "Notifications", href: "/dashboard/recruiter/notifications", icon: Bell },
     { label: "Testimonials", href: "/dashboard/recruiter/testimonials", icon: MessageSquare },
   ];
 

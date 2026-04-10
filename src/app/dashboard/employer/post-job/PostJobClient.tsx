@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { 
   Briefcase, 
   Tag, 
@@ -21,7 +22,9 @@ import {
   Edit3,
   Users,
   ChevronLeft,
-  RefreshCw
+  RefreshCw,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -85,6 +88,15 @@ export default function PostJobClient({
     setQuestions(newQuestions);
   };
 
+  const moveQuestion = (idx: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && idx === 0) return;
+    if (direction === 'down' && idx === questions.length - 1) return;
+    const newQuestions = [...questions];
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    [newQuestions[idx], newQuestions[targetIdx]] = [newQuestions[targetIdx], newQuestions[idx]];
+    setQuestions(newQuestions);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -101,6 +113,8 @@ export default function PostJobClient({
       experience_type: formData.get("experience_type"),
       experience_required: formData.get("experience_required"),
       job_type: formData.get("job_type"),
+      gender: formData.get("gender"),
+      deadline: formData.get("deadline"),
       featured: featured ? 1 : 0,
       questions: questions,
     };
@@ -116,13 +130,15 @@ export default function PostJobClient({
       });
 
       if (result.status === true) {
-        alert(isEdit ? "Job updated successfully!" : "Job posted successfully!");
-        window.location.href = `${basePath}/jobs`;
+        toast.success(result.message || (isEdit ? "Job updated successfully!" : "Job posted successfully!"));
+        setTimeout(() => {
+          window.location.href = `${basePath}/jobs`;
+        }, 1200);
       } else {
-        alert(result.message || "Something went wrong. Please check your inputs.");
+        toast.error(result.message || "Something went wrong. Please check your inputs.");
       }
     } catch (error) {
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -138,13 +154,15 @@ export default function PostJobClient({
       });
 
       if (result.status === true) {
-        alert("Job republished successfully!");
-        window.location.reload();
+        toast.success("Job republished successfully!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
       } else {
-        alert(result.message || "Failed to republish job.");
+        toast.error(result.message || "Failed to republish job.");
       }
     } catch (error) {
-      alert("An unexpected error occurred while republishing.");
+      toast.error("An unexpected error occurred while republishing.");
     } finally {
       setLoading(false);
     }
@@ -232,17 +250,17 @@ export default function PostJobClient({
                     <ListTodo className="w-4.5 h-4.5 text-primary" />
                     <h2 className="text-sm font-semibold text-slate-900">Screening questions</h2>
                  </div>
-                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-8 px-3 text-[11px] rounded-xl border-slate-200 hover:bg-white transition-all bg-white/50 shrink-0">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-8 px-3 text-[11px] rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all bg-white shrink-0">
                       <ToggleLeft className="w-3.5 h-3.5 mr-1.5" /> Yes/No
                     </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-8 px-3 text-[11px] rounded-xl border-slate-200 hover:bg-white transition-all bg-white/50 shrink-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-8 px-3 text-[11px] rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50 transition-all bg-white shrink-0">
                       <Hash className="w-3.5 h-3.5 mr-1.5" /> Number
                     </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-8 px-3 text-[11px] rounded-xl border-slate-200 hover:bg-white transition-all bg-white/50 shrink-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-8 px-3 text-[11px] rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all bg-white shrink-0">
                       <PlusCircle className="w-3.5 h-3.5 mr-1.5" /> Text
                     </Button>
-                 </div>
+                  </div>
               </div>
 
               <div className="p-4 sm:p-6 space-y-4">
@@ -256,19 +274,61 @@ export default function PostJobClient({
                   </div>
                 ) : (
                   questions.map((q, i) => (
-                    <div key={i} className="group bg-slate-50/30 p-4 rounded-xl border border-slate-100 space-y-4 relative hover:border-primary/20 transition-all">
-                       <button onClick={() => removeQuestion(i)} type="button" className="absolute top-4 right-4 text-slate-200 hover:text-red-500 transition-colors active:scale-90">
-                          <Trash2 className="w-4 h-4" />
-                       </button>
-                       <div className="space-y-2 pr-8">
-                          <Label className="text-[10px] font-medium text-slate-400">Question {i + 1} ({q.question_type})</Label>
-                          <Input 
-                            value={q.question} 
-                            onChange={(e) => updateQuestion(i, "question", e.target.value)}
-                            placeholder="e.g. Do you have experience with JEE coaching?" 
-                            className="h-10 rounded-xl text-sm font-medium" 
-                          />
-                       </div>
+                     <div key={i} className="group bg-slate-50/50 rounded-xl border border-slate-100 overflow-hidden hover:border-primary/20 transition-all shadow-sm">
+                        {/* Question Header Actions */}
+                        <div className="px-4 py-2.5 bg-slate-100/30 border-b border-slate-50 flex items-center justify-between gap-4">
+                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Question {i + 1} — {q.question_type}</span>
+                           
+                           <div className="flex items-center gap-1.5">
+                              {/* Move Controls */}
+                              <div className="flex items-center bg-white border border-slate-100 rounded-lg overflow-hidden shadow-sm shrink-0">
+                                 <button 
+                                   onClick={() => moveQuestion(i, 'up')} 
+                                   disabled={i === 0}
+                                   type="button" 
+                                   className="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-primary disabled:opacity-30 transition-colors border-r border-slate-50"
+                                 >
+                                    <ArrowUp className="w-3 h-3" />
+                                 </button>
+                                 <button 
+                                   onClick={() => moveQuestion(i, 'down')} 
+                                   disabled={i === questions.length - 1}
+                                   type="button" 
+                                   className="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-primary disabled:opacity-30 transition-colors"
+                                 >
+                                    <ArrowDown className="w-3 h-3" />
+                                 </button>
+                              </div>
+
+                              <button 
+                                onClick={() => addQuestion(q.question_type)} 
+                                title={`Add another ${q.question_type} question`}
+                                type="button" 
+                                className="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-indigo-400 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-sm transition-all active:scale-90 shadow-sm"
+                              >
+                                 <PlusCircle className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={() => removeQuestion(i)} 
+                                title="Remove question"
+                                type="button" 
+                                className="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-rose-300 hover:text-rose-500 hover:border-rose-100 hover:shadow-sm transition-all active:scale-90 shadow-sm"
+                              >
+                                 <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                           </div>
+                        </div>
+
+                        <div className="p-4 space-y-4">
+                           <div className="space-y-2">
+                              <Label className="text-[10px] font-medium text-slate-400">Statement</Label>
+                              <Input 
+                                value={q.question} 
+                                onChange={(e) => updateQuestion(i, "question", e.target.value)}
+                                placeholder="e.g. Do you have experience with JEE coaching?" 
+                                className="h-10 rounded-xl text-sm font-medium border-slate-50 bg-white" 
+                              />
+                           </div>
                        <div className="flex items-center gap-4">
                           <div className="space-y-2 flex-1 max-w-[240px]">
                              <Label className="text-[10px] font-medium text-slate-400">Correct criteria</Label>
@@ -298,8 +358,9 @@ export default function PostJobClient({
                                />
                              )}
                           </div>
-                       </div>
-                    </div>
+                        </div>
+                     </div>
+                  </div>
                   ))
                 )}
               </div>
@@ -308,6 +369,32 @@ export default function PostJobClient({
 
           {/* Logistics Tracking Sidebar */}
           <div className="space-y-5">
+            {/* Featured Job Promotion */}
+            <div className="bg-white rounded-xl border border-amber-100 shadow-sm p-4 sm:p-5 overflow-hidden relative group transition-all hover:shadow-md">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50/50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center border shadow-inner transition-colors",
+                    featured ? "bg-amber-500 text-white border-amber-600" : "bg-slate-50 text-slate-300 border-slate-100"
+                  )}>
+                    <Sparkles className={cn("w-5 h-5", featured && "fill-white/20")} />
+                  </div>
+                  <div className="flex flex-col">
+                    <Label className="text-xs font-bold text-slate-900 cursor-pointer" htmlFor="featured-toggle">Featured Job</Label>
+                    <p className="text-[10px] text-amber-600 font-medium">Appear on top of search</p>
+                  </div>
+                </div>
+                <input 
+                  id="featured-toggle"
+                  type="checkbox" 
+                  checked={featured}
+                  onChange={(e) => setFeatured(e.target.checked)}
+                  className="w-5 h-5 rounded-lg border-amber-300 text-amber-500 focus:ring-amber-500 cursor-pointer transition-all active:scale-90"
+                />
+              </div>
+            </div>
+
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
               <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
                  <Tag className="w-4.5 h-4.5 text-indigo-500" />
@@ -340,7 +427,7 @@ export default function PostJobClient({
                   <option value="" disabled>Select job type</option>
                   <option value="full_time">Full-time</option>
                   <option value="part_time">Part-time</option>
-                  <option value="contract">Project base</option>
+                  <option value="contract">Contract</option>
                   <option value="internship">Internship</option>
                 </select>
               </div>
@@ -348,7 +435,7 @@ export default function PostJobClient({
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-slate-400">Requirement</Label>
-                  <select 
+                   <select 
                     name="experience_type" 
                     defaultValue={job?.experience_type || ""}
                     className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
@@ -371,21 +458,32 @@ export default function PostJobClient({
                 </div>
               </div>
 
-              <div className="space-y-2 pt-1 border-t border-slate-50 mt-2">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all cursor-pointer group">
-                   <div className="flex items-center gap-2">
-                      <Sparkles className={cn("w-4 h-4", featured ? "text-amber-500" : "text-slate-200")} />
-                      <Label className="text-xs font-medium text-slate-700 cursor-pointer" htmlFor="featured-toggle">Feature on home page</Label>
-                   </div>
-                   <input 
-                     id="featured-toggle"
-                     type="checkbox" 
-                     checked={featured}
-                     onChange={(e) => setFeatured(e.target.checked)}
-                     className="w-4.5 h-4.5 rounded-lg border-slate-300 text-primary focus:ring-primary cursor-pointer transition-transform active:scale-90"
-                   />
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-400">Gender</Label>
+                  <select 
+                    name="gender" 
+                    defaultValue={job?.gender || "both"}
+                    className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
+                    required
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="both">Both</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-slate-400">Deadline</Label>
+                  <Input 
+                    name="deadline" 
+                    type="date" 
+                    defaultValue={job?.deadline || job?.application_deadline}
+                    className="h-11 rounded-xl text-xs font-medium" 
+                    required
+                  />
                 </div>
               </div>
+
             </div>
 
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">

@@ -8,10 +8,10 @@ export const EmailSignInAction = async (data: {
   role?: "job_seeker" | "employer" | "recruiter";
 }) => {
   try {
-    const result = await customSignIn({ 
-      email: data.email, 
-      password: data.password, 
-      role: data.role 
+    const result = await customSignIn({
+      email: data.email,
+      password: data.password,
+      role: data.role
     });
     console.log("result is ", result);
     return {

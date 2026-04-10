@@ -370,10 +370,11 @@ export default function DocumentsClient() {
                                    <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse border border-white" />
                                  )}
                               </div>
-                              <p className={cn(
-                                "text-[10px] font-medium truncate mb-2",
-                                (doc.is_verified === 1 || doc.status === 'verified') ? "text-emerald-500" : "text-amber-500"
-                              )}>{doc.status || 'Under Review'}</p>
+                              {(doc.is_verified === 1 || doc.status === 'verified') && (
+                                <p className="text-[10px] font-medium text-emerald-500 truncate mb-2">
+                                  Verified
+                                </p>
+                              )}
                               <div className="flex items-center gap-1">
                                  <Button 
                                    onClick={() => handlePreview(doc)}

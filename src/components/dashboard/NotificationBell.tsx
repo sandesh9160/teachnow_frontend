@@ -73,13 +73,19 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
               notifications.map((notification) => {
                 const typeColorMap: Record<string, string> = {
                   job_applied: "border-indigo-100 bg-indigo-50/30",
+                  new_applicant: "border-indigo-100 bg-indigo-50/30",
                   job_deleted: "border-rose-100 bg-rose-50/30",
                   job_created: "border-emerald-100 bg-emerald-50/30",
+                  subscription: "border-amber-100 bg-amber-50/30",
+                  featured: "border-amber-100 bg-amber-50/30",
                 };
                 const accentColorMap: Record<string, string> = {
                   job_applied: "bg-indigo-500",
+                  new_applicant: "bg-indigo-500",
                   job_deleted: "bg-rose-500",
                   job_created: "bg-emerald-500",
+                  subscription: "bg-amber-500",
+                  featured: "bg-amber-500",
                 };
                 const typeStyle = typeColorMap[notification.type] || "border-slate-50 bg-white";
                 const accentColor = accentColorMap[notification.type] || "bg-primary";
