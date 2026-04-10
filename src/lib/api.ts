@@ -29,7 +29,7 @@ export const apiSanctum = axios.create({
     withCredentials: true, // 🔥 REQUIRED
     xsrfCookieName: "XSRF-TOKEN",
     xsrfHeaderName: "X-XSRF-TOKEN",
-    timeout: 10000, // ⬅️ add this (important)
+    timeout: 60000, // ⬅️ increased to 60s for AI tasks
     headers: {
         "Accept": "application/json",
         // "Content-Type": "application/json",
@@ -44,7 +44,7 @@ export const api = axios.create({
     withCredentials: true, // 🔥 REQUIRED
     xsrfCookieName: "XSRF-TOKEN",
     xsrfHeaderName: "X-XSRF-TOKEN",
-    timeout: 10000, // ⬅️ add this (important)
+    timeout: 60000, // ⬅️ increased to 60s for AI tasks
     headers: {
         // "Content-Type": "application/json",
         "Accept": "application/json",

@@ -250,11 +250,10 @@ const cookieOptions = {
   path: "/",
   httpOnly: false,
   sameSite: "lax" as const,
-  secure: isProduction,
-  // Only set domain in production (shared subdomain)
-  ...(isProduction && process.env.COOKIE_DOMAIN
-    ? { domain: process.env.COOKIE_DOMAIN }
-    : {}),
+  secure: process.env.NODE_ENV === "production",
+  // Strictly use the domain from environment variables 
+  // without any internal fallbacks like "localhost"
+  ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
 };
 
 
@@ -274,8 +273,14 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
   // Use apiSanctum.get as requested - this gives fmg-session and XSRF-TOKEN cookies
   try {
     // Format existing cookies for the request
-    const cookieHeader = cookieStore
-      .getAll()
+    const allCookies = cookieStore.getAll();
+    const uniqueNames = new Set<string>();
+    const cookieHeader = allCookies
+      .filter(c => {
+        if (uniqueNames.has(c.name)) return false;
+        uniqueNames.add(c.name);
+        return true;
+      })
       .map((cookie) => `${cookie.name}=${cookie.value}`)
       .join("; ");
 
@@ -328,8 +333,14 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
   const xsrfToken = cookieStore.get("XSRF-TOKEN")?.value;
 
   // Format cookies for login request
-  const cookieHeader = cookieStore
-    .getAll()
+  const allCookies = cookieStore.getAll();
+  const uniqueNamesRes = new Set<string>();
+  const cookieHeader = allCookies
+    .filter(c => {
+      if (uniqueNamesRes.has(c.name)) return false;
+      uniqueNamesRes.add(c.name);
+      return true;
+    })
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
 
@@ -406,6 +417,13 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
   };
 
   cookieStore.set("userData", JSON.stringify(userData), cookieOptions);
+  
+  console.log("Cookie options used:", { 
+    domain: cookieOptions.domain, 
+    secure: cookieOptions.secure,
+    nodeEnv: process.env.NODE_ENV,
+    hasDomainInEnv: !!process.env.COOKIE_DOMAIN
+  });
 
   return { user: userData };
 };
@@ -434,8 +452,14 @@ export const signOut = async () => {
       }
     }
 
-    const cookieHeader = cookieStore
-      .getAll()
+    const allCookies = cookieStore.getAll();
+    const uniqueNamesLogout = new Set<string>();
+    const cookieHeader = allCookies
+      .filter(c => {
+        if (uniqueNamesLogout.has(c.name)) return false;
+        uniqueNamesLogout.add(c.name);
+        return true;
+      })
       .map((cookie) => `${cookie.name}=${cookie.value}`)
       .join("; ");
 

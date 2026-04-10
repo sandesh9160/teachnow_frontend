@@ -49,10 +49,10 @@ export function useCV() {
       setLoading(true);
       setError(null);
       // Attempt to load from the history/generated list
-      const res = await dashboardServerFetch<any>("jobseeker/cv/list", {
+      const res = await dashboardServerFetch<any>("jobseeker/resumes", {
         method: "GET",
       });
-      const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+      const data = Array.isArray(res?.generated_resumes) ? res.generated_resumes : [];
       setGeneratedCVs(data);
     } catch (err: any) {
       setGeneratedCVs([]);

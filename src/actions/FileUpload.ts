@@ -25,8 +25,14 @@ export const uploadFile = async <T = any>(
         const cookieStore = await cookies();
 
         // Format cookies from Next.js request for API call
-        const cookieHeader = cookieStore
-            .getAll()
+        const allCookies = cookieStore.getAll();
+        const uniqueNames = new Set<string>();
+        const cookieHeader = allCookies
+            .filter(c => {
+                if (uniqueNames.has(c.name)) return false;
+                uniqueNames.add(c.name);
+                return true;
+            })
             .map((cookie) => `${cookie.name}=${cookie.value}`)
             .join("; ");
 

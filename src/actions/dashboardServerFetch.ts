@@ -22,8 +22,15 @@ export async function dashboardServerFetch<T = any>(
         const cookieStore = await cookies();
 
         // Format cookies from Next.js request for API call
-        const cookieHeader = cookieStore
-            .getAll()
+        // Deduplicate cookies by name to prevent multiple values for the same key (e.g. from different domains)
+        const allCookies = cookieStore.getAll();
+        const uniqueCookies = new Set<string>();
+        const cookieHeader = allCookies
+            .filter((cookie) => {
+                if (uniqueCookies.has(cookie.name)) return false;
+                uniqueCookies.add(cookie.name);
+                return true;
+            })
             .map((cookie) => `${cookie.name}=${cookie.value}`)
             .join("; ");
 

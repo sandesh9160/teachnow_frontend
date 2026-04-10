@@ -25,6 +25,8 @@ import {
   Star,
   Bookmark,
   X,
+  Eye,
+  Check,
 } from "lucide-react";
 import { getJobBySlug } from "@/lib/jobs/api";
 import { useApplications } from "@/hooks/useApplications";
@@ -64,24 +66,15 @@ export default function ApplyJobPage() {
     dob: "",
     portfolio_website: "",
     bio: "",
-    skills: [] as string[],
+    skills: [] as any[],
+    educations: [] as any[],
+    experiences: [] as any[],
   });
 
-  useEffect(() => {
-    if (user) {
-      setCandidate({
-        name: user.name || "",
-        email: user.email || "",
-        phone: "",
-        experience: "",
-        location: "",
-        dob: "",
-        portfolio_website: "",
-        bio: "",
-        skills: [],
-      });
-    }
-  }, [user]);
+  // Candidate data is initialized via the profile fetch effect below which handles both session user and detailed profile data
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const [submitted, setSubmitted] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState<string | number>("");
@@ -129,30 +122,59 @@ export default function ApplyJobPage() {
 
   // 2. Fetch Jobseeker Profile for pre-filling
   useEffect(() => {
+    // 1. Priority: Sync name/email from active session immediately
+    if (user) {
+      setCandidate(prev => ({
+        ...prev,
+        name: prev.name || user.name || "",
+        email: prev.email || user.email || "",
+      }));
+    }
+
     const fetchFullProfile = async () => {
       if (!isLoggedIn || user?.role !== "job_seeker") return;
       try {
         const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
         const res = await dashboardServerFetch<any>("jobseeker/profile", { method: "GET" });
-        if (res?.data) {
-          const profile = res.data.profile || res.data;
-          setCandidate((prev) => ({
-            ...prev,
-            phone: profile.phone || "",
-            experience: profile.experience_years ? String(profile.experience_years) : "",
-            location: profile.location || "",
-            dob: profile.dob || "",
-            portfolio_website: profile.portfolio_website || "",
-            bio: profile.bio || "",
-            skills: Array.isArray(profile.skills) ? profile.skills : [],
-          }));
+        
+        console.log("DEBUG: Profile response fetched:", res);
+
+        if (res) {
+          // Extract data using exact same logic as useClientSession for consistency
+          const profile = (
+            (res?.data as any)?.job_seeker ?? 
+            res?.data ?? 
+            res?.profile ?? 
+            res
+          );
+
+          if (profile) {
+            setCandidate((prev) => ({
+              ...prev,
+              name: profile.user?.name || profile.name || prev.name || user?.name || "",
+              email: profile.user?.email || profile.email || prev.email || user?.email || "",
+              phone: profile.phone || prev.phone || "",
+              experience: profile.experience_years ? String(profile.experience_years) : (prev.experience || ""),
+              location: profile.location || prev.location || "",
+              dob: profile.dob || prev.dob || "",
+              portfolio_website: profile.portfolio_website || prev.portfolio_website || "",
+              bio: profile.bio || prev.bio || "",
+              skills: Array.isArray(profile.skills) ? profile.skills : prev.skills,
+              educations: Array.isArray(profile.educations) ? profile.educations : prev.educations,
+              experiences: Array.isArray(profile.experiences) ? profile.experiences : prev.experiences,
+            }));
+          }
         }
       } catch (err) {
-        console.error("Failed to load profile for application auto-fill", err);
+        console.error("CRITICAL: Failed to load profile for application auto-fill", err);
       }
     };
     fetchFullProfile();
   }, [isLoggedIn, user]);
+
+  useEffect(() => {
+    console.log("DEBUG: Current candidate state:", candidate);
+  }, [candidate]);
 
   useEffect(() => {
     if (!resumes.length) return;
@@ -166,17 +188,35 @@ export default function ApplyJobPage() {
   const [showTemplateOverlay, setShowTemplateOverlay] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerateResume = async (templateName: string) => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showResumePreview, setShowResumePreview] = useState(false);
+  const [uploadedPage, setUploadedPage] = useState(1);
+  const [generatedPage, setGeneratedPage] = useState(1);
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const [resumeTab, setResumeTab] = useState<'uploaded' | 'generated'>('uploaded');
+  const [selectedTemplateName, setSelectedTemplateName] = useState<string | null>(null);
+  const itemsPerPage = 5;
+
+  const handlePreviewResume = (path: string | null | undefined) => {
+    const url = getFullFileUrl(path);
+    if (url) {
+      setPreviewUrl(url);
+      setShowResumePreview(true);
+    }
+  };
+
+  const handleGenerateResume = async (templateId: number | string) => {
     if (!jobDetails?.id) return;
     try {
       setIsGenerating(true);
       const res = await generateCVWithJob({
-        template_id: templateName,
+        template_id: templateId,
         job_id: jobDetails.id,
       });
       
       if (res?.status) {
         toast.success("Resume generated with AI!");
+        setHasGenerated(true);
         await fetchResumes(); 
         setShowTemplateOverlay(false);
       }
@@ -221,6 +261,15 @@ export default function ApplyJobPage() {
   // We can treat job as jobDetails now that we've ensured it exists
   const jobDetails = job;
 
+  const getFullFileUrl = (path: string | null | undefined) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
+    const url = `${baseUrl}/${path.startsWith("/") ? path.slice(1) : path}`;
+    console.log("DEBUG: Resolved File URL:", url);
+    return url;
+  };
+
   const handleSubmit = async () => {
     if (!jobDetails?.id) return;
     try {
@@ -239,7 +288,7 @@ export default function ApplyJobPage() {
     }
   };
 
-  if (!isLoggedIn || user?.role === "employer") {
+  if (!mounted || !isLoggedIn || user?.role === "employer") {
     return null;
   }
 
@@ -292,7 +341,7 @@ export default function ApplyJobPage() {
                       </span>
                     </div>
                     {i < STEPS.length - 1 && (
-                      <div className={`h-0.5 flex-1 rounded-full mx-1 md:mx-2 mb-0 md:mb-4 ${isCompleted ? "bg-accent/40" : "bg-muted"}`} />
+                      <div className={`h-0.5 flex-1 rounded-full mx-0.5 min-[400px]:mx-1 md:mx-2 mb-0 md:mb-4 ${isCompleted ? "bg-accent/40" : "bg-muted"}`} />
                     )}
                   </div>
                 );
@@ -379,6 +428,8 @@ export default function ApplyJobPage() {
                   { key: "phone" as const, label: "Phone Number", icon: Phone, type: "tel" },
                   { key: "experience" as const, label: "Years of Experience", icon: Clock, type: "text" },
                   { key: "location" as const, label: "Current Location", icon: MapPin, type: "text" },
+                  { key: "dob" as const, label: "Date of Birth", icon: Clock, type: "date" },
+                  { key: "portfolio_website" as const, label: "Portfolio/Website", icon: Sparkles, type: "url" },
                 ].map((field) => (
                   <div key={field.key} className="space-y-1.5">
                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">{field.label}</label>
@@ -390,10 +441,23 @@ export default function ApplyJobPage() {
                         onChange={(e) => setCandidate({ ...candidate, [field.key]: e.target.value })}
                         className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/50"
                         placeholder={`Your ${field.label.toLowerCase()}`}
+                        suppressHydrationWarning
                       />
                     </div>
                   </div>
                 ))}
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Professional Bio</label>
+                  <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                    <textarea
+                      value={candidate.bio}
+                      onChange={(e) => setCandidate({ ...candidate, bio: e.target.value })}
+                      className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/50 min-h-[100px] resize-none"
+                      placeholder="Briefly describe your professional background..."
+                    />
+                  </div>
+                </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(0)}>
@@ -410,72 +474,152 @@ export default function ApplyJobPage() {
             <div className="space-y-5 md:space-y-6">
               <p className="text-sm text-muted-foreground font-medium">Select your preferred resume for this application.</p>
               {(resumes.length > 0 || generatedResumes.length > 0) ? (
-                <div className="grid grid-cols-1 gap-3 md:gap-4">
-                  {/* Uploaded Resumes */}
-                  {resumes.map((resume) => (
-                    <label
-                      key={resume.id}
-                      className={`flex items-start md:items-center gap-4 rounded-xl border p-4 md:p-5 cursor-pointer transition-all duration-200 ${selectedResumeId === resume.id
-                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                          : "border-border bg-card hover:border-primary/30 hover:bg-muted/30"
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        checked={selectedResumeId === resume.id}
-                        onChange={() => setSelectedResumeId(resume.id)}
-                        className="sr-only"
-                      />
-                      <div className={`flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl transition-colors ${selectedResumeId === resume.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                        <FileText className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-sm font-bold text-foreground truncate">{resume.title ?? resume.file_name ?? "Resume Artifact"}</p>
-                          {resume.is_default && <Star className="h-3.5 w-3.5 fill-accent text-accent" />}
-                        </div>
-                        <p className="text-[11px] font-medium text-muted-foreground/80 uppercase tracking-tight">
-                          {(resume.file_name ?? "PDF").split(".").pop()} · {resume.size ?? "Unknown Size"}
-                        </p>
-                      </div>
-                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${selectedResumeId === resume.id ? 'border-primary bg-primary' : 'border-border'}`}>
-                        {selectedResumeId === resume.id && <div className="h-2 w-2 rounded-full bg-white shadow-sm" />}
-                      </div>
-                    </label>
-                  ))}
+                <div className="space-y-6">
+                  {/* Tab Switcher / Toggle */}
+                  <div className="flex items-center justify-center">
+                    <div className="inline-flex p-1 bg-slate-100/80 backdrop-blur-sm rounded-xl border border-slate-200/50">
+                      <button
+                        onClick={() => setResumeTab('uploaded')}
+                        className={`flex items-center gap-2 px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${resumeTab === 'uploaded' ? 'bg-white text-primary shadow-sm ring-1 ring-slate-200/50' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        <FileText className="w-3 h-3" />
+                        Uploaded
+                      </button>
+                      <button
+                        onClick={() => setResumeTab('generated')}
+                        className={`flex items-center gap-2 px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${resumeTab === 'generated' ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200/50' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        AI Generated
+                      </button>
+                    </div>
+                  </div>
 
-                  {/* Generated Resumes */}
-                  {generatedResumes.map((cv) => (
-                    <label
-                      key={`cv-${cv.id}`}
-                      className={`flex items-start md:items-center gap-4 rounded-xl border p-4 md:p-5 cursor-pointer transition-all duration-200 ${selectedResumeId === `cv-${cv.id}`
-                          ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
-                          : "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/30"
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        checked={selectedResumeId === `cv-${cv.id}`}
-                        onChange={() => setSelectedResumeId(`cv-${cv.id}`)}
-                        className="sr-only"
-                      />
-                      <div className={`flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl transition-colors ${selectedResumeId === `cv-${cv.id}` ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-                        <Sparkles className="h-6 w-6" />
+                  {/* Tab Content: Uploaded */}
+                  {resumeTab === 'uploaded' && (
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-300 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(function() {
+                          const start = (uploadedPage - 1) * itemsPerPage;
+                          const paginated = resumes.slice(start, start + itemsPerPage);
+                          if (resumes.length === 0) return <div className="col-span-full h-40 flex items-center justify-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-2 border-dashed border-slate-100 rounded-xl">No uploads found</div>;
+                          
+                          return paginated.map((resume) => {
+                            const isSelected = String(selectedResumeId) === String(resume.id);
+                            return (
+                              <label
+                                key={resume.id}
+                                className={`flex items-start md:items-center gap-3 rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
+                                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                    : "border-border bg-card hover:border-primary/30 hover:bg-muted/30"
+                                  }`}
+                              >
+                                <input
+                                  type="radio"
+                                  checked={isSelected}
+                                  onChange={() => setSelectedResumeId(resume.id)}
+                                  className="sr-only"
+                                />
+                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                                  <FileText className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[13px] font-bold text-foreground truncate">{resume.title ?? resume.file_name ?? "Resume"}</p>
+                                  <p className="text-[10px] font-medium text-muted-foreground/80 uppercase tracking-tight">
+                                    {resume.file_name?.split(".").pop() || "PDF"} · {resume.size ?? "Unknown Size"}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePreviewResume(resume.url); }}
+                                  className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                              </label>
+                            );
+                          });
+                        })()}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-sm font-bold text-foreground truncate">{cv.title || "AI Generated Resume"}</p>
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-[8px] font-black text-emerald-700 uppercase tracking-widest">AI Tailored</span>
+
+                      {resumes.length > itemsPerPage && (
+                        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                          <span className="text-[10px] font-black text-primary uppercase tracking-tighter">Page {uploadedPage} of {Math.ceil(resumes.length/itemsPerPage)}</span>
+                          <div className="flex gap-2">
+                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold" onClick={() => setUploadedPage(p => Math.max(1, p-1))} disabled={uploadedPage===1}>
+                              <ArrowLeft className="w-3 h-3 mr-1.5" /> Previous
+                            </Button>
+                            <Button variant="hero" className="h-8 px-4 text-[10px] font-bold" onClick={() => setUploadedPage(p => Math.min(Math.ceil(resumes.length/itemsPerPage), p+1))} disabled={uploadedPage===Math.ceil(resumes.length/itemsPerPage)}>
+                              Next <ArrowRight className="w-3 h-3 ml-1.5" />
+                            </Button>
+                          </div>
                         </div>
-                        <p className="text-[11px] font-medium text-muted-foreground/80 uppercase tracking-tight">
-                          Tailored for this career path • {new Date(cv.created_at).toLocaleDateString()}
-                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab Content: AI Generated */}
+                  {resumeTab === 'generated' && (
+                    <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(function() {
+                          const start = (generatedPage - 1) * itemsPerPage;
+                          const paginated = generatedResumes.slice(start, start + itemsPerPage);
+                          if (generatedResumes.length === 0) return <div className="col-span-full h-40 flex items-center justify-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-2 border-dashed border-emerald-100 rounded-xl">No AI drafts generated</div>;
+
+                          return paginated.map((cv) => {
+                            const isSelected = String(selectedResumeId) === `cv-${cv.id}`;
+                            return (
+                              <label
+                                key={cv.id}
+                                className={`flex items-start md:items-center gap-3 rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
+                                    ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
+                                    : "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/30"
+                                  }`}
+                              >
+                                <input
+                                  type="radio"
+                                  checked={isSelected}
+                                  onChange={() => setSelectedResumeId(`cv-${cv.id}`)}
+                                  className="sr-only"
+                                />
+                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+                                  <Sparkles className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[13px] font-bold text-foreground truncate">{cv.title || "AI Resume"}</p>
+                                  <p className="text-[10px] font-medium text-muted-foreground/80 uppercase tracking-tight">
+                                    {new Date(cv.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePreviewResume(cv.pdf_path); }}
+                                  className="p-2 rounded-lg hover:bg-emerald-100 text-emerald-600 transition-colors"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                              </label>
+                            );
+                          });
+                        })()}
                       </div>
-                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${selectedResumeId === `cv-${cv.id}` ? 'border-emerald-500 bg-emerald-500' : 'border-border'}`}>
-                        {selectedResumeId === `cv-${cv.id}` && <div className="h-2 w-2 rounded-full bg-white shadow-sm" />}
-                      </div>
-                    </label>
-                  ))}
+
+                      {generatedResumes.length > itemsPerPage && (
+                        <div className="flex items-center justify-between pt-4 border-t border-emerald-100">
+                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Page {generatedPage} of {Math.ceil(generatedResumes.length/itemsPerPage)}</span>
+                          <div className="flex gap-2">
+                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold" onClick={() => setGeneratedPage(p => Math.max(1, p-1))} disabled={generatedPage===1}>
+                              <ArrowLeft className="w-3 h-3 mr-1.5" /> Previous
+                            </Button>
+                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold border-emerald-200 text-emerald-600 hover:bg-emerald-50" onClick={() => setGeneratedPage(p => Math.min(Math.ceil(generatedResumes.length/itemsPerPage), p+1))} disabled={generatedPage===Math.ceil(generatedResumes.length/itemsPerPage)}>
+                              Next <ArrowRight className="w-3 h-3 ml-1.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center bg-muted/20">
@@ -487,20 +631,22 @@ export default function ApplyJobPage() {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
-                  <Plus className="h-3 w-3" /> Manage Resumes
-                </Button>
-                <Button 
-                  variant="hero" 
-                  className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20 gap-2" 
-                  onClick={() => setShowTemplateOverlay(true)}
-                  disabled={isGenerating}
-                >
-                  <Sparkles className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} /> 
-                  {isGenerating ? "Generating..." : "Generate CV with AI"}
-                </Button>
-              </div>
+              {!hasGenerated && (
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
+                    <Plus className="h-3 w-3" /> Manage Resumes
+                  </Button>
+                  <Button 
+                    variant="hero" 
+                    className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20 gap-2" 
+                    onClick={() => setShowTemplateOverlay(true)}
+                    disabled={isGenerating}
+                  >
+                    <Sparkles className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} /> 
+                    {isGenerating ? "Generating..." : "Generate CV with AI"}
+                  </Button>
+                </div>
+              )}
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(1)}>
@@ -537,18 +683,39 @@ export default function ApplyJobPage() {
                       label: "Selected Resume", 
                       value: (function() {
                         const rid = String(selectedResumeId);
+                        let title = "Not selected";
+                        let url = "";
+                        
                         if (rid.startsWith("cv-")) {
                            const id = rid.replace("cv-", "");
-                           return generatedResumes.find(cv => String(cv.id) === id)?.title || "AI Generated Resume";
+                           const cv = generatedResumes.find(cv => String(cv.id) === id);
+                           title = cv?.title || "AI Generated Resume";
+                           url = cv?.pdf_path || "";
+                        } else {
+                           const r = resumes.find(r => String(r.id) === rid);
+                           title = r?.title || r?.file_name || "Uploaded Resume";
+                           url = r?.url || "";
                         }
-                        const r = resumes.find(r => String(r.id) === rid);
-                        return r?.title || r?.file_name || "Not linked";
+
+                        if (!rid) return "No resume linked";
+
+                        return (
+                          <div className="flex items-center gap-2">
+                             <span className="truncate">{title}</span>
+                             <button 
+                               onClick={() => handlePreviewResume(url)}
+                               className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors"
+                             >
+                               VIEW FILE
+                             </button>
+                          </div>
+                        );
                       })()
                     },
                   ].map((item) => (
                     <div key={item.label} className="min-w-0 group">
                       <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-1 group-hover:text-primary transition-colors">{item.label}</span>
-                      <span className="block font-bold text-foreground truncate text-sm md:text-base">{item.value}</span>
+                      <div className="block font-bold text-foreground text-sm md:text-base">{item.value}</div>
                     </div>
                   ))}
                 </div>
@@ -577,6 +744,55 @@ export default function ApplyJobPage() {
                         className="text-sm text-muted-foreground leading-relaxed rich-text"
                         dangerouslySetInnerHTML={{ __html: candidate.bio.replace(/\n/g, '<br/>') }}
                       />
+                    </div>
+                  </div>
+                )}
+
+                {candidate.educations.length > 0 && (
+                  <div className="pt-6 border-t border-border/50">
+                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
+                      <GraduationCap className="w-3 h-3" /> Education History
+                    </span>
+                    <div className="space-y-3">
+                      {candidate.educations.map((edu: any, idx: number) => (
+                        <div key={idx} className="bg-background/40 rounded-xl p-3 border border-border/20">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{edu.degree} in {edu.field_of_study}</p>
+                              <p className="text-xs text-muted-foreground font-medium">{edu.institution}</p>
+                            </div>
+                            <span className="text-[10px] font-bold text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
+                              {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {candidate.experiences.length > 0 && (
+                  <div className="pt-6 border-t border-border/50">
+                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
+                      <Briefcase className="w-3 h-3" /> Professional Experience
+                    </span>
+                    <div className="space-y-3">
+                      {candidate.experiences.map((exp: any, idx: number) => (
+                        <div key={idx} className="bg-background/40 rounded-xl p-3 border border-border/20">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{exp.job_title}</p>
+                              <p className="text-xs text-muted-foreground font-medium">{exp.company_name}</p>
+                              {exp.description && (
+                                <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{exp.description}</p>
+                              )}
+                            </div>
+                            <span className="text-[10px] font-bold text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
+                              {new Date(exp.start_date).getFullYear()} — {exp.is_current ? "Present" : (exp.end_date ? new Date(exp.end_date).getFullYear() : "Present")}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -626,7 +842,7 @@ export default function ApplyJobPage() {
                        <Sparkles className="w-6 h-6 text-primary animate-pulse" /> 
                        Generate AI Enhanced CV
                     </h2>
-                    <p className="text-slate-500 font-medium text-sm mt-1">Select a template to tailor your success story for this position.</p>
+                    <p className="text-slate-500 font-medium text-sm mt-1">Select a template below to proceed with AI generation.</p>
                  </div>
                  <button onClick={() => setShowTemplateOverlay(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
                     <X className="w-6 h-6 text-slate-400" />
@@ -635,48 +851,72 @@ export default function ApplyJobPage() {
 
               <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {cvTemplates.map((template) => (
-                       <div 
-                         key={template.id}
-                         className={`group relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
-                           selectedTemplate === String(template.id) ? "border-primary shadow-lg shadow-primary/20 scale-[1.02]" : "border-slate-100 hover:border-primary/30 hover:shadow-md"
-                         }`}
-                         onClick={() => setSelectedTemplate(String(template.id))}
-                       >
-                          <div className="aspect-[3/4] p-2 bg-slate-50 group-hover:bg-primary/5 transition-colors overflow-hidden">
-                             {template.preview_image ? (
-                               <img 
-                                 src={template.preview_image} 
-                                 alt={template.name} 
-                                 className="w-full h-full object-cover rounded-lg shadow-sm border border-slate-200"
-                               />
-                             ) : (
-                               <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-300">
-                                 <FileText className="w-10 h-10" />
-                                 <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
-                               </div>
-                             )}
-                          </div>
-                          <div className="p-4 flex items-center justify-between bg-white">
-                             <div className="min-w-0">
-                                <span className="text-[10px] font-black text-primary/60 uppercase tracking-tighter block mb-0.5">Template</span>
-                                <span className="text-xs font-bold text-slate-700 truncate block">{template.name}</span>
-                             </div>
-                             {selectedTemplate === String(template.id) && <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />}
-                          </div>
-                          
-                          {/* Selected Overlay */}
-                          {selectedTemplate === String(template.id) && (
-                            <div className="absolute inset-x-0 bottom-[68px] flex items-center justify-center p-4">
-                               <div className="bg-white rounded-lg py-1.5 px-3 shadow-xl border border-primary/20 animate-in slide-in-from-bottom-2">
-                                  <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5">
-                                    <Sparkles className="w-3 h-3" /> Selected 
+                    {cvTemplates.map((template) => {
+                      const isSelected = selectedTemplate === String(template.id);
+                      return (
+                        <div 
+                          key={template.id}
+                          className={`group relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
+                            isSelected ? "border-primary shadow-lg shadow-primary/20 scale-[1.02]" : "border-slate-100 hover:border-primary/30 hover:shadow-md"
+                          }`}
+                          onClick={() => setSelectedTemplate(String(template.id))}
+                        >
+                           <div className="aspect-[3/4] p-2 bg-slate-50 group-hover:bg-primary/5 transition-colors overflow-hidden">
+                              {template.preview_image ? (
+                                <img 
+                                  src={template.preview_image} 
+                                  alt={template.name} 
+                                  className="w-full h-full object-cover rounded-lg shadow-sm border border-slate-200"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-300">
+                                  <FileText className="w-10 h-10" />
+                                  <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
+                                </div>
+                              )}
+                           </div>
+                           {selectedTemplate === String(template.id) && (
+                              <div className="absolute top-3 right-3 bg-primary text-white p-1.5 rounded-full shadow-lg z-10 animate-in zoom-in duration-300">
+                                 <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              </div>
+                           )}
+                           <div className="p-4 flex items-center justify-between bg-white relative">
+                               <div className="min-w-0">
+                                  <span className={`text-[9px] font-black uppercase tracking-[1.5px] block mb-1.5 transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-slate-400'}`}>
+                                     {isSelected ? 'Selected Style' : 'Select Resume'}
                                   </span>
+                                  <span className="text-xs font-bold text-slate-700 truncate block">{template.name}</span>
                                </div>
-                            </div>
-                          )}
-                       </div>
-                    ))}
+                               <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isSelected ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/25' : 'border-slate-200 bg-white text-slate-100 group-hover:border-primary/30'}`}>
+                                  <Check className={`w-3.5 h-3.5 stroke-[3] transition-all duration-300 ${isSelected ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`} />
+                               </div>
+                           </div>
+                        </div>
+                      );
+                    })}
+                 </div>
+
+                 <div className="mt-12 flex flex-col items-center justify-center gap-4">
+                    <Button 
+                        variant="hero" 
+                        className="min-w-[280px] h-12 rounded-2xl text-xs font-black uppercase tracking-[2px] shadow-xl shadow-primary/20 disabled:opacity-50 transition-all active:scale-95"
+                        onClick={() => selectedTemplate && handleGenerateResume(selectedTemplate)}
+                        disabled={!selectedTemplate || isGenerating}
+                    >
+                        {isGenerating ? (
+                           <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Crafting your Resume...
+                           </>
+                        ) : (
+                           <>Generate My CV</>
+                        )}
+                    </Button>
+                    {selectedTemplate && (
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2">
+                           Selected: {cvTemplates.find(t => String(t.id) === selectedTemplate)?.name || selectedTemplate}
+                        </p>
+                    )}
                  </div>
               </div>
 
@@ -697,6 +937,45 @@ export default function ApplyJobPage() {
                        {isGenerating ? "Analyzing JD & Generating..." : "Generate My CV"}
                     </Button>
                  </div>
+              </div>
+           </div>
+        </div>
+      )}
+      {/* Resume Preview Overlay */}
+      {showResumePreview && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] animate-in zoom-in-95 duration-300">
+              <div className="px-8 py-4 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                 <div>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                       <FileText className="w-5 h-5 text-primary" /> 
+                       Resume Preview
+                    </h2>
+                 </div>
+                 <button onClick={() => setShowResumePreview(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                    <X className="w-6 h-6 text-slate-400" />
+                 </button>
+              </div>
+
+              <div className="flex-1 overflow-hidden bg-slate-100 relative">
+                 {previewUrl ? (
+                   <iframe 
+                     src={`/api/files/preview?url=${encodeURIComponent(previewUrl)}#toolbar=0`} 
+                     className="w-full h-full border-none"
+                     title="Resume Content"
+                   />
+                 ) : (
+                   <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                      <p className="font-bold text-sm">Loading document...</p>
+                   </div>
+                 )}
+              </div>
+
+              <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                 <Button className="rounded-xl px-8" onClick={() => setShowResumePreview(false)}>
+                    Close Preview
+                 </Button>
               </div>
            </div>
         </div>
