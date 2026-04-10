@@ -1,36 +1,70 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type { Job } from "@/types/homepage";
 
 type Bookmark = Job & { id: number | string };
 
+// Global cache to prevent redundant fetches and share state across cards
+let globalBookmarks: Bookmark[] = [];
+let globalLoading = false;
+let globalFetched = false;
+let fetchPromise: Promise<void> | null = null;
+const listeners = new Set<(bookmarks: Bookmark[]) => void>();
+
 export function useBookmarks() {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>(globalBookmarks);
+  const [loading, setLoading] = useState(globalLoading);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBookmarks = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Calling the correct endpoint as per user request
-      const res = await dashboardServerFetch<any>("jobseeker/saved-jobs", { method: "GET" });
-      
-      // The API returns { data: [ { job: {...}, id: ... } ] }
-      const rawData = res?.data || [];
-      const mappedJobs = rawData.map((item: any) => ({
-        ...item.job,
-        bookmarkId: item.id // Keep the relationship ID if needed for deletion
-      }));
-
-      setBookmarks(mappedJobs);
-    } catch (err: any) {
-      setBookmarks([]);
-      setError(err?.message || "Failed to fetch saved jobs");
-      throw err;
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    listeners.add(setBookmarks);
+    // Auto-fetch if not already fetched
+    if (!globalFetched && !fetchPromise) {
+      void fetchBookmarks();
     }
+    return () => {
+      listeners.delete(setBookmarks);
+    };
+  }, []);
+
+  const notify = (updated: Bookmark[]) => {
+    globalBookmarks = updated;
+    listeners.forEach((fn) => fn([...updated])); // pass new array reference to trigger re-renders
+  };
+
+  const fetchBookmarks = useCallback(async (force = false) => {
+    if (globalFetched && !force) return;
+    if (fetchPromise && !force) return fetchPromise;
+
+    fetchPromise = (async () => {
+      try {
+        setLoading(true);
+        globalLoading = true;
+        setError(null);
+        const res = await dashboardServerFetch<any>("jobseeker/bookmarks", { method: "GET" });
+
+        if (res?.status === false) {
+          notify([]);
+          return;
+        }
+
+        const rawData = res?.data || [];
+        const mappedJobs = rawData.map((item: any) => ({
+          ...item.job,
+          bookmarkId: item.id
+        }));
+        notify(mappedJobs);
+        globalFetched = true;
+      } catch (err: any) {
+        notify([]);
+        setError(err?.message || "Failed to fetch saved jobs");
+      } finally {
+        setLoading(false);
+        globalLoading = false;
+        fetchPromise = null;
+      }
+    })();
+    return fetchPromise;
   }, []);
 
   const toggleBookmark = useCallback(
@@ -39,11 +73,17 @@ export function useBookmarks() {
         setLoading(true);
         setError(null);
 
-        const isAlreadyBookmarked = bookmarks.some((job) => String(job.id) === String(jobId));
+        const isAlreadyBookmarked = globalBookmarks.some((job) => String(job.id) === String(jobId));
         const method = isAlreadyBookmarked ? "DELETE" : "POST";
 
-        await dashboardServerFetch<any>(`jobseeker/jobs/${jobId}/bookmark`, { method });
-        await fetchBookmarks();
+        // Optimistic UI toggle could go here, but let's just await the server for accuracy
+        const res = await dashboardServerFetch<any>(`jobseeker/jobs/${jobId}/bookmark`, { method });
+
+        if (res?.status === false) {
+          throw new Error(res.message || "Failed to update bookmark");
+        }
+
+        await fetchBookmarks(true); // pass true to force a refetch
       } catch (err: any) {
         setError(err?.message || "Failed to update bookmark");
         throw err;
@@ -51,14 +91,10 @@ export function useBookmarks() {
         setLoading(false);
       }
     },
-    [bookmarks, fetchBookmarks]
+    [fetchBookmarks]
   );
 
-  return {
-    bookmarks,
-    loading,
-    error,
-    fetchBookmarks,
-    toggleBookmark,
-  };
+  return { bookmarks, loading, error, fetchBookmarks, toggleBookmark };
 }
+
+

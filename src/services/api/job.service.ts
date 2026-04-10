@@ -47,9 +47,13 @@ export async function getJobDetails(slug: string): Promise<JobDetails | null> {
     if (Array.isArray(inner.screening_questions)) {
       job.screening_questions = inner.screening_questions as JobDetails["screening_questions"];
     }
+    if (Array.isArray(inner.questions)) {
+      job.questions = inner.questions as JobDetails["questions"];
+    }
     if (typeof inner.cover_letter_question_id === "number") {
       job.cover_letter_question_id = inner.cover_letter_question_id;
     }
+
 
     return job;
   } catch (err) {

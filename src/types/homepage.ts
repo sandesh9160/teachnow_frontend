@@ -26,7 +26,15 @@ export type Job = {
   similar_jobs?: Job[];
   cover_letter_question_id?: number;
   screening_questions?: { id: number; question: string }[];
+  questions?: { 
+    id: number; 
+    job_id: number;
+    question: string; 
+    question_type: "boolean" | "numeric" | "text" | string;
+    recruiter_answer?: string;
+  }[];
 };
+
 
 export type Institution = {
   id: number;

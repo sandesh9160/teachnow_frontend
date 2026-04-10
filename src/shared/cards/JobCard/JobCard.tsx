@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import { MapPin, Clock, Briefcase, Building2, Bookmark, BookmarkCheck } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import Link from "next/link";
@@ -13,12 +14,19 @@ import { sanitizeSlug } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
 
 const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo }: JobCardProps) => {
-  const [saved, setSaved] = useState(false);
+  const { bookmarks, toggleBookmark } = useBookmarks();
+  const isSavedStatus = bookmarks.some((job) => String(job.id) === String(id));
+  const [saved, setSaved] = useState(isSavedStatus);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [authReason, setAuthReason] = useState<"apply" | "save">("apply");
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
+
+  // Keep internal state in sync if global bookmarks change
+  useEffect(() => {
+    setSaved(isSavedStatus);
+  }, [isSavedStatus]);
   
   // Clean the slug for a "neat" URL, fallback to ID if no slug provided
   const jobPath = slug ? sanitizeSlug(slug) : String(id);
@@ -64,22 +72,13 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
       // Optimistic UI update
       setSaved(!saved);
       
-      const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
-      // Standard toggle endpoint for bookmarks
-      const res = await dashboardServerFetch<any>(`jobseeker/jobs/${id}/bookmark`, { 
-        method: "POST" 
-      });
+      await toggleBookmark(id);
+      toast.success(saved ? "Removed from saved jobs" : "Job saved successfully!");
 
-      if (res.status === true) {
-        toast.success(saved ? "Removed from saved jobs" : "Job saved successfully!");
-      } else {
-        // Rollback on failure
-        setSaved(saved);
-        toast.error(res.message || "Failed to update bookmark.");
-      }
-    } catch (error) {
-      setSaved(saved);
-      toast.error("An error occurred while saving the job.");
+    } catch (error: any) {
+      // Rollback on failure
+      setSaved(isSavedStatus);
+      toast.error(error.message || "An error occurred while saving the job.");
     }
   };
 

@@ -37,7 +37,9 @@ import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 // import ResumeTemplatePreview, { templatePreviews } from "@/components/ai-resume-builder/ResumeTemplatePreview";
 
-const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
+// We'll define dynamic steps inside the component
+// const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
+
 
 export default function ApplyJobPage() {
   const params = useParams();
@@ -71,6 +73,9 @@ export default function ApplyJobPage() {
     experiences: [] as any[],
   });
 
+  const [questionAnswers, setQuestionAnswers] = useState<Record<number, string>>({});
+
+
   // Candidate data is initialized via the profile fetch effect below which handles both session user and detailed profile data
 
   const [mounted, setMounted] = useState(false);
@@ -82,6 +87,8 @@ export default function ApplyJobPage() {
 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
+
+
 
   // 1. Fetch Job Details
   useEffect(() => {
@@ -106,6 +113,7 @@ export default function ApplyJobPage() {
       void fetchBookmarks();
     }
   }, [isLoggedIn, job?.id, fetchBookmarks]);
+
 
   const handleToggleBookmark = async () => {
     if (!job?.id) return;
@@ -172,7 +180,31 @@ export default function ApplyJobPage() {
     fetchFullProfile();
   }, [isLoggedIn, user]);
 
+  // Initialize recruiter questions answers
   useEffect(() => {
+    if (job) {
+      const initial: Record<number, string> = {};
+      if (job.cover_letter_question_id) {
+        initial[job.cover_letter_question_id] = "";
+      }
+      
+      // Support both legacy screening_questions and new questions array
+      job.screening_questions?.forEach(q => {
+        initial[q.id] = "";
+      });
+      
+      job.questions?.forEach(q => {
+        initial[q.id] = "";
+      });
+
+      setQuestionAnswers(prev => ({ ...initial, ...prev }));
+    }
+  }, [job]);
+
+
+
+  useEffect(() => {
+
     console.log("DEBUG: Current candidate state:", candidate);
   }, [candidate]);
 
@@ -192,8 +224,8 @@ export default function ApplyJobPage() {
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [uploadedPage, setUploadedPage] = useState(1);
   const [generatedPage, setGeneratedPage] = useState(1);
-  const [hasGenerated, setHasGenerated] = useState(false);
   const [resumeTab, setResumeTab] = useState<'uploaded' | 'generated'>('uploaded');
+
   const itemsPerPage = 5;
 
   const handlePreviewResume = (path: string | null | undefined) => {
@@ -205,17 +237,17 @@ export default function ApplyJobPage() {
   };
 
   const handleGenerateResume = async (templateId: number | string) => {
-    if (!jobDetails?.id) return;
+    if (!job?.id) return;
     try {
       setIsGenerating(true);
       const res = await generateCVWithJob({
         template_id: templateId,
-        job_id: jobDetails.id,
+        job_id: job.id,
       });
+
       
       if (res?.status) {
         toast.success("Resume generated with AI!");
-        setHasGenerated(true);
         await fetchResumes(); 
         setShowTemplateOverlay(false);
       }
@@ -273,7 +305,19 @@ export default function ApplyJobPage() {
     if (!jobDetails?.id) return;
     try {
       setIsSubmitting(true);
+      
+      // Collect all answers
       const answers: { question_id: number; candidate_answer: string }[] = [];
+      
+      Object.entries(questionAnswers).forEach(([qid, ans]) => {
+        if (ans.trim()) {
+          answers.push({
+            question_id: parseInt(qid),
+            candidate_answer: ans.trim()
+          });
+        }
+      });
+
       const response = await apply(jobDetails.id, answers);
       console.log("DEBUG: Application successful response:", response);
 
@@ -286,6 +330,18 @@ export default function ApplyJobPage() {
       setIsSubmitting(false);
     }
   };
+
+  const hasQuestions = !!(jobDetails?.screening_questions?.length) || !!(jobDetails?.questions?.length) || !!jobDetails?.cover_letter_question_id;
+  const currentSteps = ["Review Job", "Your Details", "Resume", ...(hasQuestions ? ["Questions"] : []), "Submit"];
+  
+  const questionsStepIdx = currentSteps.indexOf("Questions");
+  const submitStepIdx = currentSteps.indexOf("Submit");
+
+
+
+
+
+
 
   if (!mounted || !isLoggedIn || user?.role === "employer") {
     return null;
@@ -316,7 +372,7 @@ export default function ApplyJobPage() {
         {!submitted && (
           <div className="mb-6 md:mb-8">
             <div className="flex items-center justify-between">
-              {STEPS.map((label, i) => {
+              {currentSteps.map((label, i) => {
                 let stepClass = "bg-muted text-muted-foreground";
                 const isActive = i === step;
                 const isCompleted = i < step;
@@ -339,7 +395,7 @@ export default function ApplyJobPage() {
                         {label}
                       </span>
                     </div>
-                    {i < STEPS.length - 1 && (
+                    {i < currentSteps.length - 1 && (
                       <div className={`h-0.5 flex-1 rounded-full mx-0.5 min-[400px]:mx-1 md:mx-2 mb-0 md:mb-4 ${isCompleted ? "bg-accent/40" : "bg-muted"}`} />
                     )}
                   </div>
@@ -348,6 +404,7 @@ export default function ApplyJobPage() {
             </div>
           </div>
         )}
+
 
         <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 md:p-8 shadow-card overflow-hidden">
           {step === 0 && !submitted && (
@@ -472,6 +529,7 @@ export default function ApplyJobPage() {
           {step === 2 && !submitted && (
             <div className="space-y-5 md:space-y-6">
               <p className="text-sm text-muted-foreground font-medium">Select your preferred resume for this application.</p>
+
               {(resumes.length > 0 || generatedResumes.length > 0) ? (
                 <div className="space-y-6">
                   {/* Tab Switcher / Toggle */}
@@ -630,22 +688,20 @@ export default function ApplyJobPage() {
                 </div>
               )}
 
-              {!hasGenerated && (
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
-                    <Plus className="h-3 w-3" /> Manage Resumes
-                  </Button>
-                  <Button 
-                    variant="hero" 
-                    className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20 gap-2" 
-                    onClick={() => setShowTemplateOverlay(true)}
-                    disabled={isGenerating}
-                  >
-                    <Sparkles className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} /> 
-                    {isGenerating ? "Generating..." : "Generate CV with AI"}
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
+                  <Plus className="h-3 w-3" /> Manage Resumes
+                </Button>
+                <Button 
+                  variant="hero" 
+                  className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20 gap-2" 
+                  onClick={() => setShowTemplateOverlay(true)}
+                  disabled={isGenerating}
+                >
+                  <Sparkles className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} /> 
+                  {isGenerating ? "Generating..." : "Generate CV with AI"}
+                </Button>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(1)}>
@@ -656,7 +712,7 @@ export default function ApplyJobPage() {
                     toast.error("Please select a resume to proceed");
                     return;
                   }
-                  setStep(3);
+                  setStep(step + 1);
                 }}>
                   Next Step <ArrowRight className="ml-2 h-3 w-3" />
                 </Button>
@@ -664,7 +720,116 @@ export default function ApplyJobPage() {
             </div>
           )}
 
-          {step === 3 && !submitted && (
+          {/* Questions Step */}
+          {hasQuestions && step === questionsStepIdx && !submitted && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                   <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                   </div>
+                   <h3 className="text-sm font-bold text-foreground">Recruiter Questions</h3>
+                </div>
+                <p className="text-xs text-muted-foreground">Please provide these final details to complete your application for {jobDetails.employer?.company_name}.</p>
+                
+                <div className="space-y-6 mt-4">
+                  {jobDetails.cover_letter_question_id && (
+                    <div className="space-y-2">
+                       <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Cover Letter / Motivation</label>
+                       <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                        <textarea
+                          value={questionAnswers[jobDetails.cover_letter_question_id] || ""}
+                          onChange={(e) => setQuestionAnswers({ ...questionAnswers, [jobDetails.cover_letter_question_id!]: e.target.value })}
+                          className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/30 min-h-[120px] resize-none"
+                          placeholder="Why are you applying for this position? How do your skills match our requirements?"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {jobDetails.questions?.map((q) => {
+                    const isBoolean = q.question_type === "boolean";
+                    const isNumeric = q.question_type === "numeric";
+
+                    return (
+                      <div key={q.id} className="space-y-3">
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">
+                          {q.question}
+                        </label>
+                        
+                        {isBoolean ? (
+                          <div className="flex gap-4 ml-1">
+                            {["Yes", "No"].map((opt) => (
+                              <label key={opt} className="flex items-center gap-2 cursor-pointer group">
+                                <div 
+                                  onClick={() => setQuestionAnswers({ ...questionAnswers, [q.id]: opt.toLowerCase() })}
+                                  className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                                    questionAnswers[q.id] === opt.toLowerCase() 
+                                      ? "border-primary bg-primary" 
+                                      : "border-slate-200 group-hover:border-primary/40"
+                                  }`}
+                                >
+                                  {questionAnswers[q.id] === opt.toLowerCase() && <div className="h-2 w-2 rounded-full bg-white animate-in zoom-in-50 duration-200" />}
+                                </div>
+                                <span className={`text-sm font-bold ${questionAnswers[q.id] === opt.toLowerCase() ? "text-primary" : "text-slate-500"}`}>{opt}</span>
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                            {isNumeric ? (
+                              <input
+                                type="number"
+                                value={questionAnswers[q.id] || ""}
+                                onChange={(e) => setQuestionAnswers({ ...questionAnswers, [q.id]: e.target.value })}
+                                className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/30"
+                                placeholder="Enter a number..."
+                              />
+                            ) : (
+                              <textarea
+                                value={questionAnswers[q.id] || ""}
+                                onChange={(e) => setQuestionAnswers({ ...questionAnswers, [q.id]: e.target.value })}
+                                className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/30 min-h-[80px] resize-none"
+                                placeholder="Provide your answer here..."
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Legacy Support for screening_questions */}
+                  {jobDetails.screening_questions?.map((sq) => (
+                    <div key={sq.id} className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">{sq.question}</label>
+                      <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                        <textarea
+                          value={questionAnswers[sq.id] || ""}
+                          onChange={(e) => setQuestionAnswers({ ...questionAnswers, [sq.id]: e.target.value })}
+                          className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/30 min-h-[80px] resize-none"
+                          placeholder="Provide your answer here..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(step - 1)}>
+                  <ArrowLeft className="mr-2 h-3 w-3" /> Back
+                </Button>
+                <Button className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={() => setStep(step + 1)}>
+                  Review Application <ArrowRight className="ml-2 h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Submit/Review Step */}
+          {step === submitStepIdx && !submitted && (
             <div className="space-y-6 md:space-y-8">
               <div className="rounded-2xl border border-border bg-muted/20 p-5 md:p-6 space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-8">
@@ -705,7 +870,7 @@ export default function ApplyJobPage() {
                                onClick={() => handlePreviewResume(url)}
                                className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors"
                              >
-                               VIEW FILE
+                                VIEW FILE
                              </button>
                           </div>
                         );
@@ -795,10 +960,32 @@ export default function ApplyJobPage() {
                     </div>
                   </div>
                 )}
+
+                {hasQuestions && Object.values(questionAnswers).some(a => a.trim()) && (
+                  <div className="pt-6 border-t border-border/50">
+                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
+                       Recruiter Questions Review
+                    </span>
+                    <div className="space-y-4">
+                      {Object.entries(questionAnswers).map(([qid, ans]) => {
+                         const q = jobDetails.questions?.find(sq => String(sq.id) === qid) || 
+                                   jobDetails.screening_questions?.find(sq => String(sq.id) === qid);
+                         const label = q ? q.question : (parseInt(qid) === jobDetails.cover_letter_question_id ? "Motivation / Cover Letter" : "Question");
+                         if (!ans.trim()) return null;
+                         return (
+                           <div key={qid} className="bg-background/40 rounded-xl p-3 border border-border/20">
+                             <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tight mb-1">{label}</p>
+                             <p className="text-sm text-foreground whitespace-pre-wrap">{ans === "yes" ? "Yes" : (ans === "no" ? "No" : ans)}</p>
+                           </div>
+                         );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(2)}>
+                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(step - 1)}>
                   <ArrowLeft className="mr-2 h-3 w-3" /> Back
                 </Button>
                 <Button variant="hero" className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={handleSubmit} disabled={isSubmitting}>
@@ -810,6 +997,8 @@ export default function ApplyJobPage() {
           )}
 
           {submitted && (
+
+
             <div className="text-center py-6">
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent/10 text-accent mb-5">
                 <CheckCircle2 className="h-10 w-10" />

@@ -72,11 +72,13 @@ function mapServerProfile(initial: Record<string, any>) {
 
 export default function ProfileFormClient({
   initialResponse,
+  isNewProfile = false,
 }: {
   initialResponse: Record<string, unknown>;
+  isNewProfile?: boolean;
 }) {
   const router = useRouter();
-  const { getProfile, updateProfile } = useProfile();
+  const { getProfile, updateProfile, createProfile } = useProfile();
   const {
     data: education,
     loading: eduLoading,
@@ -97,6 +99,7 @@ export default function ProfileFormClient({
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isNew, setIsNew] = useState(isNewProfile);
 
   const [showEduForm, setShowEduForm] = useState(false);
   const [editingEduId, setEditingEduId] = useState<number | string | null>(null);
@@ -331,7 +334,56 @@ export default function ProfileFormClient({
         return skill ? skill.name : skillIdOrName;
       });
 
-      // Sync Education
+      // 1. Sync Profile FIRST (required if it's a new user, otherwise edu/exp will fail)
+      let profileResult: any;
+      if (photoFile) {
+        const { uploadFile } = await import("@/actions/FileUpload");
+        const formData = new FormData();
+        if (!isNew) {
+          formData.append("_method", "PUT");
+        }
+        Object.entries(profileData).forEach(([key, value]) => {
+          if (key === 'skills') {
+            skillNames.forEach((name: any) => formData.append("skills[]", String(name)));
+          } else if (key !== 'profile_photo' && key !== 'skills' && key !== 'email') {
+            formData.append(key, value !== null && value !== undefined ? String(value) : "");
+            if (key === 'title') formData.append('job_title', String(value));
+          }
+        });
+        formData.append("profile_photo", photoFile);
+        formData.append("profile_image", photoFile);
+        profileResult = await uploadFile("jobseeker/profile", { method: "POST", data: formData });
+      } else {
+        // Exclude internal/read-only fields from the update payload
+        const { email, profile_photo, ...safeData } = profileData;
+        const payload = { 
+          ...safeData, 
+          job_title: safeData.title, // Alias for backend compatibility
+          skills: skillNames 
+        };
+        profileResult = isNew 
+          ? await createProfile(payload)
+          : await updateProfile(payload);
+      }
+
+      // Check if profile sync failed
+      if (profileResult?.status === false) {
+        toast.error(profileResult.message || profileResult.error || "Profile update failed");
+        return; // Abort saving edu/exp if profile failed
+      }
+
+      // If successful, update states
+      toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!");
+      if (isNew) setIsNew(false);
+
+      const newPhoto = profileResult?.data?.profile?.profile_photo || profileResult?.data?.profile_photo || profileResult?.profile_photo;
+      if (newPhoto) {
+        setProfileData(prev => ({ ...prev, profile_photo: String(newPhoto) }));
+      }
+      setPhotoFile(null);
+      setPhotoPreview(null);
+
+      // 2. Sync Education
       const eduResults = await Promise.all(localEduList.map(async (edu) => {
         if ((edu as any).is_deleted) {
           return deleteEducation(edu.id);
@@ -345,7 +397,7 @@ export default function ProfileFormClient({
         return { status: true };
       }));
 
-      // Sync Experience
+      // 3. Sync Experience
       const expResults = await Promise.all(localExpList.map(async (exp) => {
         if ((exp as any).is_deleted) {
           return deleteExperience(exp.id);
@@ -362,61 +414,14 @@ export default function ProfileFormClient({
       // Check if any sync failed
       const hasSyncErrors = [...eduResults, ...expResults].some(r => r && (r as any).status === false);
       if (hasSyncErrors) {
-        toast.error("Some records failed to sync. Please try again.");
-        // Continue but with warning, or abort? Let's check profile update anyway.
+        toast.error("Profile saved, but some education or experience records failed to sync. Please check them.");
       }
 
-      // Sync Profile
-      if (photoFile) {
-        const { uploadFile } = await import("@/actions/FileUpload");
-        const formData = new FormData();
-        formData.append("_method", "PUT");
-        Object.entries(profileData).forEach(([key, value]) => {
-          if (key === 'skills') {
-            skillNames.forEach((name: any) => formData.append("skills[]", String(name)));
-          } else if (key !== 'profile_photo' && key !== 'skills' && key !== 'email') {
-            formData.append(key, value !== null && value !== undefined ? String(value) : "");
-            if (key === 'title') formData.append('job_title', String(value));
-          }
-        });
-        formData.append("profile_photo", photoFile);
-        formData.append("profile_image", photoFile);
-        const result = await uploadFile("jobseeker/profile", { method: "POST", data: formData });
-        processResponse(result);
-      } else {
-        // Exclude internal/read-only fields from the update payload
-        const { email, profile_photo, ...safeData } = profileData;
-        const payload = { 
-          ...safeData, 
-          job_title: safeData.title, // Alias for backend compatibility
-          skills: skillNames 
-        };
-        const result = await updateProfile(payload);
-        processResponse(result);
-      }
+      router.refresh();
     } catch (err: any) {
       toast.error(err.message || "An unexpected error occurred.");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const processResponse = (result: any) => {
-    if (result.status === true || result.success === true || result.id || result.data?.id || result.data?.profile?.id) {
-      toast.success("Profile updated successfully!");
-      
-      // Extract the nested profile photo from the backend response structure
-      const newPhoto = result.data?.profile?.profile_photo || result.data?.profile_photo || result.profile_photo;
-      if (newPhoto) {
-        setProfileData(prev => ({ ...prev, profile_photo: String(newPhoto) }));
-      }
-
-      setPhotoFile(null);
-      setPhotoPreview(null);
-      router.refresh();
-    } else {
-      const errorMsg = result.message || result.error || "Update failed";
-      toast.error(errorMsg);
     }
   };
 

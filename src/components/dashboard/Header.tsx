@@ -6,6 +6,8 @@ import { useState } from "react";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import { normalizeMediaUrl } from "@/services/api/client";
 
+import { NotificationBell } from "./NotificationBell";
+
 export function DashboardHeader({ 
   user, 
   branding, 
@@ -55,6 +57,7 @@ export function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-4">
+        {user?.role === "job_seeker" && <NotificationBell role={user.role} />}
         <div className="relative">
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}

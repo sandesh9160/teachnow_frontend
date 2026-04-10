@@ -13,7 +13,7 @@ export default function RegisterPage() {
   const captchaRef = useRef<any>(null);
 
   // Jobseeker as default to ensure fields always show
-  const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
+  const [role, setRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -21,7 +21,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     company_name: "",
     phone: "",
-    full_name: "",
+    name: "",
     email: "",
   });
 
@@ -56,8 +56,8 @@ export default function RegisterPage() {
     if (role === "employer") {
       if (!formData.company_name) { toast.error("Company Name is required"); return; }
       if (!formData.phone) { toast.error("Phone Number is required"); return; }
-    } else if (role === "jobseeker") {
-      if (!formData.full_name) { toast.error("Full Name is required"); return; }
+    } else if (role === "job_seeker") {
+      if (!formData.name) { toast.error("Full Name is required"); return; }
     }
 
     if (!formData.email) { toast.error("Email Address is required"); return; }
@@ -76,17 +76,29 @@ export default function RegisterPage() {
       return;
     }
 
-    const payload = {
-      ...formData,
+    const isEmployer = role === "employer";
+    const endpoint = isEmployer ? "/auth/create-employer" : "/auth/register";
+
+    const payload = isEmployer ? {
+      company_name: formData.company_name,
+      phone: formData.phone,
+      email: formData.email,
       password,
-      captcha_token: captchaToken
+      password_confirmation: confirmPassword,
+      captcha_token: captchaToken,
+      role,
+    } : {
+      name: formData.name,
+      email: formData.email,
+      password,
+      role,
     };
 
     try {
       setAuthLoading(true);
-      await fetchAPI("/auth/register", {
+      await fetchAPI(endpoint, {
         method: "POST",
-        body: { ...payload, role },
+        body: payload,
       });
       toast.success("Account created!");
       router.push("/auth/login");
@@ -146,8 +158,8 @@ export default function RegisterPage() {
               <button
                 type="button"
                 suppressHydrationWarning
-                onClick={() => setRole("jobseeker")}
-                className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "jobseeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                onClick={() => setRole("job_seeker")}
+                className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                   }`}
               >
                 <User className="h-3.5 w-3.5" /> Job Seeker
@@ -176,10 +188,10 @@ export default function RegisterPage() {
                   <input id="phone_reg" name="phone" value={formData.phone} onChange={handleChange} type="tel" suppressHydrationWarning required placeholder="+91 9638527410" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
               </div>
-            ) : role === "jobseeker" ? (
+            ) : role === "job_seeker" ? (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <label htmlFor="name_reg" className="mb-1.5 block text-sm font-medium text-foreground">Full Name</label>
-                <input id="name_reg" name="full_name" value={formData.full_name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="John Doe" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                <input id="name_reg" name="name" value={formData.name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="John Doe" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
               </div>
             ) : null}
 
@@ -274,7 +286,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-wait ${role === "jobseeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
+                  className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-wait ${role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
                     }`}
                 >
                   {authLoading ? "Creating Account..." : "Create Account"}

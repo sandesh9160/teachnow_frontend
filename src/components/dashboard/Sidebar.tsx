@@ -14,6 +14,7 @@ import {
   ClipboardList,
   Building2,
   CreditCard,
+  Bell,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -40,6 +41,7 @@ export function DashboardSidebar({
     { label: "My Profile", href: "/dashboard/jobseeker/profile", icon: User },
     { label: "My Applications", href: "/dashboard/jobseeker/applied-jobs", icon: Briefcase },
     { label: "Saved Jobs", href: "/dashboard/jobseeker/saved-jobs", icon: Bookmark },
+    { label: "Notifications", href: "/dashboard/jobseeker/notifications", icon: Bell },
     { label: "Resume Builder", href: "/dashboard/jobseeker/resume", icon: FileText },
     { label: "Testimonials", href: "/dashboard/jobseeker/testimonials", icon: MessageSquare },
   ];

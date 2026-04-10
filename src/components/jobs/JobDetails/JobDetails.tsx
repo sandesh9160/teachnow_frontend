@@ -111,8 +111,16 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
       setBookmarkBusy(true);
       await toggleBookmark(job.id);
       toast.success(wasBookmarked ? "Job removed from saved." : "Job saved!");
-    } catch (err) {
-      toast.error("Failed to update saved jobs.");
+    } catch (err: any) {
+      const msg: string = err?.message ?? "";
+      if (msg.toLowerCase().includes("profile not found") || msg.toLowerCase().includes("no profile")) {
+        toast.error("Please complete your profile before saving jobs.", {
+          description: "Go to Dashboard → Profile to set up your account.",
+          action: { label: "Go to Profile", onClick: () => window.location.href = "/dashboard/jobseeker/profile" },
+        });
+      } else {
+        toast.error(msg || "Failed to save job.");
+      }
     } finally {
       setBookmarkBusy(false);
     }

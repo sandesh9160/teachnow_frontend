@@ -56,46 +56,71 @@ export default function SavedJobsPage() {
           <p className="text-gray-400 font-medium animate-pulse">Syncing your bookmarks...</p>
         </div>
       ) : filteredBookmarks.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           {filteredBookmarks.map((job: any) => (
             <div 
               key={job.id} 
-              className="group relative bg-white rounded-2xl border border-gray-100 p-4 md:p-5 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300"
+              className="group relative flex flex-col bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 h-full"
             >
-              <div className="flex flex-col gap-5">
-                <div className="flex gap-4 items-start">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors overflow-hidden">
-                    {job.employer?.company_logo ? (
-                      <img 
-                        src={job.employer.company_logo} 
-                        alt={job.employer.company_name} 
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <Building2 className="w-6 h-6 text-gray-400 group-hover:text-primary transition-colors" />
-                    )}
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <h3 className="text-base md:text-[17px] font-bold text-gray-900 group-hover:text-primary transition-colors leading-tight truncate">
-                      {job.title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs md:text-sm text-gray-500 font-medium">
-                      <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-gray-400" /> {job.employer?.company_name || "Company"}</span>
-                      <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /> {job.location || "Location"}</span>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => handleRemove(job.id)}
-                    className="ml-auto p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+              {/* Card Header (Logo & Delete Button) */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                  {job.employer?.company_logo ? (
+                    <img 
+                      src={job.employer.company_logo} 
+                      alt={job.employer.company_name} 
+                      className="w-full h-full object-contain p-1"
+                    />
+                  ) : (
+                    <span className="text-base font-black text-primary">{(job.employer?.company_name?.[0] || job.title?.[0] || 'J').toUpperCase()}</span>
+                  )}
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleRemove(job.id);
+                  }}
+                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                  title="Remove from saved jobs"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Card Body (Title & Details) */}
+              <div className="space-y-1.5 flex-grow">
+                <Link href={`/jobs/${job.slug || job.id}`} className="block group-hover:text-primary transition-colors">
+                  <h3 className="text-[15px] font-bold text-gray-900 leading-snug line-clamp-2" title={job.title}>
+                    {job.title}
+                  </h3>
+                </Link>
+                <div className="flex flex-col gap-1 text-xs text-gray-600 font-medium mt-1.5">
+                  <span className="flex items-center gap-1.5 line-clamp-1" title={job.employer?.company_name}>
+                    <Building2 className="w-3.5 h-3.5 text-blue-500 shrink-0" /> 
+                    {job.employer?.company_name || "Confidential School"}
+                  </span>
+                  <span className="flex items-center gap-1.5 line-clamp-1" title={job.location}>
+                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" /> 
+                    {job.location || "Location not specified"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card Footer (Status & Actions) */}
+              <div className="mt-4 pt-3 border-t border-gray-50/80 flex flex-col gap-3">
+                <div className="flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50">
+                     {job.job_status || 'Open'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-violet-500" /> Saved {job.created_at ? new Date(job.created_at).toLocaleDateString() : "Recently"}
+                  </span>
                 </div>
 
-                <div className="flex flex-col min-[450px]:flex-row items-stretch sm:items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-2">
                   <Link href={`/jobs/${job.slug || job.id}`} className="flex-1">
                     <Button variant="outline" size="sm" className="w-full rounded-xl h-10 text-xs font-bold gap-2">
-                       View Details <ArrowRight className="w-3.5 h-3.5" />
+                       Details
                     </Button>
                   </Link>
                   <Link href={`/apply/${job.slug || job.id}`} className="flex-1">
@@ -103,21 +128,6 @@ export default function SavedJobsPage() {
                       Apply Now
                     </Button>
                   </Link>
-                </div>
-              </div>
-
-              {/* Status/Time Footer */}
-              <div className="mt-5 pt-4 border-t border-gray-50 flex items-center justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                     {job.job_status || 'Open'}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3" /> Saved on {job.created_at ? new Date(job.created_at).toLocaleDateString() : "Recently"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 group/link cursor-pointer hover:text-primary transition-colors">
-                  <ExternalLink className="w-3 h-3" /> Details
                 </div>
               </div>
             </div>

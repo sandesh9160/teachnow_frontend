@@ -13,11 +13,19 @@ export function useDashboard() {
       setError(null);
       setLoading(true);
       const res = await dashboardServerFetch<any>("jobseeker/dashboard", { method: "GET" });
-      if (res?.status && res.data) {
-        setData(res.data);
+      if (res?.status) {
+        // New users may have null/empty data — treat as a valid empty state
+        setData(res.data ?? null);
       } else {
-        setData(null);
-        setError("Failed to load dashboard");
+        // "profile not found" = new user with no profile yet — show empty state, not error
+        const msg: string = res?.message ?? "";
+        const isNewUser = msg.toLowerCase().includes("not found") || msg.toLowerCase().includes("no profile");
+        if (isNewUser) {
+          setData(null); // empty state — dashboard shows zeros gracefully
+        } else {
+          setData(null);
+          setError(msg || "Failed to load dashboard");
+        }
       }
     } catch (e: unknown) {
       setData(null);

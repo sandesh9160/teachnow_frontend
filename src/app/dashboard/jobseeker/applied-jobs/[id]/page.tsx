@@ -132,12 +132,41 @@ export default function ApplicationDetailPage() {
           <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-4">
             <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest border-b border-slate-50 pb-4">Job Description</h3>
             <div 
-              className="text-slate-600 text-sm leading-relaxed whitespace-pre-line"
+              className="text-slate-600 text-sm leading-relaxed whitespace-pre-line rich-text"
               dangerouslySetInnerHTML={{ __html: job?.description }}
             />
           </div>
 
-          {/* Answers Section (Questionnaire) */}
+          {/* Candidate Info Section */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-6">
+             <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                   <User className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Application Profile</h3>
+             </div>
+             
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                {[
+                  { label: "Phone", value: application.phone || "—" },
+                  { label: "Email", value: application.email || "—" },
+                  { label: "Experience", value: application.experience ? `${application.experience} Years` : "—" },
+                  { label: "Location", value: application.location || "—" },
+                ].map((item) => (
+                  <div key={item.label} className="group">
+                    <span className="block text-[10px] uppercase font-bold text-slate-400 mb-1 group-hover:text-primary transition-colors">{item.label}</span>
+                    <p className="text-sm font-bold text-slate-700">{item.value}</p>
+                  </div>
+                ))}
+             </div>
+
+             {application.bio && (
+               <div className="pt-4 mt-4 border-t border-slate-50">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400 mb-2">Professional Summary</span>
+                  <p className="text-sm text-slate-600 leading-relaxed italic">"{application.bio}"</p>
+               </div>
+             )}
+                    {/* Answers Section (Questionnaire) */}
           {(() => {
             const answers = application.answers || application.application_answers || application.responses || [];
             if (answers.length === 0) return null;
@@ -157,7 +186,7 @@ export default function ApplicationDetailPage() {
                        <div className="space-y-1">
                           <p className="text-[10px] font-bold text-slate-400 uppercase">Question {idx + 1}</p>
                           <p className="text-sm font-bold text-slate-700 leading-relaxed">
-                            {ans.question?.question_text || ans.question_text || "Requirement Question"}
+                            {ans.question?.question || ans.question?.question_text || ans.question_text || "Requirement Question"}
                           </p>
                        </div>
                        <div className="bg-slate-50/50 rounded-xl p-5 border border-slate-100">
@@ -172,6 +201,60 @@ export default function ApplicationDetailPage() {
               </div>
             );
           })()}
+
+          {/* Background & Qualifications */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-8">
+             <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+                <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                   <GraduationCap className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Qualifications & History</h3>
+             </div>
+
+             {/* Skills */}
+             {application.skills?.length > 0 && (
+               <div className="space-y-3">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400">Skills Expertise</span>
+                  <div className="flex flex-wrap gap-2">
+                    {application.skills.map((skill: any, idx: number) => (
+                      <span key={idx} className="px-3 py-1 rounded-lg bg-slate-50 text-slate-600 text-[11px] font-bold border border-slate-100">
+                        {(typeof skill === "object" ? (skill.name || skill.title) : skill).toUpperCase()}
+                      </span>
+                    ))}
+                  </div>
+               </div>
+             )}
+
+             {/* Education */}
+             {application.educations?.length > 0 && (
+               <div className="space-y-4 pt-4 border-t border-slate-50">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400">Education History</span>
+                  <div className="space-y-3">
+                    {application.educations.map((edu: any, idx: number) => (
+                      <div key={idx} className="p-3 rounded-xl border border-slate-50 bg-slate-50/30">
+                        <p className="text-sm font-bold text-slate-800">{edu.degree} in {edu.field_of_study}</p>
+                        <p className="text-xs text-slate-500 font-medium">{edu.institution} · {edu.start_year} - {edu.end_year}</p>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+             )}
+
+             {/* Experience */}
+             {application.experiences?.length > 0 && (
+               <div className="space-y-4 pt-4 border-t border-slate-50">
+                  <span className="block text-[10px] uppercase font-bold text-slate-400">Work Experience</span>
+                  <div className="space-y-3">
+                    {application.experiences.map((exp: any, idx: number) => (
+                      <div key={idx} className="p-3 rounded-xl border border-slate-50 bg-slate-50/30">
+                        <p className="text-sm font-bold text-slate-800">{exp.job_title}</p>
+                        <p className="text-xs text-slate-500 font-medium">{exp.company_name} · {new Date(exp.start_date).getFullYear()} - {exp.end_date ? new Date(exp.end_date).getFullYear() : "Present"}</p>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+             )}
+          </div>
         </div>
 
         {/* Sidebar Info (1/3) */}
@@ -200,15 +283,26 @@ export default function ApplicationDetailPage() {
                  </div>
               </div>
 
-               <div className="flex items-center gap-3">
-                 <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-slate-400" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Resume Attached</p>
-                    <p className="text-xs font-bold text-slate-700 truncate max-w-[150px]">{application.resume?.file_name || "AI Generated Resume"}</p>
-                 </div>
-              </div>
+                <div className="flex items-center gap-3 pr-2">
+                  <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center">
+                     <FileText className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                     <p className="text-[10px] font-bold text-slate-400 uppercase">Resume Attached</p>
+                     <p className="text-xs font-bold text-slate-700 truncate">{application.resume?.file_name || application.resume?.title || "AI Generated Resume"}</p>
+                  </div>
+                  {(application.resume?.url || application.resume?.pdf_path) && (
+                    <a 
+                      href={normalizeMediaUrl(application.resume?.url || application.resume?.pdf_path)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2 py-1 rounded bg-primary/10 text-primary text-[9px] font-black uppercase hover:bg-primary/20 transition-colors"
+                    >
+                      View
+                    </a>
+                  )}
+               </div>
+
             </div>
           </div>
 

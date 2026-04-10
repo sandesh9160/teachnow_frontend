@@ -13,7 +13,7 @@ import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 
 
 const RegisterForm = () => {
-  const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
+  const [role, setRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,7 +43,7 @@ const RegisterForm = () => {
       setIsLoading(true);
       const isEmployer = role === "employer";
       const endpoint = isEmployer ? "/auth/create-employer" : "/auth/register";
-      
+
       const payload: any = isEmployer ? {
         company_name: name,
         email,
@@ -53,12 +53,10 @@ const RegisterForm = () => {
         role: role,
         captcha_token: captchaToken
       } : {
-        name: name,
+        name,
         email,
         password,
-        password_confirmation: confirmPassword,
         role: role,
-        captcha_token: captchaToken
       };
 
       const res = await fetchAPI<any>(endpoint, {
@@ -86,9 +84,9 @@ const RegisterForm = () => {
       <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
         <button
           type="button"
-          onClick={() => setRole("jobseeker")}
+          onClick={() => setRole("job_seeker")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
-            role === "jobseeker" 
+            role === "job_seeker" 
               ? "bg-white text-primary shadow-sm border border-slate-100" 
               : "text-slate-500 hover:text-slate-700 font-semibold"
           }`}
@@ -113,14 +111,16 @@ const RegisterForm = () => {
       <form onSubmit={handleRegister} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="reg-name" className="text-slate-700 font-bold ml-1">
-            {role === "jobseeker" ? "Full Name" : "Institution / Company Name"}
+            {role === "job_seeker" ? "Full Name" : "Institution / Company Name"}
           </Label>
+
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
             <Input
               id="reg-name"
-              placeholder={role === "jobseeker" ? "Enter your full name" : "e.g. Sri Chaitanya School"}
+              placeholder={role === "job_seeker" ? "Enter your full name" : "e.g. Sri Chaitanya School"}
               className="pl-12 h-12 bg-slate-50 border-slate-100 rounded-2xl focus:bg-white transition-all font-medium"
+
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}

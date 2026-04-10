@@ -163,5 +163,7 @@ export async function getRole(): Promise<DashboardRole | null> {
   const cookieStore = await cookies();
   const userData = cookieStore.get("userData");
   const user = userData ? JSON.parse(userData.value) : null;
-  return user?.user_type as DashboardRole | null;
+  if (!user?.user_type) return null;
+  // Normalize raw backend value (e.g. "jobseeker") to canonical role (e.g. "job_seeker")
+  return normalizeDashboardRole(user.user_type);
 }
