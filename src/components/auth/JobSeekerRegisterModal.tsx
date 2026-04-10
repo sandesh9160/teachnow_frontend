@@ -43,7 +43,7 @@ const JobSeekerRegisterModal = ({
           email: regEmail,
           phone: regPhone,
           password: regPassword,
-          role: "jobseeker",
+          role: "job_seeker",
         },
       });
       toast.success("Account created! Please log in.");

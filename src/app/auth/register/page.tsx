@@ -280,8 +280,8 @@ export default function RegisterPage() {
 
                 <div className="text-[11px] text-muted-foreground">
                   By signing up, you agree to our{" "}
-                  <a href="#" className={`font-medium hover:underline ${role === "jobseeker" ? "text-primary" : "text-secondary"}`}>Terms of Service</a> and{" "}
-                  <a href="#" className={`font-medium hover:underline ${role === "jobseeker" ? "text-primary" : "text-secondary"}`}>Privacy Policy</a>.
+                  <a href="#" className={`font-medium hover:underline ${role === "job_seeker" ? "text-primary" : "text-secondary"}`}>Terms of Service</a> and{" "}
+                  <a href="#" className={`font-medium hover:underline ${role === "job_seeker" ? "text-primary" : "text-secondary"}`}>Privacy Policy</a>.
                 </div>
                 <button
                   type="submit"

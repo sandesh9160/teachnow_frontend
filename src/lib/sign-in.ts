@@ -5,7 +5,7 @@ import { signIn as customSignIn } from "@/lib/auth";
 export const EmailSignInAction = async (data: {
   email: string;
   password: string;
-  role?: "jobseeker" | "employer" | "recruiter";
+  role?: "job_seeker" | "employer" | "recruiter";
 }) => {
   try {
     const result = await customSignIn({ 

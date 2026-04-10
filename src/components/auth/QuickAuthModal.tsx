@@ -35,7 +35,7 @@ export default function QuickAuthModal({
   initialMode = "login"
 }: QuickAuthModalProps) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
-  const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
+  const [role, setRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [loading, setLoading] = useState(false);
 
   // Form states
@@ -137,8 +137,8 @@ export default function QuickAuthModal({
           <div className="flex bg-slate-100/60 p-0.5 rounded-lg mb-3 border border-slate-200/40">
             <button 
               type="button"
-              onClick={() => setRole("jobseeker")}
-              className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${role === "jobseeker" ? "bg-white text-primary shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
+              onClick={() => setRole("job_seeker")}
+              className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] font-bold rounded-md transition-all duration-200 ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-slate-100" : "text-slate-500 hover:text-slate-700"}`}
             >
               <User className="h-3 w-3" />
               Job Seeker
@@ -158,11 +158,11 @@ export default function QuickAuthModal({
               <div className="grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="space-y-1">
                   <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">
-                    {role === "jobseeker" ? "Full Name" : "Institution"}
+                    {role === "job_seeker" ? "Full Name" : "Institution"}
                   </Label>
                   <div className="relative group">
                     <Input 
-                      placeholder={role === "jobseeker" ? "Full Name" : "Institution"}
+                      placeholder={role === "job_seeker" ? "Full Name" : "Institution"}
                       className="pl-3 h-10 bg-slate-50 border-slate-200/50 rounded-lg focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-medium"
                       value={regName} 
                       onChange={(e) => setRegName(e.target.value)} 

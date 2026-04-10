@@ -266,7 +266,7 @@ export interface AdminUser {
 }
 
 
-export const signIn = async (data: { email: string; password: string; role?: "jobseeker" | "employer" | "recruiter" }) => {
+export const signIn = async (data: { email: string; password: string; role?: "job_seeker" | "employer" | "recruiter" }) => {
   const cookieStore = await cookies();
 
   // Fetch CSRF cookie first to get fmg-session and XSRF-TOKEN
@@ -440,7 +440,7 @@ export const signOut = async () => {
     if (userDataStr) {
       try {
         const userData = JSON.parse(userDataStr);
-        if (userData.user_type === "jobseeker" || userData.user_type === "Jobseeker") {
+        if (userData.user_type === "job_seeker" || userData.user_type === "Jobseeker") {
           endpoint = "/jobseeker/logout";
         } else if (userData.user_type === "employer" || userData.user_type === "Employer") {
           endpoint = "/employer/logout";

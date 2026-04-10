@@ -25,7 +25,7 @@ function LoginContent() {
       const res = await EmailSignInAction({
         email,
         password,
-        role: role === "job_seeker" ? "jobseeker" : role
+        role
       });
 
       if (!res.status) {

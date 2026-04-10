@@ -13,7 +13,8 @@ import {
   CheckCircle2,
   FileText,
   User,
-  AlertCircle
+  AlertCircle,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { toast } from "sonner";
@@ -201,6 +202,7 @@ export default function ApplicationDetailPage() {
               </div>
             );
           })()}
+          </div>
 
           {/* Background & Qualifications */}
           <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-8">

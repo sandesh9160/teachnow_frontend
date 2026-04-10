@@ -13,16 +13,16 @@ export type Testimonial = {
 
 /**
  * Flexible hook for managing testimonials across different user roles
- * @param role 'jobseeker' | 'employer' | 'recruiter'
+ * @param role 'job_seeker' | 'employer' | 'recruiter'
  */
-export function useTestimonials(role: string = "jobseeker") {
+export function useTestimonials(role: string = "job_seeker") {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Normalize recruiter to employer if the API expects 'employer' for recruiters too
   // Based on your provided endpoints, 'employer/testimonials' is likely shared or specific
-  const endpointBase = role === 'jobseeker' 
+  const endpointBase = role === 'job_seeker' 
     ? 'jobseeker/testimonials' 
     : role === 'recruiter' 
       ? 'recruiter/testimonials' 
