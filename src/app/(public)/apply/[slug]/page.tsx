@@ -22,7 +22,7 @@ import {
   Clock,
   Loader2,
   Plus,
-  Star,
+  // Star,
   Bookmark,
   X,
   Eye,
@@ -194,7 +194,6 @@ export default function ApplyJobPage() {
   const [generatedPage, setGeneratedPage] = useState(1);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [resumeTab, setResumeTab] = useState<'uploaded' | 'generated'>('uploaded');
-  const [selectedTemplateName, setSelectedTemplateName] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   const handlePreviewResume = (path: string | null | undefined) => {
