@@ -144,6 +144,8 @@ api.interceptors.request.use(async (config) => {
 /* =====================================================
 GLOBAL 401 HANDLER
 ===================================================== */
+import { toast } from "sonner";
+
 // let sessionToastShown = false;
 let sessionExpired = false;
 api.interceptors.response.use(
@@ -155,12 +157,12 @@ api.interceptors.response.use(
             if (!sessionExpired) {
                 sessionExpired = true;
 
-                alert("Session expired. Please log in again.");
+                toast.error("Session expired. Please log in again.");
 
                 // Redirect after toast
                 setTimeout(() => {
                     window.location.replace("/");
-                }, 500);
+                }, 1500);
             }
         }
 

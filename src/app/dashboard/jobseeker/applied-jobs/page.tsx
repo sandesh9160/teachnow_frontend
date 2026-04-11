@@ -36,14 +36,20 @@ export default function AppliedJobsPage() {
   }, [getApplications]);
 
   const handleWithdraw = async (applicationId: string | number) => {
-    if (!confirm("Are you sure you want to withdraw this application?")) return;
-    try {
-      await withdrawApplication(applicationId);
-      toast.success("Application withdrawn.");
-      setApplications((prev) => prev.filter((a) => a.id !== applicationId));
-    } catch (error) {
-      toast.error("Failed to withdraw application.");
-    }
+    toast("Withdraw this application?", {
+      action: {
+        label: "Withdraw",
+        onClick: async () => {
+          try {
+            await withdrawApplication(applicationId);
+            toast.success("Application withdrawn.");
+            setApplications((prev) => prev.filter((a) => a.id !== applicationId));
+          } catch (error) {
+            toast.error("Failed to withdraw application.");
+          }
+        }
+      }
+    });
   };
 
   const getStatusStyles = (status: string) => {

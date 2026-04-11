@@ -111,23 +111,35 @@ export default function ResumeManagementPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    if (!confirm("Are you sure?")) return;
-    try {
-      await remove(id);
-      toast.success("Deleted.");
-    } catch {
-      toast.error("Failed to delete.");
-    }
+    toast("Delete this resume?", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await remove(id);
+            toast.success("Deleted.");
+          } catch {
+            toast.error("Failed to delete.");
+          }
+        }
+      }
+    });
   };
 
   const handleDeleteGenerated = async (id: number | string) => {
-    if (!confirm("Are you sure you want to delete this generated CV?")) return;
-    try {
-      await removeGenerated(id);
-      toast.success("Generated CV deleted.");
-    } catch {
-      toast.error("Failed to delete generated CV.");
-    }
+    toast("Delete this generated CV?", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await removeGenerated(id);
+            toast.success("Generated CV deleted.");
+          } catch {
+            toast.error("Failed to delete generated CV.");
+          }
+        }
+      }
+    });
   };
 
   if (loading && resumes.length === 0 && generatedResumes.length === 0) {
@@ -202,12 +214,12 @@ export default function ResumeManagementPage() {
             <div className="bg-white border border-slate-100 rounded-xl md:rounded-2xl p-4 md:p-8 shadow-sm">
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {templates.map((tpl) => (
-                  <div
-                    key={tpl.id}
-                    className={`group relative flex flex-col bg-white border border-slate-100 rounded-lg md:rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${selectedTemplate === tpl.id ? 'border-indigo-600 ring-4 ring-indigo-50' : 'hover:border-indigo-200 hover:shadow-lg'}`}
-                    onClick={() => setPreviewTemplate(tpl)}
-                  >
-                    <div className="aspect-[4/5] bg-slate-50/50 relative overflow-hidden flex items-center justify-center p-3 md:p-4 border-b border-slate-50">
+                    <div
+                      key={tpl.id}
+                      className={`group relative flex flex-col bg-white border border-slate-100 rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer ${selectedTemplate === tpl.id ? 'border-indigo-600 ring-4 ring-indigo-50 shadow-xl' : 'hover:border-indigo-200 hover:shadow-lg'}`}
+                      onClick={() => setPreviewTemplate(tpl)}
+                    >
+                      <div className="aspect-[4/5] bg-slate-50/20 relative overflow-hidden flex items-center justify-center p-3 md:p-4 border-b border-slate-50">
                       {(tpl.preview_image || tpl.preview_url) ? (
                         <img
                           src={normalizeMediaUrl(tpl.preview_image || tpl.preview_url || "")}
@@ -233,17 +245,17 @@ export default function ResumeManagementPage() {
                           <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-700 shrink-0" />
                         )}
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleGenerate(tpl.id);
-                        }}
-                        disabled={cvLoading}
-                        className="rounded-xl font-semibold text-[9px] md:text-[10px] w-full h-9 bg-indigo-600 text-white hover:bg-black transition-all shadow-md shadow-indigo-600/10 flex items-center justify-center gap-1.5 md:gap-2"
-                      >
-                        {cvLoading && selectedTemplate === tpl.id ? <Loader2 className="w-3 h-3 md:w-3.5 md:h-3.5 animate-spin" /> : <FileCheck className="w-3 h-3 md:w-3.5 md:h-3.5" />}
-                        Apply
-                      </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGenerate(tpl.id);
+                          }}
+                          disabled={cvLoading}
+                          className="rounded-xl font-bold text-[9px] md:text-[10px] w-full h-9 bg-indigo-600 text-white hover:bg-slate-900 transition-all shadow-md shadow-indigo-600/10 flex items-center justify-center gap-1.5 md:gap-2"
+                        >
+                          {cvLoading && selectedTemplate === tpl.id ? <Loader2 className="w-3 h-3 md:w-3.5 md:h-3.5 animate-spin" /> : <FileCheck className="w-3 h-3 md:w-3.5 md:h-3.5" />}
+                          Apply Template
+                        </button>
                     </div>
                   </div>
                 ))}
@@ -333,27 +345,25 @@ export default function ResumeManagementPage() {
                         </div>
 
                         <div className="flex items-center justify-end gap-2.5 border-t md:border-t-0 border-slate-50 pt-4 md:pt-0">
-                          {!resume.is_default && (
                             <button
                               onClick={() => handleSetDefault(resume.id)}
-                              className="h-8.5 px-5 rounded-lg font-semibold text-[11px] bg-white border border-slate-200 text-black hover:border-black transition-all active:scale-95"
+                              className="h-8.5 px-5 rounded-xl font-bold text-[11px] bg-white border border-slate-100 text-slate-800 hover:border-indigo-600 hover:text-indigo-600 transition-all active:scale-95"
                             >
-                              Set Main
+                              Set Primary
                             </button>
-                          )}
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => {
                                 if (previewUrl) window.open(normalizeMediaUrl(previewUrl), '_blank');
                                 else toast.error("Preview URL not found");
                               }}
-                              className="h-8.5 w-8.5 flex items-center justify-center bg-slate-50 text-black hover:bg-black hover:text-white rounded-lg border border-slate-100 transition-all shadow-sm"
+                              className="h-8.5 w-8.5 flex items-center justify-center bg-white text-slate-600 hover:bg-slate-900 hover:text-white rounded-xl border border-slate-100 transition-all shadow-sm"
                             >
                               <Eye className="w-4.5 h-4.5" />
                             </button>
                             <button
                               onClick={() => handleDelete(resume.id)}
-                              className="h-8.5 w-8.5 flex items-center justify-center bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg border border-rose-100 transition-all shadow-sm"
+                              className="h-8.5 w-8.5 flex items-center justify-center bg-rose-50/50 text-rose-500 hover:bg-rose-600 hover:text-white rounded-xl border border-rose-100 transition-all shadow-sm"
                             >
                               <Trash2 className="w-4.5 h-4.5" />
                             </button>
@@ -391,45 +401,45 @@ export default function ResumeManagementPage() {
             ) : generatedResumes.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {generatedResumes.map((cv: any) => (
-                  <div key={cv.id} className="bg-white rounded-xl md:rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all group shadow-sm flex flex-col relative">
-                    <div className="aspect-[4/5] bg-white relative transition-all overflow-hidden border-b border-slate-50 rounded-t-xl md:rounded-t-2xl">
-                      <div className="absolute inset-0 pointer-events-none bg-white rounded-t-xl md:rounded-t-2xl">
-                        <iframe
-                          src={`https://docs.google.com/viewer?url=${encodeURIComponent(normalizeMediaUrl(cv.pdf_path))}&embedded=true`}
-                          className="w-[300%] h-[300%] scale-[0.33] origin-top-left border-none opacity-80 group-hover:opacity-100 transition-all bg-white"
-                          title="CV Preview"
-                        />
+                    <div key={cv.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all group shadow-sm flex flex-col relative border border-slate-100">
+                      <div className="aspect-[4/5] bg-white relative transition-all overflow-hidden border-b border-slate-50 rounded-t-2xl">
+                        <div className="absolute inset-0 pointer-events-none bg-white rounded-t-2xl">
+                          <iframe
+                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(normalizeMediaUrl(cv.pdf_path))}&embedded=true`}
+                            className="w-[300%] h-[300%] scale-[0.33] origin-top-left border-none opacity-80 group-hover:opacity-100 transition-all bg-white"
+                            title="CV Preview"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-indigo-900/5 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center p-3 rounded-t-2xl">
+                          <button
+                            className="w-full h-8 md:h-9 bg-white text-slate-900 rounded-xl font-bold text-[10px] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-slate-100 hover:bg-slate-900 hover:text-white"
+                            onClick={() => window.open(normalizeMediaUrl(cv.pdf_path), '_blank')}
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </button>
+                        </div>
                       </div>
-                      <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center p-3 rounded-t-xl md:rounded-t-2xl">
-                        <button
-                          className="w-full h-8 md:h-9 bg-white text-black rounded-lg font-semibold text-[10px] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-slate-100"
-                          onClick={() => window.open(normalizeMediaUrl(cv.pdf_path), '_blank')}
-                        >
-                          <Eye className="w-3.5 h-3.5" /> View
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-3 md:p-4 flex flex-col gap-3 bg-white">
-                      <div className="flex items-start justify-between gap-1.5 min-w-0">
-                        <div className="min-w-0 flex-1 text-left">
-                          <h4 className="font-semibold text-black text-[11px] md:text-[13px] leading-tight break-words">Stable Professional CV</h4>
-                          <span className="text-[9px] font-medium text-slate-400 mt-1 block opacity-60">ID: #{cv.id}</span>
+                      <div className="p-3 md:p-4 flex flex-col gap-3 bg-white">
+                        <div className="flex items-start justify-between gap-1.5 min-w-0">
+                          <div className="min-w-0 flex-1 text-left">
+                            <h4 className="font-bold text-slate-900 text-[11px] md:text-[13px] leading-tight break-words tracking-tight">Professional Resume</h4>
+                            <span className="text-[9px] font-bold text-indigo-600/40 mt-1 block uppercase tracking-tighter">ID: #{cv.id}</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteGenerated(cv.id)}
+                            className="h-7 w-7 md:h-8 md:w-8 flex items-center justify-center text-rose-500 bg-rose-50/50 rounded-xl hover:bg-rose-600 hover:text-white transition-all shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                         <button
-                          onClick={() => handleDeleteGenerated(cv.id)}
-                          className="h-7 w-7 md:h-8 md:w-8 flex items-center justify-center text-rose-500 bg-rose-50 rounded-lg hover:bg-rose-600 hover:text-white transition-all shrink-0"
+                          className="w-full h-8 md:h-9 bg-indigo-600 text-white hover:bg-slate-900 rounded-xl font-bold text-[10px] md:text-[11px] transition-all shadow-lg shadow-indigo-600/10 active:scale-95 flex items-center justify-center gap-1.5"
+                          onClick={() => handleDownload(cv.pdf_path)}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Download className="w-3 h-3 md:w-3.5 md:h-3.5" /> Get Copy
                         </button>
                       </div>
-                      <button
-                        className="w-full h-8 md:h-9 bg-indigo-600 text-white hover:bg-black rounded-lg md:rounded-xl font-semibold text-[10px] md:text-[11px] transition-all shadow-lg shadow-indigo-600/10 active:scale-95 flex items-center justify-center gap-1.5"
-                        onClick={() => handleDownload(cv.pdf_path)}
-                      >
-                        <Download className="w-3 h-3 md:w-3.5 md:h-3.5" /> Download
-                      </button>
                     </div>
-                  </div>
                 ))}
               </div>
             ) : (
@@ -459,7 +469,7 @@ export default function ResumeManagementPage() {
               </div>
               <button
                 onClick={() => setPreviewTemplate(null)}
-                className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-black hover:text-white flex items-center justify-center transition-all text-black"
+                className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-900 hover:text-white flex items-center justify-center transition-all text-slate-900"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -514,7 +524,7 @@ export default function ResumeManagementPage() {
             {/* Sidebar Action */}
             <div className="p-6 border-t border-slate-50 bg-white sticky bottom-0">
               <button
-                className="w-full h-12 bg-indigo-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2 hover:bg-black"
+                className="w-full h-12 bg-indigo-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-indigo-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 hover:bg-slate-900"
                 onClick={() => {
                   handleGenerate(previewTemplate.id);
                   setPreviewTemplate(null);

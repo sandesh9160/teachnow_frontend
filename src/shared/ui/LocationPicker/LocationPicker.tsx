@@ -176,6 +176,7 @@ import {
 } from "@react-google-maps/api";
 import { MapPin, Search, LocateFixed } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type Library = "places" | "drawing" | "geometry" | "visualization";
 const libraries: Library[] = ["places"];
@@ -244,7 +245,7 @@ export function LocationPicker({
         );
         map?.setZoom(16);
       },
-      () => alert("Enable location access")
+      () => toast.error("Please enable location access in your browser settings.")
     );
   };
 

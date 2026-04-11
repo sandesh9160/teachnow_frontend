@@ -17,13 +17,19 @@ export default function SavedJobsPage() {
   }, [fetchBookmarks]);
 
   const handleRemove = async (jobId: string | number) => {
-    if (!confirm("Remove this job from your saved list?")) return;
-    try {
-      await toggleBookmark(jobId);
-      toast.success("Job removed from saved list.");
-    } catch (error) {
-      toast.error("Failed to remove saved job.");
-    }
+    toast("Remove this job from your saved list?", {
+      action: {
+        label: "Remove",
+        onClick: async () => {
+          try {
+            await toggleBookmark(jobId);
+            toast.success("Job removed from saved list.");
+          } catch (error) {
+            toast.error("Failed to remove saved job.");
+          }
+        },
+      },
+    });
   };
 
   const filteredBookmarks = bookmarks.filter((job: any) => 

@@ -20,6 +20,7 @@ import Image from "next/image";
 import { EmployerProfile } from "@/types/employer";
 import { cn } from "@/lib/utils";
 import { LocationPicker } from "@/shared/ui/LocationPicker/LocationPicker";
+import { toast } from "sonner";
 
 type TabType = "identity" | "contact" | "location";
 
@@ -97,13 +98,13 @@ export default function CompanyProfileClient({
       });
 
       if (result.status === true) {
-        alert("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
         router.refresh();
       } else {
-        alert(result.message || "Failed to update profile.");
+        toast.error(result.message || "Failed to update profile.");
       }
     } catch (error) {
-      alert("An unexpected error occurred.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }

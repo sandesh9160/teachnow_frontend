@@ -411,14 +411,19 @@ export default function ApplicationDetailPage() {
              
              <button 
                 onClick={() => {
-                  if (confirm("Are you sure you want to withdraw this application?")) {
-                    withdrawApplication(id as string)
-                      .then(() => {
-                        toast.success("Application Withdrawn");
-                        router.push('/dashboard/jobseeker/applied-jobs');
-                      })
-                      .catch(() => toast.error("Failed to withdraw application"));
-                  }
+                  toast("Withdraw this application?", {
+                    action: {
+                      label: "Withdraw",
+                      onClick: () => {
+                        withdrawApplication(id as string)
+                          .then(() => {
+                            toast.success("Application Withdrawn");
+                            router.push('/dashboard/jobseeker/applied-jobs');
+                          })
+                          .catch(() => toast.error("Failed to withdraw application"));
+                      }
+                    }
+                  });
                 }}
                 className="w-full h-11 bg-rose-50 border border-rose-100 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-all active:scale-95 shadow-sm"
              >

@@ -79,13 +79,19 @@ export default function RecruiterTestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    if (!confirm("Are you sure?")) return;
-    try {
-      await deleteTestimonial(id);
-      toast.success("Deleted.");
-    } catch (error) {
-      toast.error("Failed to delete.");
-    }
+    toast("Remove this feedback?", {
+      action: {
+        label: "Remove",
+        onClick: async () => {
+          try {
+            await deleteTestimonial(id);
+            toast.success("Deleted.");
+          } catch (error) {
+            toast.error("Failed to delete.");
+          }
+        },
+      },
+    });
   };
 
   return (

@@ -75,23 +75,30 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure?")) return;
+    toast("Remove this team member?", {
+      action: {
+        label: "Remove",
+        onClick: async () => {
+          try {
+            const res = await dashboardServerFetch(`employer/users/${id}`, {
+              method: "DELETE",
+            });
 
-    try {
-      const res = await dashboardServerFetch(`employer/users/${id}`, {
-        method: "DELETE",
-      });
-
-      if (res.status === true) {
-        toast.success("Recruiter removed");
-        setUsers(users.filter(u => u.id !== id));
-      } else {
-        toast.error(res.message || "Failed to delete.");
-      }
-    } catch (error) {
-      toast.error("Error occurs.");
-    }
+            if (res.status === true) {
+              toast.success("Recruiter removed");
+              setUsers(users.filter(u => u.id !== id));
+            } else {
+              toast.error(res.message || "Failed to delete.");
+            }
+          } catch (error) {
+            toast.error("Error occurred while deleting.");
+          }
+        },
+      },
+    });
   };
+
+
 
   const filteredUsers = users.filter(u => 
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 

@@ -23,6 +23,8 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
+import { toast } from "sonner";
+
 interface RecruiterJobViewClientProps {
   job: any;
   applications?: any[];
@@ -35,32 +37,39 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
   const questions = job.questions || [];
 
   const handleAction = async (type: 'filled' | 'delete') => {
-    if (!confirm(`Are you sure you want to ${type === 'filled' ? 'mark this job as filled' : 'permanently delete this job'}?`)) {
-      return;
-    }
-
-    setLoadingAction(type);
-    try {
-      const endpoint = type === 'filled' 
-        ? `recruiter/jobs/${job.id}/filled` 
-        : `recruiter/jobs/delete/${job.id}`;
-      
-      const res = await dashboardServerFetch(endpoint, { 
-        method: type === 'filled' ? "PUT" : "POST",
-        data: {}
-      });
-      
-      if (res.status === true) {
-        alert(res.message || `Success: Job ${type === 'filled' ? 'closed' : 'deleted'}.`);
-        window.location.href = `${basePath}/jobs`;
-      } else {
-        alert(res.message || "Something went wrong.");
+    const actionLabel = type === 'filled' ? 'mark this job as filled' : 'permanently delete this job';
+    
+    toast(`Are you sure you want to ${actionLabel}?`, {
+      action: {
+        label: type === 'filled' ? 'Confirm Filled' : 'Delete',
+        onClick: async () => {
+          setLoadingAction(type);
+          try {
+            const endpoint = type === 'filled' 
+              ? `recruiter/jobs/${job.id}/filled` 
+              : `recruiter/jobs/delete/${job.id}`;
+            
+            const res = await dashboardServerFetch(endpoint, { 
+              method: type === 'filled' ? "PUT" : "POST",
+              data: {}
+            });
+            
+            if (res.status === true) {
+              toast.success(res.message || `Job ${type === 'filled' ? 'closed' : 'deleted'} successfully.`);
+              setTimeout(() => {
+                window.location.href = `${basePath}/jobs`;
+              }, 1500);
+            } else {
+              toast.error(res.message || "Something went wrong.");
+            }
+          } catch (error) {
+            toast.error("An unexpected error occurred.");
+          } finally {
+            setLoadingAction(null);
+          }
+        }
       }
-    } catch (error) {
-      alert("An unexpected error occurred.");
-    } finally {
-      setLoadingAction(null);
-    }
+    });
   };
 
   const DetailItem = ({ label, value, icon: Icon, colorClass }: any) => (

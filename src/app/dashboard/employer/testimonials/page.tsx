@@ -98,13 +98,19 @@ export default function EmployerTestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    if (!confirm("Are you sure you want to remove this testimonial?")) return;
-    try {
-      await deleteTestimonial(id);
-      toast.success("Deleted successfully.");
-    } catch (error) {
-      toast.error("Failed to delete.");
-    }
+    toast("Remove this testimonial?", {
+      action: {
+        label: "Remove",
+        onClick: async () => {
+          try {
+            await deleteTestimonial(id);
+            toast.success("Deleted successfully.");
+          } catch (error) {
+            toast.error("Failed to delete.");
+          }
+        },
+      },
+    });
   };
 
   return (

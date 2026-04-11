@@ -87,35 +87,40 @@ export default function JobsClient({
   );
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this job listing? This action cannot be undone.")) return;
-    
-    setDeletingId(id);
-    try {
-      const res = await dashboardServerFetch<any>(`employer/jobs/delete/${id}`, {
-        method: "DELETE"
-      });
+    toast("Delete this job listing? This action cannot be undone.", {
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          setDeletingId(id);
+          try {
+            const res = await dashboardServerFetch<any>(`employer/jobs/delete/${id}`, {
+              method: "DELETE"
+            });
 
-      if (res?.status) {
-        toast.success("Job deleted successfully");
-        router.refresh();
-      } else {
-        toast.error(res?.message || "Failed to delete job");
-        if (res?.message?.includes("Method Not Allowed")) {
-           const retryRes = await dashboardServerFetch<any>(`employer/jobs/delete/${id}`, {
-             method: "POST"
-           });
-           if (retryRes?.status) {
-             toast.success("Job deleted successfully");
-             router.refresh();
-             return;
-           }
+            if (res?.status) {
+              toast.success("Job deleted successfully");
+              router.refresh();
+            } else {
+              toast.error(res?.message || "Failed to delete job");
+              if (res?.message?.includes("Method Not Allowed")) {
+                const retryRes = await dashboardServerFetch<any>(`employer/jobs/delete/${id}`, {
+                  method: "POST"
+                });
+                if (retryRes?.status) {
+                  toast.success("Job deleted successfully");
+                  router.refresh();
+                  return;
+                }
+              }
+            }
+          } catch (e) {
+            toast.error("An unexpected error occurred");
+          } finally {
+            setDeletingId(null);
+          }
         }
       }
-    } catch (e) {
-      toast.error("An unexpected error occurred");
-    } finally {
-      setDeletingId(null);
-    }
+    });
   };
 
   return (

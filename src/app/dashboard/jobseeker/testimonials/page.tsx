@@ -79,13 +79,19 @@ export default function TestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    if (!confirm("Remove this entry?")) return;
-    try {
-      await deleteTestimonial(id);
-      toast.success("Removed.");
-    } catch (error) {
-       toast.error("Failed to delete.");
-    }
+    toast("Remove this entry?", {
+      action: {
+        label: "Remove",
+        onClick: async () => {
+          try {
+            await deleteTestimonial(id);
+            toast.success("Removed.");
+          } catch (error) {
+            toast.error("Failed to delete.");
+          }
+        },
+      },
+    });
   };
 
   return (
@@ -101,9 +107,9 @@ export default function TestimonialsPage() {
         <Button 
           variant={showForm ? "outline" : "default"} 
           onClick={() => { setShowForm(!showForm); if (!showForm) setEditingId(null); }}
-          className="rounded font-bold h-9 px-5 active:scale-95 transition-all text-xs"
+          className="rounded-xl font-bold h-9 px-5 active:scale-95 transition-all text-xs"
         >
-          {showForm ? <><X className="w-3.5 h-3.5 mr-1.5" /> Cancel</> : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Add New</>}
+          {showForm ? <><X className="w-3.5 h-3.5 mr-1.5" /> Cancel Build</> : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Record Recognition</>}
         </Button>
       </div>
 
@@ -193,7 +199,7 @@ export default function TestimonialsPage() {
       ) : testimonials.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {testimonials.map((t) => (
-            <div key={t.id} className="flex flex-col bg-white border border-slate-200 rounded-lg shadow-none overflow-hidden hover:border-primary/20 group relative transition-all duration-300">
+            <div key={t.id} className="flex flex-col bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden hover:border-indigo-200 group relative transition-all duration-300">
                <div className="px-3 py-2 flex items-center justify-between border-b border-slate-50 bg-slate-50/20">
                  <div className="flex gap-0.5">
                    {Array.from({ length: 5 }).map((_, i) => (
@@ -210,13 +216,13 @@ export default function TestimonialsPage() {
                   <div className="flex items-center gap-0.5">
                     <button 
                       onClick={() => handleEdit(t)}
-                      className="p-1 text-blue-500 hover:bg-blue-50 rounded transition-all"
+                      className="p-1.5 text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-all"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button 
                       onClick={() => handleDelete(t.id)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded transition-all"
+                      className="p-1.5 text-rose-500 hover:bg-rose-50/50 rounded-lg transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

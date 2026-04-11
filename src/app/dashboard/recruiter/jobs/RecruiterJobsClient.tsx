@@ -20,6 +20,9 @@ import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
 interface Job {
   id: number;
@@ -64,10 +67,40 @@ export default function RecruiterJobsClient({
   jobs: Job[];
   totalJobs: number;
 }) {
+  const router = useRouter();
   const userRole = "recruiter";
   const basePath = `/dashboard/${userRole}`;
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<'Active' | 'Pending' | 'Expired' | 'Featured'>('Active');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDelete = async (id: number) => {
+    toast("Delete this job listing?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          setDeletingId(id);
+          try {
+            const res = await dashboardServerFetch<any>(`recruiter/jobs/delete/${id}`, {
+              method: "POST"
+            });
+
+            if (res?.status) {
+              toast.success("Job deleted successfully");
+              router.refresh();
+            } else {
+              toast.error(res?.message || "Failed to delete job");
+            }
+          } catch (e) {
+            toast.error("An unexpected error occurred");
+          } finally {
+            setDeletingId(null);
+          }
+        }
+      }
+    });
+  };
   
   const now = new Date();
 
@@ -232,8 +265,13 @@ export default function RecruiterJobsClient({
                            <Edit3 className="w-3.5 h-3.5 mr-1.5" /> Edit
                         </Button>
                      </Link>
-                     <Button variant="ghost" className="h-8 px-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
-                        <Trash2 className="w-4 h-4" />
+                     <Button 
+                       onClick={() => handleDelete(job.id)}
+                       disabled={deletingId === job.id}
+                       variant="ghost" 
+                       className="h-8 px-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                     >
+                        {deletingId === job.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                      </Button>
                   </div>
                </div>

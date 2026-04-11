@@ -340,7 +340,15 @@ export default function ProfileFormClient({
   };
 
   const handleEduDelete = (id: number | string) => {
-    setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
+    toast("Remove this education entry?", {
+      action: {
+        label: "Remove",
+        onClick: () => {
+          setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
+          toast.success("Education marked for removal. Save profile to confirm.");
+        }
+      }
+    });
   };
 
   const handleExpSubmit = async (e: React.FormEvent) => {
@@ -377,7 +385,15 @@ export default function ProfileFormClient({
   };
 
   const handleExpDelete = (id: number | string) => {
-    setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
+    toast("Remove this experience entry?", {
+      action: {
+        label: "Remove",
+        onClick: () => {
+          setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
+          toast.success("Experience marked for removal. Save profile to confirm.");
+        }
+      }
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

@@ -150,27 +150,33 @@ export default function PostJobClient({
   };
 
   const handleRepublish = async () => {
-    if (!confirm("Are you sure you want to republish this job? It will be active for another 30 days.")) return;
-    
-    setLoading(true);
-    try {
-      const result = await dashboardServerFetch(`employer/jobs/${job?.id}/republish`, {
-        method: "PUT",
-      });
+    toast("Republish this job?", {
+      description: "It will be active for another 30 days.",
+      action: {
+        label: "Republish",
+        onClick: async () => {
+          setLoading(true);
+          try {
+            const result = await dashboardServerFetch(`employer/jobs/${job?.id}/republish`, {
+              method: "PUT",
+            });
 
-      if (result.status === true) {
-        toast.success("Job republished successfully!");
-        setTimeout(() => {
-          window.location.reload();
-        }, 1200);
-      } else {
-        toast.error(result.message || "Failed to republish job.");
+            if (result.status === true) {
+              toast.success("Job republished successfully!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 1200);
+            } else {
+              toast.error(result.message || "Failed to republish job.");
+            }
+          } catch (error) {
+            toast.error("An unexpected error occurred while republishing.");
+          } finally {
+            setLoading(false);
+          }
+        }
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred while republishing.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const isExpired = isEdit && (

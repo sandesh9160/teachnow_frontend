@@ -16,6 +16,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const Toggle = ({ active, onToggle }: { active: boolean, onToggle: () => void }) => (
   <button 
@@ -56,7 +57,7 @@ export default function SettingsClient() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      alert("Notification preferences updated!");
+      toast.success("Notification preferences updated!");
     }, 1000);
   };
 
@@ -64,7 +65,7 @@ export default function SettingsClient() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      alert("Account details updated!");
+      toast.success("Account details updated!");
     }, 1000);
   };
 
@@ -190,6 +191,15 @@ export default function SettingsClient() {
                  variant="destructive" 
                  size="sm" 
                  className="h-9 px-6 rounded-lg text-[11px] font-medium shadow-sm shrink-0"
+                 onClick={() => {
+                   toast("Are you absolutely sure?", {
+                     description: "This will permanently delete your employer account.",
+                     action: {
+                       label: "Terminate",
+                       onClick: () => toast.error("Account termination requires administrative approval.")
+                     }
+                   })
+                 }}
               >
                  <Trash2 className="w-3.5 h-3.5 mr-2" />
                  Terminate Account
