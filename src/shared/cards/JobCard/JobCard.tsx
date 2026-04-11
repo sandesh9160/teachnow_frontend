@@ -134,6 +134,11 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                {type}
             </span>
+            {tags && tags.map((tag, idx) => (
+              <span key={idx} className="bg-slate-50 text-slate-500 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-100 uppercase tracking-tight">
+                {tag}
+              </span>
+            ))}
             <span className="flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500 border border-slate-200">
               <Clock3 className="h-3 w-3" />
               {formatTimeAgo(posted)}

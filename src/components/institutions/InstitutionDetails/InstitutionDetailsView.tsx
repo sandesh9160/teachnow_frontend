@@ -136,7 +136,7 @@ export default function InstitutionDetailsView({
                       return `${fmt(min)} - ${fmt(max)}`;
                     })()}
                     tags={[job.job_type, `${job.experience_required}y Exp`]}
-                    posted={job.created_at}
+                    posted={job.created_at || new Date().toISOString()}
                     slug={job.slug}
                     logo={company.company_logo}
                   />

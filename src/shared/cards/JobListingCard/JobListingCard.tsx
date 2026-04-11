@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useClientSession } from "@/hooks/useClientSession";
 import { toast } from "sonner";
 import QuickAuthModal from "@/components/auth/QuickAuthModal";
+import { formatTimeAgo } from "@/lib/utils";
 
 export interface JobData {
   id: string | number;
