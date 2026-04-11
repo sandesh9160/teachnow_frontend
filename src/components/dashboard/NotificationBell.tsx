@@ -39,45 +39,39 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50">
-          <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-white sticky top-0">
-            <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-tight">Activity Log</h3>
+        <div className="fixed inset-x-4 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-3 sm:w-80 md:w-96 bg-white rounded-2xl shadow-2xl shadow-slate-200/60 border-2 border-slate-300 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-50">
+          <div className="px-4 py-3 border-b-2 border-slate-200 flex items-center justify-between bg-white sticky top-0">
+            <h3 className="text-[11px] font-bold text-indigo-900">Updates</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead()}
                 className="text-[10px] font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
               >
                 <CheckCircle2 className="w-3 h-3" />
-                Clear All
+                Read All
               </button>
             )}
           </div>
 
-          <div className="max-h-[380px] overflow-y-auto custom-scrollbar p-1.5 ">
+          <div className="max-h-[320px] sm:max-h-[380px] overflow-y-auto custom-scrollbar p-1.5 ">
             {loading && notifications.length === 0 ? (
-              <div className="py-10 flex flex-col items-center justify-center text-slate-400 gap-2">
-                <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p className="text-[10px] font-medium">Syncing...</p>
+              <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
+                <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
               </div>
             ) : notifications.length === 0 ? (
-              <div className="py-10 flex flex-col items-center justify-center text-slate-400 gap-2">
-                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center">
-                  <Inbox className="w-5 h-5 text-slate-200" />
-                </div>
-                <div className="text-center">
-                  <p className="text-xs font-bold text-slate-600">All clear</p>
-                  <p className="text-[10px] opacity-60">No new alerts</p>
-                </div>
+              <div className="py-12 flex flex-col items-center justify-center text-slate-300 gap-2">
+                <Inbox className="w-8 h-8 opacity-20" />
+                <p className="text-[10px] font-bold tracking-wide">No Alerts</p>
               </div>
             ) : (
               notifications.map((notification) => {
                 const typeColorMap: Record<string, string> = {
-                  job_applied: "border-indigo-100 bg-indigo-50/30",
-                  new_applicant: "border-indigo-100 bg-indigo-50/30",
-                  job_deleted: "border-rose-100 bg-rose-50/30",
-                  job_created: "border-emerald-100 bg-emerald-50/30",
-                  subscription: "border-amber-100 bg-amber-50/30",
-                  featured: "border-amber-100 bg-amber-50/30",
+                  job_applied: "border-indigo-100 bg-indigo-50/20",
+                  new_applicant: "border-indigo-100 bg-indigo-50/20",
+                  job_deleted: "border-rose-100 bg-rose-50/20",
+                  job_created: "border-emerald-100 bg-emerald-50/20",
+                  subscription: "border-amber-100 bg-amber-50/20",
+                  featured: "border-amber-100 bg-amber-50/20",
                 };
                 const accentColorMap: Record<string, string> = {
                   job_applied: "bg-indigo-500",
@@ -93,32 +87,32 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
                 return (
                   <div
                     key={notification.id}
-                    className={`flex flex-col gap-1 px-4 py-3 rounded-xl border transition-all cursor-pointer relative shadow-sm mb-2 last:mb-0 ${
+                    className={`flex flex-col gap-0.5 px-3.5 py-2.5 rounded-xl border transition-all cursor-pointer relative shadow-sm mb-1.5 last:mb-0 ${
                       !notification.is_read 
-                        ? (notification.type === 'job_deleted' ? 'bg-rose-50/60 border-rose-200 shadow-rose-500/5' : 
-                           notification.type === 'job_created' ? 'bg-emerald-50/60 border-emerald-200 shadow-emerald-500/5' :
-                           'bg-primary/[0.04] border-primary/20 shadow-primary/5')
+                        ? (notification.type === 'job_deleted' ? 'bg-rose-50/40 border-rose-200/50' : 
+                           notification.type === 'job_created' ? 'bg-emerald-50/40 border-emerald-200/50' :
+                           'bg-primary/[0.03] border-primary/10')
                         : `hover:border-slate-200 ${typeStyle}`
                     }`}
                     onClick={() => !notification.is_read && markAsRead(notification.id)}
                   >
-                    <div className="flex items-center justify-between gap-2 overflow-hidden mb-0.5">
-                      <span className={`text-[12px] font-bold leading-tight truncate ${
-                        !notification.is_read ? "text-slate-900" : "text-slate-600"
+                    <div className="flex items-center justify-between gap-2 overflow-hidden">
+                      <span className={`text-[11px] font-bold leading-tight truncate ${
+                        !notification.is_read ? "text-indigo-900" : "text-slate-600"
                       }`}>
                         {notification.title}
                       </span>
-                      <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap bg-white/60 px-1.5 py-0.5 rounded-md border border-slate-100 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                      <span className="text-[8px] font-bold text-slate-500 whitespace-nowrap">
                         {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className={`text-[11px] leading-snug line-clamp-1 ${
-                      !notification.is_read ? "text-slate-700 font-semibold" : "text-slate-500"
+                    <p className={`text-[10px] leading-snug line-clamp-2 ${
+                      !notification.is_read ? "text-slate-700 font-medium" : "text-slate-600"
                     }`}>
                       {notification.message}
                     </p>
                     {!notification.is_read && (
-                      <span className={`absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full shadow-sm ${accentColor}`} />
+                      <span className={`absolute left-1 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full ${accentColor}`} />
                     )}
                   </div>
                 );
@@ -128,10 +122,10 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
 
           <Link
             href={`/dashboard/${roleSlug}/notifications`}
-            className="block py-3 text-center text-[11px] font-bold text-slate-500 hover:text-primary hover:bg-slate-50 border-t border-slate-50 transition-all uppercase tracking-wide"
+            className="block py-2.5 text-center text-[10px] font-extrabold text-slate-500 hover:text-primary hover:bg-slate-50 border-t-2 border-slate-200 transition-all tracking-wide"
             onClick={() => setIsOpen(false)}
           >
-            View all notifications
+            All Activity
           </Link>
         </div>
       )}

@@ -7,11 +7,13 @@ import { useEducation } from "@/hooks/useEducation";
 import { useExperience } from "@/hooks/useExperience";
 import type { EducationPayload, EducationRecord } from "@/types/education";
 import type { ExperiencePayload, ExperienceRecord } from "@/types/experience";
-import { Loader2, User, Mail, Phone, MapPin, Briefcase, GraduationCap, Plus, Camera, XCircle, ShieldCheck, Trash2, Edit2, Calendar, Globe, Clock, Tag, CheckSquare, Square, X } from "lucide-react";
+import { Loader2, User, Mail, Phone, MapPin, Briefcase, GraduationCap, Plus, Camera, XCircle, ShieldCheck, Trash2, Edit2, Calendar, Globe, Clock, Tag, CheckSquare, Square, X, ChevronRight } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
 import { toast } from "sonner";
+import { DatePicker } from "@/shared/ui/DatePicker/DatePicker";
+import { format, parseISO } from "date-fns";
 
 function toEducationPayload(form: {
   institution: string;
@@ -161,8 +163,13 @@ export default function ProfileFormClient({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("File is too large. Please select an image under 2MB.");
+        return;
+      }
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
+      toast.info("Profile photo updated locally. Click 'Update Profile' to save.");
     }
   };
 
@@ -174,6 +181,58 @@ export default function ProfileFormClient({
   };
 
   const [skillInput, setSkillInput] = useState("");
+  const [skillSuggestions, setSkillSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchingSkills, setIsSearchingSkills] = useState(false);
+
+  // Debounced skills search
+  useEffect(() => {
+    if (!skillInput.trim()) {
+      setSkillSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearchingSkills(true);
+        const { fetchAPI } = await import("@/services/api/client");
+        const res = await fetchAPI<any>(`/open/skills/search?q=${encodeURIComponent(skillInput)}`).catch(() => null);
+        
+        const term = skillInput.toLowerCase().trim();
+        
+        if (res?.data && Array.isArray(res.data)) {
+          const apiResults = res.data;
+          const localMatches = availableSkills.filter(s => 
+            s.name.toLowerCase().startsWith(term) &&
+            !apiResults.some((apiS: any) => apiS.name.toLowerCase() === s.name.toLowerCase())
+          );
+          
+          const combined = [...apiResults, ...localMatches].sort((a, b) => 
+            a.name.localeCompare(b.name)
+          );
+
+          setSkillSuggestions(combined.slice(0, 10));
+        } else {
+          const filtered = availableSkills
+            .filter(s => s.name.toLowerCase().startsWith(term))
+            .sort((a, b) => a.name.localeCompare(b.name));
+          setSkillSuggestions(filtered.slice(0, 10));
+        }
+        setShowSuggestions(true);
+      } catch (err) {
+        const filtered = availableSkills.filter(s => 
+          s.name.toLowerCase().includes(skillInput.toLowerCase())
+        );
+        setSkillSuggestions(filtered.slice(0, 10));
+        setShowSuggestions(true);
+      } finally {
+        setIsSearchingSkills(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [skillInput, availableSkills]);
   useEffect(() => {
     let cancelled = false;
     async function loadData() {
@@ -220,14 +279,14 @@ export default function ProfileFormClient({
     });
   };
 
-  const handleAddCustomSkill = (e?: React.FormEvent) => {
+  const handleAddCustomSkill = (e?: React.FormEvent, customVal?: string) => {
     e?.preventDefault();
-    const val = skillInput.trim();
+    const val = customVal || skillInput.trim();
     if (!val) return;
 
-    // Check if already exists
+    // Check if already exists in selected skills
     const exists = profileData.skills.some((s: any) =>
-      String(s.id || s).toLowerCase().trim() === val.toLowerCase()
+      String(s.name || s).toLowerCase().trim() === val.toLowerCase().trim()
     );
 
     if (!exists) {
@@ -236,13 +295,14 @@ export default function ProfileFormClient({
         skills: [...prev.skills, val]
       }));
 
-      // Also add to availableSkills locally so it shows up in the grid if it's not there
+      // Also add to availableSkills locally so it shows up in the grid
       const inAvailable = availableSkills.some(s => s.name.toLowerCase() === val.toLowerCase());
       if (!inAvailable) {
-        setAvailableSkills(prev => [...prev, { id: val, name: val }]);
+        setAvailableSkills(prev => [...prev, { id: val, name: val, is_custom: 1 }]);
       }
     }
     setSkillInput("");
+    setShowSuggestions(false);
   };
 
   const handleEduSubmit = async (e: React.FormEvent) => {
@@ -372,8 +432,8 @@ export default function ProfileFormClient({
         return; // Abort saving edu/exp if profile failed
       }
 
-      // If successful, update states
-      toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!");
+      // If successful, show success toast from backend message if available
+      toast.success(profileResult.message || (isNew ? "Profile created successfully!" : "Profile updated successfully!"));
       if (isNew) setIsNew(false);
 
       const newPhoto = profileResult?.data?.profile?.profile_photo || profileResult?.data?.profile_photo || profileResult?.profile_photo;
@@ -414,7 +474,20 @@ export default function ProfileFormClient({
       // Check if any sync failed
       const hasSyncErrors = [...eduResults, ...expResults].some(r => r && (r as any).status === false);
       if (hasSyncErrors) {
-        toast.error("Profile saved, but some education or experience records failed to sync. Please check them.");
+        // Collect server error messages
+        const errorMsgs = [...eduResults, ...expResults]
+          .filter(r => r && (r as any).status === false)
+          .map(r => (r as any).message || "Sync failed")
+          .join(", ");
+        toast.error(`Warning: ${errorMsgs}`);
+      } else {
+        // Check if any significant changes were made to edu/exp and they all succeeded
+        const wasEduChanged = localEduList.some((e: any) => e.is_new || e.is_dirty || e.is_deleted);
+        const wasExpChanged = localExpList.some((e: any) => e.is_new || e.is_dirty || e.is_deleted);
+        
+        if (wasEduChanged || wasExpChanged) {
+           toast.success("Additional details synced successfully.");
+        }
       }
 
       router.refresh();
@@ -438,21 +511,22 @@ export default function ProfileFormClient({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12 px-4 md:px-0">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-gray-900 tracking-tight">My Profile</h1>
-          <p className="text-gray-600 mt-1 text-sm font-medium">Manage your professional identity and career preferences.</p>
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-800 tracking-tight leading-tight">My Profile</h1>
+          <p className="text-slate-600 mt-1 text-xs md:text-sm font-medium opacity-90">Manage your professional identity and career preferences.</p>
         </div>
-        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
+        <div className="flex items-center gap-2 text-[11px] text-indigo-600 font-bold bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100/50">
+          <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
           Sync Status: LIVE
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-linear-to-r from-primary/5 via-primary/2 to-transparent p-4 md:p-6 border-b border-gray-100 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+        <div className="bg-linear-to-r from-indigo-50/5 via-indigo-50/2 to-transparent p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row items-center gap-4 md:gap-6">
           <div className="relative group">
             <div
-              className="w-24 h-24 rounded-2xl bg-white border-2 border-white shadow-xl overflow-hidden relative group cursor-pointer"
+              className="w-20 h-20 rounded-2xl bg-white border-2 border-white shadow-lg overflow-hidden relative group cursor-pointer"
               onClick={() => document.getElementById("photo-upload")?.click()}
             >
               {photoPreview || profileData.profile_photo ? (
@@ -462,12 +536,12 @@ export default function ProfileFormClient({
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               ) : (
-                <div className="w-full h-full bg-primary flex items-center justify-center text-4xl font-bold text-white uppercase">
+                <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-3xl font-bold text-white uppercase">
                   {profileData.name?.charAt(0) || "U"}
                 </div>
               )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="w-6 h-6 text-white" />
+                <Camera className="w-5 h-5 text-white" />
               </div>
             </div>
             <input
@@ -483,25 +557,30 @@ export default function ProfileFormClient({
                 onClick={(e) => { e.stopPropagation(); setPhotoFile(null); setPhotoPreview(null); }}
                 className="absolute -top-1 -right-1 bg-white p-1 rounded-full shadow-md border border-gray-100 text-red-500 hover:text-red-600 transition-colors"
               >
-                <XCircle className="w-4 h-4" />
+                <XCircle className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
           <div className="text-center md:text-left space-y-0.5">
-            <h2 className="text-xl font-bold text-gray-900 tracking-tight">{profileData.name || "Add your name"}</h2>
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 text-gray-500 font-medium text-sm">
-              <span className="flex items-center gap-1.5 text-primary/80"><Briefcase className="w-3.5 h-3.5" /> {profileData.title || "Professional Profile"}</span>
-              <span className="w-1 h-1 rounded-full bg-gray-300 hidden md:block"></span>
-              <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /> {profileData.location || "Location not set"}</span>
+            <h2 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">{profileData.name || "Add your name"}</h2>
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 text-slate-500 font-semibold text-[11px] md:text-xs">
+              <span className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/30">
+                <Briefcase className="w-3.5 h-3.5" /> {profileData.title || "Professional Profile"}
+              </span>
+              <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" /> {profileData.location || "Location not set"}
+              </span>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 md:p-8 space-y-8">
+        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6 bg-white">
           <section className="space-y-4">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
-              <User className="w-4 h-4 text-primary/60" />
-              <h3 className="text-sm font-bold text-gray-800">Personal Information</h3>
+            <div className="flex items-center gap-2 pb-2 border-b-2 border-slate-50">
+              <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-indigo-600" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800">Personal Information</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
@@ -556,27 +635,23 @@ export default function ProfileFormClient({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="dob" className="text-xs text-gray-500">Date of Birth</Label>
-                <div className="relative">
-                  <Input
-                    id="dob"
-                    name="dob"
-                    type="date"
-                    value={profileData.dob}
-                    onChange={handleChange}
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    suppressHydrationWarning
-                  />
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
+                <Label htmlFor="dob" className="text-xs font-bold text-slate-500">Date of Birth</Label>
+                <DatePicker 
+                  date={profileData.dob ? parseISO(profileData.dob) : undefined}
+                  setDate={(d) => setProfileData({...profileData, dob: d ? format(d, 'yyyy-MM-dd') : ""})}
+                  placeholder="Select your birth date"
+                  className="rounded-xl border-slate-200 bg-slate-50/10"
+                />
               </div>
             </div>
           </section>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-50">
-              <Briefcase className="w-4 h-4 text-primary/60" />
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Professional Details</h3>
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 pb-3 border-b-2 border-slate-100">
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <Briefcase className="w-4 h-4 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">Professional Details</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
@@ -677,34 +752,87 @@ export default function ProfileFormClient({
           </section>
 
           <section className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b-2 border-slate-100">
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-primary" />
-                  <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Skills & Expertise</h2>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <Tag className="w-4 h-4 text-indigo-600" />
+                  </div>
+                  <h2 className="text-lg font-bold text-slate-800">Skills & Expertise</h2>
                 </div>
-                <p className="text-[10px] text-slate-400 font-medium ml-6">Add skills to appear in more relevant search results.</p>
+                <p className="text-[11px] text-slate-500 font-medium ml-11">Add skills to appear in more relevant search results.</p>
               </div>
-              <div className="relative flex items-center gap-2 max-w-xs w-full">
-                <Input
-                  placeholder="Type a skill and press Enter"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddCustomSkill();
-                    }
-                  }}
-                  className="h-8 text-xs rounded-lg pr-8"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddCustomSkill}
-                  className="absolute right-2 text-primary hover:scale-110 transition-transform"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+              <div className="relative flex items-center gap-2 max-w-xs w-full group">
+                <div className="relative w-full">
+                  <Input
+                    placeholder="Search or add skills..."
+                    value={skillInput}
+                    onFocus={() => skillInput.trim() && setShowSuggestions(true)}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddCustomSkill();
+                      }
+                      if (e.key === "Escape") setShowSuggestions(false);
+                    }}
+                    className="h-9 text-xs rounded-xl pr-8 bg-slate-50/50 border-slate-200 focus:bg-white transition-all"
+                  />
+                  {isSearchingSkills && (
+                    <Loader2 className="absolute right-9 top-1/2 -translate-y-1/2 w-3 h-3 animate-spin text-primary/40" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleAddCustomSkill()}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:scale-110 transition-transform"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+
+                  {/* Suggestions Dropdown */}
+                  {showSuggestions && skillSuggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="max-h-60 overflow-y-auto pt-1">
+                        {skillSuggestions.map((s, idx) => {
+                          const isAlreadyAdded = profileData.skills.some((ps: any) => 
+                            String(ps.name || ps).toLowerCase() === s.name.toLowerCase()
+                          );
+                          
+                          return (
+                            <button
+                              key={`${s.id}-${idx}`}
+                              type="button"
+                              onClick={() => {
+                                if (!isAlreadyAdded) handleAddCustomSkill(undefined, s.name);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 text-[12px] font-semibold flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 ${
+                                isAlreadyAdded 
+                                  ? "bg-slate-50/50 text-slate-400 cursor-not-allowed" 
+                                  : "hover:bg-primary/5 text-slate-700 active:bg-primary/10"
+                              }`}
+                            >
+                              <span className="capitalize">{s.name}</span>
+                              {isAlreadyAdded ? (
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Plus className="w-3.5 h-3.5 text-primary/30 group-hover:text-primary transition-colors" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="p-2 bg-slate-50 border-t border-slate-100">
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Enter to add custom skill</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {showSuggestions && skillInput.trim() && skillSuggestions.length === 0 && !isSearchingSkills && (
+                    <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-4 text-center">
+                       <p className="text-[11px] text-slate-500 font-medium">No matches found. Press Enter to add "<span className="font-bold text-slate-900">{skillInput}</span>"</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -747,134 +875,135 @@ export default function ProfileFormClient({
       </div>
 
       {/* Education Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Education</h2>
+      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/40 border-2 border-slate-100/80 overflow-hidden">
+        <div className="p-6 md:p-8 border-b-2 border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
+              <GraduationCap className="w-5 h-5 text-indigo-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Education</h2>
           </div>
           <Button
             variant="outline"
             size="sm"
             disabled={eduLoading}
             onClick={() => { setShowEduForm(!showEduForm); if (!showEduForm) setEditingEduId(null); }}
-            className="rounded-lg h-8 text-xs font-bold border-primary/20 text-primary hover:bg-primary/5"
+            className="rounded-xl h-10 px-4 text-xs font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
           >
-            {showEduForm ? "Cancel" : <><Plus className="w-3.5 h-3.5 mr-1" /> Add New</>}
+            {showEduForm ? "Cancel" : <><Plus className="w-4 h-4 mr-2" /> Add New</>}
           </Button>
         </div>
 
-        {eduError ? (
-          <div className="p-4 border-b border-gray-100 bg-red-50 text-red-700 text-xs font-medium">
-            <p>{eduError}</p>
+        {eduError && (
+          <div className="p-4 mx-6 mt-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-xs font-semibold">
+            {eduError}
           </div>
-        ) : null}
+        )}
 
         {showEduForm && (
-          <form onSubmit={handleEduSubmit} className="p-4 md:p-6 border-b border-gray-100 bg-gray-50/20 space-y-4 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-400">Institution</Label>
+          <form onSubmit={handleEduSubmit} className="p-6 md:p-8 border-b-2 border-slate-50 bg-slate-50/30 space-y-6 animate-in slide-in-from-top-4 duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Institution</Label>
                 <Input
                   value={eduFormData.institution}
                   onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
                   placeholder="University Name"
                   required
-                  className="rounded-lg h-9 bg-white text-sm"
+                  className="rounded-xl h-11 bg-white border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all"
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-400">Degree</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Degree</Label>
                 <Input
                   value={eduFormData.degree}
                   onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })}
                   placeholder="e.g. Bachelor's"
                   required
-                  className="rounded-lg h-9 bg-white text-sm"
+                  className="rounded-xl h-11 bg-white border-slate-100"
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-400">Field of Study</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Field of Study</Label>
                 <Input
                   value={eduFormData.field_of_study}
                   onChange={(e) => setEduFormData({ ...eduFormData, field_of_study: e.target.value })}
-                  placeholder="e.g. Physics"
+                  placeholder="e.g. Computer Science"
                   required
-                  className="rounded-lg h-9 bg-white text-sm"
+                  className="rounded-xl h-11 bg-white border-slate-100"
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-400">Grade / Percentage</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Grade / Percentage</Label>
                 <Input
                   value={eduFormData.grade}
                   onChange={(e) => setEduFormData({ ...eduFormData, grade: e.target.value })}
-                  placeholder="e.g. 8.5 CGPA or A+"
-                  className="rounded-lg h-9 bg-white text-sm"
+                  placeholder="e.g. 8.5 CGPA"
+                  className="rounded-xl h-11 bg-white border-slate-100"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-[11px] text-gray-400">Start Date</Label>
-                  <Input
-                    type="date"
-                    value={eduFormData.start_date}
-                    onChange={(e) => setEduFormData({ ...eduFormData, start_date: e.target.value })}
-                    required
-                    className="rounded-lg h-9 bg-white text-sm"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-500 ml-1">Start Date</Label>
+                  <DatePicker 
+                    date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined}
+                    setDate={(d) => setEduFormData({...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})}
+                    placeholder="Joined date"
                   />
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-[11px] text-gray-400">End Date</Label>
-                  <Input
-                    type="date"
-                    value={eduFormData.end_date}
-                    onChange={(e) => setEduFormData({ ...eduFormData, end_date: e.target.value })}
-                    className="rounded-lg h-9 bg-white text-sm"
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-500 ml-1">End Date</Label>
+                  <DatePicker 
+                    date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined}
+                    setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})}
+                    placeholder="Left date"
                   />
                 </div>
               </div>
-              <div className="md:col-span-2 space-y-1">
-                <Label className="text-[11px] text-gray-400">Description / Highlights</Label>
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Highlights</Label>
                 <textarea
                   value={eduFormData.description}
                   onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
                   rows={2}
-                  className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
-                  placeholder="e.g. Relevant coursework, key projects, or achievements..."
+                  className="flex w-full rounded-xl border border-slate-100 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-hidden"
+                  placeholder="Coursework, projects, achievements..."
                 />
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={saving || eduLoading} size="sm" className="rounded-lg h-9 px-6 font-bold">
-                {editingEduId ? "Update" : "Save"}
+              <Button type="submit" disabled={saving || eduLoading} className="rounded-xl h-11 px-10 font-bold bg-slate-800 hover:bg-slate-900 shadow-lg shadow-slate-200">
+                {editingEduId ? "Update Record" : "Save Record"}
               </Button>
             </div>
           </form>
         )}
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y-2 divide-slate-50">
           {(eduLoading && !localEduList?.length) ? (
-            <div className="p-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary/30" /></div>
+            <div className="p-16 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-200" /></div>
           ) : localEduList?.filter(e => !(e as any).is_deleted).length ? (
             localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
-              <div key={edu.id} className="p-4 md:p-5 flex justify-between items-center group hover:bg-gray-50/30 transition-all duration-200">
+              <div key={edu.id} className="p-4 flex items-center justify-between group hover:bg-slate-50 transition-all duration-300 rounded-xl border-b border-slate-50 last:border-0 border-l-2 border-l-transparent hover:border-l-emerald-500">
                 <div className="flex gap-4 items-center">
-                  <div className="w-10 h-10 rounded-lg bg-primary/5 text-primary flex items-center justify-center shrink-0 shadow-inner group-hover:bg-primary transition-colors duration-300">
-                    <GraduationCap className="w-5 h-5 group-hover:text-white transition-colors" />
+                  <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-200/50 group-hover:rotate-6 transition-transform duration-500">
+                    <GraduationCap className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-[15px] font-bold text-gray-900">{(edu.degree ?? "—")} in {(edu.field_of_study ?? "—")}</h4>
-                    <p className="text-gray-500 text-sm font-medium">{edu.institution ?? "—"}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                      <Calendar className="w-3 h-3" /> {(edu.start_year ?? edu.start_date) ?? "—"} — {(edu.end_year ?? edu.end_date) || "Present"}
-                      {edu.grade && <><span className="w-0.5 h-0.5 rounded-full bg-gray-300" /><span className="text-primary/60 font-bold">{edu.grade}</span></>}
-                      {(edu as any).is_dirty || (edu as any).is_new ? <span className="ml-2 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[9px] font-bold uppercase tracking-tight border border-amber-100 italic">Pending Sync</span> : null}
+                  <div className="space-y-0.5">
+                    <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{(edu.degree ?? "—")}</h4>
+                    <p className="text-slate-500 text-xs font-semibold">{edu.institution ?? "—"}</p>
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold mt-1">
+                      <span className="flex items-center gap-1 bg-slate-100/80 px-2 py-0.5 rounded-full text-slate-500">
+                        <Calendar className="w-3 h-3" /> {(edu.start_year ?? edu.start_date) ?? "—"} — {(edu.end_year ?? edu.end_date) || "Present"}
+                      </span>
+                      {edu.grade && <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50">{edu.grade}</span>}
+                      {(edu as any).is_dirty || (edu as any).is_new ? <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[8px] border border-amber-200">PENDING</span> : null}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button type="button" onClick={() => handleEduEdit(edu)} className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all"><Edit2 className="w-4 h-4" /></button>
-                  <button type="button" onClick={() => handleEduDelete(edu.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-1.5 translate-x-1">
+                  <button type="button" onClick={() => handleEduEdit(edu)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"><Edit2 className="w-4 h-4" /></button>
+                  <button type="button" onClick={() => handleEduDelete(edu.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))
@@ -887,137 +1016,130 @@ export default function ProfileFormClient({
       </div>
 
       {/* Experience Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Work Experience</h2>
+      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/40 border-2 border-slate-100/80 overflow-hidden">
+        <div className="p-6 md:p-8 border-b-2 border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
+              <Briefcase className="w-5 h-5 text-indigo-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Work Experience</h2>
           </div>
           <Button
             variant="outline"
             size="sm"
             disabled={expLoading}
             onClick={() => { setShowExpForm(!showExpForm); if (!showExpForm) setEditingExpId(null); }}
-            className="rounded-lg h-8 text-xs font-bold border-primary/20 text-primary hover:bg-primary/5"
+            className="rounded-xl h-10 px-4 text-xs font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
           >
-            {showExpForm ? "Cancel" : <><Plus className="w-3.5 h-3.5 mr-1" /> Add New</>}
+            {showExpForm ? "Cancel" : <><Plus className="w-4 h-4 mr-2" /> Add New</>}
           </Button>
         </div>
 
-        {expError ? (
-          <div className="p-4 border-b border-gray-100 bg-red-50 text-red-700 text-xs font-medium">
-            <p>{expError}</p>
+        {expError && (
+          <div className="p-4 mx-6 mt-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-xs font-semibold">
+            {expError}
           </div>
-        ) : null}
+        )}
 
         {showExpForm && (
-          <form onSubmit={handleExpSubmit} className="p-4 md:p-6 border-b border-gray-100 bg-gray-50/20 space-y-4 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-400">Job Title</Label>
+          <form onSubmit={handleExpSubmit} className="p-6 md:p-8 border-b-2 border-slate-50 bg-slate-50/30 space-y-6 animate-in slide-in-from-top-4 duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Job Title</Label>
                 <Input
                   value={expFormData.job_title}
                   onChange={(e) => setExpFormData({ ...expFormData, job_title: e.target.value })}
-                  placeholder="e.g. English Teacher"
+                  placeholder="e.g. Senior Teacher"
                   required
-                  className="rounded-lg h-9 bg-white text-sm"
+                  className="rounded-xl h-11 bg-white border-slate-100"
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-500">Institute Name</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Organization</Label>
                 <Input
                   value={expFormData.company_name}
                   onChange={(e) => setExpFormData({ ...expFormData, company_name: e.target.value })}
-                  placeholder="e.g. School or College Name"
+                  placeholder="School or Company Name"
                   required
-                  className="rounded-lg h-9 bg-white text-sm"
+                  className="rounded-xl h-11 bg-white border-slate-100"
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-gray-500">Location</Label>
-                <Input
-                  value={expFormData.location}
-                  onChange={(e) => setExpFormData({ ...expFormData, location: e.target.value })}
-                  placeholder="City, State"
-                  className="rounded-lg h-9 bg-white text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-[11px] text-gray-400">Start Date</Label>
-                  <Input
-                    type="date"
-                    value={expFormData.start_date}
-                    onChange={(e) => setExpFormData({ ...expFormData, start_date: e.target.value })}
-                    required
-                    className="rounded-lg h-9 bg-white text-sm"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-500 ml-1">Start Date</Label>
+                  <DatePicker 
+                    date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined}
+                    setDate={(d) => setExpFormData({...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})}
+                    placeholder="Start date"
                   />
                 </div>
                 {!expFormData.is_current && (
-                  <div className="space-y-1">
-                    <Label className="text-[11px] text-gray-400">End Date</Label>
-                    <Input
-                      type="date"
-                      value={expFormData.end_date}
-                      onChange={(e) => setExpFormData({ ...expFormData, end_date: e.target.value })}
-                      className="rounded-lg h-9 bg-white text-sm"
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-500 ml-1">End Date</Label>
+                    <DatePicker 
+                      date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined}
+                      setDate={(d) => setExpFormData({...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})}
+                      placeholder="End date"
                     />
                   </div>
                 )}
               </div>
-              <div className="md:col-span-2 flex items-center gap-2 mt-2">
-                <button
+              <div className="md:col-span-2 flex items-center gap-3 py-2">
+                 <button
                   type="button"
                   onClick={() => setExpFormData({ ...expFormData, is_current: !expFormData.is_current })}
-                  className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-primary transition-colors"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                    expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-100 hover:border-indigo-200"
+                  }`}
                 >
-                  {expFormData.is_current ? <CheckSquare className="w-4 h-4 text-primary" /> : <Square className="w-4 h-4" />}
-                  I currently work here
+                  {expFormData.is_current ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                  Working here
                 </button>
               </div>
-              <div className="md:col-span-2 space-y-1">
-                <Label className="text-[11px] text-gray-400">Description</Label>
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-xs font-bold text-slate-500 ml-1">Description</Label>
                 <textarea
                   value={expFormData.description}
                   onChange={(e) => setExpFormData({ ...expFormData, description: e.target.value })}
                   rows={2}
-                  className="flex w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
-                  placeholder="Briefly describe your responsibilities..."
+                  className="flex w-full rounded-xl border border-slate-100 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-hidden"
+                  placeholder="Key responsibilities and achievements..."
                 />
               </div>
             </div>
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={saving || expLoading} size="sm" className="rounded-lg h-9 px-6 font-bold">
-                {editingExpId ? "Update" : "Save"}
+              <Button type="submit" disabled={saving || expLoading} className="rounded-xl h-11 px-10 font-bold bg-slate-800 hover:bg-slate-900 shadow-lg shadow-slate-200">
+                {editingExpId ? "Update Record" : "Save Record"}
               </Button>
             </div>
           </form>
         )}
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y-2 divide-slate-50">
           {(expLoading && !localExpList?.length) ? (
-            <div className="p-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary/30" /></div>
+            <div className="p-16 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-200" /></div>
           ) : localExpList?.filter(e => !(e as any).is_deleted).length ? (
             localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
-              <div key={exp.id} className="p-4 md:p-5 flex justify-between items-center group hover:bg-gray-50/30 transition-all duration-200">
+              <div key={exp.id} className="p-4 flex items-center justify-between group hover:bg-slate-50 transition-all duration-300 rounded-xl border-b border-slate-50 last:border-0 border-l-2 border-l-transparent hover:border-l-indigo-500">
                 <div className="flex gap-4 items-center">
-                  <div className="w-10 h-10 rounded-lg bg-primary/5 text-primary flex items-center justify-center shrink-0 shadow-inner group-hover:bg-primary transition-colors duration-300">
-                    <Briefcase className="w-5 h-5 group-hover:text-white transition-colors" />
+                  <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200/50 group-hover:rotate-6 transition-transform duration-500">
+                    <Briefcase className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-[15px] font-bold text-gray-900 leading-tight">{exp.job_title}</h4>
-                    <p className="text-gray-500 text-sm font-medium">{exp.company_name}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                      <Calendar className="w-3 h-3" /> {exp.start_date?.split("T")[0]} — {exp.is_current ? "Present" : (exp.end_date?.split("T")[0] || "—")}
-                      {exp.location && <><span className="w-0.5 h-0.5 rounded-full bg-gray-300" /><span className="text-gray-500 font-medium">{exp.location}</span></>}
-                      {(exp as any).is_dirty || (exp as any).is_new ? <span className="ml-2 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[9px] font-bold uppercase tracking-tight border border-amber-100 italic">Pending Sync</span> : null}
+                  <div className="space-y-0.5">
+                    <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{exp.job_title}</h4>
+                    <p className="text-slate-500 text-xs font-semibold">{exp.company_name}</p>
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold mt-1">
+                      <span className="flex items-center gap-1 bg-slate-100/80 px-2 py-0.5 rounded-full text-slate-500">
+                        <Calendar className="w-3 h-3" /> {exp.start_date?.split("T")[0]} — {exp.is_current ? "Present" : (exp.end_date?.split("T")[0] || "—")}
+                      </span>
+                      {exp.location && <span className="flex items-center gap-1 text-slate-400 font-bold"><MapPin className="w-3 h-3" /> {exp.location}</span>}
+                      {(exp as any).is_dirty || (exp as any).is_new ? <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[8px] border border-amber-200">PENDING</span> : null}
                     </div>
-                    {exp.description && <p className="text-xs text-gray-600 mt-2 italic whitespace-pre-wrap">{exp.description}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <button type="button" onClick={() => handleExpEdit(exp)} className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all"><Edit2 className="w-4 h-4" /></button>
-                  <button type="button" onClick={() => handleExpDelete(exp.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-1.5 translate-x-1">
+                  <button type="button" onClick={() => handleExpEdit(exp)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"><Edit2 className="w-4 h-4" /></button>
+                  <button type="button" onClick={() => handleExpDelete(exp.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             ))
@@ -1029,24 +1151,17 @@ export default function ProfileFormClient({
         </div>
       </div>
 
-      {/* Global Save Button at Last (Non-sticky) */}
-      <div className="flex flex-col sm:flex-row justify-between items-center p-6 bg-white rounded-2xl shadow-sm border border-gray-200 mt-8 gap-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-xs font-bold text-gray-900 flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary" /> Ready to go live?
-          </p>
-          <p className="text-[10px] text-gray-400 font-medium">Your changes will be immediately visible to potential employers.</p>
-        </div>
+      {/* Global Save Button */}
+      <div className="flex justify-center p-8 mt-6">
         <Button 
           onClick={handleSubmit} 
           disabled={saving} 
-          size="lg"
-          className="w-full sm:w-auto min-w-[220px] rounded-xl h-12 font-bold shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all hover:translate-y-[-2px] active:translate-y-0"
+          className="w-full sm:w-auto min-w-[280px] rounded-2xl h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-500/25 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95"
         >
           {saving ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Updating Profile...</>
+            <><Loader2 className="w-6 h-6 animate-spin" /> Syncing Profile...</>
           ) : (
-            <>Update Profile</>
+            <>Update Professional Profile <ChevronRight className="w-5 h-5" /></>
           )}
         </Button>
       </div>

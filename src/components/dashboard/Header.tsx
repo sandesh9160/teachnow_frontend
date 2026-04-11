@@ -49,14 +49,14 @@ export function DashboardHeader({
               <span className="text-base md:text-lg font-bold">{companyName[0] || "T"}</span>
             </div>
           )}
-          <span className="font-display text-lg md:text-xl font-bold text-slate-900 leading-none overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px] sm:max-w-none">
+          <span className="font-display text-lg md:text-xl font-bold text-slate-800 leading-none overflow-hidden text-ellipsis whitespace-nowrap max-w-[120px] sm:max-w-none">
             {brandSecondaryPart}
             {brandPrimaryPart && <span className="text-primary ml-1">{brandPrimaryPart}</span>}
           </span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {["job_seeker", "employer", "recruiter"].includes(user?.role) && <NotificationBell role={user.role} />}
         <div className="relative">
           <button 
@@ -83,7 +83,7 @@ export function DashboardHeader({
                  user?.role === "recruiter" ? "Recruiter" : 
                  "Job Professional"}
                 {user?.isActive && (
-                  <span className="inline-flex items-center gap-1 ml-1.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-[8px] font-bold text-emerald-600 border border-emerald-100 uppercase tracking-tighter">
+                  <span className="inline-flex items-center gap-1 ml-1.5 px-1.5 py-0.5 rounded-full bg-emerald-50 text-[8px] font-bold text-emerald-600 border border-emerald-100">
                     <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" /> Active
                   </span>
                 )}
@@ -93,13 +93,13 @@ export function DashboardHeader({
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 py-1.5 z-50">
-              <div className="px-5 py-4 border-b border-slate-50 mb-1.5 bg-slate-50/50">
-                <p className="text-[10px] font-bold text-slate-400 tracking-wider mb-1.5">Account verified as</p>
-                <p className="text-[14px] font-semibold text-slate-900 truncate leading-relaxed">{user?.email}</p>
+            <div className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl shadow-slate-200/60 border-2 border-slate-300 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 py-1.5 z-50">
+              <div className="px-5 py-4 border-b-2 border-slate-200 mb-1.5 bg-slate-50/50">
+                <p className="text-[10px] font-bold text-slate-600 tracking-wide mb-1.5">Account verified as</p>
+                <p className="text-[14px] font-semibold text-indigo-900 truncate leading-relaxed">{user?.email}</p>
               </div>
 
-              <div className="h-px bg-slate-50 my-1.5 mx-5"></div>
+              <div className="h-px bg-slate-300 my-1.5 mx-5"></div>
 
               <div className="px-2 pb-1">
                 <LogoutSubmitButton className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13.5px] font-semibold text-rose-500 hover:bg-rose-50 transition-all duration-200 text-left group">

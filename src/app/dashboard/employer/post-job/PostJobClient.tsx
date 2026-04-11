@@ -32,6 +32,8 @@ import { Label } from "@/shared/ui/Label/Label";
 import { TipTapEditor } from "@/shared/ui/TipTapEditor/TipTapEditor";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { cn } from "@/lib/utils";
+import { DatePicker } from "@/shared/ui/DatePicker/DatePicker";
+import { format } from "date-fns";
 
 interface Question {
   question: string;
@@ -66,6 +68,9 @@ export default function PostJobClient({
   const [description, setDescription] = useState(job?.description || "");
   const [featured, setFeatured] = useState(job?.featured === 1);
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
+  const [deadline, setDeadline] = useState<Date | undefined>(
+    job?.deadline || job?.application_deadline ? new Date(job.deadline || job.application_deadline) : undefined
+  );
 
   const addQuestion = (type: "boolean" | "numeric" | "text") => {
     setQuestions([
@@ -474,12 +479,15 @@ export default function PostJobClient({
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-slate-400">Deadline</Label>
-                  <Input 
+                  <DatePicker 
+                    date={deadline} 
+                    setDate={setDeadline} 
+                    placeholder="Select deadline"
+                  />
+                  <input 
+                    type="hidden" 
                     name="deadline" 
-                    type="date" 
-                    defaultValue={job?.deadline || job?.application_deadline}
-                    className="h-11 rounded-xl text-xs font-medium" 
-                    required
+                    value={deadline ? format(deadline, "yyyy-MM-dd") : ""} 
                   />
                 </div>
               </div>

@@ -86,7 +86,7 @@ export function useApplications() {
     [apply]
   );
 
-  const withdrawApplication = async (applicationId: number | string) => {
+  const withdrawApplication = useCallback(async (applicationId: number | string) => {
     try {
       setLoading(true);
       setError(null);
@@ -99,7 +99,31 @@ export function useApplications() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  return { loading, error, getApplications, getShortlisted, apply, applyJob, withdrawApplication };
+  const getApplication = useCallback(async (applicationId: number | string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await dashboardServerFetch<unknown>(`jobseeker/applications/${applicationId}`, { method: "GET" });
+      const r = res as { data?: unknown };
+      return r.data ?? res;
+    } catch (err: unknown) {
+      setError(extractErrorMessage(err));
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { 
+    loading, 
+    error, 
+    getApplications, 
+    getApplication,
+    getShortlisted, 
+    apply, 
+    applyJob, 
+    withdrawApplication 
+  };
 }

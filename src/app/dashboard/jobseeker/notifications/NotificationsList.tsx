@@ -6,7 +6,7 @@ import {
   Bell, 
   CheckCircle2, 
   // Clock, 
-
+  Loader2,
   ChevronLeft, 
   ChevronRight,
  
@@ -25,23 +25,23 @@ export default function NotificationsList() {
 
   if (loading && notifications.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 p-12 flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-slate-500 text-xs font-medium">Fetching notifications...</p>
+      <div className="bg-white rounded-2xl border border-slate-200 p-20 flex flex-col items-center justify-center gap-4 shadow-sm">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-200" />
+        <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-widest">Syncing Activity...</p>
       </div>
     );
   }
 
   if (notifications.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 p-12 flex flex-col items-center justify-center text-center gap-4 shadow-sm">
-        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-1">
-          <Bell className="w-7 h-7 text-slate-200" />
+      <div className="bg-white rounded-2xl border border-slate-200 p-20 flex flex-col items-center justify-center text-center gap-4 shadow-sm">
+        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-1 shadow-inner ring-1 ring-slate-100">
+          <Bell className="w-8 h-8 text-slate-300" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-slate-800">No notifications</h3>
-          <p className="text-slate-400 text-xs max-w-[200px] mx-auto mt-0.5">
-            You're all caught up! Updates will appear here.
+          <h3 className="text-lg font-bold text-slate-800">Everything Clear</h3>
+          <p className="text-slate-500 text-xs max-w-[200px] mx-auto mt-1 font-medium">
+            You're all caught up! New updates will appear here instantly.
           </p>
         </div>
       </div>
@@ -49,12 +49,13 @@ export default function NotificationsList() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Header Bar */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recent Activity</h2>
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-sm font-semibold text-slate-700">Recent Activity</h2>
           {unreadCount > 0 && (
-            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold">
+            <span className="bg-indigo-600 text-white px-2.5 py-0.5 rounded-lg text-[10px] font-bold shadow-lg shadow-indigo-600/20">
               {unreadCount} New
             </span>
           )}
@@ -62,7 +63,7 @@ export default function NotificationsList() {
         {unreadCount > 0 && (
           <button
             onClick={() => markAllAsRead()}
-            className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5"
+            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1.5 p-1 px-2 hover:bg-indigo-50 rounded-lg"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
             Mark all read
@@ -70,86 +71,88 @@ export default function NotificationsList() {
         )}
       </div>
 
-      {/* Main Outer Box */}
-      <div className="bg-white rounded-xl border border-slate-100 p-2 shadow-sm">
-        <div className="space-y-1.5">
-          {notifications.map((notification) => {
-            const typeColorMap: Record<string, string> = {
-              job_applied: "border-indigo-100 bg-indigo-50/20",
-              job_deleted: "border-rose-100 bg-rose-50/20",
-              job_created: "border-emerald-100 bg-emerald-50/20",
-            };
-            const typeStyle = typeColorMap[notification.type] || "border-slate-100 bg-white";
-            const accentColor = 
-              notification.type === 'job_applied' ? 'bg-indigo-500' :
-              notification.type === 'job_deleted' ? 'bg-rose-500' :
-              notification.type === 'job_created' ? 'bg-emerald-500' : 
-              'bg-primary';
+      {/* Main List Container */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-2.5 shadow-sm space-y-1.5">
+        {notifications.map((notification) => {
+          const isUnread = !notification.is_read;
+          const typeColorMap: Record<string, string> = {
+            job_applied: isUnread ? "bg-indigo-50 border-indigo-100" : "bg-white border-slate-100",
+            job_deleted: isUnread ? "bg-rose-50 border-rose-100" : "bg-white border-slate-100",
+            job_created: isUnread ? "bg-emerald-50 border-emerald-100" : "bg-white border-slate-100",
+          };
+          
+          const typeStyle = typeColorMap[notification.type] || (isUnread ? "bg-indigo-50/30 border-indigo-100" : "bg-white border-slate-100");
+          const accentColor = 
+            notification.type === 'job_applied' ? 'bg-indigo-500' :
+            notification.type === 'job_deleted' ? 'bg-rose-500' :
+            notification.type === 'job_created' ? 'bg-emerald-500' : 
+            'bg-indigo-600';
 
-            return (
-              <div
-                key={notification.id}
-                className={`group flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer shadow-sm mb-3 last:mb-0 ${
-                  !notification.is_read 
-                    ? (notification.type === 'job_deleted' ? 'bg-rose-50/50 border-rose-200' : 
-                       notification.type === 'job_created' ? 'bg-emerald-50/50 border-emerald-200' :
-                       'bg-primary/[0.04] border-primary/20 shadow-primary/5')
-                    : `hover:border-slate-300 ${typeStyle}`
-                }`}
-                onClick={() => !notification.is_read && markAsRead(notification.id)}
-              >
-                <div className={`shrink-0 w-2 h-2 rounded-full mt-2 ${
-                  !notification.is_read ? accentColor : "bg-slate-200"
-                }`} />
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-4 mb-1">
-                    <h4 className={`text-[14px] font-bold leading-tight truncate ${
-                      !notification.is_read ? "text-slate-900" : "text-slate-600"
-                    }`}>
-                      {notification.title}
-                    </h4>
-                    <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap bg-white/80 px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm">
-                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                    </span>
-                  </div>
-                  
-                  <p className={`text-[13px] leading-relaxed line-clamp-2 ${
-                    !notification.is_read ? "text-slate-700 font-semibold" : "text-slate-500"
+          return (
+            <div
+              key={notification.id}
+              onClick={() => isUnread && markAsRead(notification.id)}
+              className={`group flex items-start gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer shadow-sm relative overflow-hidden ${typeStyle} ${
+                isUnread ? "shadow-indigo-600/5" : "hover:border-slate-300 hover:bg-slate-50/50"
+              }`}
+            >
+              {/* Vertical Indicator */}
+              <div className={`absolute top-0 left-0 bottom-0 w-1 transition-opacity ${isUnread ? "opacity-100" : "opacity-0"} ${accentColor}`} />
+              
+              <div className={`shrink-0 w-2.5 h-2.5 rounded-full mt-1.5 shadow-sm ${
+                isUnread ? accentColor : "bg-slate-200"
+              }`} />
+              
+              <div className="flex-1 min-w-0 pr-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+                  <h4 className={`text-[14px] font-semibold leading-tight truncate ${
+                    isUnread ? "text-slate-900" : "text-slate-600"
                   }`}>
-                    {notification.message}
-                  </p>
+                    {notification.title}
+                  </h4>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-lg border shadow-sm whitespace-nowrap transition-colors ${
+                    isUnread ? "bg-indigo-600 text-white border-indigo-600" : "bg-slate-50 text-slate-400 border-slate-100"
+                  }`}>
+                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                  </span>
                 </div>
+                
+                <p className={`text-xs leading-relaxed line-clamp-2 ${
+                  isUnread ? "text-slate-700 font-medium" : "text-slate-500 font-normal"
+                }`}>
+                  {notification.message}
+                </p>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
 
+        {/* Pagination Console */}
         {pagination && pagination.lastPage > 1 && (
-          <div className="mt-3 px-2 py-2 bg-slate-50/50 rounded-lg border border-slate-100 flex items-center justify-between">
+          <div className="mt-4 px-3 py-3 bg-slate-50/40 rounded-xl border border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-semibold text-slate-500">
-              <span className="text-slate-900">{pagination.total}</span> items total
+              Showing <span className="text-indigo-600">{notifications.length}</span> of <span className="text-slate-900">{pagination.total}</span>
             </p>
             
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 disabled={pagination.currentPage === 1}
                 onClick={() => fetchNotifications(pagination.currentPage - 1)}
-                className="p-1.5 rounded-md border border-slate-200 bg-white text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-primary hover:text-primary transition-all shadow-sm"
+                className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-indigo-500 hover:text-indigo-600 hover:shadow-md transition-all active:scale-90"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               
-              <span className="text-[10px] font-bold text-slate-700 px-2">
-                {pagination.currentPage} / {pagination.lastPage}
+              <span className="text-[11px] font-bold text-slate-700 bg-white border border-slate-200 px-3 py-1 rounded-lg">
+                {pagination.currentPage} <span className="text-slate-300 mx-1">/</span> {pagination.lastPage}
               </span>
 
               <button
                 disabled={pagination.currentPage === pagination.lastPage}
                 onClick={() => fetchNotifications(pagination.currentPage + 1)}
-                className="p-1.5 rounded-md border border-slate-200 bg-white text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-primary hover:text-primary transition-all shadow-sm"
+                className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:border-indigo-500 hover:text-indigo-600 hover:shadow-md transition-all active:scale-90"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
