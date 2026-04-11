@@ -161,9 +161,17 @@ api.interceptors.response.use(
 
                 // Redirect after toast
                 setTimeout(() => {
-                    window.location.replace("/");
+                    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+                    window.location.replace(`/auth/login?message=Session expired. Please log in again.&callbackUrl=${encodeURIComponent(currentPath)}`);
                 }, 1500);
             }
+        }
+
+        // Extract precise backend error message instead of generic status code
+        if (error.response?.data?.message) {
+            error.message = error.response.data.message;
+        } else if (status === 401) {
+            error.message = "Session expired. Please log in again.";
         }
 
         return Promise.reject(error);

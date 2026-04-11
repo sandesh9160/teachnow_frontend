@@ -126,8 +126,8 @@ export default function PostJobClient({
 
     try {
       const endpoint = isEdit 
-        ? `employer/jobs/update/${job?.id}` 
-        : "employer/jobs/create";
+        ? `${userRole}/jobs/update/${job?.id}` 
+        : `${userRole}/jobs/create`;
 
       const result = await dashboardServerFetch(endpoint, {
         method: isEdit ? "PUT" : "POST",
@@ -142,8 +142,8 @@ export default function PostJobClient({
       } else {
         toast.error(result.message || "Something went wrong. Please check your inputs.");
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred.");
+    } catch (error: any) {
+      toast.error(error.message || "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -152,29 +152,35 @@ export default function PostJobClient({
   const handleRepublish = async () => {
     toast("Republish this job?", {
       description: "It will be active for another 30 days.",
+      id: "confirm-republish",
+      duration: Infinity,
       action: {
         label: "Republish",
         onClick: async () => {
           setLoading(true);
           try {
-            const result = await dashboardServerFetch(`employer/jobs/${job?.id}/republish`, {
+            const result = await dashboardServerFetch(`${userRole}/jobs/${job?.id}/republish`, {
               method: "PUT",
             });
 
             if (result.status === true) {
-              toast.success("Job republished successfully!");
+              toast.success(result.message || "Job republished successfully!");
               setTimeout(() => {
                 window.location.reload();
               }, 1200);
             } else {
               toast.error(result.message || "Failed to republish job.");
             }
-          } catch (error) {
-            toast.error("An unexpected error occurred while republishing.");
+          } catch (error: any) {
+            toast.error(error.message || "An unexpected error occurred while republishing.");
           } finally {
             setLoading(false);
           }
         }
+      },
+      cancel: {
+        label: "Keep",
+        onClick: () => {}
       }
     });
   };
@@ -196,29 +202,29 @@ export default function PostJobClient({
       </button>
 
       {/* Professional Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5 bg-white p-4 rounded-xl border shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 bg-white p-4 rounded-2xl border shadow-sm">
         <div className="flex items-center gap-3">
           <div className={cn(
-             "w-12 h-12 rounded-xl flex items-center justify-center border transition-all shadow-inner shrink-0",
-             isEdit ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-primary/5 text-primary border-primary/10"
+             "w-10 h-10 rounded-xl flex items-center justify-center border transition-all shadow-inner shrink-0",
+             isEdit ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-indigo-50 text-indigo-600 border-indigo-100"
           )}>
-            {isEdit ? <Edit3 className="w-6 h-6" /> : <PlusCircle className="w-6 h-6" />}
+            {isEdit ? <Edit3 className="w-5 h-5" /> : <PlusCircle className="w-5 h-5" />}
           </div>
           <div className="space-y-0.5 min-w-0">
             <h1 className="text-lg font-semibold text-slate-900 truncate">
               {isEdit ? "Edit your job" : "Create a job post"}
             </h1>
-            <p className="text-xs text-slate-400 truncate">
+            <p className="text-xs text-slate-400 truncate font-medium">
               {isEdit ? `Updating: ${job?.title}` : "Fill in the details to find the best teachers."}
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-1.5 bg-slate-50/50 p-1 rounded-xl border border-slate-100 w-full sm:w-auto">
-           <button type="button" className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-primary bg-white shadow-sm border border-slate-200 flex items-center justify-center gap-2">
+           <button type="button" className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-indigo-600 bg-white shadow-sm border border-slate-200 flex items-center justify-center gap-2">
              <Layers className="w-4 h-4" /> <span className="sm:inline">Details</span>
            </button>
-           <button type="button" disabled className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-50">
+           <button type="button" disabled className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-40">
              <Sparkles className="w-4 h-4" /> <span className="sm:inline">AI assistant</span>
            </button>
         </div>
@@ -228,17 +234,17 @@ export default function PostJobClient({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Detailed Content Hub */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-5">
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-400 ml-0.5">Job title</Label>
+                <Label className="text-xs font-medium text-slate-500 ml-0.5">Job title</Label>
                 <div className="relative group">
-                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
                   <input type="hidden" name="id" value={job?.id} />
                   <Input 
                     name="title" 
                     defaultValue={job?.title}
                     placeholder="e.g. Senior Physics Teacher" 
-                    className="h-12 pl-11 rounded-xl border-gray-100 text-sm font-medium focus:ring-1 focus:ring-primary/10" 
+                    className="h-11 pl-11 rounded-xl border-slate-100 text-sm font-medium focus:ring-1 focus:ring-indigo-500/10" 
                     required 
                   />
                 </div>
@@ -246,29 +252,29 @@ export default function PostJobClient({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between ml-0.5">
-                  <Label className="text-xs font-medium text-slate-400">Job description</Label>
-                  <span className="text-[10px] font-medium text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">Editor active</span>
+                  <Label className="text-xs font-medium text-slate-500">Job description</Label>
+                  <span className="text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">Editor active</span>
                 </div>
-                <div className="min-h-[300px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-primary/10 transition-all">
+                <div className="min-h-[300px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-500/10 transition-all">
                   <TipTapEditor value={description} onChange={setDescription} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-50 p-4 sm:p-5 bg-slate-50/30 gap-4">
-                 <div className="flex items-center gap-2 border-l-2 border-primary pl-3">
-                    <ListTodo className="w-4.5 h-4.5 text-primary" />
-                    <h2 className="text-sm font-semibold text-slate-900">Screening questions</h2>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-50 p-4 md:p-5 bg-slate-50/20 gap-4">
+                 <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
+                    <ListTodo className="w-4 h-4 text-indigo-600" />
+                    <h2 className="text-sm font-medium text-slate-900">Screening questions</h2>
                  </div>
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-8 px-3 text-[11px] rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all bg-white shrink-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-8 px-3 text-[10px] rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all bg-white shrink-0 font-semibold">
                       <ToggleLeft className="w-3.5 h-3.5 mr-1.5" /> Yes/No
                     </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-8 px-3 text-[11px] rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50 transition-all bg-white shrink-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-8 px-3 text-[10px] rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50 transition-all bg-white shrink-0 font-semibold">
                       <Hash className="w-3.5 h-3.5 mr-1.5" /> Number
                     </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-8 px-3 text-[11px] rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all bg-white shrink-0">
+                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-8 px-3 text-[10px] rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all bg-white shrink-0 font-semibold">
                       <PlusCircle className="w-3.5 h-3.5 mr-1.5" /> Text
                     </Button>
                   </div>
@@ -287,8 +293,8 @@ export default function PostJobClient({
                   questions.map((q, i) => (
                      <div key={i} className="group bg-slate-50/50 rounded-xl border border-slate-100 overflow-hidden hover:border-primary/20 transition-all shadow-sm">
                         {/* Question Header Actions */}
-                        <div className="px-4 py-2.5 bg-slate-100/30 border-b border-slate-50 flex items-center justify-between gap-4">
-                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Question {i + 1} — {q.question_type}</span>
+                        <div className="px-4 py-2 bg-slate-100/30 border-b border-slate-50 flex items-center justify-between gap-4">
+                           <span className="text-[10px] font-medium text-slate-500">Question {i + 1} • {q.question_type}</span>
                            
                            <div className="flex items-center gap-1.5">
                               {/* Move Controls */}
@@ -297,7 +303,7 @@ export default function PostJobClient({
                                    onClick={() => moveQuestion(i, 'up')} 
                                    disabled={i === 0}
                                    type="button" 
-                                   className="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-primary disabled:opacity-30 transition-colors border-r border-slate-50"
+                                   className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50 disabled:opacity-30 transition-colors border-r border-slate-100"
                                  >
                                     <ArrowUp className="w-3 h-3" />
                                  </button>
@@ -305,7 +311,7 @@ export default function PostJobClient({
                                    onClick={() => moveQuestion(i, 'down')} 
                                    disabled={i === questions.length - 1}
                                    type="button" 
-                                   className="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-primary disabled:opacity-30 transition-colors"
+                                   className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50 disabled:opacity-30 transition-colors"
                                  >
                                     <ArrowDown className="w-3 h-3" />
                                  </button>
@@ -381,18 +387,18 @@ export default function PostJobClient({
           {/* Logistics Tracking Sidebar */}
           <div className="space-y-5">
             {/* Featured Job Promotion */}
-            <div className="bg-white rounded-xl border border-amber-100 shadow-sm p-4 sm:p-5 overflow-hidden relative group transition-all hover:shadow-md">
+            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 md:p-5 overflow-hidden relative group transition-all hover:shadow-md">
               <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50/50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
               <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-3">
                   <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center border shadow-inner transition-colors",
+                    "w-9 h-9 rounded-xl flex items-center justify-center border shadow-inner transition-colors",
                     featured ? "bg-amber-500 text-white border-amber-600" : "bg-slate-50 text-slate-300 border-slate-100"
                   )}>
-                    <Sparkles className={cn("w-5 h-5", featured && "fill-white/20")} />
+                    <Sparkles className={cn("w-4 h-4", featured && "fill-white/20")} />
                   </div>
                   <div className="flex flex-col">
-                    <Label className="text-xs font-bold text-slate-900 cursor-pointer" htmlFor="featured-toggle">Featured Job</Label>
+                    <Label className="text-xs font-semibold text-slate-900 cursor-pointer" htmlFor="featured-toggle">Featured Job</Label>
                     <p className="text-[10px] text-amber-600 font-medium">Appear on top of search</p>
                   </div>
                 </div>
@@ -406,10 +412,10 @@ export default function PostJobClient({
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-5">
               <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
-                 <Tag className="w-4.5 h-4.5 text-indigo-500" />
-                 <h2 className="text-sm font-semibold text-slate-900">Basic information</h2>
+                 <Tag className="w-4 h-4 text-indigo-500" />
+                 <h2 className="text-sm font-medium text-slate-900">Basic information</h2>
               </div>
               
               <div className="space-y-2">
@@ -417,7 +423,7 @@ export default function PostJobClient({
                 <select 
                   name="category_id" 
                   defaultValue={job?.category_id || ""}
-                  className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer group-hover:bg-slate-50 transition-all"
+                  className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer group-hover:bg-slate-50 transition-all"
                   required
                 >
                   <option value="" disabled>Select category</option>
@@ -432,7 +438,7 @@ export default function PostJobClient({
                 <select 
                   name="job_type" 
                   defaultValue={job?.job_type || ""}
-                  className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
+                  className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
                   required
                 >
                   <option value="" disabled>Select job type</option>
@@ -443,13 +449,13 @@ export default function PostJobClient({
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-1 gap-4 pt-1">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-slate-400">Requirement</Label>
                    <select 
                     name="experience_type" 
                     defaultValue={job?.experience_type || ""}
-                    className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
+                    className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
                     required
                   >
                     <option value="" disabled>Select</option>
@@ -464,18 +470,18 @@ export default function PostJobClient({
                     type="number" 
                     defaultValue={job?.experience_required}
                     placeholder="5" 
-                    className="h-11 rounded-xl text-sm font-medium" 
+                    className="h-10 rounded-xl text-sm font-medium border-slate-100" 
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-1 gap-4 pt-1">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-slate-400">Gender</Label>
                   <select 
                     name="gender" 
                     defaultValue={job?.gender || "both"}
-                    className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
+                    className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
                     required
                   >
                     <option value="male">Male</option>
@@ -500,17 +506,17 @@ export default function PostJobClient({
 
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-4">
               <div className="flex items-center gap-2 border-l-2 border-emerald-500 pl-3">
-                 <MapPin className="w-4.5 h-4.5 text-emerald-500" />
-                 <h2 className="text-sm font-semibold text-slate-900">Location</h2>
+                 <MapPin className="w-4 h-4 text-emerald-500" />
+                 <h2 className="text-sm font-medium text-slate-900">Location</h2>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-slate-400">Work location</Label>
                 <select 
                   name="location" 
                   defaultValue={job?.location || ""}
-                  className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-primary outline-none cursor-pointer transition-all"
+                  className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
                   required
                 >
                   <option value="" disabled>Select location</option>
@@ -521,13 +527,13 @@ export default function PostJobClient({
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-5">
               <div className="flex items-center gap-2 border-l-2 border-amber-500 pl-3">
-                 <DollarSign className="w-4.5 h-4.5 text-amber-500" />
-                 <h2 className="text-sm font-semibold text-slate-900">Salary & openings</h2>
+                 <DollarSign className="w-4 h-4 text-amber-500" />
+                 <h2 className="text-sm font-medium text-slate-900">Salary & openings</h2>
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-slate-400">Min salary</Label>
                   <Input 
@@ -535,7 +541,7 @@ export default function PostJobClient({
                     type="number" 
                     defaultValue={job?.salary_min?.split('.')[0]}
                     placeholder="400,000" 
-                    className="h-11 rounded-xl text-sm font-semibold" 
+                    className="h-10 rounded-xl text-sm font-medium border-slate-100" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -545,20 +551,20 @@ export default function PostJobClient({
                     type="number" 
                     defaultValue={job?.salary_max?.split('.')[0]}
                     placeholder="1,200,000" 
-                    className="h-11 rounded-xl text-sm font-semibold" 
+                    className="h-10 rounded-xl text-sm font-medium border-slate-100" 
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-400">Number of openings</Label>
+                <Label className="text-xs font-medium text-slate-500">Number of openings</Label>
                 <div className="relative">
-                   <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-200" />
+                   <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
                    <Input 
                      name="vacancies" 
                      type="number" 
                      defaultValue={job?.vacancies || 1} 
-                     className="h-11 pl-11 rounded-xl text-sm font-semibold bg-slate-50/30" 
+                     className="h-10 pl-11 rounded-xl text-sm font-medium bg-slate-50/20 border-slate-100" 
                      required 
                    />
                 </div>
@@ -579,7 +585,7 @@ export default function PostJobClient({
                 variant="outline" 
                 size="sm" 
                 type="button" 
-                className="h-12 w-full sm:w-auto px-8 rounded-xl text-xs font-semibold text-slate-500 border-slate-200 hover:bg-slate-50 transition-all active:scale-95"
+                className="h-11 w-full sm:w-auto px-8 rounded-xl text-xs font-semibold text-slate-500 border-slate-200 hover:bg-slate-50 transition-all active:scale-95"
                 onClick={() => window.history.back()}
               >
                 Cancel
@@ -591,7 +597,7 @@ export default function PostJobClient({
                   type="button" 
                   disabled={loading} 
                   onClick={handleRepublish}
-                  className="h-12 w-full sm:w-auto px-10 rounded-xl text-xs font-bold shadow-lg bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10 transition-all active:scale-95 text-white"
+                  className="h-11 w-full sm:w-auto px-10 rounded-xl text-xs font-semibold shadow-lg bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10 transition-all active:scale-95 text-white"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
                   Republish job
@@ -603,13 +609,13 @@ export default function PostJobClient({
                 type="submit" 
                 disabled={loading} 
                 className={cn(
-                  "h-12 w-full sm:w-auto px-12 rounded-xl text-xs font-bold shadow-xl transition-all active:scale-95 text-white",
-                  isEdit ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/10" : "bg-primary hover:bg-primary/90 shadow-primary/20"
+                  "h-11 w-full sm:w-auto px-10 rounded-xl text-xs font-semibold shadow-xl transition-all active:scale-95 text-white",
+                  isEdit ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/10" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20"
                 )}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                {isEdit ? "Update job details" : "Post this job now"}
-                <ChevronRight className="w-4.5 h-4.5 ml-2 opacity-30" />
+                {isEdit ? "Update details" : "Post job now"}
+                <ChevronRight className="w-4 h-4 ml-1 opacity-40" />
               </Button>
            </div>
         </div>

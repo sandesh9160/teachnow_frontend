@@ -19,9 +19,9 @@ export default async function DashboardLayout({
   const authUser = sessionUserForHeader(profile);
 
   return (
-    <DashboardShell 
-      user={authUser} 
-      layoutData={layoutData} 
+    <DashboardShell
+      user={authUser}
+      layoutData={layoutData}
       userRole={profile.role}
     >
       {children}

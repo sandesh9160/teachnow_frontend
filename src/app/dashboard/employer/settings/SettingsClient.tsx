@@ -193,10 +193,16 @@ export default function SettingsClient() {
                  className="h-9 px-6 rounded-lg text-[11px] font-medium shadow-sm shrink-0"
                  onClick={() => {
                    toast("Are you absolutely sure?", {
+                     id: "confirm-account-termination",
+                     duration: Infinity,
                      description: "This will permanently delete your employer account.",
                      action: {
                        label: "Terminate",
                        onClick: () => toast.error("Account termination requires administrative approval.")
+                     },
+                     cancel: {
+                       label: "Keep",
+                       onClick: () => {}
                      }
                    })
                  }}

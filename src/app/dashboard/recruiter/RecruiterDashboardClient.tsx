@@ -86,7 +86,7 @@ export default function RecruiterDashboardClient({
       value: dashboardData?.credits?.remaining_credits?.toString() || "0", 
       icon: CreditCard, 
       color: "purple",
-      trend: dashboardData?.credits?.current_plan?.plan_name || "Credits"
+      trend: dashboardData?.credits?.current_plan?.plan_name ? `${dashboardData.credits.current_plan.plan_name} Plan` : "Free Plan"
     },
   ];
 
@@ -102,11 +102,11 @@ export default function RecruiterDashboardClient({
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 space-y-5 pb-10">
       {/* Compact Dashboard Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 border-slate-100">
         <div>
-          <h1 className="text-xl font-semibold  text-primary">Recruiter Dashboard</h1>
-          <p className="text-sm text-gray-500 font-semibold">
-             Access Portal • <span className="text-gray-900">{welcomeName}</span>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Recruiter Dashboard</h1>
+          <p className="text-[12px] text-slate-400 font-medium">
+             Access Portal • <span className="text-indigo-600 font-semibold">{welcomeName}</span>
           </p>
         </div>
         
@@ -117,35 +117,54 @@ export default function RecruiterDashboardClient({
         </Link>
       </div>
 
-      {/* Compact Stats Grid */}
+      {/* High-Density Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-             <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity -mr-8 -mt-8 rounded-full" />
-             
-             <div className="flex items-start justify-between mb-3 relative z-10">
-                <div className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center border shadow-sm transition-transform group-hover:scale-110",
-                  stat.color === 'blue' && "bg-blue-50 text-blue-600 border-blue-100",
-                  stat.color === 'indigo' && "bg-indigo-50 text-indigo-600 border-indigo-100",
-                  stat.color === 'emerald' && "bg-emerald-50 text-emerald-600 border-emerald-100",
-                  stat.color === 'purple' && "bg-purple-50 text-purple-600 border-purple-100",
-                )}>
-                  <stat.icon className="w-4.5 h-4.5" />
+          <div key={i} className={cn(
+            "group relative overflow-hidden bg-white p-3.5 rounded-2xl border-2 border-slate-300 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5",
+            stat.color === 'blue' && "hover:shadow-blue-500/10",
+            stat.color === 'indigo' && "hover:shadow-indigo-500/10",
+            stat.color === 'emerald' && "hover:shadow-emerald-500/10",
+            stat.color === 'purple' && "hover:shadow-purple-500/10"
+          )}>
+            <div className={cn(
+              "absolute top-0 right-0 w-24 h-24 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-700",
+              stat.color === 'blue' && "bg-blue-500/5",
+              stat.color === 'indigo' && "bg-indigo-500/5",
+              stat.color === 'emerald' && "bg-emerald-500/5",
+              stat.color === 'purple' && "bg-purple-500/5"
+            )} />
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <p className="text-slate-600 font-bold text-[10px] mb-1">{stat.label}</p>
+                <h3 className="text-2xl font-bold text-slate-800 tracking-tight leading-normal mb-1">{stat.value}</h3>
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  <div className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    stat.color === 'blue' && "bg-blue-500 animate-pulse",
+                    stat.color === 'indigo' && "bg-indigo-500",
+                    stat.color === 'emerald' && "bg-emerald-500",
+                    stat.color === 'purple' && "bg-purple-500"
+                  )} />
+                  <span className={cn(
+                    "text-[10px] font-bold truncate max-w-[80px]",
+                    stat.color === 'blue' && "text-blue-500",
+                    stat.color === 'indigo' && "text-indigo-500",
+                    stat.color === 'emerald' && "text-emerald-500",
+                    stat.color === 'purple' && "text-purple-500"
+                  )}>{stat.trend}</span>
                 </div>
-                <span className={cn(
-                  "text-xs font-semibold  px-2 py-0.5 rounded-full border truncate max-w-[100px]",
-                  stat.color === 'blue' && "text-blue-400 border-blue-50",
-                  stat.color === 'indigo' && "text-indigo-400 border-indigo-50",
-                  stat.color === 'emerald' && "text-emerald-400 border-emerald-50",
-                  stat.color === 'purple' && "text-purple-400 border-purple-50",
-                )}>{stat.trend}</span>
-             </div>
-             
-             <div className="space-y-0.5 relative z-10">
-                <p className="text-xs font-semibold text-slate-900">{stat.label}</p>
-                <h3 className="text-xl font-bold text-slate-900">{stat.value}</h3>
-             </div>
+              </div>
+              <div className={cn(
+                "p-2 rounded-xl transition-all duration-500 group-hover:text-white group-hover:shadow-lg group-hover:rotate-12",
+                stat.color === 'blue' && "bg-blue-50 text-blue-500 group-hover:bg-blue-600 group-hover:shadow-blue-600/20",
+                stat.color === 'indigo' && "bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:shadow-indigo-600/20",
+                stat.color === 'emerald' && "bg-emerald-50 text-emerald-500 group-hover:bg-emerald-600 group-hover:shadow-emerald-600/20",
+                stat.color === 'purple' && "bg-purple-50 text-purple-500 group-hover:bg-purple-600 group-hover:shadow-purple-600/20"
+              )}>
+                <stat.icon className="w-4 h-4" />
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -189,15 +208,17 @@ export default function RecruiterDashboardClient({
                               </h4>
                               <p className="text-xs text-gray-500 truncate mt-0.5 font-semibold">Applied for <span className="text-primary">{app.job?.title}</span></p>
                            </div>
-                           <div className="text-right shrink-0">
-                              <span className={cn(
-                                 "inline-flex px-2 py-0.5 rounded-full text-xs font-semibold  border shadow-sm",
-                                 app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-white text-slate-400 border-slate-100"
-                              )}>
-                                 {app.status}
-                              </span>
-                              <p className="text-xs text-slate-300 mt-1.5 font-semibold">{new Date(app.created_at).toLocaleDateString('en-GB')}</p>
-                           </div>
+                            <div className="text-right shrink-0">
+                               <span className={cn(
+                                  "inline-flex px-2 py-0.5 rounded-lg text-[10px] font-semibold border-2 shadow-sm tracking-tight",
+                                  app.status === 'shortlisted' 
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-500/40" 
+                                    : "bg-slate-50 text-slate-600 border-slate-300"
+                               )}>
+                                  {app.status ? app.status.charAt(0).toUpperCase() + app.status.slice(1) : "Applied"}
+                               </span>
+                               <p className="text-[10px] text-slate-400 mt-1.5 font-bold">{new Date(app.created_at).toLocaleDateString('en-GB')}</p>
+                            </div>
                         </div>
                      ))}
                   </div>
@@ -213,8 +234,35 @@ export default function RecruiterDashboardClient({
             </div>
          </div>
 
-         {/* Latest Jobs */}
+         {/* Right Sidebar */}
          <div className="space-y-4">
+            {/* Credit Info */}
+            <div className="p-5 bg-primary rounded-xl shadow-xl shadow-primary/20 text-white space-y-3">
+               <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold   text-white/60">Subscription Usage</p>
+                  <CreditCard className="w-4 h-4 text-white/60" />
+               </div>
+               <div className="flex items-end justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold tracking-tight">{dashboardData?.credits?.remaining_credits || 0}</h3>
+                    <p className="text-xs font-semibold   text-white/60 mt-0.5">Remaining Credits</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold">{dashboardData?.credits?.used_credits || 0} / {dashboardData?.credits?.total_credits || 0}</p>
+                    <p className="text-xs font-semibold   text-white/60 mt-0.5">Used Credits</p>
+                  </div>
+               </div>
+               <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-white h-full" 
+                    style={{ 
+                      width: `${(dashboardData?.credits?.used_credits || 0) / (dashboardData?.credits?.total_credits || 1) * 100}%` 
+                    }} 
+                  />
+               </div>
+            </div>
+
+            {/* Latest Jobs */}
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
                <div className="px-5 py-3 border-b bg-gray-50/30">
                   <h2 className="text-xs font-bold text-indigo-600 ">Recent Jobs</h2>
@@ -225,12 +273,14 @@ export default function RecruiterDashboardClient({
                         <div key={job.id} className="p-3.5 hover:bg-indigo-50/30 transition-all group">
                            <div className="flex items-start justify-between">
                               <h4 className="text-sm font-semibold text-slate-800 group-hover:text-primary transition-colors truncate pr-4 ">{job.title}</h4>
-                              <span className={cn(
-                                 "text-xs font-semibold px-1.5 py-0.5 rounded-full",
-                                 job.job_status === 'open' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-rose-50 text-rose-600 border-rose-100"
-                              )}>
-                                 {job.job_status}
-                              </span>
+                               <span className={cn(
+                                  "text-[10px] font-semibold px-2 py-0.5 rounded-lg border-2 shadow-sm tracking-tight",
+                                  job.job_status === 'open' 
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-400/40" 
+                                    : "bg-rose-50 text-rose-700 border-rose-400/40"
+                               )}>
+                                  {job.job_status ? job.job_status.charAt(0).toUpperCase() + job.job_status.slice(1) : "Status"}
+                               </span>
                            </div>
                            <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 font-semibold">
                               <span className="flex items-center gap-1.5 text-primary">
@@ -301,31 +351,7 @@ export default function RecruiterDashboardClient({
                </div>
             </div>
 
-            {/* Credit Info */}
-            <div className="p-5 bg-primary rounded-xl shadow-xl shadow-primary/20 text-white space-y-3">
-               <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold   text-white/60">Subscription Usage</p>
-                  <CreditCard className="w-4 h-4 text-white/60" />
-               </div>
-               <div className="flex items-end justify-between">
-                  <div>
-                    <h3 className="text-2xl font-bold tracking-tight">{dashboardData?.credits?.remaining_credits || 0}</h3>
-                    <p className="text-xs font-semibold   text-white/60 mt-0.5">Remaining Credits</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold">{dashboardData?.credits?.used_credits || 0} / {dashboardData?.credits?.total_credits || 0}</p>
-                    <p className="text-xs font-semibold   text-white/60 mt-0.5">Used Credits</p>
-                  </div>
-               </div>
-               <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
-                  <div 
-                    className="bg-white h-full" 
-                    style={{ 
-                      width: `${(dashboardData?.credits?.used_credits || 0) / (dashboardData?.credits?.total_credits || 1) * 100}%` 
-                    }} 
-                  />
-               </div>
-            </div>
+
          </div>
       </div>
 

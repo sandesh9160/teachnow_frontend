@@ -891,22 +891,22 @@ export default function ProfileFormClient({
       </div>
 
       {/* Education Section */}
-      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/40 border-2 border-slate-100/80 overflow-hidden">
-        <div className="p-6 md:p-8 border-b-2 border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-indigo-600" />
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <GraduationCap className="w-4 h-4 text-indigo-600" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Education</h2>
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Education</h2>
           </div>
           <Button
             variant="outline"
             size="sm"
             disabled={eduLoading}
             onClick={() => { setShowEduForm(!showEduForm); if (!showEduForm) setEditingEduId(null); }}
-            className="rounded-xl h-10 px-4 text-xs font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
+            className="rounded-lg h-9 px-3 text-[11px] font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
           >
-            {showEduForm ? "Cancel" : <><Plus className="w-4 h-4 mr-2" /> Add New</>}
+            {showEduForm ? "Cancel" : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Add New</>}
           </Button>
         </div>
 
@@ -1032,22 +1032,22 @@ export default function ProfileFormClient({
       </div>
 
       {/* Experience Section */}
-      <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/40 border-2 border-slate-100/80 overflow-hidden">
-        <div className="p-6 md:p-8 border-b-2 border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
-              <Briefcase className="w-5 h-5 text-indigo-600" />
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 md:p-6 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <Briefcase className="w-4 h-4 text-indigo-600" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Work Experience</h2>
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Work Experience</h2>
           </div>
           <Button
             variant="outline"
             size="sm"
             disabled={expLoading}
             onClick={() => { setShowExpForm(!showExpForm); if (!showExpForm) setEditingExpId(null); }}
-            className="rounded-xl h-10 px-4 text-xs font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
+            className="rounded-lg h-9 px-3 text-[11px] font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
           >
-            {showExpForm ? "Cancel" : <><Plus className="w-4 h-4 mr-2" /> Add New</>}
+            {showExpForm ? "Cancel" : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Add New</>}
           </Button>
         </div>
 
@@ -1168,16 +1168,16 @@ export default function ProfileFormClient({
       </div>
 
       {/* Global Save Button */}
-      <div className="flex justify-center p-8 mt-6">
+      <div className="flex justify-end pt-4 mt-6 border-t border-slate-100">
         <Button 
           onClick={handleSubmit} 
           disabled={saving} 
-          className="w-full sm:w-auto min-w-[280px] rounded-2xl h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-500/25 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95"
+          className="w-full sm:w-auto min-w-[200px] rounded-xl h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[13px] shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
         >
           {saving ? (
-            <><Loader2 className="w-6 h-6 animate-spin" /> Syncing Profile...</>
+            <><Loader2 className="w-4 h-4 animate-spin" /> Syncing...</>
           ) : (
-            <>Update Professional Profile <ChevronRight className="w-5 h-5" /></>
+            <>Update Profile <ChevronRight className="w-4 h-4" /></>
           )}
         </Button>
       </div>

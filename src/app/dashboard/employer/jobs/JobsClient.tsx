@@ -87,7 +87,10 @@ export default function JobsClient({
   );
 
   const handleDelete = async (id: number) => {
-    toast("Delete this job listing? This action cannot be undone.", {
+    toast("Delete this job listing?", {
+      id: "confirm-delete-job",
+      duration: Infinity,
+      description: "This action cannot be undone.",
       action: {
         label: "Delete",
         onClick: async () => {
@@ -119,6 +122,14 @@ export default function JobsClient({
             setDeletingId(null);
           }
         }
+      },
+      cancel: {
+        label: "Keep",
+        onClick: () => {}
+      },
+      classNames: {
+        actionButton: "!bg-rose-600 !text-white hover:!bg-rose-700",
+        cancelButton: "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
       }
     });
   };

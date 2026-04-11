@@ -100,7 +100,12 @@ export async function dashboardServerFetch<T = any>(
         let statusCode = 500;
 
         if (error.response) {
-            message = error.response.data?.message || error.message || "Request failed";
+            message = error.response.data?.message;
+            if (!message && error.response.status === 401) {
+                message = "Session expired. Please log in again.";
+            } else if (!message) {
+                message = error.message?.includes("status code") ? "Failed to complete the request." : error.message || "Request failed";
+            }
             statusCode = error.response.status;
         } else if (error.request) {
             message = "No response from server";

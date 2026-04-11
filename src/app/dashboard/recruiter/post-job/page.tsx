@@ -10,6 +10,7 @@ export default async function RecruiterPostJobPage() {
   
   return (
     <PostJobClient 
+      userRole="recruiter"
       metadata={{
         categories: categoriesData?.data || [],
         locations: locationsData?.data || []

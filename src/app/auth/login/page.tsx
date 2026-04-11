@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, User, Building2, AlertCircle, Eye, EyeOff, Briefcase } from "lucide-react";
+import { GraduationCap, User, Building2, Eye, EyeOff, Briefcase } from "lucide-react";
 import { EmailSignInAction } from "@/lib/sign-in";
 import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
 import { toast } from "sonner";
@@ -18,6 +18,26 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const redirectMessage = searchParams?.get("message");
+  // const { replace } = require("next/navigation"); // Inline for safety in client component or use hook
+
+  // Show redirect message as toast if present
+  useState(() => {
+    if (typeof window !== "undefined" && redirectMessage) {
+      setTimeout(() => {
+        toast.error(redirectMessage, {
+          description: "Please sign in to continue your session.",
+          duration: 5000,
+        });
+        
+        // Clean URL to remove message param
+        const url = new URL(window.location.href);
+        url.searchParams.delete("message");
+        window.history.replaceState({}, "", url.toString());
+      }, 100);
+    }
+    return null;
+  });
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -88,13 +108,6 @@ function LoginContent() {
             <h1 className="font-display text-xl font-bold text-foreground">Welcome back</h1>
             <p className="mt-1 text-xs text-muted-foreground font-medium">Sign in to your account to continue</p>
           </div>
-
-          {redirectMessage && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-[10px] text-primary">
-              <AlertCircle className="h-3 w-3 shrink-0" />
-              {redirectMessage}
-            </div>
-          )}
 
           {/* Role toggle */}
           <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/20 p-1">

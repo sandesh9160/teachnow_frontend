@@ -112,6 +112,8 @@ export default function ResumeManagementPage() {
 
   const handleDelete = async (id: number | string) => {
     toast("Delete this resume?", {
+      id: "confirm-delete",
+      duration: Infinity,
       action: {
         label: "Delete",
         onClick: async () => {
@@ -122,12 +124,23 @@ export default function ResumeManagementPage() {
             toast.error("Failed to delete.");
           }
         }
+      },
+      cancel: {
+        label: "Keep",
+        onClick: () => {}
+      },
+      classNames: {
+        actionButton: "!bg-rose-600 !text-white hover:!bg-rose-700",
+        cancelButton: "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
       }
     });
   };
 
   const handleDeleteGenerated = async (id: number | string) => {
-    toast("Delete this generated CV?", {
+    toast("Delete this document?", {
+      id: "confirm-delete-gen",
+      duration: Infinity,
+      description: "This action cannot be undone.",
       action: {
         label: "Delete",
         onClick: async () => {
@@ -138,6 +151,14 @@ export default function ResumeManagementPage() {
             toast.error("Failed to delete generated CV.");
           }
         }
+      },
+      cancel: {
+        label: "Keep",
+        onClick: () => {}
+      },
+      classNames: {
+        actionButton: "!bg-rose-600 !text-white hover:!bg-rose-700",
+        cancelButton: "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
       }
     });
   };
@@ -339,7 +360,7 @@ export default function ResumeManagementPage() {
                             <div className="flex items-center gap-3 text-[10px] font-medium text-slate-500">
                               <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 opacity-60" /> {new Date(resume.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                               <span className="w-1 h-1 rounded-full bg-slate-200" />
-                              <span className="text-black/50">Stable Professional CV</span>
+                              <span className="text-black/50">Official Resume</span>
                             </div>
                           </div>
                         </div>
