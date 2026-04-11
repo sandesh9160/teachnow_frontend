@@ -29,25 +29,29 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
         
         <div className="relative group/carousel">
           {/* Circular Navigation Buttons */}
-          <button 
-            onClick={() => {
-              if (jobsRef.current) jobsRef.current.scrollBy({ left: -jobsRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-            }}
-            className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-            title="Previous"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
+          {jobs.length > 1 && (
+            <>
+              <button 
+                onClick={() => {
+                  if (jobsRef.current) jobsRef.current.scrollBy({ left: -jobsRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+                }}
+                className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
+                title="Previous"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
 
-          <button 
-            onClick={() => {
-              if (jobsRef.current) jobsRef.current.scrollBy({ left: jobsRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-            }}
-            className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-            title="Next"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
+              <button 
+                onClick={() => {
+                  if (jobsRef.current) jobsRef.current.scrollBy({ left: jobsRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+                }}
+                className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
+                title="Next"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
 
           <div ref={jobsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-4 lg:overflow-x-auto lg:scrollbar-hide lg:scroll-smooth pb-4 px-1 lg:px-2 gap-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {jobs.map((job) => {

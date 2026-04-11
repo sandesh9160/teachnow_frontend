@@ -55,8 +55,8 @@ export const StatsCard = ({
   }, []);
 
   return (
-    <div ref={ref} className="group flex flex-col items-center text-center p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1">
-      <div className="mb-5 p-3 rounded-2xl bg-slate-50 transition-colors group-hover:bg-primary/5" style={{ color }}>
+    <div ref={ref} className="group flex flex-col items-center text-center p-6 transition-all duration-300">
+      <div className="mb-5 p-3 rounded-2xl bg-slate-50 transition-colors group-hover:bg-blue-50" style={{ color }}>
         <Icon className="h-8 w-8 stroke-[1.5] transition-transform duration-500 group-hover:scale-110" />
       </div>
       
@@ -64,7 +64,7 @@ export const StatsCard = ({
         {count.toLocaleString()}
         <span className="text-primary">{suffix}</span>
       </div>
-      <p className="mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">{label}</p>
+      <p className="mt-3 text-[11px] font-medium text-slate-400 leading-none">{label}</p>
     </div>
   );
 };

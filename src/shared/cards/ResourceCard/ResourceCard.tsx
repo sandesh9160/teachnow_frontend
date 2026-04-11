@@ -25,9 +25,10 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
 
   return (
     <div className={cn(
-      "group flex flex-col bg-white rounded-xl p-1.5 shadow-md hover:shadow-xl transition-all duration-300 border border-slate-200 hover:border-primary/20 h-full",
+      "group relative flex flex-col bg-white rounded-xl p-2 border-2 border-blue-500 shadow-none transition-all duration-300 h-full overflow-hidden",
       className
     )}>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none z-10" />
       {/* Photo */}
       <div className="relative aspect-[1.15/1] w-full overflow-hidden rounded-md mb-1.5 shadow-inner bg-slate-50">
         <img

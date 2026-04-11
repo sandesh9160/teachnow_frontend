@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Briefcase, ArrowUpRight } from "lucide-react";
+import { MapPin, Briefcase, ArrowUpRight, Clock3 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { useRouter } from "next/navigation";
 import { useClientSession } from "@/hooks/useClientSession";
@@ -18,6 +18,7 @@ export interface JobData {
   salary: string;
   experience: string;
   logo?: string;
+  posted?: string | number | Date;
 }
 
 const JobListingCard = ({
@@ -30,6 +31,7 @@ const JobListingCard = ({
   experience,
   logo,
   slug,
+  posted,
 }: JobData) => {
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
@@ -59,9 +61,10 @@ const JobListingCard = ({
   return (
     <>
       <div
-        className="group relative bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)] transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.06)] hover:border-primary/20 cursor-pointer"
+        className="group relative bg-white rounded-2xl border-2 border-blue-500 p-8 shadow-none transition-all duration-500 cursor-pointer overflow-hidden"
         onClick={() => router.push(jobHref)}
       >
+        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-full -mr-24 -mt-24 animate-pulse pointer-events-none" />
         {/* Header Section: Logo & Badges */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-5">
@@ -78,9 +81,9 @@ const JobListingCard = ({
               <h4 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">
                 {company}
               </h4>
-              <p className="text-sm font-medium text-slate-400">
-                {location}
-              </p>
+              <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                <Clock3 className="h-3.5 w-3.5 text-slate-400" /> {formatTimeAgo(posted)}
+              </span>
             </div>
           </div>
 

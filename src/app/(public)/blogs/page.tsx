@@ -60,7 +60,7 @@ export default async function BlogPage() {
                     <h3 className="mt-2.5 font-display text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{"Read more about this article on our blog."}</p>
+                    <p className="mt-1.5 text-xs text-slate-500 font-medium leading-relaxed">{"Read more about this article on our blog."}</p>
                     <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
                       <span>By Admin</span>
                       <div className="flex items-center gap-3">
@@ -82,17 +82,26 @@ export default async function BlogPage() {
           {/* Sidebar */}
           <aside className="space-y-6">
             {/* Search */}
-            <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Search Articles</h3>
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
-                <Search className="h-4 w-4 text-muted-foreground" />
+            <div className="group relative rounded-xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  Search Articles
+                </h3>
+              </div>
+              <div className="relative flex items-center transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/20 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 focus-within:bg-white focus-within:border-primary/30 group/input">
+                <div className="pl-3.5 pr-2 py-3 text-slate-400 group-focus-within/input:text-primary transition-colors">
+                  <Search className="h-4 w-4" />
+                </div>
                 <input
                   type="text"
-                  placeholder="Search..."
-                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  placeholder="Type to search..."
+                  className="w-full bg-transparent py-3 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none"
                 />
               </div>
             </div>
+
+
 
             {/* Categories */}
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">

@@ -42,8 +42,9 @@ export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
               <Link
                 key={city.id}
                 href={`/${city.name.toLowerCase()}-jobs`}
-                className="group relative shrink-0 w-64 h-44 overflow-hidden rounded-xl border border-slate-200 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1"
+                className="group relative shrink-0 w-64 h-44 overflow-hidden rounded-xl border-2 border-blue-500 shadow-none transition-all duration-300"
               >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none z-20" />
                 {imageUrl ? (
                   <img
                     src={imageUrl}

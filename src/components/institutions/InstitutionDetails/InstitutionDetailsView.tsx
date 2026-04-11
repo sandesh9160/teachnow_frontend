@@ -48,15 +48,16 @@ export default function InstitutionDetailsView({
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           <div className="space-y-12">
             {/* Professional Institution Header Card */}
-            <section className="overflow-hidden rounded-xl border border-white bg-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/50">
+            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white shadow-none transition-all duration-300">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50/50 rounded-full -mr-24 -mt-24 animate-pulse pointer-events-none z-0" />
               <div className="relative h-24 bg-linear-to-br from-primary/5 to-primary/10 border-b border-primary/10" />
               
               <div className="relative -mt-12 px-6 sm:px-10 flex flex-col sm:flex-row gap-6 sm:items-center">
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-xl ring-8 ring-white border border-slate-100">
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-8 ring-white border border-blue-100">
                   {companyLogo ? (
                     <img src={companyLogo} alt={company.company_name} className="h-full w-full object-contain" />
                   ) : (
-                    <span className="text-3xl font-black text-primary/80">{logoFallback}</span>
+                    <span className="text-3xl font-black text-blue-600">{logoFallback}</span>
                   )}
                 </div>
 
@@ -97,9 +98,9 @@ export default function InstitutionDetailsView({
                 </div>
               </div>
 
-              <div className="px-6 py-10 sm:px-10 border-t border-slate-50 mt-8">
+              <div className="px-6 py-10 sm:px-10 border-t border-slate-100 mt-8 relative z-10">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="h-6 w-1 rounded-full bg-primary/40" />
+                  <div className="h-6 w-1 rounded-full bg-blue-500" />
                   <h2 className="text-xl font-bold text-slate-900">About {company.company_name}</h2>
                 </div>
                 <div className="prose prose-slate max-w-none">
@@ -135,7 +136,7 @@ export default function InstitutionDetailsView({
                       return `${fmt(min)} - ${fmt(max)}`;
                     })()}
                     tags={[job.job_type, `${job.experience_required}y Exp`]}
-                    posted={new Date(job.created_at || Date.now()).toLocaleDateString('en-GB')}
+                    posted={job.created_at}
                     slug={job.slug}
                     logo={company.company_logo}
                   />
@@ -153,8 +154,9 @@ export default function InstitutionDetailsView({
           {/* Compact Refined Sidebar */}
           <aside className="space-y-8">
             {/* High-Density Info Card */}
-            <section className="rounded-xl border border-white bg-white p-6 shadow-xl shadow-slate-200/60 ring-1 ring-slate-200/50">
-              <h3 className="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wide">Key Statistics</h3>
+            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white p-6 shadow-none transition-all duration-300">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+              <h3 className="relative z-10 text-[10px] font-medium text-slate-400 mb-6 uppercase tracking-widest leading-none">Key Statistics</h3>
               
               <div className="space-y-5">
                 {[
@@ -167,7 +169,7 @@ export default function InstitutionDetailsView({
                       <item.icon className="h-4.5 w-4.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold text-slate-400 leading-none mb-1 group-hover/stat:text-slate-500 transition-colors uppercase tracking-tight">{item.label}</p>
+                      <p className="text-[11px] font-medium text-slate-500 leading-none mb-1 group-hover/stat:text-slate-600 transition-colors">{item.label}</p>
                       <p className="text-[13px] font-bold text-slate-700 truncate">{item.value}</p>
                     </div>
                   </div>
@@ -176,10 +178,11 @@ export default function InstitutionDetailsView({
             </section>
 
             {/* Similar Connections Card */}
-            <section className="rounded-xl border border-white bg-white px-6 py-7 shadow-xl shadow-slate-200/60 ring-1 ring-slate-200/50">
-               <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wide">Network</h3>
-                  <Sparkles className="h-4 w-4 text-primary/40" />
+            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white px-6 py-7 shadow-none transition-all duration-300">
+               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+               <div className="relative z-10 flex items-center justify-between mb-6">
+                  <h3 className="text-xs font-semibold text-slate-500 leading-none">Network</h3>
+                  <Sparkles className="h-4 w-4 text-blue-500/20" />
                </div>
 
                <div className="space-y-4">
@@ -200,7 +203,7 @@ export default function InstitutionDetailsView({
                         <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors truncate">
                           {c.company_name}
                         </p>
-                        <p className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                        <p className="text-xs font-medium text-slate-500 flex items-center gap-1 mt-0.5">
                           <MapPin className="h-3 w-3" /> {c.city || "India"}
                         </p>
                       </div>

@@ -18,6 +18,33 @@ export function formatDate(date: string | number | Date): string {
   });
 }
 
+export function formatTimeAgo(date?: string | number | Date): string {
+  if (!date) return "Just now";
+  
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "Recently";
+
+  const diffInMs = Date.now() - d.getTime();
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  
+  if (diffInHours < 1) return "Just now";
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) return "1 day ago";
+  if (diffInDays < 30) return `${diffInDays} days ago`;
+  
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths === 1) return "1 month ago";
+  if (diffInMonths < 12) return `${diffInMonths} months ago`;
+
+  return d.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 /**
  * Normalizes a string into a URL-friendly slug.
  * Trims, lowercases, decodes, and replaces spaces/special chars with hyphens.

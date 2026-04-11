@@ -24,7 +24,7 @@ export interface JobCardProps {
   type: string;
   salary: string;
   tags: string[];
-  posted: string;
+   posted: string | number | Date;
   slug?: string | null;
   logo?: string;
 }

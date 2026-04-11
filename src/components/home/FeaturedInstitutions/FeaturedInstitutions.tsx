@@ -28,15 +28,29 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
 
         <div className="relative group/carousel">
           {/* Navigation Arrows */}
-          <button 
-            onClick={() => {
-              if (companiesRef.current) companiesRef.current.scrollBy({ left: -companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-            }}
-            className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-            title="Previous"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
+          {institutions.length > 1 && (
+            <>
+              <button 
+                onClick={() => {
+                  if (companiesRef.current) companiesRef.current.scrollBy({ left: -companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+                }}
+                className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
+                title="Previous"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+
+              <button 
+                onClick={() => {
+                  if (companiesRef.current) companiesRef.current.scrollBy({ left: companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
+                }}
+                className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
+                title="Next"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
 
           <div 
             ref={companiesRef} 
@@ -62,22 +76,14 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
             })}
           </div>
 
-          <button 
-            onClick={() => {
-              if (companiesRef.current) companiesRef.current.scrollBy({ left: companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-            }}
-            className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-            title="Next"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-
           {/* Pagination Dots Indicator */}
-          <div className="flex justify-center items-center gap-2.5 mt-2">
-            <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
-            <div className="h-2.5 w-10 rounded-full bg-primary shadow-sm" />
-            <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
-          </div>
+          {institutions.length > 1 && (
+            <div className="hidden md:flex justify-center items-center gap-2.5 mt-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
+              <div className="h-2.5 w-10 rounded-full bg-primary shadow-sm" />
+              <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
+            </div>
+          )}
         </div>
       </div>
     </section>

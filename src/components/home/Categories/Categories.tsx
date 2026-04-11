@@ -72,19 +72,21 @@ export const Categories = ({ categories }: CategoriesProps) => {
               <Link
                 key={cat.id}
                 href={href}
-                className="group flex flex-col shrink-0 w-52 items-center rounded-xl border border-slate-200 bg-card p-6 text-center shadow-card transition-all duration-300 hover:shadow-card-hover hover:border-primary/20 hover:-translate-y-0.5"
+                className="group relative flex flex-col shrink-0 w-52 items-center rounded-xl border-2 border-blue-500 bg-white p-6 text-center shadow-none transition-all duration-300 overflow-hidden"
               >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+                
                 {/* Icon box - matching site-wide square icon pattern */}
-                <div className="shrink-0 flex h-16 w-16 mb-4 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:scale-105 group-hover:border-primary">
+                <div className="relative z-10 shrink-0 flex h-16 w-16 mb-4 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-105 group-hover:border-blue-600">
                   <CategoryIcon iconPath={cat.icon} id={cat.id} />
                 </div>
 
                 {/* Content */}
-                <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors line-clamp-2">
+                <div className="relative z-10 space-y-1">
+                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
                     {cat.name}
                   </h3>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                  <p className="text-[11px] font-medium text-slate-400">
                     <span>{cat.jobs_count || 0} {cat.jobs_count === 1 ? "Job" : "Jobs"}</span>
                   </p>
                 </div>

@@ -82,40 +82,47 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           {Array.from(new Map(testimonials.map((t) => [t.id, t])).values()).map((t) => (
             <div
               key={t.id}
-              className="w-full lg:w-80 shrink-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300"
+              className="group relative w-full lg:w-[350px] shrink-0 rounded-2xl border-2 border-blue-500 bg-white p-8 shadow-none transition-all duration-300 overflow-hidden"
             >
-              {/* Star Rating Section */}
-              <div className="flex gap-0.5 mb-4">
-                {Array.from({ length: 5 }).map((_, i) => {
-                  const rating = t.rating || 5;
-                  const isFilled = i < Math.floor(rating);
-                  return (
-                    <Star
-                      key={i}
-                      className={cn(
-                        "h-4 w-4",
-                        isFilled ? "text-amber-400 fill-amber-400" : "text-slate-200 fill-transparent"
-                      )}
-                    />
-                  );
-                })}
-              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none z-0" />
               
-              <Quote className="h-6 w-6 text-primary/10 mb-4" />
-              
-              <p className="text-sm text-slate-600 leading-relaxed min-h-[96px] line-clamp-4 font-medium italic">
-                "{t.message}"
-              </p>
-              
-              <div className="mt-6 flex items-center gap-3 pt-5 border-t border-slate-100">
-                <div className="relative h-11 w-11 shrink-0 rounded-full border border-slate-100 shadow-inner overflow-hidden">
-                  <TestimonialAvatar src={t.photo} name={t.name} />
+              <div className="relative z-10 flex flex-col h-full">
+                {/* Star Rating Section */}
+                <div className="flex gap-1 mb-6">
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const rating = t.rating || 5;
+                    const isFilled = i < Math.floor(rating);
+                    return (
+                      <Star
+                        key={i}
+                        className={cn(
+                          "h-4 w-4",
+                          isFilled ? "text-amber-400 fill-amber-400" : "text-slate-200 fill-transparent"
+                        )}
+                      />
+                    );
+                  })}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-slate-900 truncate tracking-tight">{t.name}</p>
-                  <p className="text-[11px] font-medium text-slate-400 truncate uppercase tracking-tighter">
-                    {t.designation} at {t.company}
+                
+                <div className="relative">
+                  <Quote className="absolute -top-2 -left-2 h-10 w-10 text-blue-500/10 -z-10" />
+                  <p className="text-[15px] text-slate-700 leading-relaxed min-h-[110px] font-medium italic relative z-10">
+                    "{t.message}"
                   </p>
+                </div>
+                
+                <div className="mt-auto pt-6 flex items-center gap-4 border-t border-slate-100">
+                  <div className="relative h-12 w-12 shrink-0 rounded-full border-2 border-blue-100 p-0.5 shadow-sm overflow-hidden bg-white">
+                    <div className="relative h-full w-full rounded-full overflow-hidden">
+                      <TestimonialAvatar src={t.photo} name={t.name} />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base font-bold text-slate-900 truncate tracking-tight">{t.name}</p>
+                    <p className="text-xs font-medium text-slate-500 truncate mt-0.5">
+                      {t.designation}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

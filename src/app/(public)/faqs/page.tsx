@@ -65,12 +65,20 @@ export default function FAQPage() {
         {!loading && faqs.length > 0 && (
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, i) => (
-              <AccordionItem key={faq.id || i} value={`faq-${i}`} className="rounded-2xl border border-gray-100 bg-white px-6 py-1 shadow-sm hover:shadow-md transition-shadow">
-                <AccordionTrigger className="text-base font-bold text-foreground hover:text-primary py-4 text-left no-underline">
+              <AccordionItem 
+                key={faq.id || i} 
+                value={`faq-${i}`} 
+                className="group relative rounded-xl border-2 border-blue-500 bg-white px-6 overflow-hidden shadow-none transition-all duration-300"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+                
+                <AccordionTrigger className="relative z-10 text-base font-bold text-slate-900 hover:text-blue-600 py-6 text-left no-underline [&[data-state=open]>svg]:text-blue-600">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-base text-muted-foreground pb-6 leading-relaxed">
-                  {faq.answer}
+                <AccordionContent className="relative z-10 px-6 pb-6">
+                  <div className="pl-6 border-l-2 border-blue-100 text-slate-600 text-sm sm:text-[15px] font-medium leading-relaxed">
+                    {faq.answer}
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             ))}

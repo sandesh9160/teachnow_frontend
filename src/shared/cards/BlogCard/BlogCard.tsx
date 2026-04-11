@@ -17,7 +17,7 @@ const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: Blo
   return (
     <Link
       href={slug ? `/blogs/${slug}` : "/blogs"}
-      className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden shadow-card transition-all duration-300 hover:shadow-card-hover hover:border-primary/20 hover:-translate-y-0.5"
+      className="group relative flex flex-col rounded-xl border-2 border-blue-500 bg-white overflow-hidden shadow-none transition-all duration-300"
     >
       <div className="h-40 overflow-hidden">
         {image ? (
@@ -29,7 +29,7 @@ const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: Blo
       <div className="flex flex-1 flex-col p-5">
         <span className="mb-2 inline-block w-fit rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{category}</span>
         <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{title}</h3>
-        <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground line-clamp-2">{excerpt}</p>
+        <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-500 font-medium">{excerpt}</p>
         <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
           <span>{date}</span>
           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{readTime}</span>

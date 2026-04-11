@@ -179,8 +179,9 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           <div className="space-y-8">
             {/* Professional Header Section */}
-            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md ring-1 ring-slate-200/50 w-full">
-              <div className="p-3.5 sm:p-8">
+            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white shadow-none w-full transition-all duration-300">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50/50 rounded-full -mr-24 -mt-24 animate-pulse pointer-events-none z-0" />
+              <div className="p-4 sm:p-10 relative z-10">
                 <div className="flex flex-col gap-6 md:flex-row md:items-start lg:gap-8">
                   {/* Logo Container */}
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 border border-slate-100 p-2 shadow-sm sm:h-20 sm:w-20 mx-auto md:mx-0">
@@ -214,7 +215,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     {/* Compact Meta Grid */}
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 border-t border-slate-50 pt-6">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Location</p>
+                        <p className="text-xs font-medium text-slate-500">Location</p>
                         <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
                           <MapPin className="h-3.5 w-3.5 text-slate-400" />
                           {job.location || "India"}
@@ -222,7 +223,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Salary</p>
+                        <p className="text-xs font-medium text-slate-500">Salary</p>
                         <div className="text-sm font-semibold text-slate-700 flex items-center justify-center md:justify-start gap-1">
                           <TrendingUp className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                           <span className="leading-tight">{salaryRange}</span>
@@ -230,7 +231,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Experience</p>
+                        <p className="text-xs font-medium text-slate-500">Experience</p>
                         <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
                           <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
                           {job.experience_required ? `${job.experience_required}+ Yrs` : "Fresher"}
@@ -238,7 +239,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                       </div>
 
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Type</p>
+                        <p className="text-xs font-medium text-slate-500">Type</p>
                         <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
                           <Briefcase className="h-3.5 w-3.5 text-slate-400" />
                           {jobType}
@@ -249,9 +250,9 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                 </div>
 
                 {/* Action Bar */}
-                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 border-t border-slate-50 pt-6">
+                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 border-t border-slate-100 pt-8">
                   <Link href={`/apply/${jobSegment}`} className="flex-1">
-                    <Button variant="hero" size="lg" className="h-12 w-full rounded-xl font-bold shadow-lg shadow-primary/10 text-base">
+                    <Button variant="hero" size="lg" className="h-12 w-full rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-none text-base">
                       Apply Now
                     </Button>
                   </Link>
@@ -281,9 +282,9 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             </section>
 
             {/* Job Content Section */}
-            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-200/50">
-              <div className="border-b border-slate-100 bg-slate-50/20 px-8 py-4">
-                <h2 className="text-[13px] font-bold uppercase tracking-wider text-primary">Job Overview & Details</h2>
+            <section className="overflow-hidden rounded-2xl border-2 border-blue-500 bg-white shadow-none">
+              <div className="border-b border-blue-100 bg-blue-50/20 px-10 py-5">
+                <h2 className="text-sm font-semibold text-blue-600">Job Overview & Details</h2>
               </div>
 
               <div className="p-6 sm:p-8">
@@ -309,10 +310,11 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
           {/* Compact Sidebar */}
           <aside className="space-y-6">
             {/* Quick Action Card */}
-            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-200/50">
-              <div className="text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Avg. Compensation</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">{salaryRange}</p>
+            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white p-8 shadow-none transition-all duration-300">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+              <div className="relative z-10 text-center">
+                <p className="text-xs font-medium text-slate-500">Avg. Compensation</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900 leading-none">{salaryRange}</p>
               </div>
 
               <div className="mt-6 space-y-3">
@@ -330,7 +332,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             </section>
 
             {/* Institution Profile Card */}
-            <section className="overflow-hidden rounded-xl bg-white border border-slate-200 shadow-sm ring-1 ring-slate-200/50">
+            <section className="relative overflow-hidden rounded-2xl bg-white border-2 border-blue-500 shadow-none">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
               <div className="h-16 bg-slate-50 border-b border-slate-100" />
               <div className="relative -mt-8 flex px-5">
                 <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white p-1.5 shadow-md border border-slate-100">
@@ -392,8 +395,9 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               <Link
                 key={sJob.id}
                 href={`/${sanitizeSlug(sJob.slug || sJob.id.toString())}`}
-                className="flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-primary/30 group"
+                className="group relative flex flex-col rounded-2xl border-2 border-blue-500 bg-white p-6 shadow-none transition-all duration-300 overflow-hidden"
               >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
                 <div className="flex items-start gap-3 mb-4">
                   <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
                     <span className="text-sm font-bold text-primary">{(sJob.employer?.company_name?.[0] || "J").toUpperCase()}</span>

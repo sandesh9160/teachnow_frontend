@@ -27,13 +27,17 @@ export const FAQ = ({ faqs }: FAQProps) => {
             <AccordionItem 
               key={i} 
               value={`item-${i}`}
-              className="rounded-xl border border-border bg-card shadow-sm px-4 sm:px-6 overflow-hidden transition-all duration-300 hover:border-primary/20 data-[state=open]:border-primary/30 data-[state=open]:shadow-md"
+              className="group relative rounded-xl border-2 border-blue-500 bg-white px-6 overflow-hidden shadow-none transition-all duration-300"
             >
-              <AccordionTrigger className="text-left font-display text-base font-semibold py-5 hover:no-underline [&[data-state=open]>svg]:text-primary">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+              
+              <AccordionTrigger className="relative z-10 text-left font-display text-base font-bold py-6 hover:no-underline [&[data-state=open]>svg]:text-blue-600 text-slate-900">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-sm sm:text-base leading-relaxed pb-6">
-                {faq.answer}
+              <AccordionContent className="relative z-10 px-6 pb-6">
+                <div className="pl-6 border-l-2 border-blue-100 text-slate-600 text-sm sm:text-[15px] font-medium leading-relaxed">
+                  {faq.answer}
+                </div>
               </AccordionContent>
             </AccordionItem>
           ))}

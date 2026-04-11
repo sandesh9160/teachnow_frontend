@@ -43,20 +43,22 @@ export const EmployerSteps = () => {
           {steps.map((s) => (
             <div
               key={s.step}
-              className="group rounded-2xl border border-border bg-card p-6 shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 text-center"
+              className="group relative rounded-xl border-2 border-blue-500 bg-white p-6 shadow-none transition-all duration-300 overflow-hidden text-center"
             >
-              <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-xl">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none z-0" />
+              
+              <div className="relative z-10 mx-auto mb-4 h-32 w-32 overflow-hidden rounded-xl">
                 <img
                   src={s.img}
                   alt={s.title}
                   className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
                 />
               </div>
-              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full gradient-primary text-primary-foreground text-sm font-bold mb-3">
+              <div className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm font-bold mb-3">
                 {s.step}
               </div>
-              <h3 className="font-display text-base font-semibold text-foreground">{s.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+              <h3 className="relative z-10 font-display text-base font-bold text-slate-900 leading-tight">{s.title}</h3>
+              <p className="relative z-10 mt-2 text-sm text-slate-500 font-medium">{s.desc}</p>
             </div>
           ))}
         </div>

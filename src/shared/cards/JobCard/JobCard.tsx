@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { MapPin, Clock, Briefcase, Building2, Bookmark, BookmarkCheck } from "lucide-react";
-import { Button } from "@/shared/ui/Buttons/Buttons";
+import { MapPin, Clock3, Bookmark, BookmarkCheck } from "lucide-react";
+// import { Button } from "@/shared/ui/Buttons/Buttons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
 import QuickAuthModal from "@/components/auth/QuickAuthModal";
 import { JobCardProps } from "@/types/components";
-import { sanitizeSlug } from "@/lib/utils";
+import { sanitizeSlug, cn, formatTimeAgo } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
 
 const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo }: JobCardProps) => {
@@ -87,64 +87,86 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
   return (
     <>
       <div
-        className="group relative block rounded-xl border border-slate-200 bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-hover hover:border-primary/20 hover:-translate-y-0.5"
+        className="group relative block rounded-xl border-2 border-blue-500 bg-white p-4 sm:p-5 shadow-none transition-all duration-300 overflow-hidden h-full flex flex-col"
       >
-        <div className="flex items-start justify-between">
-          <Link href={jobHref} className="flex gap-4 flex-1">
-            <div className="absolute inset-0 z-0" aria-hidden="true" />
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary font-display font-bold text-lg transition-transform duration-300 group-hover:scale-110 relative z-10 overflow-hidden">
-              {logoUrl && !logoError ? (
-                <img 
-                  src={logoUrl} 
-                  alt={company} 
-                  className="h-full w-full object-contain" 
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <span className="uppercase">{company && company[0]}</span>
-              )}
-            </div>
-            <div className="relative z-10">
-              <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                {title}
-              </h3>
-              <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                <Building2 className="h-3.5 w-3.5" />
-                {company}
+        <div className="absolute top-0 right-0 w-36 h-36 bg-blue-50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <Link href={jobHref} className="flex gap-3 flex-1 items-start">
+              <div className="w-12 h-12 shrink-0 rounded-lg border border-slate-100 bg-white p-2 shadow-sm flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+                {logoUrl && !logoError ? (
+                  <img 
+                    src={logoUrl} 
+                    alt={company} 
+                    className="h-full w-full object-contain" 
+                    onError={() => setLogoError(true)}
+                  />
+                ) : (
+                  <span className="text-indigo-600 font-medium text-lg">{company && company[0]}</span>
+                )}
               </div>
-            </div>
-          </Link>
-          <button
-            onClick={handleSave}
-            suppressHydrationWarning={true}
-            className={`relative z-20 rounded-lg p-2 transition-colors ${saved ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-          >
-            {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          </button>
-        </div>
+              <div className="min-w-0">
+                <h3 className="font-display text-[17px] font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[46px] leading-tight tracking-tight">
+                  {title}
+                </h3>
+                <p className="text-indigo-600 font-medium text-[13px] mt-0.5 tracking-tight truncate">{company}</p>
+              </div>
+            </Link>
 
-        <div className="relative z-10">
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-y-3 gap-x-4 text-xs text-muted-foreground">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" />{location}</span>
-              <span className="flex items-center gap-1"><Briefcase className="h-3.5 w-3.5 shrink-0" />{type}</span>
-              <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 shrink-0" />{posted}</span>
-            </div>
-            <span className="font-bold text-slate-900 text-[13px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100 italic">₹ {salary}</span>
+            <button
+              onClick={handleSave}
+              suppressHydrationWarning={true}
+              className={cn(
+                "p-2.5 rounded-lg transition-all duration-300 active:scale-95 shrink-0 z-20",
+                saved 
+                  ? "bg-blue-600 text-white" 
+                  : "bg-slate-50 text-slate-400 border border-slate-100"
+              )}
+              title={saved ? "Saved" : "Save Job"}
+            >
+              {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            </button>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">{tag}</span>
-            ))}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-[11px] font-medium border border-emerald-100/50 tracking-tight flex items-center gap-1.5">
+               <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+               {type}
+            </span>
+            <span className="flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500 border border-slate-200">
+              <Clock3 className="h-3 w-3" />
+              {formatTimeAgo(posted)}
+            </span>
+            <span className="bg-slate-100 text-slate-800 px-3 py-1 rounded-lg text-[11px] font-medium border border-slate-200 flex items-center gap-1.5 tracking-tight">
+               <MapPin className="w-3.5 h-3.5 text-indigo-500" />
+               <span className="truncate max-w-[80px] sm:max-w-none">{location}</span>
+            </span>
           </div>
-        </div>
 
-        <div className="mt-4 flex gap-2 relative z-20">
-          <Button size="sm" className="flex-1" onClick={handleApply}>Apply Now</Button>
-          <Link href={jobHref} className="flex-1">
-            <Button size="sm" variant="outline" className="w-full">View Details</Button>
-          </Link>
+          <div className="mb-4">
+            {salary && (
+               <span className="inline-flex bg-indigo-50 text-indigo-900 px-4 py-1.5 rounded-lg text-[11px] font-medium border border-indigo-100/50 items-center gap-1.5 tracking-tight">
+                 ₹{salary}
+               </span>
+            )}
+          </div>
+
+          <div className="mt-auto pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2.5">
+                <Link href={jobHref} className="flex-1">
+                  <button className="w-full h-11 px-4 rounded-xl bg-emerald-600 text-white font-bold text-[13px] hover:bg-emerald-700 transition-all active:scale-95">
+                     Details
+                  </button>
+               </Link>
+               <button 
+                 onClick={handleApply}
+                 className="flex-[1.5] h-11 px-4 rounded-xl bg-indigo-600 text-white font-bold text-[13px] hover:bg-indigo-700 transition-all active:scale-95 whitespace-nowrap"
+               >
+                  Apply Now
+               </button>
+            </div>
+          </div>
         </div>
       </div>
 
