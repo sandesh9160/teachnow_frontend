@@ -179,7 +179,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           <div className="space-y-8">
             {/* Professional Header Section */}
-            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white shadow-none w-full transition-all duration-300">
+            <section className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-none w-full transition-all duration-300">
               <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50/50 rounded-full -mr-24 -mt-24 animate-pulse pointer-events-none z-0" />
               <div className="p-4 sm:p-10 relative z-10">
                 <div className="flex flex-col gap-6 md:flex-row md:items-start lg:gap-8">
@@ -282,7 +282,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             </section>
 
             {/* Job Content Section */}
-            <section className="overflow-hidden rounded-2xl border-2 border-blue-500 bg-white shadow-none">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-none">
               <div className="border-b border-blue-100 bg-blue-50/20 px-10 py-5">
                 <h2 className="text-sm font-semibold text-blue-600">Job Overview & Details</h2>
               </div>
@@ -310,7 +310,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
           {/* Compact Sidebar */}
           <aside className="space-y-6">
             {/* Quick Action Card */}
-            <section className="group relative overflow-hidden rounded-2xl border-2 border-blue-500 bg-white p-8 shadow-none transition-all duration-300">
+            <section className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-none transition-all duration-300">
               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
               <div className="relative z-10 text-center">
                 <p className="text-xs font-medium text-slate-500">Avg. Compensation</p>
@@ -332,7 +332,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             </section>
 
             {/* Institution Profile Card */}
-            <section className="relative overflow-hidden rounded-2xl bg-white border-2 border-blue-500 shadow-none">
+            <section className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-none">
               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
               <div className="h-16 bg-slate-50 border-b border-slate-100" />
               <div className="relative -mt-8 flex px-5">
@@ -395,7 +395,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               <Link
                 key={sJob.id}
                 href={`/${sanitizeSlug(sJob.slug || sJob.id.toString())}`}
-                className="group relative flex flex-col rounded-2xl border-2 border-blue-500 bg-white p-6 shadow-none transition-all duration-300 overflow-hidden"
+                className="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-none transition-all duration-300 overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
                 <div className="flex items-start gap-3 mb-4">

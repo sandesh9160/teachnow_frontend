@@ -12,9 +12,9 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
   return (
     <Link
       href={`/institutions/${cleanSlug}`}
-      className="group relative flex flex-col items-center text-center h-full rounded-xl border-2 border-blue-500 bg-white p-5 shadow-none transition-all duration-300 overflow-hidden"
+      className="group relative flex flex-col items-center text-center h-full rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 overflow-hidden"
     >
-      <div className="absolute top-0 right-0 w-36 h-36 bg-blue-50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none" />
+      <div className="absolute top-0 right-0 w-36 h-36 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none" />
 
       {/* Logo Section */}
       <div className="h-14 w-14 mb-4 rounded-lg border border-slate-100 bg-white p-2.5 shadow-sm transition-all duration-500 group-hover:scale-110 flex items-center justify-center relative z-10">

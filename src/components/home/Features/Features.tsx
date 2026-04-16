@@ -23,8 +23,8 @@ export const Features = () => {
 
 
           {/* For Job Seekers */}
-          <div className="group relative rounded-2xl border-2 border-blue-500 bg-white overflow-hidden shadow-none transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none z-20" />
+          <div className="group relative rounded-2xl border border-slate-200/60 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none z-20" />
             
             <div className="h-52 overflow-hidden relative">
               <img
@@ -62,8 +62,8 @@ export const Features = () => {
 
 
           {/* For Employers */}
-          <div className="group relative rounded-2xl border-2 border-blue-500 bg-white overflow-hidden shadow-none transition-all duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none z-20" />
+          <div className="group relative rounded-2xl border border-slate-200/60 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none z-20" />
             
             <div className="h-52 overflow-hidden relative">
               <img

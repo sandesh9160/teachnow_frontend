@@ -33,6 +33,11 @@ export type Job = {
     question_type: "boolean" | "numeric" | "text" | string;
     recruiter_answer?: string;
   }[];
+  category?: {
+    id: number;
+    name: string;
+    slug?: string;
+  };
 };
 
 
@@ -44,6 +49,10 @@ export type Institution = {
   company_description?: string;
   description?: string;
   location?: string;
+  address?: string;
+  email?: string;
+  phone?: string;
+  country?: string;
   city?: string;
   website?: string;
   industry?: string;
@@ -54,6 +63,9 @@ export type Institution = {
   is_featured?: number;
   associated_jobs?: Job[];
   jobs_count?: number;
+  latitude?: string | null;
+  longitude?: string | null;
+  map_link?: string | null;
 };
 
 export type City = {

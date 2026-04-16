@@ -72,9 +72,9 @@ export const Categories = ({ categories }: CategoriesProps) => {
               <Link
                 key={cat.id}
                 href={href}
-                className="group relative flex flex-col shrink-0 w-52 items-center rounded-xl border-2 border-blue-500 bg-white p-6 text-center shadow-none transition-all duration-300 overflow-hidden"
+                className="group relative flex flex-col shrink-0 w-52 items-center rounded-2xl border border-slate-200/60 bg-white p-6 text-center shadow-xs transition-all duration-300 overflow-hidden hover:shadow-md hover:border-primary/20"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+                <div className="absolute top-0 right-0 w-24 h-24 bg-slate-100/50 rounded-full -mr-12 -mt-12 pointer-events-none" />
                 
                 {/* Icon box - matching site-wide square icon pattern */}
                 <div className="relative z-10 shrink-0 flex h-16 w-16 mb-4 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-105 group-hover:border-blue-600">

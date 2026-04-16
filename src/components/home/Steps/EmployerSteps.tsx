@@ -43,9 +43,9 @@ export const EmployerSteps = () => {
           {steps.map((s) => (
             <div
               key={s.step}
-              className="group relative rounded-xl border-2 border-blue-500 bg-white p-6 shadow-none transition-all duration-300 overflow-hidden text-center"
+              className="group relative rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden text-center"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none z-0" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50/50 rounded-full -mr-12 -mt-12 pointer-events-none z-0" />
               
               <div className="relative z-10 mx-auto mb-4 h-32 w-32 overflow-hidden rounded-xl">
                 <img
@@ -54,7 +54,12 @@ export const EmployerSteps = () => {
                   className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
                 />
               </div>
-              <div className="relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm font-bold mb-3">
+              <div className={`relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold mb-3 ${
+                s.step === 1 ? "bg-blue-50 text-blue-600" :
+                s.step === 2 ? "bg-emerald-50 text-emerald-600" :
+                s.step === 3 ? "bg-rose-50 text-rose-600" :
+                "bg-amber-50 text-amber-600"
+              }`}>
                 {s.step}
               </div>
               <h3 className="relative z-10 font-display text-base font-bold text-slate-900 leading-tight">{s.title}</h3>

@@ -42,23 +42,26 @@ export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
               <Link
                 key={city.id}
                 href={`/${city.name.toLowerCase()}-jobs`}
-                className="group relative shrink-0 w-64 h-44 overflow-hidden rounded-xl border-2 border-blue-500 shadow-none transition-all duration-300"
+                className="group relative shrink-0 w-80 h-52 overflow-hidden rounded-[24px] border border-slate-200/20 shadow-sm transition-all duration-500"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none z-20" />
                 {imageUrl ? (
                   <img
                     src={imageUrl}
                     alt={city.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="h-full w-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                  <div className="h-full w-full bg-slate-100 flex items-center justify-center font-bold text-slate-300">
                     {city.name}
                   </div>
                 )}
-                <div className="absolute inset-0 bg-linear-to-t from-foreground/80 via-foreground/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="font-display text-lg font-bold text-primary-foreground">{city.name}</h3>
+                
+                {/* Visual Polish: Gradient & Glass Effect */}
+                <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mb-1 group-hover:text-white transition-colors">Explore</p>
+                  <h3 className="text-xl font-bold text-white tracking-tight">{city.name}</h3>
                 </div>
               </Link>
             );

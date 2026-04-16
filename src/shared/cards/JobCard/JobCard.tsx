@@ -87,9 +87,9 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
   return (
     <>
       <div
-        className="group relative block rounded-xl border-2 border-blue-500 bg-white p-4 sm:p-5 shadow-none transition-all duration-300 overflow-hidden h-full flex flex-col"
+        className="group relative block rounded-xl border border-slate-200/60 bg-white p-4 sm:p-5 shadow-sm transition-all duration-300 overflow-hidden h-full flex flex-col hover:border-indigo-200/50 hover:shadow-md"
       >
-        <div className="absolute top-0 right-0 w-36 h-36 bg-blue-50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none" />
+        <div className="absolute top-0 right-0 w-36 h-36 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none" />
         
         <div className="relative z-10 flex flex-col h-full">
           <div className="flex items-start justify-between gap-3 mb-4">
@@ -150,8 +150,8 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
           </div>
 
           <div className="mb-4">
-            {salary && (
-               <span className="inline-flex bg-indigo-50 text-indigo-900 px-4 py-1.5 rounded-lg text-[11px] font-medium border border-indigo-100/50 items-center gap-1.5 tracking-tight">
+            {salary !== "Not disclosed" && (
+               <span className="inline-flex bg-slate-100 text-slate-700 px-4 py-1.5 rounded-lg text-[11px] font-bold border border-slate-200 items-center gap-1.5 tracking-tight group-hover:bg-primary/5 transition-colors">
                  ₹{salary}
                </span>
             )}

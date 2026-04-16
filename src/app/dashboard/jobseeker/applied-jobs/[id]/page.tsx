@@ -38,34 +38,43 @@ export default function ApplicationDetailPage() {
     try {
       setLoading(true);
       
-      // Step 1: Try specific GET (Future-proof)
+      let applicationData = null;
+
+      // Step 1: Try specific GET (Primary)
       try {
         const detail = await getApplication(id as string);
-        if (detail) {
-          setApplication(detail);
-          // Fetch profile separately
-          try {
-            const res = await getProfile();
-            setProfileData(res?.data || res);
-          } catch (e) {}
-          setLoading(false);
-          return;
+        // Check if it's a valid data object and not an error response from dashboardServerFetch
+        if (detail && (detail as any).status !== false) {
+          applicationData = detail;
         }
       } catch (err) {
-        console.log("Specific GET failed, using fallback...");
+        console.log("Specific GET failed, trying fallback...");
       }
 
-      // Step 2: Fallback to list filtering
-      const data = await getApplications();
-      const list = Array.isArray(data) ? data : (data as any)?.data || [];
-      const found = list.find((a: any) => String(a.id) === String(id));
-      
-      if (found) {
-        setApplication(found);
+      // Step 2: Fallback to list filtering if specific GET failed or returned error
+      if (!applicationData) {
+        const data = await getApplications();
+        // Check if data is an array or an error response
+        if (data && (data as any).status !== false) {
+          const list = Array.isArray(data) ? data : (data as any)?.data || [];
+          const found = list.find((a: any) => String(a.id) === String(id));
+          if (found) {
+            applicationData = found;
+          }
+        }
+      }
+
+      if (applicationData) {
+        setApplication(applicationData);
+        // Fetch profile separately even if application found
         try {
           const res = await getProfile();
-          setProfileData(res?.data || res);
-        } catch (e) {}
+          if (res && res.status !== false) {
+            setProfileData(res?.data || res);
+          }
+        } catch (e) {
+          console.error("Profile fetch failed:", e);
+        }
       } else {
         toast.error("Application details not found.");
       }
@@ -140,23 +149,31 @@ export default function ApplicationDetailPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-700" />
             <div className="relative z-10 flex gap-5">
               <div className="h-16 w-16 shrink-0 bg-white border border-slate-100 rounded-2xl flex items-center justify-center p-2 shadow-sm">
-                 {job?.employer?.company_logo ? (
-                   <img src={normalizeMediaUrl(job.employer.company_logo)} alt="" className="h-full w-full object-contain" />
+                 {job?.employer?.company_logo || application.company_logo || application.employer_logo ? (
+                   <img 
+                    src={normalizeMediaUrl(job?.employer?.company_logo || application.company_logo || application.employer_logo)} 
+                    alt="" 
+                    className="h-full w-full object-contain" 
+                  />
                  ) : (
                    <Building2 className="w-8 h-8 text-indigo-200" />
                  )}
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-indigo-950 leading-tight">{job?.title}</h2>
-                <p className="font-semibold text-indigo-600 text-sm tracking-wide">{job?.employer?.company_name}</p>
+                <h2 className="text-xl font-bold text-indigo-950 leading-tight">
+                  {job?.title || application.job_title || application.title || "Position Details"}
+                </h2>
+                <p className="font-semibold text-indigo-600 text-sm tracking-wide">
+                  {job?.employer?.company_name || application.company_name || application.employer_name || "Organization"}
+                </p>
                 <div className="flex items-center gap-4 pt-1">
                   <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                     <MapPin className="w-3.5 h-3.5 text-indigo-400" />
-                    {job?.location}
+                    {job?.location || application.location || "Location not specified"}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                     <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
-                    {job?.job_type}
+                    {job?.job_type || application.job_type || "General"}
                   </span>
                 </div>
               </div>
@@ -171,7 +188,7 @@ export default function ApplicationDetailPage() {
             </div>
             <div 
               className="text-slate-700 text-sm leading-relaxed whitespace-pre-line rich-text font-normal"
-              dangerouslySetInnerHTML={{ __html: job?.description }}
+              dangerouslySetInnerHTML={{ __html: job?.description || application.job_description || application.description || "No description provided." }}
             />
           </div>
 
@@ -350,7 +367,9 @@ export default function ApplicationDetailPage() {
                     </div>
                     <div>
                        <p className="text-[10px] font-medium text-indigo-500">Submission Date</p>
-                       <p className="text-xs font-semibold text-indigo-950">{new Date(application.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
+                       <p className="text-xs font-semibold text-indigo-950">
+                         {application.created_at ? new Date(application.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "N/A"}
+                       </p>
                     </div>
                  </div>
               </div>
@@ -369,35 +388,49 @@ export default function ApplicationDetailPage() {
                 </div>
               )}
 
-              {/* Resume Card */}
-              <div className="pt-2">
-                 <div className="bg-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-indigo-600/20 space-y-4 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-700" />
-                    <div className="relative z-10 flex items-center gap-4">
-                       <div className="h-10 w-10 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white">
-                          <FileText className="w-5 h-5" />
-                       </div>
-                       <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-medium text-indigo-100">Submitted Resume</p>
-                          <p className="text-xs font-semibold text-white truncate">
-                            {application.resume?.file_name || application.resume_name || "Official_Document.pdf"}
-                          </p>
-                       </div>
-                    </div>
-                    
-                    {(application.resume?.url || application.resume?.pdf_path || profileData?.resume?.url) && (
-                      <a 
-                        href={normalizeMediaUrl(application.resume?.url || application.resume?.pdf_path || profileData?.resume?.url)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full h-9 bg-white rounded-lg text-xs font-semibold text-indigo-700 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        Access Document
-                      </a>
-                    )}
-                 </div>
-              </div>
+                {/* Resume Card */}
+                <div className="pt-2">
+                   <div className="bg-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-indigo-600/20 space-y-4 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-700" />
+                      <div className="relative z-10 flex items-center gap-4">
+                         <div className="h-10 w-10 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white">
+                            <FileText className="w-5 h-5" />
+                         </div>
+                         <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-medium text-indigo-100">Submitted Resume</p>
+                            <p className="text-xs font-semibold text-white truncate">
+                              {application.resume?.file_name || application.resume_name || (typeof application.resume === 'string' ? application.resume.split('/').pop() : null) || "Official_Document.pdf"}
+                            </p>
+                         </div>
+                      </div>
+                      
+                      {(() => {
+                        const rUrl = application.resume?.url || 
+                                     application.resume?.pdf_path || 
+                                     (typeof application.resume === 'string' ? application.resume : null) ||
+                                     application.resume_url || 
+                                     application.resume_path || 
+                                     application.pdf_path || 
+                                     profileData?.resume?.url || 
+                                     profileData?.resume?.pdf_path ||
+                                     (typeof profileData?.resume === 'string' ? profileData?.resume : null);
+                                     
+                        if (!rUrl) return null;
+
+                        return (
+                          <a 
+                            href={normalizeMediaUrl(rUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full h-9 bg-white rounded-lg text-xs font-semibold text-indigo-700 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Access Document
+                          </a>
+                        );
+                      })()}
+                   </div>
+                </div>
             </div>
           </div>
 

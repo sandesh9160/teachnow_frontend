@@ -82,9 +82,9 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           {Array.from(new Map(testimonials.map((t) => [t.id, t])).values()).map((t) => (
             <div
               key={t.id}
-              className="group relative w-full lg:w-[350px] shrink-0 rounded-2xl border-2 border-blue-500 bg-white p-8 shadow-none transition-all duration-300 overflow-hidden"
+              className="group relative w-full lg:w-[350px] shrink-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 animate-pulse pointer-events-none z-0" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none z-0" />
               
               <div className="relative z-10 flex flex-col h-full">
                 {/* Star Rating Section */}
@@ -112,7 +112,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
                 </div>
                 
                 <div className="mt-auto pt-6 flex items-center gap-4 border-t border-slate-100">
-                  <div className="relative h-12 w-12 shrink-0 rounded-full border-2 border-blue-100 p-0.5 shadow-sm overflow-hidden bg-white">
+                  <div className="relative h-12 w-12 shrink-0 rounded-full border border-slate-200 p-0.5 shadow-xs overflow-hidden bg-white group-hover:border-primary/30 transition-colors">
                     <div className="relative h-full w-full rounded-full overflow-hidden">
                       <TestimonialAvatar src={t.photo} name={t.name} />
                     </div>

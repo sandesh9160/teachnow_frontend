@@ -17,7 +17,7 @@ const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: Blo
   return (
     <Link
       href={slug ? `/blogs/${slug}` : "/blogs"}
-      className="group relative flex flex-col rounded-xl border-2 border-blue-500 bg-white overflow-hidden shadow-none transition-all duration-300"
+      className="group relative flex flex-col rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
     >
       <div className="h-40 overflow-hidden">
         {image ? (

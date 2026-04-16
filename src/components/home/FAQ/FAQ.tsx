@@ -22,20 +22,20 @@ export const FAQ = ({ faqs }: FAQProps) => {
             Find answers to common questions about TeachNow
           </p>
         </div>
-        <Accordion type="single" collapsible className="w-full space-y-4">
+        <Accordion type="single" collapsible className="w-full space-y-3">
           {faqs.map((faq, i) => (
             <AccordionItem 
               key={i} 
               value={`item-${i}`}
-              className="group relative rounded-xl border-2 border-blue-500 bg-white px-6 overflow-hidden shadow-none transition-all duration-300"
+              className="group relative rounded-2xl border border-slate-200 bg-white px-6 overflow-hidden shadow-sm transition-all duration-300 hover:border-primary/20"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50/50 rounded-full -mr-12 -mt-12 pointer-events-none" />
               
-              <AccordionTrigger className="relative z-10 text-left font-display text-base font-bold py-6 hover:no-underline [&[data-state=open]>svg]:text-blue-600 text-slate-900">
+              <AccordionTrigger className="relative z-10 text-left font-display text-[15px] font-bold py-5 hover:no-underline [&[data-state=open]>svg]:text-primary text-slate-900">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="relative z-10 px-6 pb-6">
-                <div className="pl-6 border-l-2 border-blue-100 text-slate-600 text-sm sm:text-[15px] font-medium leading-relaxed">
+              <AccordionContent className="relative z-10 px-0 pb-5">
+                <div className="pl-5 border-l-2 border-primary/20 text-slate-500 text-sm sm:text-[14px] font-medium leading-relaxed">
                   {faq.answer}
                 </div>
               </AccordionContent>
