@@ -18,7 +18,16 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
     <section className="pt-12 pb-20 bg-[#f8faff] overflow-hidden relative">
       <div className="max-w-none w-full">
         
-        {/* Header - EXACTLY AS REQUESTED */}
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold text-[#111827] tracking-tight sm:text-4xl mb-3">
+            Top Institutions Hiring
+          </h2>
+          <p className="text-lg font-medium text-slate-500">
+            Leading institutions actively looking for educators
+          </p>
+        </div>
+
         <div className="relative group/carousel">
           {/* Side Navigation Buttons - Higher to avoid blocking footer info */}
           <button 
