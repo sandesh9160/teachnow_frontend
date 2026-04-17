@@ -12,16 +12,13 @@ import {
   Share2,
   TrendingUp,
   Globe,
-  Users,
 
-  Sparkles,
-  Zap,
-  ArrowRight,
-  ShieldCheck,
+  Building2,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
-import { sanitizeSlug } from "@/lib/utils";
+import { sanitizeSlug, cn } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { toast } from "sonner";
@@ -49,9 +46,9 @@ function formatSalaryRange(job: Job): string {
   const min = formatCurrency(job.salary_min);
   const max = formatCurrency(job.salary_max);
   if (min === "Not disclosed" && max === "Not disclosed") return "Salary not disclosed";
-  if (min === "Not disclosed") return max;
-  if (max === "Not disclosed") return min;
-  return `${min} - ${max}`;
+  if (min === "Not disclosed") return `${max}/mo`;
+  if (max === "Not disclosed") return `${min}/mo`;
+  return `${min} – ${max}/mo`;
 }
 
 function formatJobType(jobType?: string): string {
@@ -79,10 +76,11 @@ function formatPostedDate(date?: string): string {
   })}`;
 }
 
-
+const bannerImg = "/images/city-skyline-banner.jpg";
 
 export default function JobDetails({ job, slug }: JobDetailsProps) {
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState("description");
   const { isLoggedIn, user } = useClientSession();
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
@@ -100,27 +98,17 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
       setShowAuthModal(true);
       return;
     }
-
     if (user?.role === "employer") {
       toast.error("Employers cannot bookmark jobs.");
       return;
     }
-
     const wasBookmarked = isBookmarked;
     try {
       setBookmarkBusy(true);
       await toggleBookmark(job.id);
       toast.success(wasBookmarked ? "Job removed from saved." : "Job saved!");
     } catch (err: any) {
-      const msg: string = err?.message ?? "";
-      if (msg.toLowerCase().includes("profile not found") || msg.toLowerCase().includes("no profile")) {
-        toast.error("Please complete your profile before saving jobs.", {
-          description: "Go to Dashboard → Profile to set up your account.",
-          action: { label: "Go to Profile", onClick: () => window.location.href = "/dashboard/jobseeker/profile" },
-        });
-      } else {
-        toast.error(msg || "Failed to save job.");
-      }
+      toast.error(err?.message || "Failed to save job.");
     } finally {
       setBookmarkBusy(false);
     }
@@ -129,21 +117,16 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   const handleShare = async () => {
     const shareData = {
       title: `${title} | TeachNow`,
-      text: `Check out this job opening: ${title} at ${employerName}`,
       url: typeof window !== "undefined" ? window.location.href : "",
     };
-
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
+      if (navigator.share) await navigator.share(shareData);
+      else {
         await navigator.clipboard.writeText(shareData.url);
         toast.success("Link copied to clipboard!");
       }
     } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        toast.error("Could not share this job.");
-      }
+      if ((err as Error).name !== "AbortError") toast.error("Could not share this job.");
     }
   };
 
@@ -161,261 +144,305 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
     { label: "Jobs", href: "/jobs" },
     { label: title, isCurrent: true },
   ];
-  const description = job.description || "";
 
-  // No longer using split sections
+  const tabs = [
+    { id: "description", label: "Description" },
+    { id: "responsibilities", label: "Responsibilities" },
+    { id: "requirements", label: "Requirements" },
+    { id: "benefits", label: "Benefits" },
+  ];
+
   const similarJobs = Array.isArray(job.similar_jobs) ? job.similar_jobs : [];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-16">
-      {/* Sticky Breadcrumb Bar */}
-      <div className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-20 z-40">
-        <div className="mx-auto max-w-7xl px-3 py-2 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Breadcrumb Bar - Above Banner */}
+      <div className="bg-white border-b border-slate-200 sticky top-16 z-40 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto max-w-[1400px] px-4 py-2.5 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-3 py-6 sm:py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-          <div className="space-y-8">
-            {/* Professional Header Section */}
-            <section className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-none w-full transition-all duration-300">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50/50 rounded-full -mr-24 -mt-24 animate-pulse pointer-events-none z-0" />
-              <div className="p-4 sm:p-10 relative z-10">
-                <div className="flex flex-col gap-6 md:flex-row md:items-start lg:gap-8">
-                  {/* Logo Container */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 border border-slate-100 p-2 shadow-sm sm:h-20 sm:w-20 mx-auto md:mx-0">
-                    {employerLogo ? (
-                      <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
-                    ) : (
-                      <span className="text-2xl font-bold text-primary">{logoFallback}</span>
-                    )}
-                  </div>
+      {/* Banner Section */}
+      <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-slate-100">
+        <img 
+          src={bannerImg} 
+          alt="Banner" 
+          className="w-full h-full object-cover brightness-95" 
+          onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?q=80&w=2070&auto=format&fit=crop"; }}
+        />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-white/60" />
+      </div>
 
-                  <div className="min-w-0 flex-1 text-center md:text-left">
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-700 border border-blue-100">
-                        <Sparkles className="h-3 w-3" /> Featured
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 border border-emerald-100">
-                        <Zap className="h-3 w-3" /> Active
-                      </span>
-                    </div>
-
-                    <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-                      {title}
-                    </h1>
-
-                    <div className="mt-2 flex items-center justify-center md:justify-start gap-2">
-                      <Link href={institutionHref} className="text-sm sm:text-base font-semibold text-primary/80 hover:text-primary transition-colors hover:underline">
-                        {employerName}
-                      </Link>
-                    </div>
-
-                    {/* Compact Meta Grid */}
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 border-t border-slate-50 pt-6">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-slate-500">Location</p>
-                        <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
-                          <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                          {job.location || "India"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-slate-500">Salary</p>
-                        <div className="text-sm font-semibold text-slate-700 flex items-center justify-center md:justify-start gap-1">
-                          <TrendingUp className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                          <span className="leading-tight">{salaryRange}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-slate-500">Experience</p>
-                        <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
-                          <GraduationCap className="h-3.5 w-3.5 text-slate-400" />
-                          {job.experience_required ? `${job.experience_required}+ Yrs` : "Fresher"}
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-slate-500">Type</p>
-                        <p className="text-sm font-semibold text-slate-600 flex items-center justify-center md:justify-start gap-1">
-                          <Briefcase className="h-3.5 w-3.5 text-slate-400" />
-                          {jobType}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Bar */}
-                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 border-t border-slate-100 pt-8">
-                  <Link href={`/apply/${jobSegment}`} className="flex-1">
-                    <Button variant="hero" size="lg" className="h-12 w-full rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-none text-base">
-                      Apply Now
-                    </Button>
-                  </Link>
-                  <div className="flex gap-3">
-                    <Button
-                      variant={isBookmarked ? "secondary" : "outline"}
-                      size="lg"
-                      className={`h-12 flex-1 sm:flex-none rounded-xl px-6 flex items-center justify-center gap-2 border-slate-200 ${isBookmarked ? 'text-primary bg-primary/5 border-primary/20' : ''}`}
-                      onClick={handleToggleBookmark}
-                      disabled={bookmarkBusy || bookmarksHookLoading}
-                    >
-                      <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-primary' : ''}`} />
-                      <span className="font-bold">{isBookmarked ? "Saved" : "Save"}</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
-                      className="h-12 flex-1 sm:flex-none rounded-xl px-6 flex items-center justify-center gap-2 border-slate-200"
-                      onClick={handleShare}
-                    >
-                      <Share2 className="h-4 w-4" />
-                      <span className="font-bold">Share</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Job Content Section */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-none">
-              <div className="border-b border-blue-100 bg-blue-50/20 px-10 py-5">
-                <h2 className="text-sm font-semibold text-blue-600">Job Overview & Details</h2>
-              </div>
-
-              <div className="p-6 sm:p-8">
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="prose prose-slate max-w-none">
-                    {description ? (
-                      <div 
-                        className="text-[15px] leading-relaxed text-slate-600 font-medium space-y-4"
-                        dangerouslySetInnerHTML={{ __html: description }}
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                        <Briefcase className="w-8 h-8 opacity-20 mb-2" />
-                        <p className="text-sm font-semibold italic">No detailed description provided for this opening.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* Compact Sidebar */}
-          <aside className="space-y-6">
-            {/* Quick Action Card */}
-            <section className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-none transition-all duration-300">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
-              <div className="relative z-10 text-center">
-                <p className="text-xs font-medium text-slate-500">Avg. Compensation</p>
-                <p className="mt-1 text-2xl font-bold text-slate-900 leading-none">{salaryRange}</p>
-              </div>
-
-              <div className="mt-6 space-y-3">
-                <Link href={`/apply/${jobSegment}`}>
-                  <Button variant="hero" className="h-11 w-full rounded-lg font-bold shadow-lg shadow-primary/10">
-                    Apply for this job
-                  </Button>
-                </Link>
-                <div className="flex items-center justify-center gap-3 py-1">
-                  <p className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-                    <Clock3 className="h-3.5 w-3.5" /> {postedText}
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Institution Profile Card */}
-            <section className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-none">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
-              <div className="h-16 bg-slate-50 border-b border-slate-100" />
-              <div className="relative -mt-8 flex px-5">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white p-1.5 shadow-md border border-slate-100">
+      <div className="relative mx-auto max-w-[1400px] px-4 -mt-32 pb-20 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+          {/* Main Content Area */}
+          <div className="space-y-6">
+            {/* Header Card */}
+            <section className="rounded-xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <div className="flex flex-col md:flex-row gap-6 md:items-start">
+                {/* Logo Box */}
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[#ecf2ff] p-3 text-primary text-2xl font-semibold shadow-sm md:h-22 md:w-22 border border-[#dbeafe]">
                   {employerLogo ? (
                     <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
                   ) : (
-                    <span className="text-xl font-bold text-primary">{logoFallback}</span>
+                    <span>{logoFallback}</span>
                   )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl font-bold text-[#111827] sm:text-3xl lg:text-[40px] tracking-tight leading-tight">
+                    {title}
+                  </h1>
+                  <div className="mt-2 flex items-center gap-2 text-slate-500 font-medium">
+                    <Building2 className="h-4 w-4" />
+                    <Link href={institutionHref} className="hover:text-primary hover:underline transition-colors">
+                      {employerName}
+                    </Link>
+                  </div>
+
+                  {/* Meta Grid */}
+                  <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
+                    <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-500/90">
+                      <MapPin className="h-4 w-4 text-slate-400" />
+                      {job.location}
+                    </div>
+                    <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-500/90">
+                      <TrendingUp className="h-4 w-4 text-slate-400" />
+                      {salaryRange}
+                    </div>
+                    <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-500/90">
+                      <GraduationCap className="h-4 w-4 text-slate-400" />
+                      {job.experience_required}+ Years
+                    </div>
+                    <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-500/90">
+                      <Briefcase className="h-4 w-4 text-slate-400" />
+                      {jobType}
+                    </div>
+                    <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-500/90">
+                      <Clock3 className="h-4 w-4 text-slate-400" />
+                      {postedText}
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {job.category && (
+                      <span className="rounded-full bg-blue-50 px-4 py-1.5 text-[12px] font-bold text-[#1e3a8a] border border-blue-100">
+                        {job.category.name}
+                      </span>
+                    )}
+                    <span className="rounded-full bg-blue-50 px-4 py-1.5 text-[12px] font-bold text-[#1e3a8a] border border-blue-100">
+                      Intermediate
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base font-bold text-slate-900 truncate leading-tight">{employerName}</h3>
-                  <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
-                </div>
-                <p className="mt-1 text-xs font-medium text-slate-400 flex items-center gap-1">
-                  <MapPin className="h-3 w-3" /> {job.location || "India"}
-                </p>
+              {/* Action Buttons */}
+              <div className="mt-10 flex flex-wrap items-center gap-4 pt-10 border-t border-slate-100">
+                <Link href={`/apply/${jobSegment}`} className="flex-1 sm:flex-none">
+                  <Button className="h-12 w-full sm:w-44 rounded-xl font-bold bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white shadow-none text-base transition-all">
+                    Apply Now
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-12 w-full sm:w-36 rounded-xl font-bold border-slate-200 transition-all",
+                    isBookmarked && "bg-blue-50 text-[#1e3a8a] border-blue-100"
+                  )}
+                  onClick={handleToggleBookmark}
+                  disabled={bookmarkBusy}
+                >
+                  <Bookmark className={cn("h-4 w-4 mr-2", isBookmarked && "fill-[#1e3a8a]")} />
+                  {isBookmarked ? "Saved" : "Save"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-12 w-full sm:w-36 rounded-xl font-bold border-slate-200"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
+            </section>
 
-                <div className="mt-6 space-y-3">
-                  {[
-                    { icon: Users, label: "Hiring State", value: job.vacancies ? "Bulk Hiring" : "Selective Hiring" },
-                    { icon: Globe, label: "Profile Status", value: "Verified Profile" },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-3">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-50 text-slate-400 shrink-0">
-                        <item.icon className="h-3.5 w-3.5" />
+            {/* Content Tabs Section */}
+            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+              <div className="flex border-b border-slate-100 overflow-x-auto no-scrollbar">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "px-8 py-5 text-[14px] font-bold transition-all whitespace-nowrap border-b-2",
+                      activeTab === tab.id 
+                        ? "border-[#2e3fc7] text-[#2e3fc7]" 
+                        : "border-transparent text-slate-500 hover:text-slate-900"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-7 sm:p-8 min-h-[400px]">
+                {activeTab === "description" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h2 className="text-xl font-bold text-[#111827] mb-6">About This Role</h2>
+                    <div 
+                      className="text-[15px] leading-relaxed text-slate-600 font-medium space-y-4"
+                      dangerouslySetInnerHTML={{ __html: job.description || "No description provided." }}
+                    />
+                  </div>
+                )}
+
+                {(activeTab === "responsibilities" || activeTab === "requirements" || activeTab === "benefits") && (
+                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                     <h2 className="text-xl font-bold text-[#111827] mb-6">
+                        {activeTab === "responsibilities" ? "Key Responsibilities" : 
+                         activeTab === "requirements" ? "Requirements & Qualifications" : "Benefits & Perks"}
+                     </h2>
+                     <ul className="space-y-4">
+                        {(activeTab === "responsibilities" ? [
+                          "Deliver engaging physics lectures for Intermediate students",
+                          "Prepare study materials and practice problem sets",
+                          "Conduct regular tests and analyze student performance",
+                          "Guide students in IIT-JEE preparation",
+                          "Stay updated with the latest exam patterns"
+                        ] : activeTab === "requirements" ? [
+                          "M.Sc. in Physics from a reputed university",
+                          "3+ years of experience in IIT-JEE coaching or teaching",
+                          "Strong problem-solving and analytical skills",
+                          "Ability to simplify complex concepts for students"
+                        ] : [
+                          "Performance-based incentives",
+                          "Health insurance",
+                          "Annual bonus",
+                          "Transport facility"
+                        ]).map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-[14px] text-slate-600 font-medium">
+                            <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                            {item}
+                          </li>
+                        ))}
+                     </ul>
+                   </div>
+                )}
+              </div>
+            </section>
+
+            {/* Similar Jobs Section */}
+            {similarJobs.length > 0 && (
+              <section className="pt-8">
+                <h2 className="text-2xl font-bold text-[#111827] mb-6">Similar Jobs</h2>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {similarJobs.slice(0, 3).map((sJob) => (
+                    <Link
+                      key={sJob.id}
+                      href={`/${sanitizeSlug(sJob.slug || String(sJob.id))}`}
+                      className="group flex flex-col rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm hover:shadow-xl transition-all"
+                    >
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="h-11 w-11 rounded-lg bg-[#ecf2ff] flex items-center justify-center text-primary font-bold text-lg shrink-0 border border-[#dbeafe]">
+                          {(sJob.employer?.company_name?.[0] || sJob.title[0]).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-[14px] font-bold text-[#111827] group-hover:text-[#2e3fc7] transition-colors truncate">{sJob.title}</h3>
+                          <p className="text-[12px] font-medium text-slate-500 truncate">{sJob.employer?.company_name}</p>
+                        </div>
                       </div>
-                      <p className="text-xs font-bold text-slate-600">{item.value}</p>
-                    </div>
+                      <div className="mt-auto space-y-3">
+                        <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-400">
+                          <MapPin className="h-3 w-3" /> {sJob.location}
+                        </div>
+                        <div className="text-[14px] font-bold text-[#2e3fc7]">
+                          {formatSalaryRange(sJob)}
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
+              </section>
+            )}
+          </div>
 
-                {institutionHref && (
-                  <Link href={institutionHref} className="mt-6 flex items-center justify-between rounded-lg bg-slate-50 p-3 transition-all hover:bg-primary/5 group">
-                    <p className="text-xs font-bold text-slate-700">View School Profile</p>
-                    <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-primary transition-colors" />
-                  </Link>
-                )}
+          {/* Sidebar */}
+          <aside className="space-y-6">
+            {/* Salary Action Card */}
+            <section className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.03)] text-center">
+              <p className="text-[13px] font-semibold text-slate-400 mb-1">Salary Range</p>
+              <p className="text-[20px] sm:text-[22px] font-bold text-[#111827] leading-none mb-6">{salaryRange}</p>
+              
+              <Link href={`/apply/${jobSegment}`}>
+                <Button className="h-11 w-full rounded-xl font-bold bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white text-base shadow-lg shadow-blue-500/20">
+                  Apply Now
+                </Button>
+              </Link>
+              <p className="mt-4 text-[11px] font-medium text-slate-400">
+                Free to apply · Quick application
+              </p>
+            </section>
+
+            {/* Institution Profile Card */}
+            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+              <div className="bg-[#2e3fc7] px-6 py-6 text-white relative">
+                <div className="flex items-start gap-4">
+                   <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-lg border border-white/30 shrink-0">
+                      {employerLogo ? (
+                        <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
+                      ) : (
+                        logoFallback
+                      )}
+                   </div>
+                   <div className="min-w-0">
+                      <h3 className="text-base font-bold leading-tight">{employerName}</h3>
+                      <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-white/80">
+                        <MapPin className="h-3 w-3" /> {job.location}
+                      </p>
+                   </div>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="text-[13px] font-medium text-slate-500 leading-relaxed mb-6">
+                  {employerName} is a premier educational institution offering world-class education.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-[12px] font-semibold text-slate-600">
+                    <MapPin className="h-4 w-4 text-slate-400" /> {job.location}, India
+                  </div>
+                  <div className="flex items-center gap-3 text-[12px] font-semibold text-slate-600">
+                    <Building2 className="h-4 w-4 text-slate-400" /> Education - Established Institution
+                  </div>
+                  <div className="flex items-center gap-3 text-[12px] font-semibold text-slate-600">
+                    <Globe className="h-4 w-4 text-slate-400" /> www.{sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Job Highlights Card */}
+            <section className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+              <h3 className="text-base font-bold text-[#111827] mb-5">Job Highlights</h3>
+              <div className="space-y-4">
+                {[
+                  { label: "Experience", value: `${job.experience_required}+ Years` },
+                  { label: "Job Type", value: jobType },
+                  { label: "Location", value: job.location },
+                  { label: "Posted", value: postedText },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between text-[13px] font-semibold">
+                    <span className="text-slate-400">{item.label}</span>
+                    <span className="text-[#111827]">{item.value}</span>
+                  </div>
+                ))}
               </div>
             </section>
           </aside>
         </div>
       </div>
-
-      {/* Similar Jobs Grid */}
-      {similarJobs.length > 0 && (
-        <section className="mt-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 border-t border-slate-100">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-slate-900">Similar Job Openings</h2>
-            <Link href="/jobs" className="text-sm font-bold text-primary hover:underline">
-              Browse All <ArrowRight className="inline h-3.5 w-3.5 ml-1" />
-            </Link>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {similarJobs.slice(0, 3).map((sJob) => (
-              <Link
-                key={sJob.id}
-                href={`/${sanitizeSlug(sJob.slug || sJob.id.toString())}`}
-                className="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-none transition-all duration-300 overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none" />
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
-                    <span className="text-sm font-bold text-primary">{(sJob.employer?.company_name?.[0] || "J").toUpperCase()}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors truncate">{sJob.title}</h3>
-                    <p className="text-[11px] font-semibold text-slate-400 truncate">{sJob.employer?.company_name}</p>
-                  </div>
-                </div>
-                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
-                  <span className="text-[12px] font-bold text-primary">{formatSalaryRange(sJob)}</span>
-                  <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-primary transition-colors" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
       <QuickAuthModal
         open={showAuthModal}
