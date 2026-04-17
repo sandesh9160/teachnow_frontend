@@ -1,4 +1,5 @@
 import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+import { Pagination } from "@/types/homepage";
 import {
   Job,
   Institution,

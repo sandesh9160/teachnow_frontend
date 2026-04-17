@@ -43,7 +43,7 @@ export function SearchBar({ }: SearchBarProps) {
       setIsLoading(true);
       try {
         const data = await getSearchSuggestions(query);
-        const filteredRoles = (data.roles || []).filter(r => 
+        const filteredRoles = (data.roles || []).filter(r =>
           r.toLowerCase().startsWith(query.toLowerCase())
         );
         setSuggestions(prev => ({ ...prev, roles: filteredRoles }));
@@ -53,7 +53,7 @@ export function SearchBar({ }: SearchBarProps) {
         setIsLoading(false);
       }
     };
-    
+
     const timer = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timer);
   }, [query]);
@@ -68,7 +68,7 @@ export function SearchBar({ }: SearchBarProps) {
       setIsLoading(true);
       try {
         const data = await getSearchSuggestions(city);
-        const filteredCities = (data.cities || []).filter(c => 
+        const filteredCities = (data.cities || []).filter(c =>
           c.toLowerCase().startsWith(city.toLowerCase())
         );
         setSuggestions(prev => ({ ...prev, cities: filteredCities }));
@@ -78,7 +78,7 @@ export function SearchBar({ }: SearchBarProps) {
         setIsLoading(false);
       }
     };
-    
+
     const timer = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timer);
   }, [city]);
@@ -99,201 +99,144 @@ export function SearchBar({ }: SearchBarProps) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="relative">
-        <div className="relative flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-0 rounded-2xl md:rounded-xl border border-slate-200 bg-white p-2 md:p-1.5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
-          
-          {/* Subject/Role Search */}
-          <div className="relative flex-[1.2] rounded-lg border border-slate-200 focus-within:border-primary/40 transition-all duration-300" ref={queryRef}>
-            <div className="flex items-center gap-3 px-4 py-3 group">
-              <div className="p-2 bg-slate-100/50 rounded-lg group-focus-within:bg-primary/10 group-focus-within:text-primary transition-colors">
-                <Search className="h-4 w-4" aria-hidden="true" />
-              </div>
-              <div className="flex flex-col flex-1">
-                <label htmlFor="query-search-input" className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-1">What</label>
-                <input
-                  type="text"
-                  id="query-search-input"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setShowQuerySuggestions(true);
-                    setSelectedIndex(-1);
-                  }}
-                  onFocus={() => {
-                    setShowQuerySuggestions(true);
-                    setSelectedIndex(-1);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      setSelectedIndex(prev => (prev + 1) % suggestions.roles.length);
-                    }
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      setSelectedIndex(prev => (prev - 1 + suggestions.roles.length) % suggestions.roles.length);
-                    }
-                    if (e.key === "Enter") {
-                      if (selectedIndex >= 0) {
-                        const selectedRole = suggestions.roles[selectedIndex];
-                        setQuery(selectedRole);
-                        setShowQuerySuggestions(false);
-                      } else {
-                        setShowQuerySuggestions(false);
-                        handleSearch();
-                      }
-                    }
-                    if (e.key === "Escape") setShowQuerySuggestions(false);
-                  }}
-                  placeholder="Job title, keywords..."
-                  autoComplete="off"
-                  suppressHydrationWarning
-                  className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
-                />
-              </div>
-            </div>
+    <div className="w-full max-w-4xl mx-auto h-auto">
+      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-2 transition-all duration-300 border border-slate-50">
+        
+        {/* Subject/Role Search */}
+        <div className="relative flex-[1.4] w-full" ref={queryRef}>
+          <div className="flex items-center gap-3 px-5 py-3.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+            <Search className="h-5 w-5 text-indigo-400 shrink-0" />
+            <input
+              type="text"
+              id="query-search-input"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowQuerySuggestions(true);
+                setSelectedIndex(-1);
+              }}
+              onFocus={() => {
+                setShowQuerySuggestions(true);
+                setSelectedIndex(-1);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setSelectedIndex(prev => (prev + 1) % (suggestions.roles.length || 1));
+                }
+                if (e.key === "ArrowUp") {
+                  setSelectedIndex(prev => (prev - 1 + (suggestions.roles.length || 1)) % (suggestions.roles.length || 1));
+                }
+                if (e.key === "Enter") {
+                  if (selectedIndex >= 0) {
+                    const selectedRole = suggestions.roles[selectedIndex];
+                    setQuery(selectedRole);
+                    setShowQuerySuggestions(false);
+                  } else {
+                    setShowQuerySuggestions(false);
+                    handleSearch();
+                  }
+                }
+                if (e.key === "Escape") setShowQuerySuggestions(false);
+              }}
+              placeholder="Job title, subject..."
+              autoComplete="off"
+              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-base md:text-lg"
+            />
           </div>
 
-          <div className="hidden md:block w-px h-10 bg-slate-200/60 mx-1" />
-
-          {/* City/Location Search */}
-          <div className="relative flex-1 rounded-lg border border-slate-200 focus-within:border-orange-500/40 transition-all duration-300" ref={cityRef}>
-            <div className="flex items-center gap-3 px-4 py-3 group">
-              <div className="p-2 bg-slate-100/50 rounded-lg group-focus-within:bg-orange-500/10 group-focus-within:text-orange-500 transition-colors">
-                <MapPin className="h-4 w-4" aria-hidden="true" />
-              </div>
-              <div className="flex flex-col flex-1">
-                <label htmlFor="city-search-input" className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-1">Where</label>
-                <input
-                  type="text"
-                  id="city-search-input"
-                  value={city}
-                  onChange={(e) => {
-                    setCity(e.target.value);
-                    setShowCitySuggestions(true);
-                    setSelectedIndex(-1);
-                  }}
-                  onFocus={() => {
-                    setShowCitySuggestions(true);
-                    setSelectedIndex(-1);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      setSelectedIndex(prev => (prev + 1) % suggestions.cities.length);
-                    }
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      setSelectedIndex(prev => (prev - 1 + suggestions.cities.length) % suggestions.cities.length);
-                    }
-                    if (e.key === "Enter") {
-                      if (selectedIndex >= 0) {
-                        const selectedCity = suggestions.cities[selectedIndex];
-                        setCity(selectedCity);
-                        setShowCitySuggestions(false);
-                      } else {
-                        setShowCitySuggestions(false);
-                        handleSearch();
-                      }
-                    }
-                    if (e.key === "Escape") setShowCitySuggestions(false);
-                  }}
-                  placeholder="City or location"
-                  autoComplete="off"
-                  suppressHydrationWarning
-                  className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-
-          <Button
-            variant="hero"
-            className="rounded-xl md:rounded-xl h-14 md:h-[3.25rem] px-8 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold group shrink-0 m-0.5"
-            onClick={() => handleSearch()}
-            disabled={isLoading}
-          >
-            <Search className="h-4 w-4 md:hidden" />
-            <span>Search Jobs</span>
-            <div className="hidden md:flex bg-white/20 rounded-lg p-1 group-hover:translate-x-1 transition-transform duration-300">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </Button>
-
-          {/* Portal-like absolute suggestions (DIRECT CHILDREN OF THE CONTAINER) */}
+          {/* Query Suggestions */}
           {showQuerySuggestions && query.trim().length > 0 && suggestions.roles.length > 0 && (
-            <div className="absolute left-[8px] right-[8px] md:left-[8px] md:right-auto md:w-[380px] top-[calc(100%+8px)] z-[9999] bg-white rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 pointer-events-auto overflow-hidden ring-4 ring-black/5">
-              <div className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
-                Suggestions
-              </div>
-              <div className="max-h-[400px] overflow-y-auto bg-white">
-                {suggestions.roles.map((role, index) => {
-                  const startsWithQuery = query.length > 0 && role.toLowerCase().startsWith(query.toLowerCase());
-                  const matchPart = startsWithQuery ? role.slice(0, query.length) : "";
-                  const restPart = startsWithQuery ? role.slice(query.length) : role;
-                  return (
-                    <button
-                      key={role}
-                      type="button"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setQuery(role);
-                        setShowQuerySuggestions(false);
-                      }}
-                      className={`w-full text-left px-5 py-2.5 transition-all flex items-center justify-between group cursor-pointer ${selectedIndex === index ? "bg-slate-50" : "hover:bg-slate-50/50"}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Search className="h-4 w-4 text-slate-500" />
-                        <span className="text-[14px] font-semibold text-slate-700 group-hover:text-primary transition-colors">
-                          <span className="text-primary font-bold">{matchPart}</span>
-                          {restPart}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {showCitySuggestions && city.trim().length > 0 && suggestions.cities.length > 0 && (
-            <div className="absolute left-[8px] right-[8px] md:left-auto md:right-[140px] md:w-[350px] top-[calc(100%+8px)] z-[9999] bg-white rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 pointer-events-auto overflow-hidden ring-4 ring-black/5">
-              <div className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
-                Locations
-              </div>
-              <div className="max-h-[400px] overflow-y-auto bg-white">
-                {suggestions.cities.map((c, index) => {
-                  const startsWithCity = city.length > 0 && c.toLowerCase().startsWith(city.toLowerCase());
-                  const matchPart = startsWithCity ? c.slice(0, city.length) : "";
-                  const restPart = startsWithCity ? c.slice(city.length) : c;
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setCity(c);
-                        setShowCitySuggestions(false);
-                      }}
-                      className={`w-full text-left px-5 py-2.5 transition-all flex items-center justify-between group cursor-pointer ${selectedIndex === index ? "bg-slate-50" : "hover:bg-slate-50/50"}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <MapPin className="h-4 w-4 text-slate-500" />
-                        <span className="text-[14px] font-semibold text-slate-700 group-hover:text-primary transition-colors">
-                          <span className="text-primary font-bold">{matchPart}</span>
-                          {restPart}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border border-slate-100 overflow-hidden py-2 text-left">
+              {suggestions.roles.slice(0, 5).map((role, index) => (
+                <button
+                  key={role}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setQuery(role);
+                    setShowQuerySuggestions(false);
+                  }}
+                  className={`w-full text-left px-6 py-3 text-sm font-bold transition-colors ${selectedIndex === index ? "bg-slate-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  {role}
+                </button>
+              ))}
             </div>
           )}
         </div>
+
+        {/* City/Location Search */}
+        <div className="relative flex-1 w-full" ref={cityRef}>
+          <div className="flex items-center gap-3 px-6 py-3.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+            <MapPin className="h-5 w-5 text-slate-400 shrink-0" />
+            <input
+              type="text"
+              id="city-search-input"
+              value={city}
+              onChange={(e) => {
+                setCity(e.target.value);
+                setShowCitySuggestions(true);
+                setSelectedIndex(-1);
+              }}
+              onFocus={() => {
+                setShowCitySuggestions(true);
+                setSelectedIndex(-1);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setSelectedIndex(prev => (prev + 1) % (suggestions.cities.length || 1));
+                }
+                if (e.key === "ArrowUp") {
+                  setSelectedIndex(prev => (prev - 1 + (suggestions.cities.length || 1)) % (suggestions.cities.length || 1));
+                }
+                if (e.key === "Enter") {
+                  if (selectedIndex >= 0) {
+                    const selectedCity = suggestions.cities[selectedIndex];
+                    setCity(selectedCity);
+                    setShowCitySuggestions(false);
+                  } else {
+                    setShowCitySuggestions(false);
+                    handleSearch();
+                  }
+                }
+                if (e.key === "Escape") setShowCitySuggestions(false);
+              }}
+              placeholder="City or remote"
+              autoComplete="off"
+              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-base md:text-lg"
+            />
+          </div>
+
+          {/* City Suggestions */}
+          {showCitySuggestions && city.trim().length > 0 && suggestions.cities.length > 0 && (
+            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border border-slate-100 overflow-hidden py-2 text-left">
+              {suggestions.cities.slice(0, 5).map((c, index) => (
+                <button
+                  key={c}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setCity(c);
+                    setShowCitySuggestions(false);
+                  }}
+                  className={`w-full text-left px-6 py-3 text-sm font-bold transition-colors ${selectedIndex === index ? "bg-slate-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Button
+          className="bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-3.5 h-auto rounded-xl font-bold text-lg transition-all shrink-0 w-full md:w-auto shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
+          onClick={() => handleSearch()}
+          disabled={isLoading}
+        >
+          <Search className="h-5 w-5" />
+          <span>Search</span>
+        </Button>
       </div>
     </div>
   );
-};
+}

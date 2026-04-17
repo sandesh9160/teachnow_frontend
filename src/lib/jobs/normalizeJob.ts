@@ -52,7 +52,7 @@ export function normalizeJob(job: unknown): Job {
         ""
       ),
     }
-  } as Job;
+  } as unknown as Job;
 }
 
 export function toArray<T>(data: unknown): T[] {

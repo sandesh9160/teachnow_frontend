@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getResourceBySlug, getResources } from "@/hooks/useHomepage";
 import { ResourceData } from "@/types/homepage";
 
+
 export function useResource(slug: string) {
   const [resource, setResource] = useState<ResourceData | null>(null);
   const [related, setRelated] = useState<ResourceData[]>([]);
@@ -28,7 +29,7 @@ export function useResource(slug: string) {
         } else {
           // Fallback: fetch related resources separately if not provided
           const allResources = await getResources();
-          const relatedItems = allResources
+          const relatedItems = allResources.data
             .filter((item: ResourceData) => item.slug !== slug)
             .slice(0, 3);
 

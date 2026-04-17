@@ -37,6 +37,7 @@ export type FooterData = {
 export type HeroCTAData = {
   hero?: HeroSection | null;
   cta?: CTASection[] | null;
+  popular_searches?: { name: string; slug: string }[];
 };
 
 const REVALIDATE_SECONDS = 60;
@@ -63,7 +64,9 @@ function normalizeHeroCTA(raw: any): HeroCTAData {
     background_image: normalizeMediaUrl(item?.background_image),
   }));
 
-  return { hero, cta };
+  const popular_searches = Array.isArray(raw?.popular_searches) ? raw.popular_searches : [];
+
+  return { hero, cta, popular_searches };
 }
 
 async function fetchNavigation(): Promise<NavigationData | null> {

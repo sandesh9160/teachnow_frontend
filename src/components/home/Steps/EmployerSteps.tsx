@@ -30,21 +30,21 @@ const steps = [
 export const EmployerSteps = () => {
   return (
     <section className="py-16 bg-white overflow-hidden text-black">
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8">
         <div className="text-center mb-12 px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-black tracking-tight mb-2">
+          <h2 className="text-[28px] md:text-[40px] font-bold text-black tracking-tight mb-2">
             Steps to Post a Job
           </h2>
-          <p className="text-[15px] md:text-[17px] text-black/80 font-medium">
+          <p className="text-[15px] md:text-[17px] text-black font-medium">
             Hire qualified teachers quickly with TeachNow.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-0">
           {steps.map((s) => (
             <div
               key={s.step}
-              className="group w-full rounded-[20px] border border-slate-300 bg-white p-6 transition-all duration-300 flex flex-col items-center text-center h-full shadow-sm hover:shadow-md"
+              className="group w-full rounded-[16px] border border-slate-200/80 bg-white p-6 transition-all duration-300 flex flex-col items-center text-center h-full shadow-sm hover:shadow-md"
             >
               <div className="relative mb-6 h-36 w-full flex items-center justify-center">
                 <img
