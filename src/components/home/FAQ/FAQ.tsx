@@ -13,8 +13,8 @@ export const FAQ = ({ faqs }: FAQProps) => {
 
   return (
     <section className="bg-slate-50/50 py-12 md:py-16">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="text-left mb-10 pl-2">
+      <div className="max-w-none w-full px-2">
+        <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
             Frequently Asked <span className="text-primary/80">Questions</span>
           </h2>

@@ -16,6 +16,7 @@ export function SearchBar({ }: SearchBarProps) {
   const [city, setCity] = useState("");
   const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [isLoading, setIsLoading] = useState(false);
@@ -99,11 +100,8 @@ export function SearchBar({ }: SearchBarProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="relative group/search-container">
-        {/* Glow effect Backdrop */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 rounded-xl blur-xl opacity-0 group-focus-within/search-container:opacity-100 transition-opacity duration-500" />
-        
-        <div className="relative flex flex-col md:flex-row items-stretch md:items-center gap-0 rounded-xl border border-slate-200 bg-white/90 backdrop-blur-xl p-1.5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] focus-within:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] transition-all duration-500">
+      <div className="relative">
+        <div className="relative flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-0 rounded-2xl md:rounded-xl border border-slate-200 bg-white p-2 md:p-1.5 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
           
           {/* Subject/Role Search */}
           <div className="relative flex-[1.2] rounded-lg border border-slate-200 focus-within:border-primary/40 transition-all duration-300" ref={queryRef}>
@@ -120,12 +118,30 @@ export function SearchBar({ }: SearchBarProps) {
                   onChange={(e) => {
                     setQuery(e.target.value);
                     setShowQuerySuggestions(true);
+                    setSelectedIndex(-1);
                   }}
-                  onFocus={() => setShowQuerySuggestions(true)}
+                  onFocus={() => {
+                    setShowQuerySuggestions(true);
+                    setSelectedIndex(-1);
+                  }}
                   onKeyDown={(e) => {
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev + 1) % suggestions.roles.length);
+                    }
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev - 1 + suggestions.roles.length) % suggestions.roles.length);
+                    }
                     if (e.key === "Enter") {
-                      setShowQuerySuggestions(false);
-                      handleSearch();
+                      if (selectedIndex >= 0) {
+                        const selectedRole = suggestions.roles[selectedIndex];
+                        setQuery(selectedRole);
+                        setShowQuerySuggestions(false);
+                      } else {
+                        setShowQuerySuggestions(false);
+                        handleSearch();
+                      }
                     }
                     if (e.key === "Escape") setShowQuerySuggestions(false);
                   }}
@@ -136,50 +152,6 @@ export function SearchBar({ }: SearchBarProps) {
                 />
               </div>
             </div>
-
-            {/* Suggestions - Roles */}
-            {showQuerySuggestions && suggestions.roles.length > 0 && (
-              <div className="absolute left-0 right-0 top-full z-50 mt-1 bg-white/95 backdrop-blur-2xl rounded-xl shadow-[0_15px_50px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-300">
-                <div className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100/50">
-                  Popular Searches
-                </div>
-                <div className="max-h-64 overflow-y-auto p-1 custom-scrollbar">
-                  {suggestions.roles.map((role) => {
-                    const startsWithQuery = role.toLowerCase().startsWith(query.toLowerCase());
-                    const matchPart = startsWithQuery ? role.slice(0, query.length) : "";
-                    const restPart = startsWithQuery ? role.slice(query.length) : role;
-
-                    return (
-                      <button
-                        key={role}
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setQuery(role);
-                          setShowQuerySuggestions(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-primary/5 transition-all flex items-center justify-between group/item cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 text-slate-400 group-hover/item:bg-white group-hover/item:text-primary group-hover/item:border-primary/20 transition-all duration-300">
-                            <Search className="h-3.5 w-3.5" />
-                          </div>
-                          <span className="text-xs font-semibold text-slate-600 group-hover/item:text-slate-900 transition-colors">
-                            <span className="font-bold text-slate-900">{matchPart}</span>
-                            {restPart}
-                          </span>
-                        </div>
-                        <div className="opacity-0 group-hover/item:opacity-100 transition-opacity">
-                          <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="hidden md:block w-px h-10 bg-slate-200/60 mx-1" />
@@ -199,12 +171,30 @@ export function SearchBar({ }: SearchBarProps) {
                   onChange={(e) => {
                     setCity(e.target.value);
                     setShowCitySuggestions(true);
+                    setSelectedIndex(-1);
                   }}
-                  onFocus={() => setShowCitySuggestions(true)}
+                  onFocus={() => {
+                    setShowCitySuggestions(true);
+                    setSelectedIndex(-1);
+                  }}
                   onKeyDown={(e) => {
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev + 1) % suggestions.cities.length);
+                    }
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev - 1 + suggestions.cities.length) % suggestions.cities.length);
+                    }
                     if (e.key === "Enter") {
-                      setShowCitySuggestions(false);
-                      handleSearch();
+                      if (selectedIndex >= 0) {
+                        const selectedCity = suggestions.cities[selectedIndex];
+                        setCity(selectedCity);
+                        setShowCitySuggestions(false);
+                      } else {
+                        setShowCitySuggestions(false);
+                        handleSearch();
+                      }
                     }
                     if (e.key === "Escape") setShowCitySuggestions(false);
                   }}
@@ -215,55 +205,11 @@ export function SearchBar({ }: SearchBarProps) {
                 />
               </div>
             </div>
-
-            {/* Suggestions - Cities */}
-            {showCitySuggestions && suggestions.cities.length > 0 && (
-              <div className="absolute left-0 right-0 top-full z-50 mt-1 bg-white/95 backdrop-blur-2xl rounded-xl shadow-[0_15px_50px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-300">
-                <div className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100/50">
-                  Trending Locations
-                </div>
-                <div className="max-h-64 overflow-y-auto p-1 custom-scrollbar">
-                  {suggestions.cities.map((c) => {
-                    const startsWithCity = c.toLowerCase().startsWith(city.toLowerCase());
-                    const matchPart = startsWithCity ? c.slice(0, city.length) : "";
-                    const restPart = startsWithCity ? c.slice(city.length) : c;
-
-                    return (
-                      <button
-                        key={c}
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setCity(c);
-                          setShowCitySuggestions(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-orange-500/5 transition-all flex items-center justify-between group/item cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 text-slate-400 group-hover/item:bg-white group-hover/item:text-orange-500 group-hover/item:border-orange-500/20 transition-all duration-300">
-                            <MapPin className="h-3.5 w-3.5" />
-                          </div>
-                          <span className="text-xs font-semibold text-slate-600 group-hover/item:text-slate-900 transition-colors">
-                            <span className="font-bold text-slate-900">{matchPart}</span>
-                            {restPart}
-                          </span>
-                        </div>
-                        <div className="opacity-0 group-hover/item:opacity-100 transition-opacity">
-                          <svg className="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
 
           <Button
             variant="hero"
-            className="md:rounded-xl h-12 md:h-[3.25rem] px-8 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold group shrink-0 m-0.5"
+            className="rounded-xl md:rounded-xl h-14 md:h-[3.25rem] px-8 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold group shrink-0 m-0.5"
             onClick={() => handleSearch()}
             disabled={isLoading}
           >
@@ -275,8 +221,79 @@ export function SearchBar({ }: SearchBarProps) {
               </svg>
             </div>
           </Button>
+
+          {/* Portal-like absolute suggestions (DIRECT CHILDREN OF THE CONTAINER) */}
+          {showQuerySuggestions && query.trim().length > 0 && suggestions.roles.length > 0 && (
+            <div className="absolute left-[8px] right-[8px] md:left-[8px] md:right-auto md:w-[380px] top-[calc(100%+8px)] z-[9999] bg-white rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 pointer-events-auto overflow-hidden ring-4 ring-black/5">
+              <div className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
+                Suggestions
+              </div>
+              <div className="max-h-[400px] overflow-y-auto bg-white">
+                {suggestions.roles.map((role, index) => {
+                  const startsWithQuery = query.length > 0 && role.toLowerCase().startsWith(query.toLowerCase());
+                  const matchPart = startsWithQuery ? role.slice(0, query.length) : "";
+                  const restPart = startsWithQuery ? role.slice(query.length) : role;
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setQuery(role);
+                        setShowQuerySuggestions(false);
+                      }}
+                      className={`w-full text-left px-5 py-2.5 transition-all flex items-center justify-between group cursor-pointer ${selectedIndex === index ? "bg-slate-50" : "hover:bg-slate-50/50"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Search className="h-4 w-4 text-slate-500" />
+                        <span className="text-[14px] font-semibold text-slate-700 group-hover:text-primary transition-colors">
+                          <span className="text-primary font-bold">{matchPart}</span>
+                          {restPart}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {showCitySuggestions && city.trim().length > 0 && suggestions.cities.length > 0 && (
+            <div className="absolute left-[8px] right-[8px] md:left-auto md:right-[140px] md:w-[350px] top-[calc(100%+8px)] z-[9999] bg-white rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 pointer-events-auto overflow-hidden ring-4 ring-black/5">
+              <div className="px-5 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-50/50 border-b border-slate-100">
+                Locations
+              </div>
+              <div className="max-h-[400px] overflow-y-auto bg-white">
+                {suggestions.cities.map((c, index) => {
+                  const startsWithCity = city.length > 0 && c.toLowerCase().startsWith(city.toLowerCase());
+                  const matchPart = startsWithCity ? c.slice(0, city.length) : "";
+                  const restPart = startsWithCity ? c.slice(city.length) : c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setCity(c);
+                        setShowCitySuggestions(false);
+                      }}
+                      className={`w-full text-left px-5 py-2.5 transition-all flex items-center justify-between group cursor-pointer ${selectedIndex === index ? "bg-slate-50" : "hover:bg-slate-50/50"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-4 w-4 text-slate-500" />
+                        <span className="text-[14px] font-semibold text-slate-700 group-hover:text-primary transition-colors">
+                          <span className="text-primary font-bold">{matchPart}</span>
+                          {restPart}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};

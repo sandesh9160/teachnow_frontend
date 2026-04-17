@@ -40,8 +40,8 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
 
   return (
     <section className="py-12 md:py-16 bg-slate-50/50 overflow-hidden relative">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-left mb-10 pl-2">
+      <div className="max-w-none w-full px-2">
+        <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
             What Our <span className="text-primary/80">Community</span> Says
           </h2>
@@ -51,7 +51,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
         </div>
       </div>
       
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative group">
+      <div className="max-w-none w-full px-2 relative group">
         {/* Navigation Arrows */}
         <button 
           onClick={() => {

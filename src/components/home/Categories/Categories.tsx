@@ -13,25 +13,33 @@ const getFullImageUrl = (path: string | null | undefined) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
   const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
-  // Handle "storage/..." paths correctly by prepending base URL
   return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
 };
 
-const CategoryIcon = ({ iconPath, id }: { iconPath: string | null | undefined, id: number }) => {
+const CategoryIcon = ({ iconPath, id, name }: { iconPath: string | null | undefined, id: number, name: string }) => {
   const [error, setError] = useState(false);
   const fullUrl = getFullImageUrl(iconPath);
-  const FallbackIcon = genericIcons[id % genericIcons.length] || GraduationCap;
+
+  // Try to match icon by name for better accuracy with the provided image
+  const lowerName = name.toLowerCase();
+  let FallbackIcon = genericIcons[id % genericIcons.length];
+
+  if (lowerName.includes("physics") || lowerName.includes("chemistry")) FallbackIcon = Atom;
+  if (lowerName.includes("english") || lowerName.includes("language")) FallbackIcon = BookOpen;
+  if (lowerName.includes("online") || lowerName.includes("tutor")) FallbackIcon = Headphones;
+  if (lowerName.includes("computer") || lowerName.includes("science")) FallbackIcon = Briefcase;
+  if (lowerName.includes("math")) FallbackIcon = GraduationCap;
 
   if (!fullUrl || error) {
-    return <FallbackIcon className="h-8 w-8" />;
+    return <FallbackIcon className="h-7 w-7" />;
   }
 
   return (
-    <div className="relative w-full h-full group-hover:scale-110 transition-transform duration-300 overflow-hidden rounded-2xl">
-      <Image 
-        src={fullUrl} 
-        alt="Category icon" 
-        fill 
+    <div className="relative w-full h-full group-hover:scale-110 transition-transform duration-300 overflow-hidden rounded-xl">
+      <Image
+        src={fullUrl}
+        alt="Category icon"
+        fill
         unoptimized
         className="object-cover"
         onError={() => setError(true)}
@@ -49,21 +57,21 @@ export const Categories = ({ categories }: CategoriesProps) => {
   );
 
   return (
-    <section className="py-12 md:py-16 bg-white overflow-hidden relative">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <div className="text-left mb-10 pl-2">
-          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            Popular <span className="text-primary/80">Teaching</span> Categories
-          </h2>
-          <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-            Explore teaching roles by your area of expertise
+    <section className="pt-20 pb-12 bg-white overflow-hidden relative">
+      <div className="max-w-none w-full px-2">
+
+        {/* Header - Matching requested text and style */}
+        <div className="text-center mb-14 px-4">
+          <p className="text-blue-600 font-bold tracking-wider uppercase text-sm mb-3">
+            Popular Categories
           </p>
+          <h2 className="text-[28px] font-bold text-[#111827] tracking-tight sm:text-4xl">
+            Explore teaching roles by category
+          </h2>
         </div>
 
-        {/* Carousel */}
-        <AutoScrollCarousel speed={0.6} isContinuous={true} className="pb-8">
+        {/* Carousel - Centered and Styled */}
+        <AutoScrollCarousel speed={0.5} isContinuous={true} className="pb-10">
           {uniqueCategories.map((cat) => {
             const cleanSlug = cat.slug ? cat.slug.replaceAll(/^[:/]+/g, "") : cat.name.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
             const href = `/${cleanSlug}`;
@@ -72,22 +80,20 @@ export const Categories = ({ categories }: CategoriesProps) => {
               <Link
                 key={cat.id}
                 href={href}
-                className="group relative flex flex-col shrink-0 w-52 items-center rounded-2xl border border-slate-200/60 bg-white p-6 text-center shadow-xs transition-all duration-300 overflow-hidden hover:shadow-md hover:border-primary/20"
+                className="group relative flex flex-col shrink-0 w-[180px] h-[165px] items-center justify-center rounded-[20px] border border-primary/20 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-slate-100/50 rounded-full -mr-12 -mt-12 pointer-events-none" />
-                
-                {/* Icon box - matching site-wide square icon pattern */}
-                <div className="relative z-10 shrink-0 flex h-16 w-16 mb-4 items-center justify-center rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 transition-all duration-300 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-105 group-hover:border-blue-600">
-                  <CategoryIcon iconPath={cat.icon} id={cat.id} />
+                {/* Icon box - matching the light blue aesthetic of the reference */}
+                <div className="relative z-10 shrink-0 flex h-12 w-12 mb-3 items-center justify-center rounded-[16px] bg-[#ecf2ff] text-[#1e3a8a] transition-all duration-300 group-hover:bg-[#1e3a8a] group-hover:text-white">
+                  <CategoryIcon iconPath={cat.icon} id={cat.id} name={cat.name} />
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 space-y-1">
-                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                <div className="relative z-10 space-y-0.5">
+                  <h3 className="text-[16px] font-bold text-[#111827] group-hover:text-blue-700 transition-colors leading-tight line-clamp-2">
                     {cat.name}
                   </h3>
-                  <p className="text-[11px] font-medium text-slate-400">
-                    <span>{cat.jobs_count || 0} {cat.jobs_count === 1 ? "Job" : "Jobs"}</span>
+                  <p className="text-[12px] font-medium text-[#64748b]">
+                    {cat.jobs_count || 0} {cat.jobs_count === 1 ? "Job" : "Jobs"} Available
                   </p>
                 </div>
               </Link>

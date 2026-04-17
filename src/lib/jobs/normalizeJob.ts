@@ -80,7 +80,9 @@ export function normalizeJob(job: unknown): Job {
                 (j.school_logo as string) ||
                 ""
             ),
+            institution_type: (j.institution_type as string) || (j.employer as any)?.institution_type || (j.employer_type as string) || "",
           },
+    institution_type: (j.institution_type as string) || (j.employer as any)?.institution_type || (j.employer_type as string) || "",
   } as Job;
 }
 

@@ -23,26 +23,26 @@ export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
   );
 
   return (
-    <section className="border-t border-border bg-card py-12 md:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-left mb-10 pl-2">
-          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            Explore teaching jobs in major <span className="text-primary/80">Indian cities</span>
+    <section className="py-12 md:py-16 bg-white overflow-hidden relative">
+      <div className="max-w-none w-full px-2">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-[#111827] md:text-4xl">
+            Explore teaching jobs in major <span className="text-blue-600">Indian cities</span>
           </h2>
           <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
             Find opportunities in your preferred location
           </p>
         </div>
       </div>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AutoScrollCarousel speed={0.6}>
+      <div className="max-w-none w-full px-2">
+        <AutoScrollCarousel speed={0.6} className="!gap-4 md:!gap-4">
           {uniqueCities.map((city) => {
             const imageUrl = normalizeMediaUrl(city.image);
             return (
               <Link
                 key={city.id}
                 href={`/${city.name.toLowerCase()}-jobs`}
-                className="group relative shrink-0 w-80 h-52 overflow-hidden rounded-[24px] border border-slate-200/20 shadow-sm transition-all duration-500"
+                className="group relative shrink-0 w-[300px] h-[200px] overflow-hidden rounded-[20px] shadow-lg transition-all duration-500"
               >
                 {imageUrl ? (
                   <img
@@ -56,12 +56,13 @@ export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
                   </div>
                 )}
                 
-                {/* Visual Polish: Gradient & Glass Effect */}
-                <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 transition-opacity" />
                 
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mb-1 group-hover:text-white transition-colors">Explore</p>
-                  <h3 className="text-xl font-bold text-white tracking-tight">{city.name}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-xl font-bold text-white tracking-tight leading-tight mb-1">{city.name}</h3>
+                  <p className="text-sm font-medium text-white/90">
+                    {city.jobs_count || 0}+ Teaching Jobs
+                  </p>
                 </div>
               </Link>
             );

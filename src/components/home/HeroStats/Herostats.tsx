@@ -27,7 +27,7 @@ export const HeroStats = ({ stats }: HeroStatsProps) => {
 
  return (
   <section className="py-12 bg-slate-50/10 border-y border-slate-100/50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-none w-full px-2">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
         {statsData.map((stat) => (
           <StatsCard key={stat.label} {...stat} />

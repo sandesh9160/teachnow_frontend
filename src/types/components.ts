@@ -27,6 +27,7 @@ export interface JobCardProps {
    posted: string | number | Date;
   slug?: string | null;
   logo?: string;
+  institutionType?: string;
 }
 
 /**

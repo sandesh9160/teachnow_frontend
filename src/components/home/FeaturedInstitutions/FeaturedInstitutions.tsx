@@ -15,53 +15,43 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
   if (!institutions || !Array.isArray(institutions) || institutions.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 bg-slate-50/50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-left mb-10 pl-2">
-          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            Top <span className="text-primary/80">Institutions</span> Hiring
-          </h2>
-          <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-            Work with the most prestigious educational organizations
-          </p>
-        </div>
-
+    <section className="pt-12 pb-20 bg-[#f8faff] overflow-hidden relative">
+      <div className="max-w-none w-full">
+        
+        {/* Header - EXACTLY AS REQUESTED */}
         <div className="relative group/carousel">
-          {/* Navigation Arrows */}
-          {institutions.length > 1 && (
-            <>
-              <button 
-                onClick={() => {
-                  if (companiesRef.current) companiesRef.current.scrollBy({ left: -companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-                }}
-                className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-                title="Previous"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-
-              <button 
-                onClick={() => {
-                  if (companiesRef.current) companiesRef.current.scrollBy({ left: companiesRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-                }}
-                className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-                title="Next"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-            </>
-          )}
+          {/* Side Navigation Buttons - Higher to avoid blocking footer info */}
+          <button 
+            onClick={() => {
+              if (companiesRef.current) companiesRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+            }}
+            className="absolute left-1 md:-left-4 top-[40%] -translate-y-1/2 z-50 h-9 w-9 md:h-11 md:w-11 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          
+          <button 
+            onClick={() => {
+              if (companiesRef.current) companiesRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+            }}
+            className="absolute right-1 md:-right-4 top-[40%] -translate-y-1/2 z-50 h-9 w-9 md:h-11 md:w-11 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
 
           <div 
             ref={companiesRef} 
-            className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-6 lg:overflow-x-auto lg:scrollbar-hide lg:scroll-smooth pb-12 pt-2 px-1 lg:px-2 gap-6" 
+            className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-4 md:px-12" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {institutions.map((institution) => {
               const imageUrl = normalizeMediaUrl(institution.company_logo);
 
               return (
-                <div key={institution.id} className="w-full lg:w-[280px] shrink-0">
+                <div 
+                  key={institution.id} 
+                  className="shrink-0 w-[280px] md:w-[320px]"
+                >
                   <CompanyCard
                     name={institution.company_name}
                     location={institution.location || ""}
@@ -75,15 +65,6 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
               );
             })}
           </div>
-
-          {/* Pagination Dots Indicator */}
-          {institutions.length > 1 && (
-            <div className="hidden md:flex justify-center items-center gap-2.5 mt-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
-              <div className="h-2.5 w-10 rounded-full bg-primary shadow-sm" />
-              <div className="h-2.5 w-2.5 rounded-full bg-primary/30" />
-            </div>
-          )}
         </div>
       </div>
     </section>

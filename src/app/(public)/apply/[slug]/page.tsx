@@ -35,7 +35,8 @@ import { useCV } from "@/hooks/useCV";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
-// import ResumeTemplatePreview, { templatePreviews } from "@/components/ai-resume-builder/ResumeTemplatePreview";
+import QuickAuthModal from "@/components/auth/QuickAuthModal";
+import Link from "next/link";
 
 // We'll define dynamic steps inside the component
 // const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
@@ -57,6 +58,16 @@ export default function ApplyJobPage() {
     }
   }, [isLoggedIn, fetchGeneratedCVs]);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (mounted && !isLoggedIn) {
+      setShowAuthModal(true);
+    }
+  }, [mounted, isLoggedIn]);
 
   const [step, setStep] = useState(0);
   const [candidate, setCandidate] = useState({
@@ -78,8 +89,6 @@ export default function ApplyJobPage() {
 
   // Candidate data is initialized via the profile fetch effect below which handles both session user and detailed profile data
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const [submitted, setSubmitted] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState<string | number>("");
@@ -343,8 +352,75 @@ export default function ApplyJobPage() {
 
 
 
-  if (!mounted || !isLoggedIn || user?.role === "employer") {
-    return null;
+  if (!mounted) return null;
+
+  if (!isLoggedIn) {
+    return (
+      <div className="bg-[#F8FAFC] min-h-screen">
+        <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
+          <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+            <Breadcrumb items={[{ label: "Jobs", href: "/jobs" }, { label: "Apply", isCurrent: true }]} />
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-20 px-4">
+          <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-xl max-w-md w-full text-center space-y-6">
+            <div className="mx-auto w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+              <User className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Login Required</h2>
+              <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                You need to be logged in as a Job Seeker to apply for 
+                <span className="text-primary font-bold"> {jobDetails.title}</span>.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
+               <Button variant="hero" size="lg" className="w-full h-12 rounded-xl font-bold text-base" onClick={() => setShowAuthModal(true)}>
+                 Sign In to Apply
+               </Button>
+               <Button variant="outline" className="w-full h-11 border-slate-200 rounded-xl font-bold text-sm" onClick={() => router.back()}>
+                 Go Back
+               </Button>
+            </div>
+          </div>
+          
+          <QuickAuthModal 
+            open={showAuthModal} 
+            onClose={() => setShowAuthModal(false)} 
+            onSuccess={() => {
+              setShowAuthModal(false);
+              // Page will automatically re-render because isLoggedIn state changes
+            }}
+            title="Sign In to Apply"
+            subTitle="Submit your application for this position in seconds."
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.role === "employer") {
+     return (
+        <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center p-4">
+           <div className="bg-white p-10 rounded-3xl border border-amber-200 shadow-xl max-w-md w-full text-center space-y-6">
+              <div className="mx-auto w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+                 <Building2 className="w-10 h-10" />
+              </div>
+              <div className="space-y-2">
+                 <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Access Restricted</h2>
+                 <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                    Employer accounts cannot apply for jobs. Please log in as a 
+                    <span className="text-primary font-bold"> Job Seeker</span> to submit applications.
+                 </p>
+              </div>
+              <Link href="/dashboard/employer" className="block pt-2">
+                 <Button variant="hero" className="w-full h-12 rounded-xl font-bold text-base">
+                    Go to Dashboard
+                 </Button>
+              </Link>
+           </div>
+        </div>
+     );
   }
 
   return (

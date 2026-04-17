@@ -234,6 +234,7 @@ export default function JobListingView({
                     posted={postedText}
                     logo={job.employer?.company_logo}
                     slug={job.slug}
+                    institutionType={(job as any).institution_type || job.employer?.institution_type}
                   />
                 );
               })}

@@ -83,14 +83,13 @@ export default async function HomePage() {
       {categories && categories.length > 0 && <Categories categories={categories} />}
 
       {institutions && institutions.length > 0 && <FeaturedInstitutions institutions={institutions} />}
+      {cities && cities.length > 0 && <BrowseByCity cities={cities} />}
       {jobs && jobs.length > 0 && <FeaturedJobs jobs={jobs} />}
       {stats && <HeroStats stats={stats} />}
 
       <JobSeekerSteps />
       <Features />
       <EmployerSteps />
-
-      {cities && cities.length > 0 && <BrowseByCity cities={cities} />}
 
       {testimonials && testimonials.length > 0 && <Testimonial testimonials={testimonials} />}
       {blogs && blogs.length > 0 && <BlogSections blogs={blogs} />}

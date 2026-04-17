@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { MapPin, Clock3, Bookmark, BookmarkCheck } from "lucide-react";
-// import { Button } from "@/shared/ui/Buttons/Buttons";
+import { MapPin, Clock3, Bookmark, BookmarkCheck, Building } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
 import QuickAuthModal from "@/components/auth/QuickAuthModal";
 import { JobCardProps } from "@/types/components";
-import { sanitizeSlug, cn, formatTimeAgo } from "@/lib/utils";
+import { sanitizeSlug, formatTimeAgo } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
 
 const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo }: JobCardProps) => {
@@ -23,12 +22,10 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
 
-  // Keep internal state in sync if global bookmarks change
   useEffect(() => {
     setSaved(isSavedStatus);
   }, [isSavedStatus]);
   
-  // Clean the slug for a "neat" URL, fallback to ID if no slug provided
   const jobPath = slug ? sanitizeSlug(slug) : String(id);
   const jobHref = `/${jobPath}`;
 
@@ -69,14 +66,10 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
     }
 
     try {
-      // Optimistic UI update
       setSaved(!saved);
-      
       await toggleBookmark(id);
       toast.success(saved ? "Removed from saved jobs" : "Job saved successfully!");
-
     } catch (error: any) {
-      // Rollback on failure
       setSaved(isSavedStatus);
       toast.error(error.message || "An error occurred while saving the job.");
     }
@@ -86,91 +79,87 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
 
   return (
     <>
-      <div
-        className="group relative block rounded-xl border border-slate-200/60 bg-white p-4 sm:p-5 shadow-sm transition-all duration-300 overflow-hidden h-full flex flex-col hover:border-indigo-200/50 hover:shadow-md"
-      >
-        <div className="absolute top-0 right-0 w-36 h-36 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none" />
-        
+      <div className="group relative flex flex-col h-full rounded-[16px] border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200">
         <div className="relative z-10 flex flex-col h-full">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <Link href={jobHref} className="flex gap-3 flex-1 items-start">
-              <div className="w-12 h-12 shrink-0 rounded-lg border border-slate-100 bg-white p-2 shadow-sm flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
-                {logoUrl && !logoError ? (
-                  <img 
-                    src={logoUrl} 
-                    alt={company} 
-                    className="h-full w-full object-contain" 
-                    onError={() => setLogoError(true)}
-                  />
-                ) : (
-                  <span className="text-indigo-600 font-medium text-lg">{company && company[0]}</span>
-                )}
+          {/* Top Row: Logo, Title/Company, Bookmark */}
+          <div className="flex items-start gap-4 mb-3">
+            <div className="w-14 h-14 shrink-0 rounded-[16px] bg-[#ecf2ff] flex items-center justify-center overflow-hidden border border-slate-50">
+              {logoUrl && !logoError ? (
+                <img 
+                  src={logoUrl} 
+                  alt={company} 
+                  className="h-full w-full object-contain" 
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <span className="text-[#1e3a8a] font-bold text-2xl">{company?.[0]?.toUpperCase()}</span>
+              )}
+            </div>
+            
+            <div className="min-w-0 flex-1 pt-0.5">
+              <h3 className="text-[19px] font-bold text-[#1e3a8a] group-hover:text-blue-800 transition-colors leading-tight mb-1.5 tracking-tight">
+                {title}
+              </h3>
+              <div className="flex items-start gap-1.5 text-slate-400">
+                <Building className="w-4 h-4 mt-0.5 shrink-0" />
+                <p className="text-[15px] font-medium leading-tight text-slate-500 line-clamp-2">{company}</p>
               </div>
-              <div className="min-w-0">
-                <h3 className="font-display text-[17px] font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[46px] leading-tight tracking-tight">
-                  {title}
-                </h3>
-                <p className="text-indigo-600 font-medium text-[13px] mt-0.5 tracking-tight truncate">{company}</p>
-              </div>
-            </Link>
+            </div>
 
             <button
               onClick={handleSave}
-              suppressHydrationWarning={true}
-              className={cn(
-                "p-2.5 rounded-lg transition-all duration-300 active:scale-95 shrink-0 z-20",
-                saved 
-                  ? "bg-blue-600 text-white" 
-                  : "bg-slate-50 text-slate-400 border border-slate-100"
-              )}
-              title={saved ? "Saved" : "Save Job"}
+              className="flex shrink-0 items-center justify-center w-8 h-8 text-slate-400 hover:text-blue-600 transition-all active:scale-90"
             >
-              {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {saved ? <BookmarkCheck className="h-5.5 w-5.5 text-[#1e3a8a]" /> : <Bookmark className="h-5.5 w-5.5" />}
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-[11px] font-medium border border-emerald-100/50 tracking-tight flex items-center gap-1.5">
-               <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-               {type}
-            </span>
-            {tags && tags.map((tag, idx) => (
-              <span key={idx} className="bg-slate-50 text-slate-500 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-100 uppercase tracking-tight">
-                {tag}
-              </span>
-            ))}
-            <span className="flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500 border border-slate-200">
-              <Clock3 className="h-3 w-3" />
-              {formatTimeAgo(posted)}
-            </span>
-            <span className="bg-slate-100 text-slate-800 px-3 py-1 rounded-lg text-[11px] font-medium border border-slate-200 flex items-center gap-1.5 tracking-tight">
-               <MapPin className="w-3.5 h-3.5 text-indigo-500" />
-               <span className="truncate max-w-[80px] sm:max-w-none">{location}</span>
-            </span>
+          {/* Metadata Row: Location, Job Type, Time */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px] font-medium text-slate-500 mb-2">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-slate-400" />
+              <span>{location}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Building className="w-4 h-4 text-slate-400" />
+              <span>{type}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock3 className="w-4 h-4 text-slate-400" />
+              <span>{formatTimeAgo(posted)}</span>
+            </div>
           </div>
 
-          <div className="mb-4">
-            {salary !== "Not disclosed" && (
-               <span className="inline-flex bg-slate-100 text-slate-700 px-4 py-1.5 rounded-lg text-[11px] font-bold border border-slate-200 items-center gap-1.5 tracking-tight group-hover:bg-primary/5 transition-colors">
-                 ₹{salary}
-               </span>
+          <div className="flex justify-end mb-4">
+            {salary && salary !== "Not disclosed" && (
+              <div className="text-[17px] font-semibold text-slate-900">
+                ₹{salary}
+              </div>
             )}
           </div>
 
-          <div className="mt-auto pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-2.5">
-                <Link href={jobHref} className="flex-1">
-                  <button className="w-full h-11 px-4 rounded-xl bg-emerald-600 text-white font-bold text-[13px] hover:bg-emerald-700 transition-all active:scale-95">
-                     Details
-                  </button>
-               </Link>
-               <button 
-                 onClick={handleApply}
-                 className="flex-[1.5] h-11 px-4 rounded-xl bg-indigo-600 text-white font-bold text-[13px] hover:bg-indigo-700 transition-all active:scale-95 whitespace-nowrap"
-               >
-                  Apply Now
-               </button>
-            </div>
+          {/* Tags Section - Capsule Shape */}
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {(tags && tags.length > 0 ? tags : ["Teacher", "Staff Selection"]).slice(0, 3).map((tag, idx) => (
+              <span key={idx} className="bg-[#f0f4f8] text-[#475569] px-4 py-1 rounded-full text-[12px] font-bold tracking-tight">
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Buttons Row */}
+          <div className="mt-auto flex items-center gap-3">
+            <button 
+              onClick={handleApply}
+              className="flex-[2] h-[48px] rounded-xl bg-[#1e3a8a] text-white font-bold text-[15px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
+            >
+              Apply Now
+            </button>
+            <Link href={jobHref} className="flex-1">
+              <button className="w-full h-[48px] rounded-xl border border-slate-200 bg-white text-slate-900 font-bold text-[14px] hover:bg-slate-50 transition-all active:scale-95">
+                View Details
+              </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ export const Hero = ({
   const secondaryCtas = ctaItems.slice(1);
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-24 bg-slate-100">
+    <section className="relative z-40 py-16 md:py-24 bg-slate-100">
       {/* Dynamic Background Image from API */}
       {imageUrl && (
         <div 
@@ -40,7 +40,7 @@ export const Hero = ({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,white_100%)] z-[1]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.05),transparent_40%)] z-[1]" />
       
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-none w-full px-2 relative z-10">
         <div className="mx-auto max-w-4xl text-center">
           <h1
             className="text-4xl font-bold text-foreground md:text-6xl lg:text-7xl leading-[1.1]"
@@ -109,17 +109,17 @@ export const Hero = ({
           ))}
         </div>
 
-        <div className="mx-auto mt-12 max-w-4xl relative z-30">
+        <div className="mx-auto mt-20 md:mt-16 max-w-4xl relative z-[100]">
           <SearchBar />
           {hero.trust_text ? (
-            <div className="mt-10 text-center text-base md:text-lg font-bold text-muted-foreground/80 animate-in fade-in slide-in-from-bottom-2 duration-700 tracking-tight">
+            <div className="mt-8 md:mt-12 text-center text-base md:text-lg font-bold text-muted-foreground/80 animate-in fade-in slide-in-from-bottom-2 duration-700 tracking-tight">
               {hero.trust_text}
             </div>
           ) : null}
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full h-24 bg-linear-to-t from-background to-transparent z-10" />
+
     </section>
   );
 };

@@ -14,21 +14,21 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
 
   return (
     <section className="py-12 md:py-16 bg-card border-t border-border">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pl-2 gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-              Latest from the <span className="text-primary/80">Blog</span>
-            </h2>
-            <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-              Resources and guides for your teaching career
-            </p>
+      <div className="max-w-none w-full px-2">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
+            Latest from the <span className="text-primary/80">Blog</span>
+          </h2>
+          <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
+            Resources and guides for your teaching career
+          </p>
+          <div className="mt-6">
+            <Button asChild variant="ghost" className="sm:flex gap-1 text-primary hover:text-primary transition-colors mx-auto">
+              <Link href="/blogs">
+                View All Posts <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
-          <Button asChild variant="ghost" className="sm:flex gap-1 text-primary hover:text-primary transition-colors self-start md:self-auto">
-            <Link href="/blogs">
-              View All Posts <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {blogPreview.map((post) => (

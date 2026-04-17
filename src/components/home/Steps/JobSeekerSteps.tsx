@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/shared/ui/Buttons/Buttons";
-import { ArrowRight } from "lucide-react";
+// import Link from "next/link";
+// import { Button } from "@/shared/ui/Buttons/Buttons";
+// import { ArrowRight } from "lucide-react";
 
 const steps = [
   {
@@ -33,54 +33,43 @@ const steps = [
 
 export const JobSeekerSteps = () => {
   return (
-    <section className="bg-white border-t border-border py-12 md:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-left mb-12 pl-2">
-          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            Get Your <span className="text-primary/80">Teaching Job</span> in 4 Simple Steps
+    <section className="bg-white py-20 md:py-28">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12">
+        <div className="text-center mb-16">
+          <h2 className="text-[32px] md:text-[40px] font-bold text-[#111827] tracking-tight mb-4">
+            Get Your Job in 4 Simple Steps
           </h2>
-          <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
+          <p className="text-[17px] md:text-[19px] text-slate-500 font-medium">
             Follow these steps to land your dream job on TeachNow
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
             <div
               key={s.step}
-              className="group relative rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden text-center"
+              className="group relative rounded-[20px] bg-[#f8faff] p-5 md:p-6 transition-all duration-500 flex flex-col items-center text-center border border-slate-200 shadow-sm hover:border-blue-200 hover:shadow-md"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50/50 rounded-full -mr-12 -mt-12 pointer-events-none z-0" />
-              
-              <div className="relative z-10 mx-auto mb-4 h-36 w-36 overflow-hidden rounded-xl">
+              <div className="mb-4 h-28 w-full flex items-center justify-center">
                 <img
                   src={s.img}
                   alt={s.title}
-                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+                  className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
-              <div className={`relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold mb-3 ${
-                s.step === "01" ? "bg-blue-50 text-blue-600" :
-                s.step === "02" ? "bg-emerald-50 text-emerald-600" :
-                s.step === "03" ? "bg-rose-50 text-rose-600" :
-                "bg-amber-50 text-amber-600"
-              }`}>
+
+              <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#1e3a8a] text-[12px] font-extrabold shadow-sm">
                 {s.step}
               </div>
-              <h3 className="relative z-10 font-display text-base font-bold text-slate-900 leading-tight">
+
+              <h3 className="text-[22px] font-bold text-[#111827] mb-3 leading-tight">
                 {s.title}
               </h3>
-              <p className="relative z-10 mt-2 text-sm text-slate-500 font-medium">{s.desc}</p>
+              <p className="text-[15px] text-slate-500 font-medium leading-relaxed max-w-[240px] mx-auto">
+                {s.desc}
+              </p>
             </div>
           ))}
-        </div>
-
-        <div className="mt-10 text-center">
-          <Button asChild variant="hero" size="lg" className="gap-2">
-            <Link href="/jobs">
-              Start Your Job Search <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
         </div>
       </div>
     </section>

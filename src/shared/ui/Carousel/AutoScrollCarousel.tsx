@@ -101,7 +101,7 @@ const AutoScrollCarousel = ({
 
       <section
         ref={scrollRef}
-        className={`flex gap-4 overflow-hidden select-none whitespace-nowrap outline-none ${className}`}
+        className={`flex gap-6 md:gap-8 overflow-hidden select-none whitespace-nowrap outline-none ${className}`}
         onMouseEnter={() => !isContinuous && setIsPaused(true)}
         onMouseLeave={() => !manualPauseRef.current && setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
