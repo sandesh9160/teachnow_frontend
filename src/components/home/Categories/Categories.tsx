@@ -62,12 +62,12 @@ export const Categories = ({ categories }: CategoriesProps) => {
 
         {/* Header - Matching requested text and style */}
         <div className="text-center mb-14 px-4">
-          <p className="text-blue-600 font-bold tracking-wider uppercase text-sm mb-3">
+          <h2 className="text-[32px] md:text-[42px] font-bold text-[#111827] tracking-tight mb-3">
             Popular Categories
-          </p>
-          <h2 className="text-[28px] font-bold text-[#111827] tracking-tight sm:text-4xl">
-            Explore teaching roles by category
           </h2>
+          <p className="text-[17px] md:text-[19px] text-slate-500 font-medium">
+            Explore teaching roles by category
+          </p>
         </div>
 
         {/* Carousel - Centered and Styled */}

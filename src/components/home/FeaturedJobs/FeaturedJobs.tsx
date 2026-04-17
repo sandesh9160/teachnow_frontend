@@ -50,7 +50,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
             onClick={() => {
               if (jobsRef.current) jobsRef.current.scrollBy({ left: -300, behavior: 'smooth' });
             }}
-            className="absolute left-1 md:-left-4 top-[35%] -translate-y-1/2 z-50 h-9 w-9 md:h-12 md:w-12 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
+            className="absolute left-5 md:-left-4 top-[35%] -translate-y-1/2 z-50 h-9 w-9 md:h-12 md:w-12 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
@@ -59,7 +59,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
             onClick={() => {
               if (jobsRef.current) jobsRef.current.scrollBy({ left: 300, behavior: 'smooth' });
             }}
-            className="absolute right-1 md:-right-4 top-[35%] -translate-y-1/2 z-50 h-9 w-9 md:h-12 md:w-12 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
+            className="absolute right-5 md:-right-4 top-[35%] -translate-y-1/2 z-50 h-9 w-9 md:h-12 md:w-12 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
           >
             <ChevronRight className="h-6 w-6" />
           </button>

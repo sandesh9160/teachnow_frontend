@@ -92,9 +92,8 @@ export default async function HomePage() {
       <EmployerSteps />
 
       {testimonials && testimonials.length > 0 && <Testimonial testimonials={testimonials} />}
-      {blogs && blogs.length > 0 && <BlogSections blogs={blogs} />}
-
       {faqs && faqs.length > 0 && <Faq faqs={faqs} />}
+      {blogs && blogs.length > 0 && <BlogSections blogs={blogs} />}
     </main>
   );
 }

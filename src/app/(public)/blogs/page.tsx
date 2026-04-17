@@ -14,103 +14,93 @@ export default async function BlogPage() {
   const breadcrumbItems = [{ label: "Blog", isCurrent: true }];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#f8faff]">
       {/* Consistent Breadcrumb Bar */}
-      <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
+      <div className="border-b border-slate-100 bg-white sticky top-0 z-40">
         <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
       {/* Header */}
-      <section className="border-b border-slate-100 bg-white py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 md:text-4xl tracking-tight">Teaching Career Resources</h1>
-            <p className="mt-4 text-base text-slate-500 font-medium leading-relaxed">
+      <section className="border-b border-slate-50 bg-white py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center md:text-left">
+          <div className="max-w-3xl">
+            <h1 className="text-[28px] md:text-[36px] font-semibold text-[#111827] tracking-tight">Career Resources</h1>
+            <p className="mt-2 text-[15px] md:text-[17px] text-slate-500 font-medium leading-relaxed">
               Career advice, interview tips, and insights for teachers, tutors, and academic professionals.
             </p>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-12">
           {/* Blog Grid */}
-          <div className="lg:col-span-2">
-            <div className="grid gap-6 sm:grid-cols-2">
+          <div className="lg:col-span-8">
+            <div className="grid gap-5 sm:grid-cols-2">
               {blogPosts.map((post) => (
                 <Link
                   key={post.slug}
                   href={`/blogs/${post.slug}`}
-                  className="group rounded-xl border border-border bg-card shadow-card overflow-hidden transition-all hover:shadow-card-hover hover:-translate-y-1"
+                  className="group rounded-xl border border-slate-200 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-200/50"
                 >
                   <div className="aspect-video overflow-hidden">
                     <img
                       src={post.image}
                       alt={post.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
-                  <div className="p-5">
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary">
-                      {post.category}
-                    </span>
-                    <h3 className="mt-2.5 font-display text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                  <div className="p-4">
+                    <div className="mb-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold tracking-wide capitalize">
+                        {post.category}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-bold text-[#111827] leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="mt-1.5 text-xs text-slate-500 font-medium leading-relaxed">{"Read more about this article on our blog."}</p>
-                    <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>By Admin</span>
-                      <div className="flex items-center gap-3">
-                        <span>{formatDate(post.created_at || Date.now())}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />5 min</span>
-                      </div>
+                    <p className="mt-2 text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">{"Read more about this article on our blog."}</p>
+                    <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wide">
+                      <span>{formatDate(post.created_at || Date.now())}</span>
+                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />5 min read</span>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
             {blogPosts.length === 0 && (
-              <div className="rounded-xl border border-dashed border-border bg-card p-12 text-center">
-                <p className="text-muted-foreground">No articles found.</p>
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-12 text-center">
+                <p className="text-slate-500 font-medium">No articles found.</p>
               </div>
             )}
           </div>
 
           {/* Sidebar */}
-          <aside className="space-y-6">
+          <aside className="lg:col-span-4 space-y-6">
             {/* Search */}
-            <div className="group relative rounded-xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                  Search Articles
-                </h3>
-              </div>
-              <div className="relative flex items-center transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/20 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 focus-within:bg-white focus-within:border-primary/30 group/input">
-                <div className="pl-3.5 pr-2 py-3 text-slate-400 group-focus-within/input:text-primary transition-colors">
-                  <Search className="h-4 w-4" />
-                </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="text-[16px] font-semibold text-slate-800 mb-4">Search Articles</h3>
+              <div className="relative group">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-blue-600 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Type to search..."
-                  className="w-full bg-transparent py-3 pr-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                  placeholder="Search..."
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-blue-600 focus:bg-white transition-all shadow-none"
                 />
               </div>
             </div>
 
-
-
             {/* Categories */}
-            <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Categories</h3>
-              <div className="space-y-1">
-                {["All", ...blogCategories].map((cat) => (
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="text-[16px] font-semibold text-slate-800 mb-4">Categories</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {["All", ...blogCategories].map((cat, idx) => (
                   <button
-                    key={cat}
-                    className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground`}
+                    key={`cat-${cat}-${idx}`}
+                    className="rounded-lg px-3 py-1.5 text-left text-[13px] font-semibold text-slate-600 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 transition-all"
                   >
                     {cat}
                   </button>
@@ -119,21 +109,23 @@ export default async function BlogPage() {
             </div>
 
             {/* Popular Articles */}
-            <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Popular Articles</h3>
-              <div className="space-y-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-5">
+              <h3 className="text-[16px] font-semibold text-slate-800 mb-4">Popular Insights</h3>
+              <div className="space-y-4">
                 {popular.map((p) => (
                   <Link
                     key={p.slug}
                     href={`/blogs/${p.slug}`}
-                    className="group flex items-start gap-3"
+                    className="group flex items-start gap-4"
                   >
-                    <img src={p.image} alt={p.title} className="h-12 w-16 shrink-0 rounded-lg object-cover" loading="lazy" />
+                    <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-50 border border-slate-100">
+                      <img src={p.image} alt={p.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+                    </div>
                     <div>
-                      <p className="text-xs font-medium text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                      <p className="text-[13px] font-bold text-[#111827] leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">
                         {p.title}
                       </p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">{formatDate(p.created_at || Date.now())}</p>
+                      <p className="mt-0.5 text-[10px] font-bold text-slate-400">{formatDate(p.created_at || Date.now())}</p>
                     </div>
                   </Link>
                 ))}

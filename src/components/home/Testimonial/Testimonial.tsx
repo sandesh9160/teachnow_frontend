@@ -39,95 +39,76 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
 
 
   return (
-    <section className="py-12 md:py-16 bg-slate-50/50 overflow-hidden relative">
-      <div className="max-w-none w-full px-2">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            What Our <span className="text-primary/80">Community</span> Says
+    <section className="py-24 bg-[#f8faff] overflow-hidden relative w-full">
+      <div className="w-full">
+        <div className="text-center mb-16 px-4">
+          <h2 className="text-[32px] md:text-[42px] font-bold text-[#111827] tracking-tight mb-4">
+            What Teachers and Schools Say
           </h2>
-          <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-            Real experiences from teachers and educational institutions
+          <p className="text-[17px] md:text-[19px] text-slate-500 font-medium">
+            Real experiences from our community
           </p>
         </div>
-      </div>
-      
-      <div className="max-w-none w-full px-2 relative group">
-        {/* Navigation Arrows */}
-        <button 
-          onClick={() => {
-            if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-          }}
-          className="absolute -left-4 xl:-left-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-          title="Previous"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
 
-        <button 
-          onClick={() => {
-            if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth * 0.8, behavior: 'smooth' });
-          }}
-          className="absolute -right-4 xl:-right-12 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/40 shadow-xl transition-all duration-300 hidden lg:flex active:scale-90"
-          title="Next"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
-
-        <div 
-          ref={scrollRef} 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:gap-4 lg:overflow-x-auto lg:scrollbar-hide lg:scroll-smooth pb-4 px-1 lg:px-2 gap-4"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {/* Use unique items for manual scroll section */}
-          {Array.from(new Map(testimonials.map((t) => [t.id, t])).values()).map((t) => (
-            <div
-              key={t.id}
-              className="group relative w-full lg:w-[350px] shrink-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50/50 rounded-full -mr-16 -mt-16 pointer-events-none z-0" />
-              
-              <div className="relative z-10 flex flex-col h-full">
-                {/* Star Rating Section */}
-                <div className="flex gap-1 mb-6">
-                  {Array.from({ length: 5 }).map((_, i) => {
-                    const rating = t.rating || 5;
-                    const isFilled = i < Math.floor(rating);
-                    return (
+        {/* Full-width Autoscrolling Container */}
+        <div className="relative w-full overflow-hidden py-4 flex">
+          <div 
+            className="flex gap-6 animate-marquee-fast whitespace-nowrap hover:[animation-play-state:paused] w-max"
+            style={{ 
+              animation: 'marquee-left 60s linear infinite',
+              display: 'flex',
+              width: 'max-content'
+            }}
+          >
+            {/* Duplicating array multiple times for a truly seamless infinite scroll */}
+            {[...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials].map((t, index) => (
+              <div
+                key={`${t.id}-${index}`}
+                className="shrink-0 w-[280px] md:w-[320px] rounded-[18px] border border-slate-300 bg-white p-7 shadow-[0_2px_15px_rgba(0,0,0,0.02)] whitespace-normal"
+              >
+                <div className="flex flex-col h-full text-left">
+                  <div className="flex gap-1 mb-5">
+                    {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
                         className={cn(
-                          "h-4 w-4",
-                          isFilled ? "text-amber-400 fill-amber-400" : "text-slate-200 fill-transparent"
+                          "h-3.5 w-3.5",
+                          i < (t.rating || 5) ? "text-amber-400 fill-amber-400" : "text-slate-200"
                         )}
                       />
-                    );
-                  })}
-                </div>
-                
-                <div className="relative">
-                  <Quote className="absolute -top-2 -left-2 h-10 w-10 text-blue-500/10 -z-10" />
-                  <p className="text-[15px] text-slate-700 leading-relaxed min-h-[110px] font-medium italic relative z-10">
-                    "{t.message}"
-                  </p>
-                </div>
-                
-                <div className="mt-auto pt-6 flex items-center gap-4 border-t border-slate-100">
-                  <div className="relative h-12 w-12 shrink-0 rounded-full border border-slate-200 p-0.5 shadow-xs overflow-hidden bg-white group-hover:border-primary/30 transition-colors">
-                    <div className="relative h-full w-full rounded-full overflow-hidden">
-                      <TestimonialAvatar src={t.photo} name={t.name} />
-                    </div>
+                    ))}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-base font-bold text-slate-900 truncate tracking-tight">{t.name}</p>
-                    <p className="text-xs font-medium text-slate-500 truncate mt-0.5">
-                      {t.designation}
+                  
+                  <div className="relative mb-8">
+                    <Quote className="h-8 w-8 text-blue-500/10 mb-2" />
+                    <p className="text-[15px] text-slate-600 leading-relaxed min-h-[90px] font-medium italic">
+                      "{t.message}"
                     </p>
+                  </div>
+                  
+                  <div className="mt-auto pt-5 border-t border-slate-100 flex items-center gap-4">
+                    <div className="relative h-11 w-11 shrink-0 rounded-full bg-slate-50 overflow-hidden ring-1 ring-slate-100 shadow-sm">
+                       <TestimonialAvatar src={t.photo} name={t.name} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-bold text-[#111827] truncate">{t.name}</p>
+                      <p className="text-[12px] font-medium text-slate-400 truncate">
+                        {t.designation}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+
+        <style key="marquee-style">{`
+          @keyframes marquee-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
       </div>
     </section>
   );

@@ -62,7 +62,7 @@ export const Footer = ({
 
   return (
     <footer className="border-t border-border bg-card">
-      <div className="container py-12 md:py-16 ml-4 md:ml-8 lg:ml-12">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-1">
             <Link href="/" className="mb-4 flex items-center gap-2">

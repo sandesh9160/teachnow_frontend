@@ -29,41 +29,41 @@ const steps = [
 
 export const EmployerSteps = () => {
   return (
-    <section className="py-12 md:py-16">
-      <div className="max-w-none w-full px-2">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            Hire the Best <span className="text-primary/80">Teachers</span>
+    <section className="py-16 bg-white overflow-hidden text-black">
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="text-center mb-12 px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-black tracking-tight mb-2">
+            Steps to Post a Job
           </h2>
-          <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-            Simplify your recruitment process and find qualified educators
+          <p className="text-[15px] md:text-[17px] text-black/80 font-medium">
+            Hire qualified teachers quickly with TeachNow.
           </p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-10">
           {steps.map((s) => (
             <div
               key={s.step}
-              className="group relative rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden text-center"
+              className="group w-full rounded-[20px] border border-slate-300 bg-white p-6 transition-all duration-300 flex flex-col items-center text-center h-full shadow-sm hover:shadow-md"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50/50 rounded-full -mr-12 -mt-12 pointer-events-none z-0" />
-              
-              <div className="relative z-10 mx-auto mb-4 h-32 w-32 overflow-hidden rounded-xl">
+              <div className="relative mb-6 h-36 w-full flex items-center justify-center">
                 <img
                   src={s.img}
                   alt={s.title}
-                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+                  className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-              <div className={`relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold mb-3 ${
-                s.step === 1 ? "bg-blue-50 text-blue-600" :
-                s.step === 2 ? "bg-emerald-50 text-emerald-600" :
-                s.step === 3 ? "bg-rose-50 text-rose-600" :
-                "bg-amber-50 text-amber-600"
-              }`}>
+
+              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-700 text-white text-xs font-bold mb-4 shadow-sm">
                 {s.step}
               </div>
-              <h3 className="relative z-10 font-display text-base font-bold text-slate-900 leading-tight">{s.title}</h3>
-              <p className="relative z-10 mt-2 text-sm text-slate-500 font-medium">{s.desc}</p>
+
+              <h3 className="text-base font-bold text-black leading-tight mb-3">
+                {s.title}
+              </h3>
+              <p className="text-[13px] text-black/70 font-medium leading-relaxed">
+                {s.desc}
+              </p>
             </div>
           ))}
         </div>
