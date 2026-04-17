@@ -3,86 +3,55 @@ import type { Job } from "@/types/homepage";
 
 /**
  * Normalizes a job object from the backend.
+ * Guaranteed idempotent and resilient to flat/nested structures.
  */
 export function normalizeJob(job: unknown): Job {
   if (!job || typeof job !== "object") return {} as Job;
-  const j = job as Record<string, unknown>;
+  const j = job as Record<string, any>;
 
+  // Detect if j.employer is already a normalized object or a raw one
+  const employerObj = (j.employer && typeof j.employer === "object") ? (j.employer as Record<string, any>) : null;
+  
+  const companyName = 
+    employerObj?.company_name || 
+    employerObj?.name || 
+    employerObj?.institution_name || 
+    employerObj?.school_name || 
+    j.company_name ||
+    j.institution_name ||
+    j.org_name ||
+    j.employer_name ||
+    j.name ||
+    "Confidential School";
+
+  const institutionType = 
+    j.institution_type || 
+    employerObj?.institution_type || 
+    j.employer_type || 
+    j.type || 
+    "";
+
+  // We construct a fresh object while preserving any other existing fields
   return {
-    ...(j as unknown as Job),
-    employer:
-      j.employer && typeof j.employer === "object"
-        ? {
-            ...(j.employer as Record<string, unknown>),
-            company_name:
-              (j.employer as { company_name?: string }).company_name ||
-              (j.employer as { name?: string }).name ||
-              (j.employer as { institution_name?: string }).institution_name ||
-              (j.employer as { institute_name?: string }).institute_name ||
-              (j.employer as { college_name?: string }).college_name ||
-              (j.employer as { school_name?: string }).school_name ||
-              (j.employer as { org_name?: string }).org_name ||
-              (j.employer as { company?: string }).company ||
-              (j.employer as { institution?: string }).institution ||
-              (j.employer as { institute?: string }).institute ||
-              (j.employer as { college?: string }).college ||
-              (j.employer as { school?: string }).school ||
-              (j.employer as { organization?: string }).organization ||
-              (j.company_name as string) ||
-              (j.employer_name as string) ||
-              (j.institution_name as string) ||
-              (j.institute_name as string) ||
-              (j.college_name as string) ||
-              (j.school_name as string) ||
-              (j.org_name as string) ||
-              (j.company as string) ||
-              (j.institution as string) ||
-              (j.institute as string) ||
-              (j.college as string) ||
-              (j.school as string) ||
-              (j.organization as string) ||
-              "Confidential School",
-            company_logo: normalizeMediaUrl(
-              (j.employer as { company_logo?: string }).company_logo ??
-                (j.employer as { logo?: string }).logo ??
-                (j.employer as { company_image?: string }).company_image ??
-                (j.employer as { company_logo_url?: string }).company_logo_url ??
-                (j.company_logo as string) ??
-                (j.logo as string) ??
-                (j.school_logo as string) ??
-                null
-            ),
-          }
-        : {
-            id: (j.employer_id as number) || (j.employer as { id?: number })?.id,
-            company_name:
-              (j.company_name as string) ||
-              (j.employer_name as string) ||
-              (j.institution_name as string) ||
-              (j.institute_name as string) ||
-              (j.college_name as string) ||
-              (j.school_name as string) ||
-              (j.org_name as string) ||
-              (j.company as string) ||
-              (j.institution as string) ||
-              (j.institute as string) ||
-              (j.college as string) ||
-              (j.school as string) ||
-              (j.organization as string) ||
-              (j.employer && typeof j.employer === "object"
-                ? String((j.employer as { company_name?: string }).company_name ?? "")
-                : "") ||
-              "Confidential School",
-            company_logo: normalizeMediaUrl(
-              (j.company_logo as string) ||
-                (j.logo as string) ||
-                (j.employer_logo as string) ||
-                (j.school_logo as string) ||
-                ""
-            ),
-            institution_type: (j.institution_type as string) || (j.employer as any)?.institution_type || (j.employer_type as string) || "",
-          },
-    institution_type: (j.institution_type as string) || (j.employer as any)?.institution_type || (j.employer_type as string) || "",
+    ...j,
+    // Standardize key metadata at the top level for reliability
+    company_name: companyName,
+    institution_type: institutionType,
+    institutionType: institutionType,
+    employer: {
+      ...(employerObj || {}),
+      id: employerObj?.id || j.employer_id,
+      company_name: companyName,
+      institution_type: institutionType,
+      company_logo: normalizeMediaUrl(
+        employerObj?.company_logo ||
+        employerObj?.logo ||
+        j.company_logo ||
+        j.logo ||
+        j.employer_logo ||
+        ""
+      ),
+    }
   } as Job;
 }
 

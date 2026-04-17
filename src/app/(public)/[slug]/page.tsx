@@ -10,6 +10,7 @@ import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
 import { getLocationJobs } from "@/hooks/useHomepage";
 import { sanitizeSlug } from "@/lib/utils";
 
+
 export const dynamic = 'force-dynamic';
 
 /* -------------------- LOCOATION HELPERS -------------------- */

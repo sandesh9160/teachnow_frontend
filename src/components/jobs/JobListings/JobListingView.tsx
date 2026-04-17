@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Filter } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
-import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+// import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
 import { useState, useEffect } from "react";
 import type { JobsFilters } from "@/types/jobs";
@@ -30,7 +30,6 @@ export default function JobListingView({
   initialFilters
 }: Readonly<JobListingViewProps>) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [internalSearch, setInternalSearch] = useState("");
   const [internalLocation, setInternalLocation] = useState("");
@@ -45,38 +44,43 @@ export default function JobListingView({
     institution_type: initialFilters?.institution_type || [],
   });
 
-  useEffect(() => {
-    setMounted(true);
-    // Initialize search fields and title separately as requested
-    if (initialKeyword) {
-      setInternalSearch(initialKeyword);
-    } else if (pageName && pageName !== "Search") {
-      setInternalSearch(pageName);
-    }
+    useEffect(() => {
+      // Initialize search fields and title separately as requested
+      if (initialKeyword) {
+          setInternalSearch(initialKeyword);
+      } else if (pageName && pageName !== "Search") {
+          // If pageName is just the location, don't double-fill it in keywords
+          const isOnlyLocation = initialLocation && pageName.toLowerCase().includes(initialLocation.toLowerCase());
+          if (!isOnlyLocation) {
+              setInternalSearch(pageName);
+          }
+      }
 
-    if (initialLocation) {
-      setInternalLocation(initialLocation);
-    }
-  }, [pageName, initialKeyword, initialLocation]);
+      if (initialLocation) {
+          setInternalLocation(initialLocation);
+      }
+    }, [pageName, initialKeyword, initialLocation]);
 
-  const normalizedPageName = String(pageName || "Search")
-    .trim()
-    .replace(/^in\s+/i, "") // Remove leading "In" for location pages
-    .replace(/\s*(teaching|teacher|jobs?)$/i, "")
-    .split(/[\s-]+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+  // const normalizedPageName = String(pageName || "Search")
+  //   .trim()
+  //   .replace(/^in\s+/i, "") // Remove leading "In" for location pages
+  //   .replace(/\s*(teaching|teacher|jobs?)$/i, "")
+  //   .split(/[\s-]+/)
+  //   .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  //   .join(" ");
 
-  const breadcrumbItems = [
-    { label: "Jobs", href: "/jobs" },
-    { label: `${normalizedPageName} Jobs`, isCurrent: true },
-  ];
+  // const breadcrumbItems = [
+  //   { label: "Jobs", href: "/jobs" },
+  //   { label: `${normalizedPageName} Jobs`, isCurrent: true },
+  // ];
 
+  const [isSearching, setIsSearching] = useState(false);
   const handleSearch = () => {
     const combined = [internalSearch, internalLocation]
       .filter(Boolean)
       .join(" ");
 
+    setIsSearching(true);
     if (!combined.trim()) {
       router.push("/jobs");
       return;
@@ -154,24 +158,26 @@ export default function JobListingView({
     <div className="bg-[#F8FAFC] min-h-screen pb-12">
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-          <Breadcrumb items={breadcrumbItems} />
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 w-full">
+          <div className="flex flex-col items-center w-full">
+            <div className="w-full max-w-4xl">
+              <JobsHeader
+                search={internalSearch}
+                setSearch={(val) => { setInternalSearch(val); }}
+                location={internalLocation}
+                setLocation={(val) => { setInternalLocation(val); }}
+                onOpenFilters={() => setMobileFiltersOpen(true)}
+                onSearch={handleSearch}
+                activeFilterCount={Object.values(selectedFilters).flat().length}
+                loading={isSearching}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Integrated Search Bar for Consistency */}
-      <JobsHeader
-        search={internalSearch}
-        setSearch={(val) => { setInternalSearch(val); }}
-        location={internalLocation}
-        setLocation={(val) => { setInternalLocation(val); }}
-        onOpenFilters={() => setMobileFiltersOpen(true)}
-        onSearch={handleSearch}
-        activeFilterCount={Object.values(selectedFilters).flat().length}
-      />
-
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-4">
+        <div className="grid gap-10 lg:grid-cols-4">
           {/* Filters Sidebar */}
           <aside className="hidden lg:block space-y-6">
             <div className="flex items-center justify-between">
@@ -217,24 +223,20 @@ export default function JobListingView({
                   .replaceAll(/_/g, " ")
                   .replaceAll(/\b\w/g, (c) => c.toUpperCase());
 
-                const postedText = mounted && job.created_at 
-                  ? `Posted on ${new Date(job.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` 
-                  : "Posted recently";
-
                 return (
                   <JobCard
                     key={job.id}
                     id={job.id}
                     title={job.title}
-                    company={job.employer?.company_name || "Confidential School"}
+                    company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
                     location={job.location || "India"}
                     type={jobTypeFormatted}
                     salary={salary}
                     tags={[]}
-                    posted={postedText}
+                    posted={job.created_at || new Date().toISOString()}
                     logo={job.employer?.company_logo}
                     slug={job.slug}
-                    institutionType={job.institution_type || job.employer?.institution_type}
+                    institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
                   />
                 );
               })}

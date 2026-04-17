@@ -78,7 +78,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
                   image={post.image}
                   date={post.created_at ? formatDate(post.created_at) : "Recently"}
                   category={post.category || "Career Advice"}
-                  readTime={post.read_time || "5 min read"}
+                  readTime={post.readTime || "5 min read"}
                   excerpt={post.excerpt || "Read more about this article on our blog."}
                 />
               </div>

@@ -13,6 +13,7 @@ interface JobsHeaderProps {
   onOpenFilters: () => void;
   onSearch: () => void;
   activeFilterCount: number;
+  loading?: boolean;
 }
 
 export const JobsHeader = ({
@@ -23,6 +24,7 @@ export const JobsHeader = ({
   onOpenFilters,
   onSearch,
   activeFilterCount,
+  loading,
 }: JobsHeaderProps) => {
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -92,7 +94,7 @@ export const JobsHeader = ({
   }, [location]);
 
   return (
-    <section className="bg-slate-50 relative pt-12 pb-6">
+    <section className="bg-slate-50 relative pt-4 md:pt-12 pb-4 md:pb-6">
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
       <div className="container relative z-10 px-4">
@@ -100,21 +102,21 @@ export const JobsHeader = ({
           <div className="relative group/search-container">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/15 via-primary/5 to-primary/15 rounded-xl blur-xl opacity-0 group-focus-within/search-container:opacity-100 transition-opacity duration-500" />
             
-            <div className="relative bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] border border-slate-200 p-1.5 flex flex-col md:flex-row items-stretch md:items-center gap-0 transition-all duration-500 focus-within:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)]">
+            <div className="relative bg-white/95 backdrop-blur-xl rounded-xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] border border-slate-200 p-1 md:p-1.5 flex flex-col md:flex-row items-stretch md:items-center gap-1 md:gap-0 transition-all duration-500 focus-within:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)]">
 
               {/* Job Title Input */}
-              <div className="relative flex-[1.2] w-full rounded-lg border border-slate-200 focus-within:border-primary/40 transition-all duration-300" ref={roleRef}>
-                <div className="flex items-center gap-3 px-4 py-3 group">
-                  <div className="p-2 bg-slate-100/50 rounded-lg group-focus-within:bg-primary/10 group-focus-within:text-primary transition-colors">
-                    <Search className="h-4 w-4 shrink-0" />
+              <div className="relative flex-[1.2] w-full rounded-lg border border-slate-100 md:border-transparent focus-within:border-primary/40 md:focus-within:border-primary/40 transition-all duration-300" ref={roleRef}>
+                <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 group">
+                  <div className="p-1.5 md:p-2 bg-slate-100/50 rounded-lg group-focus-within:bg-primary/10 group-focus-within:text-primary transition-colors">
+                    <Search className="h-3.5 w-3.5 md:h-4 md:w-4 shrink-0" />
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-1">What</label>
+                    <label className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-0.5 md:mb-1">What</label>
                     <input
                       type="text"
                       placeholder="Role or keyword"
                       autoComplete="off"
-                      className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                      className="w-full bg-transparent text-xs md:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
                       value={search}
                       onChange={(e) => {
                         setSearch(e.target.value);
@@ -157,7 +159,7 @@ export const JobsHeader = ({
                           >
                             <div className="flex items-center gap-2">
                               <div className="h-7 w-7 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 text-slate-400 group-hover/item:bg-white group-hover/item:text-primary group-hover/item:border-primary/20 transition-all duration-300">
-                                <Search className="h-3 w-3" />
+                                <Search className="h-3.5 w-3.5" />
                               </div>
                               <span className="text-xs font-medium text-slate-600 group-hover/item:text-slate-900 transition-colors">
                                 <span className="font-bold text-slate-900">{matchPart}</span>
@@ -180,18 +182,18 @@ export const JobsHeader = ({
               <div className="hidden md:block w-px h-10 bg-slate-200/60 mx-1" />
 
               {/* Location Input */}
-              <div className="relative flex-1 w-full rounded-lg border border-slate-200 focus-within:border-orange-500/40 transition-all duration-300" ref={cityRef}>
-                <div className="flex items-center gap-3 px-4 py-3 group">
-                  <div className="p-2 bg-slate-100/50 rounded-lg group-focus-within:bg-orange-500/10 group-focus-within:text-orange-500 transition-colors">
-                    <MapPin className="h-4 w-4 shrink-0" />
+              <div className="relative flex-1 w-full rounded-lg border border-slate-100 md:border-transparent focus-within:border-orange-500/40 md:focus-within:border-orange-500/40 transition-all duration-300" ref={cityRef}>
+                <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 group">
+                  <div className="p-1.5 md:p-2 bg-slate-100/50 rounded-lg group-focus-within:bg-orange-500/10 group-focus-within:text-orange-500 transition-colors">
+                    <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 shrink-0" />
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-1">Where</label>
+                    <label className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-0.5 md:mb-1">Where</label>
                     <input
                       type="text"
                       placeholder="Location"
                       autoComplete="off"
-                      className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                      className="w-full bg-transparent text-xs md:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
                       value={location}
                       onChange={(e) => {
                         setLocation(e.target.value);
@@ -233,7 +235,7 @@ export const JobsHeader = ({
                           >
                             <div className="flex items-center gap-2">
                               <div className="h-7 w-7 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-100 text-slate-400 group-hover/item:bg-white group-hover/item:text-orange-500 group-hover/item:border-orange-500/20 transition-all duration-300">
-                                <MapPin className="h-3 w-3" />
+                                <MapPin className="h-3.5 w-3.5" />
                               </div>
                               <span className="text-xs font-medium text-slate-600 group-hover/item:text-slate-900 transition-colors">
                                 <span className="font-bold text-slate-900">{matchPart}</span>
@@ -256,13 +258,23 @@ export const JobsHeader = ({
               <Button
                 variant="hero"
                 onClick={onSearch}
-                className="md:rounded-xl h-12 md:h-[3.25rem] px-8 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold group shrink-0 m-0.5"
+                disabled={loading}
+                className="rounded-lg md:rounded-xl h-11 md:h-[3.25rem] px-6 md:px-8 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold group shrink-0 m-0.5 md:min-w-[160px] w-full md:w-auto"
               >
-                <Search className="h-4 w-4 md:hidden" />
-                <span>Search Jobs</span>
-                <div className="hidden md:flex bg-white/20 rounded-lg p-1 group-hover:translate-x-1 transition-transform duration-300">
-                  <ArrowUpRight className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                </div>
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="animate-pulse">Searching...</span>
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4 md:hidden" />
+                    <span className="text-sm md:text-base">Search Jobs</span>
+                    <div className="hidden md:flex bg-white/20 rounded-lg p-1 group-hover:translate-x-1 transition-transform duration-300">
+                      <ArrowUpRight className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    </div>
+                  </>
+                )}
               </Button>
             </div>
           </div>

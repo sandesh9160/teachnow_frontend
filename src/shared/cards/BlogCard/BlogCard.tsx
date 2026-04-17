@@ -6,12 +6,12 @@ import { normalizeMediaUrl } from "@/services/api/client";
 
 interface BlogCardProps {
   title: string;
-  excerpt: string;
-  category: string;
-  readTime: string;
-  date: string;
-  slug?: string;
+  slug: string;
   image?: string;
+  category?: string;
+  readTime?: string;
+  date?: string;
+  excerpt?: string; // ✅ ADD THIS LINE
 }
 
 const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: BlogCardProps) => {

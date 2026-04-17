@@ -1,9 +1,9 @@
 "use client";
 
-import { Star, Quote, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, Quote, User } from "lucide-react";
 import { TestimonialProps } from "@/types/components";
 import { normalizeMediaUrl } from "@/services/api/client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ const TestimonialAvatar = ({ src, name }: { src?: string | null, name: string })
 };
 
 export const Testimonial = ({ testimonials }: TestimonialProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // const scrollRef = useRef<HTMLDivElement>(null);
   
   if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) return null;
 

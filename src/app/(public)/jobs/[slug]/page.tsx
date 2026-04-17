@@ -233,9 +233,9 @@ async function resolveSlug(slug: string) {
     // Attempt lookup strategies in order of specificity
     const result = await lookupByNavigation(s)
       ?? await lookupByCategory(s)
-      ?? await lookupByJob(s)
-      ?? await lookupByInstitution(s)
-      ?? await lookupBySearchFallback(s);
+      ?? await lookupByInstitution(s) // Prioritize organization profiles if name matches exactly
+      ?? await lookupBySearchFallback(s) // Broad keyword searches (skills, locations)
+      ?? await lookupByJob(s); // Specific individual job pages as final fallback
 
     if (result) return result;
   } catch (err) {
@@ -269,6 +269,7 @@ export default async function GenericJobDetailPage({ params }: { readonly params
   }
 
   if (resolved.type === 'category') {
+    console.log("GenericJobDetailPage: passing jobs to view. Count:", (resolved.data as any[]).length, "Name:", (resolved.data as any[])[0]?.employer?.company_name);
     return (
       <JobListingView
         jobs={resolved.data as Job[]}

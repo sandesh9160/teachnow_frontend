@@ -12,7 +12,7 @@ import { JobCardProps } from "@/types/components";
 import { sanitizeSlug, formatTimeAgo } from "@/lib/utils";
 import { normalizeMediaUrl } from "@/services/api/client";
 
-const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo }: JobCardProps) => {
+const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted, slug, logo, institutionType }: JobCardProps) => {
   const { bookmarks, toggleBookmark } = useBookmarks();
   const isSavedStatus = bookmarks.some((job) => String(job.id) === String(id));
   const [saved, setSaved] = useState(isSavedStatus);
@@ -76,6 +76,7 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
   };
 
   const logoUrl = logo ? normalizeMediaUrl(logo) : null;
+  console.log(logoUrl);
 
   return (
     <>
@@ -100,9 +101,18 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
               <h3 className="text-[19px] font-bold text-[#1e3a8a] group-hover:text-blue-800 transition-colors leading-tight mb-1.5 tracking-tight">
                 {title}
               </h3>
-              <div className="flex items-start gap-1.5 text-slate-400">
-                <Building className="w-4 h-4 mt-0.5 shrink-0" />
-                <p className="text-[15px] font-medium leading-tight text-slate-500 line-clamp-2">{company}</p>
+              <div className="flex flex-col gap-1 text-slate-400">
+                <div className="flex items-start gap-1.5 ">
+                  <Building className="w-4 h-4 mt-0.5 shrink-0" />
+                  <p className="text-[15px] font-medium text-slate-500 line-clamp-2">{company}</p>
+                </div>
+                {institutionType && (
+                   <div className="flex items-center gap-1.5 ml-0.5">
+                     <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-wider">
+                       {institutionType}
+                     </span>
+                   </div>
+                )}
               </div>
             </div>
 
@@ -126,7 +136,10 @@ const JobCard = ({ id = 1, title, company, location, type, salary, tags, posted,
             </div>
             <div className="flex items-center gap-1.5">
               <Clock3 className="w-4 h-4 text-slate-400" />
-              <span>{formatTimeAgo(posted)}</span>
+              <span>{(() => {
+                const ago = formatTimeAgo(posted);
+                return ago.includes("ago") || ago === "Just now" || ago === "Recently" ? ago : `Posted on ${ago}`;
+              })()}</span>
             </div>
           </div>
 

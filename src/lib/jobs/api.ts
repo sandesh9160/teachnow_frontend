@@ -71,22 +71,15 @@ export async function searchJobs(
     const normalizedKeyword = keyword?.trim() || "";
     const normalizedLocation = location?.trim() || "";
 
-    if (!normalizedKeyword && normalizedLocation && !category_id) {
-      const byCityRes = await fetchAPI<ApiResponse<unknown>>(
-        `/open/location/${encodeURIComponent(normalizedLocation)}/jobs/`,
-        { silentStatusCodes: [404, 500] }
-      );
-      const byCityData = (byCityRes.data ?? byCityRes) as unknown;
-      return toArray<Job>(byCityData).map(normalizeJob);
-    }
-
+    // We always use the main search endpoint because it returns more detailed data (employer profiles)
+    // than the specialized location-only endpoint.
     const params = new URLSearchParams();
     if (normalizedKeyword) params.set("keyword", normalizedKeyword);
     if (normalizedLocation) params.set("location", normalizedLocation);
     if (category_id) params.set("category_id", category_id.toString());
 
     const query = params.toString();
-    const res = await fetchAPI<ApiResponse<unknown>>(`/open/search/jobs/search${query ? `?${query}` : ""}`);
+    const res = await fetchAPI<ApiResponse<unknown>>(`/open/search/jobs/search?${query}${query ? "&" : ""}t=${Date.now()}`);
     const data = (res.data ?? res) as unknown;
     return toArray<Job>(data).map(normalizeJob);
   } catch (err: unknown) {

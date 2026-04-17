@@ -1,3 +1,4 @@
+
 export type Job = {
   id: number;
   title: string;
@@ -70,23 +71,6 @@ export type Institution = {
   map_link?: string | null;
 };
 
-export type City = {
-  id: number;
-  name: string;
-  slug?: string;
-  image?: string;
-  country?: string;
-  jobs_count?: number;
-};
-
-export type Category = {
-  id: number;
-  name: string;
-  slug: string;
-  icon?: string | null;
-  jobs_count?: number;
-};
-
 export type Blog = {
   id: number;
   title: string;
@@ -98,7 +82,13 @@ export type Blog = {
   date?: string;
   readTime?: string;
   created_at?: string;
+  excerpt?: string; // Added excerpt for BlogCard/BlogSections
+  // slug: string;
+  icon?: string | null;
+  jobs_count?: number;
 };
+
+
 
 export type HeroSection = {
   id?: number;
@@ -149,6 +139,21 @@ export type TestimonialData = {
 export type FAQData = {
   question: string;
   answer: string;
+};
+
+export type City = {
+  id: number;
+  name: string;
+  image: string;
+  jobs_count?: number;
+};
+
+export type Category = {
+  id: number;
+  name: string;
+  slug?: string;
+  icon?: string | null;
+  jobs_count?: number;
 };
 
 export type ResourceData = {

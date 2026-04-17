@@ -9,6 +9,7 @@ import {
   ApiResponse,
   NavigationData,
   ResourceData,
+  Category,
 } from "@/types/homepage";
 
 /* -------------------- HELPERS -------------------- */
@@ -132,11 +133,11 @@ export async function getTopCities(): Promise<City[]> {
  * Fetch job categories.
  * Endpoint: /open/categories
  */
-export async function getCategories(): Promise<any[]> {
+export async function getCategories(): Promise<Category[]> {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/categories");
     const data = res.data || res;
-    return toArray<any>(data);
+    return toArray(data);
   } catch (error) {
     //console.error("Error in getCategories hook:", error);
     return [];
@@ -245,7 +246,7 @@ export async function getFAQs(): Promise<any[]> {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/faqs");
     const data = res.data || res;
-    return toArray<any>(data);
+    return toArray(data);
   } catch (error) {
     //console.error("Error in getFAQs hook:", error);
     return [];
