@@ -25,22 +25,19 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
 
   return (
     <div className={cn(
-      "group relative flex flex-col bg-white rounded-xl p-2 border-2 border-blue-500 shadow-none transition-all duration-300 h-full overflow-hidden",
+      "group relative flex flex-col bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm transition-all duration-300 h-full overflow-hidden hover:shadow-md",
       className
     )}>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/50 rounded-full -mr-12 -mt-12 animate-pulse pointer-events-none z-10" />
       {/* Photo */}
-      <div className="relative aspect-[1.15/1] w-full overflow-hidden rounded-md mb-1.5 shadow-inner bg-slate-50">
+      <div className="relative aspect-[1.15/1] w-full overflow-hidden rounded-md mb-1.5 bg-slate-50">
         <img
           src={imageUrl}
           alt={resource.title}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-cover"
           onError={(e) => {
              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1000&auto=format&fit=crop";
           }}
         />
-        {/* Detail Overlay on Hover */}
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 
       {/* Content */}

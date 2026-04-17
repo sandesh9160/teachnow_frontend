@@ -136,27 +136,27 @@ export default function ResourceDetailPage() {
       </div>
 
       {/* Banner / Header */}
-      <div className="relative w-full overflow-hidden bg-slate-950 flex justify-center items-center min-h-[300px]">
+      <div className="relative w-full overflow-hidden bg-slate-950 flex justify-center items-center min-h-[180px] md:min-h-[220px]">
         {coverImage ? (
           <img
             src={coverImage}
             alt="Resource cover"
-            className="w-full h-auto max-h-[60vh] object-contain"
+            className="w-full h-auto max-h-[40vh] object-contain"
           />
         ) : (
-          <div className="w-full h-full absolute inset-0 bg-linear-to-br from-primary/80 to-blue-900" />
+          <div className="w-full h-full absolute inset-0 bg-gradient-to-br from-primary/80 to-blue-900" />
         )}
 
         {/* Elegant Black Gradient Overlay for Text Readability */}
         <div className="absolute inset-0 bg-black/40 bg-linear-to-t from-slate-900/95 via-slate-900/50 to-transparent pointer-events-none" />
 
         <div className="absolute inset-0 flex flex-col justify-end">
-          <div className="container mx-auto px-4 md:px-8 pb-8 md:pb-12 text-white">
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 max-w-3xl drop-shadow-md leading-tight">
+          <div className="container mx-auto px-4 md:px-8 pb-4 md:pb-6 text-white">
+            <h1 className="text-xl md:text-3xl font-extrabold tracking-tight mb-2 max-w-3xl drop-shadow-md leading-tight">
               {resource.title}
             </h1>
 
-            <p className="text-base md:text-lg text-white/90 max-w-2xl font-light drop-shadow">
+            <p className="text-xs md:text-sm text-white/90 max-w-2xl font-light drop-shadow">
               {resource.meta_description || "Detailed study material and downloadable files tailored for amazing outcomes."}
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function ResourceDetailPage() {
       </div>
 
       {/* Category / Date Bar */}
-      <div className="container mx-auto px-4 md:px-8 pt-8 pb-4 relative z-10 flex flex-wrap items-center gap-3">
+      <div className="container mx-auto px-4 md:px-8 pt-4 pb-2 relative z-10 flex flex-wrap items-center gap-2">
         <span className="text-xs md:text-sm bg-primary/10 text-primary font-medium px-3 py-1.5 rounded-full border border-primary/20">
           {category}
         </span>
@@ -181,7 +181,7 @@ export default function ResourceDetailPage() {
 
         <main className="flex-1">
           {/* Main Description Block */}
-          <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 md:p-10 border border-slate-100 transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/60">
+          <div className="rounded-2xl bg-white shadow-lg shadow-slate-200/50 p-4 md:p-6 border border-slate-100 transition-all duration-300">
             <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-600 flex items-center gap-2 mb-6">
               <Lightbulb className="text-primary w-6 h-6" /> About this resource
             </h2>
@@ -202,24 +202,24 @@ export default function ResourceDetailPage() {
         <aside className="w-full lg:w-[340px] space-y-6">
 
           {/* Author Card */}
-          <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 border border-slate-100">
-            <div className="flex items-center gap-4">
+          <div className="rounded-2xl bg-white shadow-lg shadow-slate-200/50 p-4 border border-slate-100">
+            <div className="flex items-center gap-3">
               {resource.author_photo ? (
-                <img src={normalizeMediaUrl(resource.author_photo)} alt={resource.author_name || "Author"} className="w-14 h-14 rounded-full object-cover shadow-md border-2 border-white ring-2 ring-slate-50" />
+                <img src={normalizeMediaUrl(resource.author_photo)} alt={resource.author_name || "Author"} className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-white ring-2 ring-slate-50" />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                  <User className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                  <User className="w-5 h-5" />
                 </div>
               )}
               <div>
-                <p className="text-sm text-slate-500 font-medium leading-none mb-1">Created by</p>
-                <p className="font-bold text-slate-900 text-lg">{resource.author_name || "Expert Educator"}</p>
+                <p className="text-[10px] text-slate-500 font-medium leading-none mb-1">Created by</p>
+                <p className="font-bold text-slate-900 text-sm">{resource.author_name || "Expert Educator"}</p>
               </div>
             </div>
           </div>
 
           {/* Action / Info Card */}
-          <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 border border-slate-100 sticky top-24">
+          <div className="rounded-2xl bg-white shadow-lg shadow-slate-200/50 p-4 border border-slate-100 sticky top-24">
             <h3 className="font-bold text-slate-900 mb-4 text-lg">What's Included</h3>
 
             <ul className="space-y-3 mb-8">
@@ -267,12 +267,12 @@ export default function ResourceDetailPage() {
 
           {/* Related Resources */}
           {related.length > 0 && (
-            <div className="rounded-2xl bg-white shadow-xl shadow-slate-200/50 p-6 border border-slate-100">
-              <h3 className="font-bold text-slate-900 mb-5 text-lg flex items-center gap-2">
+            <div className="rounded-2xl bg-white shadow-lg shadow-slate-200/50 p-4 border border-slate-100">
+              <h3 className="font-bold text-slate-900 mb-3 text-base flex items-center gap-2">
                 Similar Resources
               </h3>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {related.map((r) => {
                   const RelatedIcon = getResourceIcon(inferCategory(r));
                   const rImage = r.resource_photo ? normalizeMediaUrl(r.resource_photo) : null;

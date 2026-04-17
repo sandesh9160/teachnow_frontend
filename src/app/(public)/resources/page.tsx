@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getResources } from "@/hooks/useHomepage";
-import { ResourceData } from "@/types/homepage";
+import { ResourceData, Pagination } from "@/types/homepage";
 import ResourceCard from "@/shared/cards/ResourceCard/ResourceCard";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 
 export default function ResourcesPage() {
 
@@ -13,15 +14,24 @@ export default function ResourcesPage() {
   const [error, setError] = useState<string | null>(null);
   const [allResources, setAllResources] = useState<ResourceData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
 
   useEffect(() => {
     const loadResources = async () => {
       try {
+        setLoading(true);
         setError(null);
-        const apiResources = await getResources();
-        const visible = apiResources
-          .filter((item) => item?.slug && item?.is_visible !== 0);
+        // We pass search term to the API if the backend supports it, 
+        // but for now we follow the user's provided structure which includes pagination.
+        const { data, pagination: apiPagination } = await getResources(currentPage, perPage);
+        const visible = data.filter((item) => item?.slug && item?.is_visible !== 0);
+        
         setAllResources(visible);
+        if (apiPagination) {
+          setPagination(apiPagination);
+        }
       } catch {
         setError("Failed to load resources");
       } finally {
@@ -29,7 +39,7 @@ export default function ResourcesPage() {
       }
     };
     void loadResources();
-  }, []);
+  }, [currentPage, perPage]);
 
 
   const displayResources = allResources.filter(res => 
@@ -51,7 +61,7 @@ export default function ResourcesPage() {
       </div>
 
       {/* Consistent Header Section */}
-      <section className="bg-white border-b border-slate-100 py-5 sm:py-6">
+      <section className="bg-white border-b border-slate-100 py-4 sm:py-5">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-slate-900 md:text-4xl tracking-tight mb-2">
             Teaching Resources
@@ -67,19 +77,34 @@ export default function ResourcesPage() {
         <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex flex-wrap items-center gap-3">
-              {[
-                "Category",
-                "Language",
-                "10 per page"
-              ].map((label) => (
-                <button
-                  key={label}
-                  className="group flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-xl text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
+              <button
+                className="group flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
+              >
+                Category
+                <ChevronDown className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-all duration-300" />
+              </button>
+              <button
+                className="group flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
+              >
+                Language
+                <ChevronDown className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-all duration-300" />
+              </button>
+              
+              <div className="relative group min-w-[140px]">
+                <select 
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="w-full appearance-none bg-white border border-slate-200 rounded-xl px-3 py-1.5 pr-10 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary transition-all duration-300 shadow-sm focus:outline-none cursor-pointer"
                 >
-                  {label}
-                  <ChevronDown className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-all duration-300" />
-                </button>
-              ))}
+                  <option value={10}>10 per page</option>
+                  <option value={20}>20 per page</option>
+                  <option value={50}>50 per page</option>
+                </select>
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-hover:text-primary transition-colors" />
+              </div>
             </div>
 
             <div className="relative w-full max-w-sm">
@@ -99,7 +124,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Sectioned Grid Content */}
-      <div className="mx-auto max-w-7xl px-4 pt-6 pb-12 sm:px-6 lg:px-8 space-y-10">
+      <div className="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8 space-y-8">
         {loading && (
           <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-slate-100 shadow-sm italic text-slate-400">
             <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
@@ -130,7 +155,7 @@ export default function ResourcesPage() {
             }, {} as Record<string, ResourceData[]>)
           ).map(([category, items], sectionIndex) => (
             <div key={category} className="group/section">
-              <div className="flex items-center justify-between mb-5 px-1">
+              <div className="flex items-center justify-between mb-4 px-1">
                 <div className="flex items-center gap-3">
                   <div className="h-6 w-1 bg-primary rounded-full" />
                   <h2 className="text-lg font-bold text-slate-900 tracking-tight">
@@ -183,6 +208,20 @@ export default function ResourcesPage() {
               </div>
             </div>
           ))
+        )}
+
+        {/* Pagination Section */}
+        {pagination && pagination.last_page > 1 && (
+          <div className="flex justify-center mt-12 pb-8">
+            <JobPagination
+              currentPage={currentPage}
+              totalPages={pagination.last_page}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          </div>
         )}
       </div>
 

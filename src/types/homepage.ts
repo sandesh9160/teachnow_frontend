@@ -181,6 +181,14 @@ export type ApiResponse<T> = {
   message?: string;
   data: T;
   total?: number;
+  pagination?: Pagination;
+};
+
+export type Pagination = {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
 };
 
 export type Menu = {

@@ -321,19 +321,28 @@ export async function getResourceBySlug(
     return null;
   }
 }
-export async function getResources(): Promise<ResourceData[]> {
+export async function getResources(page = 1, perPage = 10): Promise<{ data: ResourceData[]; pagination?: Pagination }> {
   try {
-    const res = await fetchAPI<ApiResponse<any>>("/open/resources");
-    const data = res.data || res;
-    return toArray<ResourceData>(data).map((resource) => ({
+    const res = await fetchAPI<ApiResponse<ResourceData[]>>(`/open/resources?page=${page}&per_page=${perPage}`);
+    const rootData = res.data || res;
+    
+    // Some endpoints wrap the list in 'data' even inside ApiResponse.data
+    const list = Array.isArray(rootData) ? rootData : (rootData as any).data || [];
+    
+    const resources = toArray<ResourceData>(list).map((resource) => ({
       ...resource,
       resource_photo: normalizeMediaUrl(resource.resource_photo),
       author_photo: normalizeMediaUrl(resource.author_photo),
       pdf: normalizeMediaUrl(resource.pdf),
     }));
+    
+    return { 
+      data: resources, 
+      pagination: res.pagination || (rootData as any).pagination 
+    };
   } catch (error) {
     //console.error("Error in getResources hook:", error);
-    return [];
+    return { data: [], pagination: undefined };
   }
 }
 
