@@ -143,7 +143,7 @@ export default function JobListingView({
 
     // Institution Type Filter
     if (selectedFilters.institution_type.length > 0) {
-      const instType = (job as any).institution_type || (job.employer as any)?.institution_type;
+      const instType = job.institution_type || job.employer?.institution_type;
       if (!instType || !selectedFilters.institution_type.includes(instType)) return false;
     }
 
@@ -234,7 +234,7 @@ export default function JobListingView({
                     posted={postedText}
                     logo={job.employer?.company_logo}
                     slug={job.slug}
-                    institutionType={(job as any).institution_type || job.employer?.institution_type}
+                    institutionType={job.institution_type || job.employer?.institution_type}
                   />
                 );
               })}

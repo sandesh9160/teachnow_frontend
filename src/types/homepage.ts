@@ -7,7 +7,9 @@ export type Job = {
     company_name: string;
     company_logo: string;
     slug?: string;
+    institution_type?: string;
   };
+  institution_type?: string;
   employer_id?: number;
   location: string;
   job_type: string;
