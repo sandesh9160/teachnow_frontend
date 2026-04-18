@@ -184,7 +184,7 @@ const JobCard = ({
 
           {/* Tags Section - Capsule Shape */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            {(tags && tags.length > 0 ? tags : ["Teacher", "Staff Selection"]).slice(0, 3).map((tag, idx) => (
+            {(tags && tags.length > 0 ? tags : []).slice(0, 3).map((tag, idx) => (
               <span key={idx} className="bg-[#f0f4f8] text-[#1e293b] px-3 py-0.5 rounded-full text-[12px] font-semibold">
                 {tag}
               </span>

@@ -40,8 +40,9 @@ export function DashboardSidebar({
     { label: "My Applications", href: "/dashboard/jobseeker/applied-jobs", icon: Briefcase },
     { label: "Saved Jobs", href: "/dashboard/jobseeker/saved-jobs", icon: Bookmark },
     { label: "Profile", href: "/dashboard/jobseeker/profile", icon: User },
-    { label: "Resume", href: "/dashboard/jobseeker/resume", icon: FileText },
-    { label: "CV Manager", href: "/dashboard/jobseeker/testimonials", icon: ClipboardList },
+    { label: "AI Resume Builder", href: "/dashboard/jobseeker/resume", icon: FileText },
+    { label: "Resume Manager", href: "/dashboard/jobseeker/resume-manager", icon: ClipboardList },
+    { label: "Testimonials", href: "/dashboard/jobseeker/testimonials", icon: MessageSquare },
   ];
 
   const employerLinks = [

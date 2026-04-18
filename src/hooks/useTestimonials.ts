@@ -47,7 +47,6 @@ export function useTestimonials(role: string = "job_seeker") {
     } catch (err: any) {
       setTestimonials([]);
       setError(err?.message || "Failed to load testimonials");
-      throw err;
     } finally {
       setLoading(false);
     }
