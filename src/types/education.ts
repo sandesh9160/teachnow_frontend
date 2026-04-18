@@ -3,9 +3,10 @@ export type EducationPayload = {
   institution: string;
   field_of_study: string;
   start_year: string;
-  end_year: string;
+  end_year?: string;
   grade: string;
   description?: string;
+  is_current?: number;
 };
 
 /** Record as returned on profile or education endpoints (may include legacy date fields). */
@@ -20,4 +21,5 @@ export type EducationRecord = {
   start_date?: string;
   end_date?: string;
   description?: string;
+  is_current?: number | boolean;
 };

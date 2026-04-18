@@ -26,9 +26,10 @@ function toEducationPayload(form: any): EducationPayload {
     institution: form.institution,
     field_of_study: form.field_of_study ?? "",
     start_year: form.start_date ? String(new Date(form.start_date).getFullYear()) : "",
-    end_year: form.end_date ? String(new Date(form.end_date).getFullYear()) : "",
+    end_year: form.is_current ? "" : (form.end_date ? String(new Date(form.end_date).getFullYear()) : ""),
     grade: form.grade?.trim() ?? "",
     description: form.description ?? "",
+    is_current: form.is_current ? 1 : 0,
   };
 }
 
@@ -119,6 +120,7 @@ export default function ProfileFormClient({
 
   const [eduFormData, setEduFormData] = useState({
     institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "",
+    is_current: false,
     grade_type: "Percentage" as "Percentage" | "CGPA"
   });
 
@@ -204,7 +206,7 @@ export default function ProfileFormClient({
       toast.error("Start date is required");
       return;
     }
-    if (eduFormData.end_date && isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
+    if (!eduFormData.is_current && eduFormData.end_date && isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
       toast.error("End date cannot be before start date");
       return;
     }
@@ -222,7 +224,7 @@ export default function ProfileFormClient({
     } else {
       setLocalEduList(prev => [...prev, { ...newRecord, is_new: true }]);
     }
-    setEduFormData({ institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "", grade_type: "Percentage" });
+    setEduFormData({ institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "", is_current: false, grade_type: "Percentage" });
     setShowEduForm(false);
     setEditingEduId(null);
   };
@@ -240,6 +242,7 @@ export default function ProfileFormClient({
       grade: rawGrade.replace(/Percentage:|CGPA:/i, "").trim(),
       grade_type: isCGPA ? "CGPA" : "Percentage",
       description: edu.description ?? "",
+      is_current: !!edu.is_current,
     });
     setEditingEduId(edu.id);
     setShowEduForm(true);
@@ -415,7 +418,16 @@ export default function ProfileFormClient({
       router.refresh();
     } catch (err: any) {
       console.error("[ProfileDebug] CRITICAL ERROR:", err);
-      toast.error(err.message || "An unexpected error occurred.");
+      
+      // Extract detailed validation errors from Laravel response if available
+      let errorMessage = err.response?.data?.message || err.message || "An unexpected error occurred.";
+      
+      if (err.response?.data?.errors) {
+        const validationErrors = Object.values(err.response.data.errors).flat().join(" ");
+        if (validationErrors) errorMessage = `${errorMessage} ${validationErrors}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -504,8 +516,8 @@ export default function ProfileFormClient({
             <p className="text-[13px] font-semibold text-black">{profileData.preferred_location || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Teaching Mode</p>
-            <p className="text-[13px] font-semibold text-black">{profileData.teaching_mode || "Not specified"}</p>
+            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Total Experience</p>
+            <p className="text-[13px] font-semibold text-black">{profileData.experience_years || 0} Years</p>
           </div>
         </div>
       </div>
@@ -527,9 +539,17 @@ export default function ProfileFormClient({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
-          <h3 className="text-[13px] font-bold text-black mb-6 flex items-center gap-2 tracking-wide">
-             <Briefcase className="w-4 h-4 text-black/30" /> Experience
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-[13px] font-bold text-black flex items-center gap-2 tracking-wide">
+               <Briefcase className="w-4 h-4 text-black/30" /> Experience
+            </h3>
+            <button 
+              onClick={() => { setMode("edit"); setShowExpForm(true); }}
+              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+            >
+              Edit
+            </button>
+          </div>
           <div className="space-y-8">
             {localExpList.filter(e => !(e as any).is_deleted).length > 0 ? (
               localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
@@ -549,9 +569,17 @@ export default function ProfileFormClient({
         </div>
 
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
-          <h3 className="text-[13px] font-bold text-black mb-6 flex items-center gap-2 tracking-wide">
-             <GraduationCap className="w-4 h-4 text-black/30" /> Education
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-[13px] font-bold text-black flex items-center gap-2 tracking-wide">
+               <GraduationCap className="w-4 h-4 text-black/30" /> Education
+            </h3>
+            <button 
+              onClick={() => { setMode("edit"); setShowEduForm(true); }}
+              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+            >
+              Edit
+            </button>
+          </div>
           <div className="space-y-8">
             {localEduList.filter(e => !(e as any).is_deleted).length > 0 ? (
               localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
@@ -560,7 +588,7 @@ export default function ProfileFormClient({
                   <p className="text-black/80 font-medium text-[13px] mt-1 space-x-1">
                     <span>{edu.institution}</span>
                     <span className="text-slate-300">·</span>
-                    <span className="text-black/40 font-semibold">{edu.start_date?.split("-")[0]} — {edu.end_date?.split("-")[0]}</span>
+                    <span className="text-black/40 font-semibold">{edu.start_date?.split("-")[0]} — {edu.is_current ? "Present" : edu.end_date?.split("-")[0]}</span>
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {edu.field_of_study && <p className="text-[10px] text-indigo-600 font-bold tracking-widest">{edu.field_of_study}</p>}
@@ -651,9 +679,13 @@ export default function ProfileFormClient({
                     <option value="Prefer not to say">Prefer not to say</option>
                  </select>
                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[13px] font-semibold text-slate-700">LinkedIn or Social Platform</Label>
+                  <Input name="portfolio_website" value={profileData.portfolio_website} onChange={handleChange} placeholder="https://linkedin.com/in/..." className="h-10 rounded-lg text-[13px] border-slate-200" />
+                </div>
                <div className="space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Portfolio Website</Label>
-                 <Input name="portfolio_website" value={profileData.portfolio_website} onChange={handleChange} placeholder="https://..." className="h-10 rounded-lg text-[13px] border-slate-200" />
+                 <Label className="text-[13px] font-semibold text-slate-700">Total Experience (Years) <span className="text-red-500">*</span></Label>
+                 <Input name="experience_years" type="number" min="0" value={profileData.experience_years} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
                </div>
                <div className="space-y-1.5">
                  <Label className="text-[13px] font-semibold text-slate-700">Date of Birth</Label>
@@ -698,14 +730,6 @@ export default function ProfileFormClient({
                 <Label className="text-[13px] font-semibold text-slate-700">Preferred Location</Label>
                 <Input name="preferred_location" value={profileData.preferred_location} onChange={handleChange} placeholder="City name" className="h-10 rounded-lg text-[13px] border-slate-200" />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[12px] font-medium text-slate-600">Teaching Mode</Label>
-                <select name="teaching_mode" value={profileData.teaching_mode} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
-                   <option value="Offline">Offline</option>
-                   <option value="Online">Online</option>
-                   <option value="Hybrid">Hybrid</option>
-                </select>
-              </div>
             </div>
           </section>
 
@@ -736,12 +760,12 @@ export default function ProfileFormClient({
                     <Label className="text-[12px] font-medium text-slate-600">Timeline <span className="text-red-500">*</span></Label>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
                        <div className="flex-1 space-y-1">
-                          <p className="text-[10px] font-bold text-[#0F172A]/40 tracking-tight">Start Date</p>
+                          <p className="text-[10px] font-bold text-black/40 tracking-tight">Start Date</p>
                           <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                        </div>
-                       <span className="hidden sm:flex h-10 items-center text-[10px] text-[#0F172A]/40 font-bold tracking-widest shrink-0">to</span>
+                       <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-bold tracking-widest shrink-0">to</span>
                        <div className="flex-1 space-y-1">
-                          <p className="text-[12px] font-semibold text-[#0F172A]/60">End Date</p>
+                          <p className="text-[11px] font-bold text-black/60 tracking-tight uppercase">End Date</p>
                           <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                        </div>
                     </div>
@@ -824,12 +848,17 @@ export default function ProfileFormClient({
                             <p className="text-[12px] font-semibold text-slate-500">Start Date</p>
                             <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                          </div>
-                         <span className="hidden sm:flex h-10 items-center text-[10px] text-[#0F172A]/40 font-bold tracking-widest shrink-0">to</span>
+                         <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-bold tracking-widest shrink-0">to</span>
                          <div className="flex-1 space-y-1">
-                            <p className="text-[12px] font-semibold text-[#0F172A]/60">End Date</p>
-                            <DatePicker date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
+                            <p className="text-[11px] font-bold text-black/60 tracking-tight uppercase">End Date</p>
+                            <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                          </div>
                       </div>
+                    </div>
+                    <div className="md:col-span-2 flex items-center gap-3">
+                      <button type="button" onClick={() => setEduFormData(p => ({...p, is_current: !p.is_current}))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${eduFormData.is_current ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white text-slate-500 border-slate-200"}`}>
+                        {eduFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Pursuing
+                      </button>
                     </div>
                   </div>
                   <div className="flex justify-end pt-1">
@@ -874,9 +903,9 @@ export default function ProfileFormClient({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {profileData.skills.map((s: any, idx: number) => (
-                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-50 text-[#0F172A]/80 font-semibold text-[11px] rounded-lg border border-slate-100">
+                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-50 text-black/80 font-semibold text-[11px] rounded-lg border border-slate-100">
                         {typeof s === 'string' ? s : s.name}
-                        <button type="button" onClick={() => setProfileData(p => ({...p, skills: p.skills.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-[#0F172A]/20 hover:text-red-500"><X className="w-3 h-3" /></button>
+                        <button type="button" onClick={() => setProfileData(p => ({...p, skills: p.skills.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-black/20 hover:text-red-500"><X className="w-3 h-3" /></button>
                       </span>
                     ))}
                   </div>
