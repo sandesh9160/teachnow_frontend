@@ -53,7 +53,10 @@ export default function ResumeManagerPage() {
 
   const handleDownload = (resume: any) => {
     const url = resume.url || resume.file || resume.file_url || resume.resume_file;
-    if (!url) return toast.error("File not found");
+    if (!url) {
+      toast.error("File not found");
+      return;
+    }
     const fullUrl = normalizeMediaUrl(url);
     const link = document.createElement("a");
     link.href = fullUrl;
@@ -111,16 +114,15 @@ export default function ResumeManagerPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-32 px-4 md:px-8 mt-4 lg:mt-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[#0F172A] tracking-tight">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-black tracking-tight">
             My Resumes
           </h1>
-          <p className="text-slate-500 mt-1 font-medium text-sm">Upload and manage multiple resumes to apply for different jobs.</p>
-          <p className="text-slate-400 mt-4 font-semibold text-[13px]">{resumes.length} of 10 resumes used</p>
+          <p className="text-slate-500 mt-1 font-medium text-xs md:text-sm">Upload and manage multiple resumes to apply for different jobs.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="w-full md:w-auto">
           <input
             type="file"
             ref={fileInputRef}
@@ -131,7 +133,7 @@ export default function ResumeManagerPage() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="rounded-2xl font-bold bg-[#002B9A] text-white h-12 px-8 active:scale-95 transition-all text-sm shadow-lg shadow-[#002B9A]/20 flex items-center gap-2 hover:bg-[#002482]"
+            className="w-full md:w-auto rounded-xl md:rounded-2xl font-bold bg-indigo-600 text-white h-11 md:h-12 px-6 md:px-8 active:scale-95 transition-all text-sm shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 hover:bg-indigo-700"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Upload Resume
@@ -144,72 +146,78 @@ export default function ResumeManagerPage() {
         {resumes.length > 0 ? (
           resumes.map((resume: any) => {
             const ext = resume.file_name?.split('.').pop()?.toLowerCase() || 'PDF';
-            const previewUrl = resume.url || resume.file || resume.file_url || resume.resume_file;
 
             return (
               <div
                 key={resume.id}
-                className={`rounded-2xl p-4 md:px-6 md:py-5 flex items-center justify-between group transition-all ${resume.is_default
-                    ? 'bg-[#E8F1FF] border-[#E8F1FF] shadow-sm ring-1 ring-[#E8F1FF]'
-                    : 'bg-white border-slate-200 hover:bg-slate-50/30'
+                className={`rounded-[22px] p-5 md:px-6 md:py-5 flex flex-col group transition-all duration-300 ${resume.is_default
+                    ? 'bg-indigo-50/40 border-[1.5px] border-indigo-100 shadow-sm'
+                    : 'bg-white border border-slate-100 hover:border-indigo-200'
                   }`}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#E8F1FF] flex items-center justify-center shrink-0 border border-indigo-100">
-                    <FileText className="w-6 h-6 text-[#0046B5]" />
+                <div className="flex items-start gap-3 md:gap-4 min-w-0">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
+                    <FileText className="w-5 h-5 md:w-6 md:h-6 text-indigo-700" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-[#0F172A] text-[15px] leading-tight">
-                        {resume.title || resume.file_name}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-bold text-black text-[14px] md:text-[15px] leading-tight truncate max-w-[200px] sm:max-w-none">
+                        {resume.title && resume.title !== "0" ? resume.title : resume.file_name}
                       </h4>
                       {resume.is_default && (
-                        <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
+                        <span className="text-[8px] md:text-[9px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 font-medium">
-                      <span className="uppercase">{ext}</span>
+                    <div className="flex items-center gap-2 mt-1 md:mt-1.5 text-[10px] md:text-[11px] text-slate-500 font-medium overflow-hidden">
+                      <span className="uppercase shrink-0">{ext}</span>
                       <span>•</span>
-                      <span>{resume.file_size ? `${(resume.file_size / 1024).toFixed(0)} KB` : "Document"}</span>
-                      <span>•</span>
-                      <span>Uploaded {new Date(resume.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span className="shrink-0">{resume.file_size && resume.file_size > 0 ? `${(resume.file_size / 1024).toFixed(0)} KB` : "Document"}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="truncate hidden sm:inline">Uploaded {new Date(resume.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-5 md:gap-7">
-                  <button
-                    onClick={() => setPreviewingResume(resume)}
-                    className="text-slate-400 hover:text-[#0F172A] transition-colors"
-                    title="View"
-                  >
-                    <Eye className="w-[18px] h-[18px]" />
-                  </button>
+                <div className="flex items-center justify-between md:justify-end gap-3 md:gap-7 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100/50">
+                  <div className="flex items-center gap-4 md:gap-7">
+                    <button
+                      onClick={() => setPreviewingResume(resume)}
+                      className="w-9 h-9 flex items-center justify-center md:w-auto md:h-auto text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 md:hover:bg-transparent rounded-lg transition-all"
+                      title="View"
+                    >
+                      <Eye className="w-[18px] h-[18px]" />
+                      <span className="sm:hidden ml-2 text-[10px] font-bold">View</span>
+                    </button>
 
-                  <button
-                    onClick={() => handleDownload(resume)}
-                    className="text-slate-400 hover:text-[#0F172A] transition-colors"
-                    title="Download"
-                  >
-                    <Download className="w-[18px] h-[18px]" />
-                  </button>
+                    <button
+                      onClick={() => handleDownload(resume)}
+                      className="w-9 h-9 flex items-center justify-center md:w-auto md:h-auto text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 md:hover:bg-transparent rounded-lg transition-all"
+                      title="Download"
+                    >
+                      <Download className="w-[18px] h-[18px]" />
+                      <span className="sm:hidden ml-2 text-[10px] font-bold">Get</span>
+                    </button>
+                  </div>
 
-                  <button
-                    onClick={() => handleSetDefault(resume.id)}
-                    className={`${resume.is_default ? 'text-[#0046B5]' : 'text-slate-300 hover:text-[#0046B5]'} transition-colors`}
-                    title="Set Default"
-                  >
-                    <Star className={`w-[19px] h-[19px] ${resume.is_default ? 'fill-[#0046B5]' : ''}`} />
-                  </button>
+                  <div className="flex items-center gap-4 md:gap-7">
+                    <button
+                      onClick={() => handleSetDefault(resume.id)}
+                      className={`w-9 h-9 flex items-center justify-center md:w-auto md:h-auto rounded-lg transition-all ${resume.is_default ? 'text-indigo-700 bg-indigo-50 md:bg-transparent' : 'text-slate-300 hover:text-indigo-700 hover:bg-indigo-50 md:hover:bg-transparent'}`}
+                      title="Set Default"
+                    >
+                      <Star className={`w-[19px] h-[19px] ${resume.is_default ? 'fill-indigo-700' : ''}`} />
+                      {!resume.is_default && <span className="sm:hidden ml-2 text-[10px] font-bold">Star</span>}
+                    </button>
 
-                  <button
-                    onClick={() => handleDelete(resume.id)}
-                    className="text-slate-400 hover:text-rose-500 transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-[19px] h-[19px]" />
-                  </button>
+                    <button
+                      onClick={() => handleDelete(resume.id)}
+                      className="w-9 h-9 flex items-center justify-center md:w-auto md:h-auto text-slate-400 hover:text-rose-500 hover:bg-rose-50 md:hover:bg-transparent rounded-lg transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-[19px] h-[19px]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -219,7 +227,7 @@ export default function ResumeManagerPage() {
             <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-slate-200">
               <FileUp className="w-8 h-8" />
             </div>
-            <h3 className="text-[#0F172A] font-bold text-lg mb-1">No resumes found</h3>
+            <h3 className="text-black font-bold text-lg mb-1">No resumes found</h3>
             <p className="text-slate-500 font-medium text-sm">Upload your first resume to get started.</p>
           </div>
         )}
@@ -229,7 +237,7 @@ export default function ResumeManagerPage() {
       <div className="mt-12 bg-[#F1F9F9] border border-[#DEEFEF] rounded-2xl p-6 md:p-8">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-yellow-500">💡</span>
-          <h3 className="text-[#0F172A] font-bold text-sm">Resume Tips</h3>
+          <h3 className="text-black font-bold text-sm">Resume Tips</h3>
         </div>
         <ul className="space-y-3">
           {[
@@ -248,12 +256,12 @@ export default function ResumeManagerPage() {
       {/* Preview Sidebar */}
       {previewingResume && (
         <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={() => setPreviewingResume(null)} />
-          <div className="relative w-full max-w-xl bg-white h-full shadow-2xl flex flex-col p-0 overflow-hidden animate-in slide-in-from-right duration-500 border-l border-slate-100">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPreviewingResume(null)} />
+          <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col p-0 overflow-hidden animate-in slide-in-from-right duration-500 border-l border-slate-100">
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-50 bg-white sticky top-0 z-10">
               <div>
-                <h3 className="text-[#0F172A] font-bold text-lg leading-none">{previewingResume.title || previewingResume.file_name}</h3>
+                <h3 className="text-black font-bold text-lg leading-none">{previewingResume.title || previewingResume.file_name}</h3>
                 <p className="text-[#0046B5] text-[11px] font-semibold mt-2 tracking-wide uppercase">Document Preview</p>
               </div>
               <button

@@ -99,10 +99,10 @@ export default function TestimonialsPage() {
     <div className="max-w-7xl mx-auto space-y-6 pb-12 px-4 md:px-0">
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">
+          <h1 className="text-2xl font-bold text-black">
             Testimonials
           </h1>
-          <p className="text-[#0F172A]/40 font-bold text-[10px] mt-0.5">Total entries: {testimonials.length}</p>
+          <p className="text-black/40 font-bold text-[10px] mt-0.5">Total entries: {testimonials.length}</p>
         </div>
 
         <Button
@@ -116,7 +116,7 @@ export default function TestimonialsPage() {
 
       {showForm && (
         <div className="bg-white rounded-xl border border-slate-200 p-6 animate-in fade-in slide-in-from-top-4 duration-500">
-          <h2 className="text-lg font-bold text-[#0F172A] mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-black mb-6 flex items-center gap-2">
             <Edit2 className="w-4 h-4 text-indigo-600" />
             {editingId ? "Edit Testimonial" : "Add New Testimonial"}
           </h2>
@@ -124,7 +124,7 @@ export default function TestimonialsPage() {
           <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-[#0F172A]/80 font-extrabold text-[10px] tracking-widest pl-0.5">Full Name</Label>
+                <Label htmlFor="name" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Full Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -135,7 +135,7 @@ export default function TestimonialsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="designation" className="text-[#0F172A]/80 font-extrabold text-[10px] tracking-widest pl-0.5">Designation</Label>
+                <Label htmlFor="designation" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Designation</Label>
                 <Input
                   id="designation"
                   value={formData.designation}
@@ -148,7 +148,7 @@ export default function TestimonialsPage() {
             </div>
 
             <div className="space-y-3">
-              <Label className="text-[#0F172A]/80 font-extrabold text-[10px] tracking-widest pl-0.5">Rating</Label>
+              <Label className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Rating</Label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -171,7 +171,7 @@ export default function TestimonialsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="message" className="text-[#0F172A]/80 font-extrabold text-[10px] tracking-widest pl-0.5">Feedback</Label>
+              <Label htmlFor="message" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Feedback</Label>
               <textarea
                 id="message"
                 value={formData.message}

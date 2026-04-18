@@ -98,8 +98,8 @@ export default function AppliedJobsPage() {
     <div className="max-w-6xl mx-auto space-y-5 pb-20 pt-1 px-4 md:px-0">
       {/* Page Header - Compact */}
       <div className="space-y-0">
-        <h1 className="text-[22px] font-bold text-[#0F172A] tracking-tight">My Applications</h1>
-        <p className="text-[12px] text-[#0F172A] opacity-70 font-medium">Manage your progress</p>
+        <h1 className="text-[22px] font-bold text-black">My Applications</h1>
+        <p className="text-[12px] text-black opacity-70 font-medium">Manage your progress</p>
       </div>
 
       {/* Stats row - Ultra Compact */}
@@ -111,8 +111,8 @@ export default function AppliedJobsPage() {
           { label: 'Applied', value: stats.applied }
         ].map((s, idx) => (
           <div key={idx} className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm flex flex-col items-center justify-center text-center">
-            <span className="text-lg font-bold text-[#0F172A] leading-tight">{s.value}</span>
-            <span className="text-[10px] font-semibold text-[#0F172A] opacity-60 capitalize">{s.label}</span>
+            <span className="text-lg font-bold text-black leading-tight">{s.value}</span>
+            <span className="text-[10px] font-semibold text-black opacity-60 capitalize">{s.label}</span>
           </div>
         ))}
       </div>
@@ -145,8 +145,8 @@ export default function AppliedJobsPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="text-[13px] font-bold text-[#0F172A] truncate leading-none mb-1">{app.job?.title || "Position Title"}</h3>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[#0F172A] opacity-70">
+                        <h3 className="text-[13px] font-bold text-black truncate leading-none mb-1">{app.job?.title || "Position Title"}</h3>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-black opacity-70">
                           <div className="flex items-center gap-1 min-w-0">
                             <Building2 className="w-2.5 h-2.5 shrink-0 opacity-40" />
                             <span className="text-[10.5px] font-medium truncate">{app.job?.employer?.company_name || app.company_name || "Enterprise"}</span>
@@ -169,7 +169,7 @@ export default function AppliedJobsPage() {
                       </span>
                       <Link 
                          href={`/dashboard/jobseeker/applied-jobs/${app.id}`}
-                         className="flex items-center gap-1 text-[12px] font-bold text-[#0F172A] hover:text-[#0046B5] transition-colors"
+                         className="flex items-center gap-1 text-[12px] font-bold text-black hover:text-[#0046B5] transition-colors"
                       >
                         View <ExternalLink className="w-3 h-3 opacity-40" />
                       </Link>
@@ -214,8 +214,8 @@ export default function AppliedJobsPage() {
           <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center mx-auto mb-4">
             <Briefcase className="w-7 h-7 text-slate-300" />
           </div>
-          <h3 className="text-base font-bold text-[#0F172A] mb-1">No applications yet</h3>
-          <p className="text-[11px] text-[#0F172A] opacity-70 max-w-xs mx-auto mb-6 font-medium leading-relaxed">
+          <h3 className="text-base font-bold text-black mb-1">No applications yet</h3>
+          <p className="text-[11px] text-black opacity-70 max-w-xs mx-auto mb-6 font-medium leading-relaxed">
             Ready for your next step? Start browsing jobs.
           </p>
           <Link href="/jobs">

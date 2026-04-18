@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useResumes } from "@/hooks/useResumes";
 import { useCV } from "@/hooks/useCV";
 import {
@@ -8,13 +8,11 @@ import {
   FileText,
   Trash2,
   CheckCircle2,
-
   Download,
   Eye,
   FileCheck,
   Clock,
   X,
-  Plus,
   Layout,
   Briefcase,
   Zap,
@@ -27,11 +25,7 @@ import { normalizeMediaUrl } from "@/lib/utils";
 
 export default function ResumeManagementPage() {
   const {
-    resumes = [],
     loading,
-    upload,
-    remove,
-    setDefault,
     fetchResumes,
     removeGenerated,
     generatedResumes = []
@@ -43,36 +37,13 @@ export default function ResumeManagementPage() {
     generateCV,
   } = useCV();
 
-  const [uploading, setUploading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<number | string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<any | null>(null);
   const [lastGeneratedCV, setLastGeneratedCV] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void fetchTemplates();
   }, [fetchTemplates]);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size exceeds 5MB limit.");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      await upload(file);
-      toast.success("Resume uploaded successfully!");
-    } catch {
-      toast.error("Failed to upload resume.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
 
   const handleGenerate = async (templateId: number | string) => {
     try {
@@ -104,41 +75,6 @@ export default function ResumeManagementPage() {
     document.body.removeChild(link);
   };
 
-  const handleSetDefault = async (id: number | string) => {
-    try {
-      await setDefault(id);
-      toast.success("Default resume updated.");
-    } catch {
-      toast.error("Failed to set default.");
-    }
-  };
-
-  const handleDelete = async (id: number | string) => {
-    toast("Delete this resume?", {
-      id: "confirm-delete",
-      duration: Infinity,
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          try {
-            await remove(id);
-            toast.success("Deleted.");
-          } catch {
-            toast.error("Failed to delete.");
-          }
-        }
-      },
-      cancel: {
-        label: "Keep",
-        onClick: () => { }
-      },
-      classNames: {
-        actionButton: "!bg-rose-600 !text-white hover:!bg-rose-700",
-        cancelButton: "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
-      }
-    });
-  };
-
   const handleDeleteGenerated = async (id: number | string) => {
     toast("Delete this document?", {
       id: "confirm-delete-gen",
@@ -166,14 +102,41 @@ export default function ResumeManagementPage() {
     });
   };
 
-  if (loading && resumes.length === 0 && generatedResumes.length === 0) {
+  if (loading && generatedResumes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-4 border-indigo-50 animate-pulse" />
-          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 absolute inset-0" />
+      <div className="max-w-7xl mx-auto space-y-8 pb-32 px-4 md:px-8 mt-10 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3">
+            <div className="h-9 w-64 bg-slate-100 rounded-xl" />
+            <div className="h-4 w-96 bg-slate-50 rounded-lg shrink-0" />
+            <div className="h-3 w-32 bg-slate-50 rounded-md" />
+          </div>
         </div>
-        <p className="text-black font-semibold text-xs">Loading profile...</p>
+
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+          <div className="xl:col-span-12 space-y-10">
+             {/* Template Grid Skeleton */}
+             <div className="space-y-6">
+                <div className="h-6 w-48 bg-slate-100 rounded-lg" />
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                   {[1,2,3,4,5,6].map(i => (
+                     <div key={i} className="aspect-[3/4] bg-white border border-slate-100 rounded-2xl shadow-sm" />
+                   ))}
+                </div>
+             </div>
+             
+             {/* History Skeleton */}
+             <div className="space-y-6">
+                <div className="h-6 w-40 bg-slate-100 rounded-lg" />
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                   {[1,2,3].map(i => (
+                     <div key={i} className="aspect-[4/5] bg-white border border-slate-100 rounded-2xl shadow-sm" />
+                   ))}
+                </div>
+             </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -196,12 +159,16 @@ export default function ResumeManagementPage() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-[#0F172A] tracking-tight">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-black tracking-tight">
             AI Resume Builder
           </h1>
-          <p className="text-slate-500 mt-1 font-medium text-xs">Generate a professional, high-performance resume in seconds.</p>
+          <p className="text-slate-500 mt-1 font-medium text-xs md:text-sm">Generate professional CVs tailored for specific job roles.</p>
+          <div className="flex items-center gap-2 mt-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
+            <p className="text-slate-400 font-semibold text-[11px] md:text-[13px] uppercase tracking-wider">High Fidelity Templates</p>
+          </div>
         </div>
       </div>
 
@@ -213,7 +180,7 @@ export default function ResumeManagementPage() {
               <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700">
                 <FileCheck className="w-4 h-4" />
               </div>
-              <h2 className="text-base font-bold text-[#0F172A] tracking-tight">Select a Template</h2>
+              <h2 className="text-base font-bold text-black tracking-tight">Select a Template</h2>
             </div>
 
             <div className="bg-white border border-slate-100 rounded-2xl p-4 md:p-6">
@@ -256,7 +223,7 @@ export default function ResumeManagementPage() {
           </section>
 
           {lastGeneratedCV && (
-            <div className="bg-slate-900 rounded-xl md:rounded-2xl border border-slate-800 p-6 md:p-10 mb-8 md:mb-10 animate-in slide-in-from-bottom duration-700 shadow-2xl relative overflow-hidden">
+            <div className="bg-black rounded-xl md:rounded-2xl border border-slate-800 p-6 md:p-10 mb-8 md:mb-10 animate-in slide-in-from-bottom duration-700 shadow-2xl relative overflow-hidden">
               <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 md:pb-6 border-b border-white/5 relative z-10">
                 <div className="flex items-center gap-3 md:gap-4">
                   <div className="p-2 md:p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg md:rounded-xl border border-emerald-500/20">
@@ -295,7 +262,7 @@ export default function ResumeManagementPage() {
               <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700">
                 <Clock className="w-3.5 h-3.5" />
               </div>
-              <h2 className="text-base font-bold text-[#0F172A] tracking-tight">Built History ({generatedResumes.length})</h2>
+              <h2 className="text-base font-bold text-black tracking-tight">Built History ({generatedResumes.length})</h2>
             </div>
 
             {loading && generatedResumes.length === 0 ? (
@@ -349,7 +316,7 @@ export default function ResumeManagementPage() {
             ) : (
               <div className="bg-indigo-50/30 rounded-xl md:rounded-2xl p-10 md:p-16 text-center border border-dashed border-indigo-100">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                   <Clock className="w-6 h-6 text-indigo-300" />
+                  <Clock className="w-6 h-6 text-indigo-300" />
                 </div>
                 <p className="text-black font-semibold text-sm md:text-base mb-1">No build history yet</p>
                 <p className="text-slate-500 text-[10px] md:text-xs font-medium">Use a template above to generate your first professional CV.</p>
@@ -364,7 +331,7 @@ export default function ResumeManagementPage() {
       {previewTemplate && (
         <div className="fixed inset-0 z-100 flex justify-end animate-in fade-in duration-300">
           <div
-            className="absolute inset-0 bg-slate-900/10 cursor-pointer"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
             onClick={() => setPreviewTemplate(null)}
           />
           <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col p-0 overflow-hidden animate-in slide-in-from-right duration-500 border-l border-slate-100">
@@ -421,7 +388,7 @@ export default function ResumeManagementPage() {
 
                 <div className="p-5 bg-indigo-700 rounded-2xl shadow-lg ring-1 ring-indigo-800 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-                     <Sparkles className="w-12 h-12 text-white" />
+                    <Sparkles className="w-12 h-12 text-white" />
                   </div>
                   <h4 className="text-sm font-semibold text-white mb-1 relative z-10">AI Smart Resume</h4>
                   <p className="text-[11px] text-indigo-100 leading-relaxed font-medium relative z-10">

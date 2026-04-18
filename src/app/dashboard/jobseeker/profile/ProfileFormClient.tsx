@@ -444,21 +444,21 @@ export default function ProfileFormClient({
              )}
           </div>
           <div className="flex-1 pb-0.5 min-w-0">
-            <h2 className="text-lg font-bold text-[#0F172A] tracking-tight truncate">{profileData.name || "Name not set"}</h2>
-            <p className="text-[#0F172A]/60 text-[13px] font-medium truncate">{profileData.title || "No title set"}</p>
+            <h2 className="text-lg font-bold text-black tracking-tight truncate">{profileData.name || "Name not set"}</h2>
+            <p className="text-black/60 text-[13px] font-medium truncate">{profileData.title || "No title set"}</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-50 mt-1">
-          <div className="flex items-center gap-2.5 text-[#0F172A]/70">
+          <div className="flex items-center gap-2.5 text-black/70">
             <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold truncate">{profileData.email}</span>
           </div>
-          <div className="flex items-center gap-2.5 text-[#0F172A]/70">
+          <div className="flex items-center gap-2.5 text-black/70">
             <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold truncate">{profileData.location || "Not specified"}</span>
           </div>
-          <div className="flex items-center gap-2.5 text-[#0F172A]/70">
+          <div className="flex items-center gap-2.5 text-black/70">
             <Briefcase className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold">{profileData.experience_years || 0} Years Experience</span>
           </div>
@@ -472,8 +472,8 @@ export default function ProfileFormClient({
     <div className="max-w-3xl mx-auto space-y-4 pb-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between gap-3 mb-1 px-4 sm:px-0">
         <div>
-          <h1 className="text-lg font-bold text-[#0F172A] tracking-tight">My Profile</h1>
-          <p className="text-[#0F172A]/40 text-[11px] font-medium">Your professional identity on TeachNow</p>
+          <h1 className="text-lg font-bold text-black tracking-tight">My Profile</h1>
+          <p className="text-black/40 text-[11px] font-medium">Your professional identity on TeachNow</p>
         </div>
         <Button onClick={() => setMode("edit")} className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 h-8 text-[12px] font-semibold shadow-xs">
           <Edit2 className="w-3 h-3 mr-1.5" /> Edit Profile
@@ -488,37 +488,37 @@ export default function ProfileFormClient({
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <p className="text-[10px] font-bold text-[#0F172A]/40 tracking-tight mb-0.5">Status</p>
+            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Status</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.open_to_work}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#0F172A]/40 tracking-tight mb-0.5">Notice Period</p>
+            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Notice Period</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.notice_period || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#0F172A]/40 tracking-tight mb-0.5">Expected Salary</p>
-            <p className="text-[13px] font-semibold text-[#0F172A]">{profileData.expected_salary || "Not specified"}</p>
+            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Expected Salary</p>
+            <p className="text-[13px] font-semibold text-black">{profileData.expected_salary || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#0F172A]/40 tracking-tight mb-0.5">Preferred Location</p>
-            <p className="text-[13px] font-semibold text-[#0F172A]">{profileData.preferred_location || "Not specified"}</p>
+            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Preferred Location</p>
+            <p className="text-[13px] font-semibold text-black">{profileData.preferred_location || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-[#0F172A]/40 tracking-tight mb-0.5">Teaching Mode</p>
-            <p className="text-[13px] font-semibold text-[#0F172A]">{profileData.teaching_mode || "Not specified"}</p>
+            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Teaching Mode</p>
+            <p className="text-[13px] font-semibold text-black">{profileData.teaching_mode || "Not specified"}</p>
           </div>
         </div>
       </div>
 
       {profileData.bio && (
         <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs">
-          <h3 className="text-[12px] font-semibold text-[#0F172A] mb-2.5 flex items-center gap-2">
+          <h3 className="text-[12px] font-semibold text-black mb-2.5 flex items-center gap-2">
             <UserCircle className="w-3.5 h-3.5 text-indigo-500" /> About Me
           </h3>
-          <p className="text-[#0F172A]/70 leading-relaxed whitespace-pre-wrap text-[14px] font-medium">{profileData.bio}</p>
+          <p className="text-black/70 leading-relaxed whitespace-pre-wrap text-[14px] font-medium">{profileData.bio}</p>
           {profileData.portfolio_website && (
             <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-[#0F172A]/40" />
+              <Globe className="w-3.5 h-3.5 text-black/40" />
               <a href={profileData.portfolio_website} target="_blank" className="text-[13px] text-indigo-600 font-semibold hover:underline">{profileData.portfolio_website}</a>
             </div>
           )}
@@ -527,19 +527,19 @@ export default function ProfileFormClient({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
-          <h3 className="text-[13px] font-bold text-[#0F172A] mb-6 flex items-center gap-2 tracking-wide">
-             <Briefcase className="w-4 h-4 text-[#0F172A]/30" /> Experience
+          <h3 className="text-[13px] font-bold text-black mb-6 flex items-center gap-2 tracking-wide">
+             <Briefcase className="w-4 h-4 text-black/30" /> Experience
           </h3>
           <div className="space-y-8">
             {localExpList.filter(e => !(e as any).is_deleted).length > 0 ? (
               localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
                 <div key={exp.id} className="border-l-2 border-slate-50 pl-5">
-                  <h4 className="text-[14px] font-bold text-[#0F172A] leading-tight">{exp.job_title}</h4>
+                  <h4 className="text-[14px] font-bold text-black leading-tight">{exp.job_title}</h4>
                   <p className="text-indigo-600 font-medium text-[13px] mt-1">{exp.company_name}{exp.location ? `, ${exp.location}` : ''}</p>
-                  <p className="text-[#0F172A]/40 text-[11px] font-semibold mt-1">
+                  <p className="text-black/40 text-[11px] font-semibold mt-1">
                     {exp.start_date?.split("-")[0]} — {exp.is_current ? "Present" : exp.end_date?.split("-")[0] || "—"}
                   </p>
-                  {exp.description && <p className="text-[#0F172A]/50 text-[12px] mt-2 leading-relaxed">{exp.description}</p>}
+                  {exp.description && <p className="text-black/50 text-[12px] mt-2 leading-relaxed">{exp.description}</p>}
                 </div>
               ))
             ) : (
@@ -549,18 +549,18 @@ export default function ProfileFormClient({
         </div>
 
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
-          <h3 className="text-[13px] font-bold text-[#0F172A] mb-6 flex items-center gap-2 tracking-wide">
-             <GraduationCap className="w-4 h-4 text-[#0F172A]/30" /> Education
+          <h3 className="text-[13px] font-bold text-black mb-6 flex items-center gap-2 tracking-wide">
+             <GraduationCap className="w-4 h-4 text-black/30" /> Education
           </h3>
           <div className="space-y-8">
             {localEduList.filter(e => !(e as any).is_deleted).length > 0 ? (
               localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
                 <div key={edu.id} className="border-l-2 border-slate-50 pl-5">
-                  <h4 className="text-[14px] font-bold text-[#0F172A] leading-tight">{edu.degree}</h4>
-                  <p className="text-[#0F172A]/80 font-medium text-[13px] mt-1 space-x-1">
+                  <h4 className="text-[14px] font-bold text-black leading-tight">{edu.degree}</h4>
+                  <p className="text-black/80 font-medium text-[13px] mt-1 space-x-1">
                     <span>{edu.institution}</span>
                     <span className="text-slate-300">·</span>
-                    <span className="text-[#0F172A]/40 font-semibold">{edu.start_date?.split("-")[0]} — {edu.end_date?.split("-")[0]}</span>
+                    <span className="text-black/40 font-semibold">{edu.start_date?.split("-")[0]} — {edu.end_date?.split("-")[0]}</span>
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {edu.field_of_study && <p className="text-[10px] text-indigo-600 font-bold tracking-widest">{edu.field_of_study}</p>}
@@ -569,7 +569,7 @@ export default function ProfileFormClient({
                 </div>
               ))
             ) : (
-              <p className="text-[#0F172A]/40 italic text-[12px]">Academic details missing.</p>
+              <p className="text-black/40 italic text-[12px]">Academic details missing.</p>
             )}
         </div>
       </div>
@@ -577,8 +577,8 @@ export default function ProfileFormClient({
 
       <div className="bg-white p-7 rounded-xl border border-slate-100 shadow-xs space-y-8 mt-6">
         <div>
-          <h3 className="text-[13px] font-bold text-[#0F172A] mb-5 flex items-center gap-2 tracking-wide">
-             <BookOpen className="w-4 h-4 text-[#0F172A]/30" /> Subjects & Skills
+          <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2 tracking-wide">
+             <BookOpen className="w-4 h-4 text-black/30" /> Subjects & Skills
           </h3>
           <div className="flex flex-wrap gap-x-10 gap-y-3">
             {([...(profileData.skills || []), ...(profileData.certifications || [])]).map((item: any, i: number) => (
@@ -591,12 +591,12 @@ export default function ProfileFormClient({
  
         {profileData.languages?.length > 0 && (
           <div>
-            <h3 className="text-[13px] font-bold text-[#0F172A] mb-5 flex items-center gap-2 tracking-wide">
-               <Languages className="w-4 h-4 text-[#0F172A]/30" /> Languages
+            <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2 tracking-wide">
+               <Languages className="w-4 h-4 text-black/30" /> Languages
             </h3>
             <div className="flex flex-wrap gap-x-10 gap-y-3">
               {profileData.languages.map((lang: any, i: number) => (
-                 <span key={i} className="text-[#0F172A]/80 font-bold text-[13px] tracking-tight">
+                 <span key={i} className="text-black/80 font-bold text-[13px] tracking-tight">
                    {typeof lang === 'string' ? lang : lang.name}
                  </span>
               ))}
@@ -611,8 +611,8 @@ export default function ProfileFormClient({
     <div className="max-w-3xl mx-auto space-y-5 pb-10 animate-in slide-in-from-right-4 duration-500 px-4 sm:px-0">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-[#0F172A] tracking-tight">Update Profile</h1>
-          <p className="text-[#0F172A]/40 text-[12px] font-medium mt-0.5">Edit your recruitment-ready profile</p>
+          <h1 className="text-xl font-bold text-black tracking-tight">Update Profile</h1>
+          <p className="text-black/40 text-[12px] font-medium mt-0.5">Edit your recruitment-ready profile</p>
         </div>
         <div className="flex items-center gap-2">
            <Button variant="outline" onClick={() => setMode("view")} className="h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
@@ -627,7 +627,7 @@ export default function ProfileFormClient({
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 space-y-8">
           <section className="space-y-6">
-            <h3 className="text-[13px] font-semibold text-[#0F172A] border-b border-slate-50 pb-2">Basic Information</h3>
+            <h3 className="text-[13px] font-semibold text-black border-b border-slate-50 pb-2">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                <div className="space-y-1.5">
                  <Label className="text-[13px] font-semibold text-slate-700">Full Name <span className="text-red-500">*</span></Label>

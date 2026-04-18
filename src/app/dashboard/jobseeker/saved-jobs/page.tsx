@@ -38,8 +38,8 @@ export default function SavedJobsPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight leading-none">Saved Jobs</h1>
-          <p className="text-[13px] text-[#0F172A] opacity-70 font-medium">Your collection of opportunities</p>
+          <h1 className="text-[28px] font-bold text-black tracking-tight leading-none">Saved Jobs</h1>
+          <p className="text-[13px] text-black opacity-70 font-medium">Your collection of opportunities</p>
         </div>
         <div className="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-[12px] font-bold border border-blue-100/50">
           {bookmarks.length} Total Saved
@@ -128,8 +128,8 @@ export default function SavedJobsPage() {
           <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-slate-100">
             <BookmarkX className="w-8 h-8 text-slate-300" />
           </div>
-          <h3 className="text-lg font-bold text-[#0F172A] mb-1">No matches found</h3>
-          <p className="text-[11px] text-[#0F172A] opacity-70 max-w-xs mb-8 font-medium leading-relaxed">
+          <h3 className="text-lg font-bold text-black mb-1">No matches found</h3>
+          <p className="text-[11px] text-black opacity-70 max-w-xs mb-8 font-medium leading-relaxed">
             Try adjusting your search or filters to find what you&apos;re looking for.
           </p>
           <button 
