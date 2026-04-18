@@ -20,12 +20,16 @@ export function useApplications() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getApplications = useCallback(async () => {
+  const getApplications = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await dashboardServerFetch<unknown>("jobseeker/applications", { method: "GET" });
-      const r = res as { data?: unknown };
+      const res = await dashboardServerFetch<unknown>(`jobseeker/applications?page=${page}`, { method: "GET" });
+      const r = res as { data?: unknown; links?: any; current_page?: any };
+      
+      // If it's a paginated object, return the whole thing
+      if (r.links || r.current_page) return res;
+      
       return r.data ?? res;
     } catch (err: unknown) {
       setError(extractErrorMessage(err));

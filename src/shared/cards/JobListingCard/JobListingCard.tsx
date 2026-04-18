@@ -62,12 +62,12 @@ const JobListingCard = ({
   return (
     <>
       <div
-        className="group relative bg-white rounded-2xl border-2 border-blue-500 p-8 shadow-none transition-all duration-500 cursor-pointer overflow-hidden"
+        className="group relative bg-white rounded-2xl border-2 border-blue-500 px-6 py-5 shadow-none transition-all duration-500 cursor-pointer overflow-hidden"
         onClick={() => router.push(jobHref)}
       >
         <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-full -mr-24 -mt-24 animate-pulse pointer-events-none" />
         {/* Header Section: Logo & Badges */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-5">
             <div className="h-16 w-16 shrink-0 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm flex items-center justify-center overflow-hidden">
               {logo ? (
@@ -102,14 +102,14 @@ const JobListingCard = ({
         </div>
 
         {/* Job Title */}
-        <div className="mb-8">
-          <h3 className="text-3xl font-black text-slate-900 leading-tight group-hover:translate-x-1 transition-transform">
+        <div className="mb-6">
+          <h3 className="text-3xl font-semibold text-black group-hover:translate-x-1 transition-transform">
             {title}
           </h3>
         </div>
 
         {/* Footer Section: Meta & Apply */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-6 border-t border-slate-50">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pt-5 border-t border-slate-50">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 bg-slate-50 rounded-xl text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors">

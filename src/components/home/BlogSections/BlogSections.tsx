@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import BlogCard from "@/shared/cards/BlogCard/BlogCard";
@@ -9,7 +9,27 @@ import { formatDate } from "@/lib/utils";
 
 export const BlogSections = ({ blogs }: BlogSectionsProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
   const blogPreview = Array.isArray(blogs) ? blogs : [];
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const timeout = setTimeout(checkScroll, 500); // Initial check after render
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      window.removeEventListener('resize', checkScroll);
+      clearTimeout(timeout);
+    };
+  }, [blogPreview]);
 
   if (blogPreview.length === 0) return null;
 
@@ -20,6 +40,8 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
+      // Check after smooth scroll completes
+      setTimeout(checkScroll, 400);
     }
   };
 
@@ -47,31 +69,48 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
 
         {/* Carousel Container */}
         <div className="relative group">
-          {/* Navigation Arrows */}
+          {/* Side Navigation Buttons */}
           <button
-            onClick={() => scroll("left")}
-            className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 md:h-11 md:w-11 rounded-full bg-white border border-slate-100 shadow-lg flex items-center justify-center text-slate-400 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:text-blue-600 hover:border-blue-100 -translate-x-3 group-hover:translate-x-0"
-            aria-label="Scroll left"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              scroll("left");
+            }}
+            disabled={blogPreview.length <= 1}
+            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
+              canScrollLeft 
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+                : "bg-white border-slate-200 text-slate-400 opacity-60"
+            }`}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
           </button>
           
           <button
-            onClick={() => scroll("right")}
-            className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 md:h-11 md:w-11 rounded-full bg-white border border-slate-100 shadow-lg flex items-center justify-center text-slate-400 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:text-blue-600 hover:border-blue-100 translate-x-3 group-hover:translate-x-0"
-            aria-label="Scroll right"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              scroll("right");
+            }}
+            disabled={blogPreview.length <= 1}
+            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
+              canScrollRight 
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+                : "bg-white border-slate-200 text-slate-400 opacity-60"
+            }`}
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
           </button>
 
           {/* Horizontal Scroll Area */}
           <div 
             ref={scrollRef}
-            className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 pt-1 px-1 scroll-smooth"
+            onScroll={checkScroll}
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 pt-1 px-1 scroll-smooth snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {blogPreview.map((post) => (
-              <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px]">
+              <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px] snap-start">
                 <BlogCard 
                   title={post.title}
                   slug={post.slug}
@@ -88,6 +127,6 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
       </div>
     </section>
   );
-};
+};  
 
 export default BlogSections;

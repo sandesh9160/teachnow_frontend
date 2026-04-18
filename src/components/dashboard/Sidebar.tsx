@@ -36,13 +36,12 @@ export function DashboardSidebar({
   const [collapsed, setCollapsed] = useState(false);
 
   const seekerLinks = [
-    { label: "My Dashboard", href: "/dashboard/jobseeker", icon: LayoutGrid },
-    { label: "My Profile", href: "/dashboard/jobseeker/profile", icon: User },
-    { label: "Applications", href: "/dashboard/jobseeker/applied-jobs", icon: Briefcase },
+    { label: "Dashboard", href: "/dashboard/jobseeker", icon: LayoutGrid },
+    { label: "My Applications", href: "/dashboard/jobseeker/applied-jobs", icon: Briefcase },
     { label: "Saved Jobs", href: "/dashboard/jobseeker/saved-jobs", icon: Bookmark },
-    { label: "Alerts", href: "/dashboard/jobseeker/notifications", icon: Bell },
-    { label: "Resume Hub", href: "/dashboard/jobseeker/resume", icon: FileText },
-    { label: "Feedback", href: "/dashboard/jobseeker/testimonials", icon: MessageSquare },
+    { label: "Profile", href: "/dashboard/jobseeker/profile", icon: User },
+    { label: "Resume", href: "/dashboard/jobseeker/resume", icon: FileText },
+    { label: "CV Manager", href: "/dashboard/jobseeker/testimonials", icon: ClipboardList },
   ];
 
   const employerLinks = [
@@ -76,13 +75,13 @@ export function DashboardSidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 bg-indigo-950/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-300"
           onClick={onClose}
         />
       )}
 
       <aside
-        className={`fixed md:sticky inset-y-0 left-0 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-500 ease-in-out z-50 shadow-2xl shadow-slate-200/50 ${
+        className={`fixed md:sticky inset-y-0 left-0 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-500 ease-in-out z-50 shadow-sm ${
           collapsed ? "w-[72px]" : "w-[260px]"
         } ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
@@ -90,7 +89,7 @@ export function DashboardSidebar({
         <div className={`p-4 flex items-center justify-end border-b border-slate-50 min-h-[64px] transition-all duration-500`}>
           <button 
             onClick={() => setCollapsed(!collapsed)}
-            className={`p-2 rounded-xl text-slate-400 hover:bg-slate-50 hover:text-indigo-600 transition-all duration-300 hidden md:flex ${collapsed ? 'mx-auto' : ''}`}
+            className={`p-2 rounded-xl text-slate-400 hover:text-indigo-600 transition-all duration-300 hidden md:flex ${collapsed ? 'mx-auto' : ''}`}
             title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
@@ -99,7 +98,7 @@ export function DashboardSidebar({
           {/* Mobile close button */}
           <button 
             onClick={onClose}
-            className="md:hidden p-2 rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-500"
+            className="md:hidden p-2 rounded-xl text-slate-400 hover:text-rose-500"
           >
             <X size={20} />
           </button>
@@ -117,25 +116,21 @@ export function DashboardSidebar({
                    key={link.href}
                    href={link.href}
                    onClick={onClose}
-                   className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-300 group relative ${
+                   className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 group relative ${
                      isActive
-                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100"
+                       ? "bg-[#E8F1FF] text-[#0046B5]"
                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                    }`}
                  >
                    <Icon 
-                     className={`h-[17px] w-[17px] shrink-0 transition-transform duration-300 ${
-                       isActive ? "scale-105" : "opacity-50 group-hover:opacity-100 group-hover:scale-105"
+                     className={`h-[18px] w-[18px] shrink-0 transition-transform duration-300 ${
+                       isActive ? "text-[#0046B5] stroke-[2.5]" : "opacity-50 group-hover:opacity-100"
                      }`} 
                    />
                    {!collapsed && (
-                     <span className="tracking-tight truncate animate-in fade-in slide-in-from-left-2 duration-300">
+                     <span className="tracking-tight truncate">
                        {link.label}
                      </span>
-                   )}
-                   
-                   {isActive && collapsed && (
-                     <div className="absolute right-0 w-1 h-5 bg-white rounded-l-full" />
                    )}
                  </Link>
                );
@@ -143,18 +138,28 @@ export function DashboardSidebar({
           </div>
         </div>
 
+        {/* BACK TO HOME */}
+        {!collapsed && (
+          <div className="px-6 py-4">
+            <Link href="/" className="flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors group">
+              <LogOut className="w-4 h-4 rotate-180" />
+              <span className="text-xs font-semibold">Back to Home</span>
+            </Link>
+          </div>
+        )}
+
         {/* LOGOUT AT BOTTOM */}
-        <div className={`p-4 border-t border-slate-100 bg-slate-50/20 transition-all duration-500 ${collapsed ? 'px-2' : 'px-4'}`}>
+        <div className={`p-4 border-t border-slate-50 transition-all duration-500 ${collapsed ? 'px-2' : 'px-4'}`}>
            <LogoutSubmitButton
-             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 group active:scale-[0.98] shadow-lg ${
+             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 group active:scale-[0.98] ${
                collapsed 
-               ? "justify-center bg-gradient-to-r from-rose-500 to-red-600 text-white hover:opacity-90 shadow-rose-200" 
-               : "bg-gradient-to-r from-rose-500 to-red-600 text-white hover:opacity-90 shadow-rose-200"
+               ? "justify-center text-rose-600" 
+               : "text-rose-600 hover:bg-rose-50"
              }`}
            >
              <LogOut className={`h-[16px] w-[16px] transition-transform duration-300 ${collapsed ? 'scale-110' : 'group-hover:-translate-x-1'}`} />
              {!collapsed && (
-               <span className="uppercase tracking-widest text-[10px] font-black animate-in fade-in duration-300 whitespace-nowrap">
+               <span className="uppercase tracking-widest text-[10px] font-bold animate-in fade-in duration-300 whitespace-nowrap">
                  Sign Out
                </span>
              )}

@@ -17,6 +17,8 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { sanitizeSlug } from "@/lib/utils";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
+import { useState, useEffect } from "react";
+
 interface InstitutionDetailsViewProps {
   readonly company: Institution;
   readonly companyJobs: Job[];
@@ -28,6 +30,13 @@ export default function InstitutionDetailsView({
   companyJobs, 
   similarCompanies 
 }: Readonly<InstitutionDetailsViewProps>) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [mapLoading, setMapLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
   const companyLogo = normalizeMediaUrl(company?.company_logo);
   const logoFallback = (company?.company_name?.[0] || "I").toUpperCase();
 
@@ -39,7 +48,7 @@ export default function InstitutionDetailsView({
   const jobsCount = companyJobs.length;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+    <div className={`min-h-screen bg-[#F8FAFC] pb-20 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       {/* Breadcrumb Bar */}
       <div className="bg-white border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
@@ -131,13 +140,19 @@ export default function InstitutionDetailsView({
                   <h2 className="text-xl font-semisemibold text-[#1a202c]">Institution Location</h2>
                 </div>
                 <div className="relative aspect-video sm:aspect-[21/6] w-full rounded-xl border border-slate-100 overflow-hidden bg-slate-50">
+                  {mapLoading && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50">
+                      <div className="h-10 w-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-3" />
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Loading Live Map...</p>
+                    </div>
+                  )}
                   <iframe
                     src={`https://www.google.com/maps?q=${encodeURIComponent(company.address || company.company_name + " " + (company.city || ""))}&output=embed`}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
                     allowFullScreen
-                    loading="lazy"
+                    onLoad={() => setMapLoading(false)}
                     referrerPolicy="no-referrer-when-downgrade"
                   />
                 </div>

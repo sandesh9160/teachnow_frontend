@@ -15,7 +15,7 @@ import {
   FileText,
   ArrowLeft,
   ArrowRight,
-  Sparkles,
+  Globe,
   User,
   Mail,
   Phone,
@@ -65,11 +65,13 @@ export default function ApplyJobPage() {
 
   useEffect(() => {
     if (mounted && !isLoggedIn) {
-      setShowAuthModal(true);
+      const timer = setTimeout(() => setShowAuthModal(true), 1500);
+      return () => clearTimeout(timer);
     }
   }, [mounted, isLoggedIn]);
 
   const [step, setStep] = useState(0);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [step]);
   const [candidate, setCandidate] = useState({
     name: "",
     email: "",
@@ -153,15 +155,15 @@ export default function ApplyJobPage() {
       try {
         const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
         const res = await dashboardServerFetch<any>("jobseeker/profile", { method: "GET" });
-        
+
         console.log("DEBUG: Profile response fetched:", res);
 
         if (res) {
           // Extract data using exact same logic as useClientSession for consistency
           const profile = (
-            (res?.data as any)?.job_seeker ?? 
-            res?.data ?? 
-            res?.profile ?? 
+            (res?.data as any)?.job_seeker ??
+            res?.data ??
+            res?.profile ??
             res
           );
 
@@ -196,12 +198,12 @@ export default function ApplyJobPage() {
       if (job.cover_letter_question_id) {
         initial[job.cover_letter_question_id] = "";
       }
-      
+
       // Support both legacy screening_questions and new questions array
       job.screening_questions?.forEach(q => {
         initial[q.id] = "";
       });
-      
+
       job.questions?.forEach(q => {
         initial[q.id] = "";
       });
@@ -225,7 +227,7 @@ export default function ApplyJobPage() {
   }, [resumes]);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  
+
   const [showTemplateOverlay, setShowTemplateOverlay] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -239,6 +241,7 @@ export default function ApplyJobPage() {
 
   const handlePreviewResume = (path: string | null | undefined) => {
     const url = getFullFileUrl(path);
+    console.log("DEBUG: handlePreviewResume triggered with path:", path, "Resolved URL:", url);
     if (url) {
       setPreviewUrl(url);
       setShowResumePreview(true);
@@ -254,10 +257,10 @@ export default function ApplyJobPage() {
         job_id: job.id,
       });
 
-      
+
       if (res?.status) {
         toast.success("Resume generated with AI!");
-        await fetchResumes(); 
+        await fetchResumes();
         setShowTemplateOverlay(false);
       }
     } catch (err: any) {
@@ -314,10 +317,10 @@ export default function ApplyJobPage() {
     if (!jobDetails?.id) return;
     try {
       setIsSubmitting(true);
-      
+
       // Collect all answers
       const answers: { question_id: number; candidate_answer: string }[] = [];
-      
+
       Object.entries(questionAnswers).forEach(([qid, ans]) => {
         if (ans.trim()) {
           answers.push({
@@ -342,7 +345,7 @@ export default function ApplyJobPage() {
 
   const hasQuestions = !!(jobDetails?.screening_questions?.length) || !!(jobDetails?.questions?.length) || !!jobDetails?.cover_letter_question_id;
   const currentSteps = ["Review Job", "Your Details", "Resume", ...(hasQuestions ? ["Questions"] : []), "Submit"];
-  
+
   const questionsStepIdx = currentSteps.indexOf("Questions");
   const submitStepIdx = currentSteps.indexOf("Submit");
 
@@ -370,23 +373,23 @@ export default function ApplyJobPage() {
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Login Required</h2>
               <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                You need to be logged in as a Job Seeker to apply for 
+                You need to be logged in as a Job Seeker to apply for
                 <span className="text-primary font-bold"> {jobDetails.title}</span>.
               </p>
             </div>
             <div className="flex flex-col gap-3 pt-2">
-               <Button variant="hero" size="lg" className="w-full h-12 rounded-xl font-bold text-base" onClick={() => setShowAuthModal(true)}>
-                 Sign In to Apply
-               </Button>
-               <Button variant="outline" className="w-full h-11 border-slate-200 rounded-xl font-bold text-sm" onClick={() => router.back()}>
-                 Go Back
-               </Button>
+              <Button variant="hero" size="lg" className="w-full h-12 rounded-xl font-bold text-base" onClick={() => setShowAuthModal(true)}>
+                Sign In to Apply
+              </Button>
+              <Button variant="outline" className="w-full h-11 border-slate-200 rounded-xl font-bold text-sm" onClick={() => router.back()}>
+                Go Back
+              </Button>
             </div>
           </div>
-          
-          <QuickAuthModal 
-            open={showAuthModal} 
-            onClose={() => setShowAuthModal(false)} 
+
+          <QuickAuthModal
+            open={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
             onSuccess={() => {
               setShowAuthModal(false);
               // Page will automatically re-render because isLoggedIn state changes
@@ -400,27 +403,27 @@ export default function ApplyJobPage() {
   }
 
   if (user?.role === "employer") {
-     return (
-        <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center p-4">
-           <div className="bg-white p-10 rounded-3xl border border-amber-200 shadow-xl max-w-md w-full text-center space-y-6">
-              <div className="mx-auto w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
-                 <Building2 className="w-10 h-10" />
-              </div>
-              <div className="space-y-2">
-                 <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Access Restricted</h2>
-                 <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                    Employer accounts cannot apply for jobs. Please log in as a 
-                    <span className="text-primary font-bold"> Job Seeker</span> to submit applications.
-                 </p>
-              </div>
-              <Link href="/dashboard/employer" className="block pt-2">
-                 <Button variant="hero" className="w-full h-12 rounded-xl font-bold text-base">
-                    Go to Dashboard
-                 </Button>
-              </Link>
-           </div>
+    return (
+      <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white p-10 rounded-3xl border border-amber-200 shadow-xl max-w-md w-full text-center space-y-6">
+          <div className="mx-auto w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
+            <Building2 className="w-10 h-10" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Access Restricted</h2>
+            <p className="text-sm font-medium text-slate-500 leading-relaxed">
+              Employer accounts cannot apply for jobs. Please log in as a
+              <span className="text-primary font-bold"> Job Seeker</span> to submit applications.
+            </p>
+          </div>
+          <Link href="/dashboard/employer" className="block pt-2">
+            <Button variant="hero" className="w-full h-12 rounded-xl font-bold text-base">
+              Go to Dashboard
+            </Button>
+          </Link>
         </div>
-     );
+      </div>
+    );
   }
 
   return (
@@ -435,44 +438,44 @@ export default function ApplyJobPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-10">
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-foreground">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+        <div className="mb-5">
+          <h1 className="font-display text-xl font-bold text-foreground">
             {submitted ? "Application Complete" : "Apply for Position"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {jobDetails.title} at {jobDetails.employer?.company_name}
           </p>
         </div>
 
         {!submitted && (
-          <div className="mb-6 md:mb-8">
+          <div className="mb-5">
             <div className="flex items-center justify-between">
               {currentSteps.map((label, i) => {
                 let stepClass = "bg-muted text-muted-foreground";
                 const isActive = i === step;
                 const isCompleted = i < step;
-                
+
                 if (isCompleted) {
                   stepClass = "bg-accent/20 text-accent";
                 } else if (isActive) {
-                  stepClass = "bg-primary text-primary-foreground shadow-lg shadow-primary/20";
+                  stepClass = "bg-primary text-primary-foreground shadow-md shadow-primary/20";
                 }
 
                 return (
                   <div key={label} className="flex items-center flex-1 last:flex-none">
                     <div className="flex flex-col items-center">
                       <div
-                        className={`flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${stepClass}`}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold transition-all duration-300 ${stepClass}`}
                       >
-                        {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                        {isCompleted ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
                       </div>
-                      <span className={`mt-1.5 text-[9px] md:text-[10px] font-bold uppercase tracking-tight whitespace-nowrap hidden min-[400px]:block ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                      <span className={`mt-1 text-[8px] font-bold uppercase tracking-tight whitespace-nowrap hidden min-[400px]:block ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                         {label}
                       </span>
                     </div>
                     {i < currentSteps.length - 1 && (
-                      <div className={`h-0.5 flex-1 rounded-full mx-0.5 min-[400px]:mx-1 md:mx-2 mb-0 md:mb-4 ${isCompleted ? "bg-accent/40" : "bg-muted"}`} />
+                      <div className={`h-0.5 flex-1 rounded-full mx-1 md:mx-2 mb-0 min-[400px]:mb-3 ${isCompleted ? "bg-accent/40" : "bg-muted"}`} />
                     )}
                   </div>
                 );
@@ -503,11 +506,10 @@ export default function ApplyJobPage() {
                   <button
                     onClick={handleToggleBookmark}
                     disabled={bookmarkBusy || bookmarksHookLoading}
-                    className={`shrink-0 rounded-xl p-2.5 transition-all duration-200 border ${
-                      isBookmarked 
-                        ? "bg-primary/10 border-primary/20 text-primary" 
+                    className={`shrink-0 rounded-xl p-2.5 transition-all duration-200 border ${isBookmarked
+                        ? "bg-primary/10 border-primary/20 text-primary"
                         : "bg-white border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:shadow-sm"
-                    }`}
+                      }`}
                     title={isBookmarked ? "Remove from saved" : "Save for later"}
                   >
                     <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-primary" : ""}`} />
@@ -534,69 +536,82 @@ export default function ApplyJobPage() {
               {jobDetails.description && (
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-2">Job Description</h4>
-                  <div 
+                  <div
                     className="text-sm text-muted-foreground leading-relaxed rich-text"
                     dangerouslySetInnerHTML={{ __html: jobDetails.description }}
                   />
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => router.back()}>Cancel</Button>
-                <Button className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={() => setStep(1)}>
-                  Next <ArrowRight className="ml-1 h-3 w-3" />
+              <div className="flex gap-3 pt-6">
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => router.back()}>Cancel</Button>
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => setStep(1)}>
+                  Continue Application <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
           )}
 
           {step === 1 && !submitted && (
-            <div className="space-y-4 md:space-y-6">
-              <p className="text-sm text-muted-foreground font-medium">Please verify your contact information.</p>
-              <div className="grid grid-cols-1 gap-4 md:gap-5">
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground font-medium">Verify your details. Fields marked <span className="text-red-500">*</span> are required.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { key: "name" as const, label: "Full Name", icon: User, type: "text" },
-                  { key: "email" as const, label: "Email Address", icon: Mail, type: "email" },
-                  { key: "phone" as const, label: "Phone Number", icon: Phone, type: "tel" },
-                  { key: "experience" as const, label: "Years of Experience", icon: Clock, type: "text" },
-                  { key: "location" as const, label: "Current Location", icon: MapPin, type: "text" },
-                  { key: "dob" as const, label: "Date of Birth", icon: Clock, type: "date" },
-                  { key: "portfolio_website" as const, label: "Portfolio/Website", icon: Sparkles, type: "url" },
+                  { key: "name" as const, label: "Full Name", icon: User, type: "text", required: true },
+                  { key: "email" as const, label: "Email", icon: Mail, type: "email", required: true },
+                  { key: "phone" as const, label: "Phone", icon: Phone, type: "tel", required: true },
+                  { key: "experience" as const, label: "Experience (Yrs)", icon: Clock, type: "text", required: true },
+                  { key: "location" as const, label: "Location", icon: MapPin, type: "text", required: true },
+                  { key: "dob" as const, label: "Date of Birth", icon: Clock, type: "date", required: false },
+                  { key: "portfolio_website" as const, label: "Portfolio / Website", icon: Globe, type: "url", required: false },
                 ].map((field) => (
-                  <div key={field.key} className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">{field.label}</label>
-                    <div className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
-                      <field.icon className="h-4 w-4 shrink-0 text-primary/60" />
+                  <div key={field.key} className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">
+                      {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
+                    </label>
+                    <div className="flex items-center gap-2.5 rounded-lg border border-border bg-background px-3 py-2.5 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                      <field.icon className="h-3.5 w-3.5 shrink-0 text-primary/60" />
                       <input
                         type={field.type}
                         value={candidate[field.key]}
                         onChange={(e) => setCandidate({ ...candidate, [field.key]: e.target.value })}
-                        className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/50"
-                        placeholder={`Your ${field.label.toLowerCase()}`}
+                        className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/40"
+                        placeholder={field.label}
+                        required={field.required}
                         suppressHydrationWarning
                       />
                     </div>
                   </div>
                 ))}
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Professional Bio</label>
-                  <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
-                    <textarea
-                      value={candidate.bio}
-                      onChange={(e) => setCandidate({ ...candidate, bio: e.target.value })}
-                      className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/50 min-h-[100px] resize-none"
-                      placeholder="Briefly describe your professional background..."
-                    />
-                  </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-0.5">Bio <span className="text-slate-400 text-[8px] normal-case">(optional)</span></label>
+                <div className="rounded-lg border border-border bg-background px-3 py-2.5 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                  <textarea
+                    value={candidate.bio}
+                    onChange={(e) => setCandidate({ ...candidate, bio: e.target.value })}
+                    className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/40 min-h-[70px] resize-none"
+                    placeholder="Brief professional summary..."
+                  />
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(0)}>
-                  <ArrowLeft className="mr-2 h-3 w-3" /> Back
+
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(0)}>
+                  Cancel
                 </Button>
-                <Button className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={() => setStep(2)}>
-                  Next <ArrowRight className="ml-2 h-3 w-3" />
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
+                  if (!candidate.name.trim()) { toast.error("Full Name is required"); return; }
+                  if (!candidate.email.trim()) { toast.error("Email is required"); return; }
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate.email)) { toast.error("Enter a valid email address"); return; }
+                  if (!candidate.phone.trim()) { toast.error("Phone number is required"); return; }
+                  if (!/^\+?\d{7,15}$/.test(candidate.phone.replace(/[\s-]/g, ''))) { toast.error("Enter a valid phone number"); return; }
+                  if (!candidate.experience.trim()) { toast.error("Years of experience is required"); return; }
+                  if (!candidate.location.trim()) { toast.error("Location is required"); return; }
+                  setStep(2);
+                }}>
+                  Continue Application <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -622,7 +637,7 @@ export default function ApplyJobPage() {
                         onClick={() => setResumeTab('generated')}
                         className={`flex items-center gap-2 px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300 ${resumeTab === 'generated' ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200/50' : 'text-muted-foreground hover:text-foreground'}`}
                       >
-                        <Sparkles className="w-3 h-3" />
+                        <FileText className="w-3 h-3" />
                         AI Generated
                       </button>
                     </div>
@@ -632,19 +647,19 @@ export default function ApplyJobPage() {
                   {resumeTab === 'uploaded' && (
                     <div className="animate-in fade-in slide-in-from-left-4 duration-300 space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(function() {
+                        {(function () {
                           const start = (uploadedPage - 1) * itemsPerPage;
                           const paginated = resumes.slice(start, start + itemsPerPage);
                           if (resumes.length === 0) return <div className="col-span-full h-40 flex items-center justify-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-2 border-dashed border-slate-100 rounded-xl">No uploads found</div>;
-                          
+
                           return paginated.map((resume) => {
                             const isSelected = String(selectedResumeId) === String(resume.id);
                             return (
                               <label
                                 key={resume.id}
                                 className={`flex items-start md:items-center gap-3 rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
-                                    ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                    : "border-border bg-card hover:border-primary/30 hover:bg-muted/30"
+                                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                  : "border-border bg-card hover:border-primary/30 hover:bg-muted/30"
                                   }`}
                               >
                                 <input
@@ -677,12 +692,12 @@ export default function ApplyJobPage() {
 
                       {resumes.length > itemsPerPage && (
                         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                          <span className="text-[10px] font-black text-primary uppercase tracking-tighter">Page {uploadedPage} of {Math.ceil(resumes.length/itemsPerPage)}</span>
+                          <span className="text-[10px] font-black text-primary uppercase tracking-tighter">Page {uploadedPage} of {Math.ceil(resumes.length / itemsPerPage)}</span>
                           <div className="flex gap-2">
-                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold" onClick={() => setUploadedPage(p => Math.max(1, p-1))} disabled={uploadedPage===1}>
+                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold" onClick={() => setUploadedPage(p => Math.max(1, p - 1))} disabled={uploadedPage === 1}>
                               <ArrowLeft className="w-3 h-3 mr-1.5" /> Previous
                             </Button>
-                            <Button variant="hero" className="h-8 px-4 text-[10px] font-bold" onClick={() => setUploadedPage(p => Math.min(Math.ceil(resumes.length/itemsPerPage), p+1))} disabled={uploadedPage===Math.ceil(resumes.length/itemsPerPage)}>
+                            <Button variant="hero" className="h-8 px-4 text-[10px] font-bold" onClick={() => setUploadedPage(p => Math.min(Math.ceil(resumes.length / itemsPerPage), p + 1))} disabled={uploadedPage === Math.ceil(resumes.length / itemsPerPage)}>
                               Next <ArrowRight className="w-3 h-3 ml-1.5" />
                             </Button>
                           </div>
@@ -695,7 +710,7 @@ export default function ApplyJobPage() {
                   {resumeTab === 'generated' && (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(function() {
+                        {(function () {
                           const start = (generatedPage - 1) * itemsPerPage;
                           const paginated = generatedResumes.slice(start, start + itemsPerPage);
                           if (generatedResumes.length === 0) return <div className="col-span-full h-40 flex items-center justify-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-2 border-dashed border-emerald-100 rounded-xl">No AI drafts generated</div>;
@@ -706,8 +721,8 @@ export default function ApplyJobPage() {
                               <label
                                 key={cv.id}
                                 className={`flex items-start md:items-center gap-3 rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
-                                    ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
-                                    : "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/30"
+                                  ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
+                                  : "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/30"
                                   }`}
                               >
                                 <input
@@ -717,7 +732,7 @@ export default function ApplyJobPage() {
                                   className="sr-only"
                                 />
                                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-                                  <Sparkles className="h-5 w-5" />
+                                  <FileText className="h-5 w-5" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-[13px] font-bold text-foreground truncate">{cv.title || "AI Resume"}</p>
@@ -740,12 +755,12 @@ export default function ApplyJobPage() {
 
                       {generatedResumes.length > itemsPerPage && (
                         <div className="flex items-center justify-between pt-4 border-t border-emerald-100">
-                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Page {generatedPage} of {Math.ceil(generatedResumes.length/itemsPerPage)}</span>
+                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-tighter">Page {generatedPage} of {Math.ceil(generatedResumes.length / itemsPerPage)}</span>
                           <div className="flex gap-2">
-                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold" onClick={() => setGeneratedPage(p => Math.max(1, p-1))} disabled={generatedPage===1}>
+                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold" onClick={() => setGeneratedPage(p => Math.max(1, p - 1))} disabled={generatedPage === 1}>
                               <ArrowLeft className="w-3 h-3 mr-1.5" /> Previous
                             </Button>
-                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold border-emerald-200 text-emerald-600 hover:bg-emerald-50" onClick={() => setGeneratedPage(p => Math.min(Math.ceil(generatedResumes.length/itemsPerPage), p+1))} disabled={generatedPage===Math.ceil(generatedResumes.length/itemsPerPage)}>
+                            <Button variant="outline" className="h-8 px-4 text-[10px] font-bold border-emerald-200 text-emerald-600 hover:bg-emerald-50" onClick={() => setGeneratedPage(p => Math.min(Math.ceil(generatedResumes.length / itemsPerPage), p + 1))} disabled={generatedPage === Math.ceil(generatedResumes.length / itemsPerPage)}>
                               Next <ArrowRight className="w-3 h-3 ml-1.5" />
                             </Button>
                           </div>
@@ -764,33 +779,33 @@ export default function ApplyJobPage() {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold border-dashed border-2 hover:border-primary/50 gap-2" onClick={() => router.push("/dashboard/jobseeker/resume")}>
-                  <Plus className="h-3 w-3" /> Manage Resumes
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" className="flex-1 h-11 rounded-xl text-sm font-semibold gap-1 border-slate-200 hover:border-primary/40 hover:text-primary transition-all" onClick={() => router.push("/dashboard/jobseeker/resume")}>
+                  <Plus className="h-4 w-4" /> Manage Resumes
                 </Button>
-                <Button 
-                  variant="hero" 
-                  className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20 gap-2" 
+                <Button
+                  variant="hero"
+                  className="flex-1 h-11 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20 gap-2"
                   onClick={() => setShowTemplateOverlay(true)}
                   disabled={isGenerating}
                 >
-                  <Sparkles className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} /> 
+                  <FileText className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
                   {isGenerating ? "Generating..." : "Generate CV with AI"}
                 </Button>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(1)}>
-                  <ArrowLeft className="mr-2 h-3 w-3" /> Back
+              <div className="flex gap-3 pt-6">
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(1)}>
+                  Cancel
                 </Button>
-                <Button className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={() => {
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
                   if (!selectedResumeId && resumes.length > 0) {
                     toast.error("Please select a resume to proceed");
                     return;
                   }
                   setStep(step + 1);
                 }}>
-                  Next Step <ArrowRight className="ml-2 h-3 w-3" />
+                  Continue Application <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -801,18 +816,18 @@ export default function ApplyJobPage() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                   <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                   </div>
-                   <h3 className="text-sm font-bold text-foreground">Recruiter Questions</h3>
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Recruiter Questions</h3>
                 </div>
-                <p className="text-xs text-muted-foreground">Please provide these final details to complete your application for {jobDetails.employer?.company_name}.</p>
-                
+                <p className="text-sm text-muted-foreground">Please provide these final details to complete your application for {jobDetails.employer?.company_name}.</p>
+
                 <div className="space-y-6 mt-4">
                   {jobDetails.cover_letter_question_id && (
                     <div className="space-y-2">
-                       <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Cover Letter / Motivation</label>
-                       <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+                      <label className="text-sm font-medium text-slate-700">Cover Letter / Motivation</label>
+                      <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
                         <textarea
                           value={questionAnswers[jobDetails.cover_letter_question_id] || ""}
                           onChange={(e) => setQuestionAnswers({ ...questionAnswers, [jobDetails.cover_letter_question_id!]: e.target.value })}
@@ -829,25 +844,24 @@ export default function ApplyJobPage() {
 
                     return (
                       <div key={q.id} className="space-y-3">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">
+                        <label className="text-sm font-medium text-slate-700">
                           {q.question}
                         </label>
-                        
+
                         {isBoolean ? (
                           <div className="flex gap-4 ml-1">
                             {["Yes", "No"].map((opt) => (
                               <label key={opt} className="flex items-center gap-2 cursor-pointer group">
-                                <div 
+                                <div
                                   onClick={() => setQuestionAnswers({ ...questionAnswers, [q.id]: opt.toLowerCase() })}
-                                  className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                                    questionAnswers[q.id] === opt.toLowerCase() 
-                                      ? "border-primary bg-primary" 
+                                  className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${questionAnswers[q.id] === opt.toLowerCase()
+                                      ? "border-primary bg-primary"
                                       : "border-slate-200 group-hover:border-primary/40"
-                                  }`}
+                                    }`}
                                 >
                                   {questionAnswers[q.id] === opt.toLowerCase() && <div className="h-2 w-2 rounded-full bg-white animate-in zoom-in-50 duration-200" />}
                                 </div>
-                                <span className={`text-sm font-bold ${questionAnswers[q.id] === opt.toLowerCase() ? "text-primary" : "text-slate-500"}`}>{opt}</span>
+                                <span className={`text-sm ${questionAnswers[q.id] === opt.toLowerCase() ? "text-primary font-medium" : "text-slate-500"}`}>{opt}</span>
                               </label>
                             ))}
                           </div>
@@ -878,7 +892,7 @@ export default function ApplyJobPage() {
                   {/* Legacy Support for screening_questions */}
                   {jobDetails.screening_questions?.map((sq) => (
                     <div key={sq.id} className="space-y-2">
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">{sq.question}</label>
+                      <label className="text-sm font-medium text-slate-700">{sq.question}</label>
                       <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
                         <textarea
                           value={questionAnswers[sq.id] || ""}
@@ -893,12 +907,12 @@ export default function ApplyJobPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(step - 1)}>
-                  <ArrowLeft className="mr-2 h-3 w-3" /> Back
+              <div className="flex gap-3 pt-6">
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(step - 1)}>
+                  Cancel
                 </Button>
-                <Button className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={() => setStep(step + 1)}>
-                  Review Application <ArrowRight className="ml-2 h-3 w-3" />
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => setStep(step + 1)}>
+                  Continue Application <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -919,35 +933,35 @@ export default function ApplyJobPage() {
                     { label: "Location", value: candidate.location || "—" },
                     { label: "Date of Birth", value: candidate.dob || "—" },
                     { label: "Portfolio", value: candidate.portfolio_website || "—" },
-                    { 
-                      label: "Selected Resume", 
-                      value: (function() {
+                    {
+                      label: "Selected Resume",
+                      value: (function () {
                         const rid = String(selectedResumeId);
                         let title = "Not selected";
                         let url = "";
-                        
-                        if (rid.startsWith("cv-")) {
-                           const id = rid.replace("cv-", "");
-                           const cv = generatedResumes.find(cv => String(cv.id) === id);
-                           title = cv?.title || "AI Generated Resume";
-                           url = cv?.pdf_path || "";
-                        } else {
-                           const r = resumes.find(r => String(r.id) === rid);
-                           title = r?.title || r?.file_name || "Uploaded Resume";
-                           url = r?.url || "";
-                        }
 
+                        if (rid.startsWith("cv-")) {
+                          const id = rid.replace("cv-", "");
+                          const cv = generatedResumes.find(cv => String(cv.id) === id);
+                          title = cv?.title || "AI Generated Resume";
+                          url = cv?.pdf_path || "";
+                        } else {
+                          const r = resumes.find(r => String(r.id) === rid);
+                          title = r?.title || r?.file_name || "Uploaded Resume";
+                          url = r?.url || "";
+                        }
                         if (!rid) return "No resume linked";
 
                         return (
                           <div className="flex items-center gap-2">
-                             <span className="truncate">{title}</span>
-                             <button 
-                               onClick={() => handlePreviewResume(url)}
-                               className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors"
-                             >
-                                VIEW FILE
-                             </button>
+                            <span className="truncate">{title}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePreviewResume(url); }}
+                              className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-all border border-primary/10"
+                            >
+                              VIEW FILE
+                            </button>
                           </div>
                         );
                       })()
@@ -965,12 +979,12 @@ export default function ApplyJobPage() {
                     <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-2">Skills Expertise</span>
                     <div className="flex flex-wrap gap-2">
                       {candidate.skills.map((skill: any, idx: number) => {
-                         const skillName = typeof skill === 'object' ? (skill.name || skill.title || "Skill") : String(skill);
-                         return (
+                        const skillName = typeof skill === 'object' ? (skill.name || skill.title || "Skill") : String(skill);
+                        return (
                           <span key={idx} className="px-3 py-1 rounded-lg bg-primary/5 text-primary text-[11px] font-bold border border-primary/10 shadow-sm">
                             {skillName.toUpperCase()}
                           </span>
-                         );
+                        );
                       })}
                     </div>
                   </div>
@@ -980,7 +994,7 @@ export default function ApplyJobPage() {
                   <div className="pt-6 border-t border-border/50 space-y-5">
                     <div className="bg-background/50 rounded-xl p-4 border border-border/30">
                       <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-2">Professional Bio</span>
-                      <div 
+                      <div
                         className="text-sm text-muted-foreground leading-relaxed rich-text"
                         dangerouslySetInnerHTML={{ __html: candidate.bio.replace(/\n/g, '<br/>') }}
                       />
@@ -1040,33 +1054,33 @@ export default function ApplyJobPage() {
                 {hasQuestions && Object.values(questionAnswers).some(a => a.trim()) && (
                   <div className="pt-6 border-t border-border/50">
                     <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
-                       Recruiter Questions Review
+                      Recruiter Questions Review
                     </span>
                     <div className="space-y-4">
                       {Object.entries(questionAnswers).map(([qid, ans]) => {
-                         const q = jobDetails.questions?.find(sq => String(sq.id) === qid) || 
-                                   jobDetails.screening_questions?.find(sq => String(sq.id) === qid);
-                         const label = q ? q.question : (parseInt(qid) === jobDetails.cover_letter_question_id ? "Motivation / Cover Letter" : "Question");
-                         if (!ans.trim()) return null;
-                         return (
-                           <div key={qid} className="bg-background/40 rounded-xl p-3 border border-border/20">
-                             <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tight mb-1">{label}</p>
-                             <p className="text-sm text-foreground whitespace-pre-wrap">{ans === "yes" ? "Yes" : (ans === "no" ? "No" : ans)}</p>
-                           </div>
-                         );
+                        const q = jobDetails.questions?.find(sq => String(sq.id) === qid) ||
+                          jobDetails.screening_questions?.find(sq => String(sq.id) === qid);
+                        const label = q ? q.question : (parseInt(qid) === jobDetails.cover_letter_question_id ? "Motivation / Cover Letter" : "Question");
+                        if (!ans.trim()) return null;
+                        return (
+                          <div key={qid} className="bg-background/40 rounded-xl p-3 border border-border/20">
+                            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tight mb-1">{label}</p>
+                            <p className="text-sm text-foreground whitespace-pre-wrap">{ans === "yes" ? "Yes" : (ans === "no" ? "No" : ans)}</p>
+                          </div>
+                        );
                       })}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" className="flex-1 h-8 rounded-lg text-[9px] font-bold" onClick={() => setStep(step - 1)}>
-                  <ArrowLeft className="mr-2 h-3 w-3" /> Back
+              <div className="flex gap-3 pt-6">
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(step - 1)}>
+                  Cancel
                 </Button>
-                <Button variant="hero" className="flex-1 h-8 rounded-lg text-[9px] font-bold shadow-sm shadow-primary/20" onClick={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Sparkles className="mr-2 h-3 w-3" />}
-                  {isSubmitting ? "Sending..." : "Submit Application"}
+                <Button variant="hero" className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                  {isSubmitting ? "Submitting..." : "Submit Application"}
                 </Button>
               </div>
             </div>
@@ -1099,149 +1113,148 @@ export default function ApplyJobPage() {
       {/* Template Selection Overlay */}
       {showTemplateOverlay && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-           <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
-              <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
-                 <div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                       <Sparkles className="w-6 h-6 text-primary animate-pulse" /> 
-                       Generate AI Enhanced CV
-                    </h2>
-                    <p className="text-slate-500 font-medium text-sm mt-1">Select a template below to proceed with AI generation.</p>
-                 </div>
-                 <button onClick={() => setShowTemplateOverlay(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                    <X className="w-6 h-6 text-slate-400" />
-                 </button>
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <CheckCircle2 className="w-6 h-6 text-primary animate-pulse" />
+                  Generate AI Enhanced CV
+                </h2>
+                <p className="text-slate-500 font-medium text-sm mt-1">Select a template below to proceed with AI generation.</p>
               </div>
+              <button onClick={() => setShowTemplateOverlay(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                <X className="w-6 h-6 text-slate-400" />
+              </button>
+            </div>
 
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {cvTemplates.map((template) => {
-                      const isSelected = selectedTemplate === String(template.id);
-                      return (
-                        <div 
-                          key={template.id}
-                          className={`group relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
-                            isSelected ? "border-primary shadow-lg shadow-primary/20 scale-[1.02]" : "border-slate-100 hover:border-primary/30 hover:shadow-md"
-                          }`}
-                          onClick={() => setSelectedTemplate(String(template.id))}
-                        >
-                           <div className="aspect-[3/4] p-2 bg-slate-50 group-hover:bg-primary/5 transition-colors overflow-hidden">
-                              {template.preview_image ? (
-                                <img 
-                                  src={template.preview_image} 
-                                  alt={template.name} 
-                                  className="w-full h-full object-cover rounded-lg shadow-sm border border-slate-200"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-300">
-                                  <FileText className="w-10 h-10" />
-                                  <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
-                                </div>
-                              )}
-                           </div>
-                           {selectedTemplate === String(template.id) && (
-                              <div className="absolute top-3 right-3 bg-primary text-white p-1.5 rounded-full shadow-lg z-10 animate-in zoom-in duration-300">
-                                 <Check className="w-3.5 h-3.5 stroke-[3]" />
-                              </div>
-                           )}
-                           <div className="p-4 flex items-center justify-between bg-white relative">
-                               <div className="min-w-0">
-                                  <span className={`text-[9px] font-black uppercase tracking-[1.5px] block mb-1.5 transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-slate-400'}`}>
-                                     {isSelected ? 'Selected Style' : 'Select Resume'}
-                                  </span>
-                                  <span className="text-xs font-bold text-slate-700 truncate block">{template.name}</span>
-                               </div>
-                               <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isSelected ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/25' : 'border-slate-200 bg-white text-slate-100 group-hover:border-primary/30'}`}>
-                                  <Check className={`w-3.5 h-3.5 stroke-[3] transition-all duration-300 ${isSelected ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`} />
-                               </div>
-                           </div>
-                        </div>
-                      );
-                    })}
-                 </div>
-
-                 <div className="mt-12 flex flex-col items-center justify-center gap-4">
-                    <Button 
-                        variant="hero" 
-                        className="min-w-[280px] h-12 rounded-2xl text-xs font-black uppercase tracking-[2px] shadow-xl shadow-primary/20 disabled:opacity-50 transition-all active:scale-95"
-                        onClick={() => selectedTemplate && handleGenerateResume(selectedTemplate)}
-                        disabled={!selectedTemplate || isGenerating}
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {cvTemplates.map((template) => {
+                  const isSelected = selectedTemplate === String(template.id);
+                  return (
+                    <div
+                      key={template.id}
+                      className={`group relative rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${isSelected ? "border-primary shadow-lg shadow-primary/20 scale-[1.02]" : "border-slate-100 hover:border-primary/30 hover:shadow-md"
+                        }`}
+                      onClick={() => setSelectedTemplate(String(template.id))}
                     >
-                        {isGenerating ? (
-                           <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Crafting your Resume...
-                           </>
+                      <div className="aspect-[3/4] p-2 bg-slate-50 group-hover:bg-primary/5 transition-colors overflow-hidden">
+                        {template.preview_image ? (
+                          <img
+                            src={template.preview_image}
+                            alt={template.name}
+                            className="w-full h-full object-cover rounded-lg shadow-sm border border-slate-200"
+                          />
                         ) : (
-                           <>Generate My CV</>
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-300">
+                            <FileText className="w-10 h-10" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
+                          </div>
                         )}
-                    </Button>
-                    {selectedTemplate && (
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2">
-                           Selected: {cvTemplates.find(t => String(t.id) === selectedTemplate)?.name || selectedTemplate}
-                        </p>
-                    )}
-                 </div>
+                      </div>
+                      {selectedTemplate === String(template.id) && (
+                        <div className="absolute top-3 right-3 bg-primary text-white p-1.5 rounded-full shadow-lg z-10 animate-in zoom-in duration-300">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      )}
+                      <div className="p-4 flex items-center justify-between bg-white relative">
+                        <div className="min-w-0">
+                          <span className={`text-[9px] font-black uppercase tracking-[1.5px] block mb-1.5 transition-colors duration-300 ${isSelected ? 'text-primary' : 'text-slate-400'}`}>
+                            {isSelected ? 'Selected Style' : 'Select Resume'}
+                          </span>
+                          <span className="text-xs font-bold text-slate-700 truncate block">{template.name}</span>
+                        </div>
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${isSelected ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/25' : 'border-slate-200 bg-white text-slate-100 group-hover:border-primary/30'}`}>
+                          <Check className={`w-3.5 h-3.5 stroke-[3] transition-all duration-300 ${isSelected ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="px-8 py-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                 <div className="text-center sm:text-left">
-                    <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-0.5">Selected Style</p>
-                    <p className="text-sm font-bold text-slate-900">{cvTemplates.find(t => String(t.id) === selectedTemplate)?.name || "Please select a template"}</p>
-                 </div>
-                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <Button variant="outline" className="flex-1 sm:flex-none h-11 px-6 rounded-xl" onClick={() => setShowTemplateOverlay(false)}>Cancel</Button>
-                    <Button 
-                      variant="hero" 
-                      className="flex-1 sm:flex-none h-11 px-8 rounded-xl shadow-xl shadow-primary/20" 
-                      disabled={!selectedTemplate || isGenerating}
-                      onClick={() => selectedTemplate && handleGenerateResume(selectedTemplate)}
-                    >
-                       {isGenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                       {isGenerating ? "Analyzing JD & Generating..." : "Generate My CV"}
-                    </Button>
-                 </div>
+              <div className="mt-12 flex flex-col items-center justify-center gap-4">
+                <Button
+                  variant="hero"
+                  className="min-w-[280px] h-12 rounded-2xl text-xs font-black uppercase tracking-[2px] shadow-xl shadow-primary/20 disabled:opacity-50 transition-all active:scale-95"
+                  onClick={() => selectedTemplate && handleGenerateResume(selectedTemplate)}
+                  disabled={!selectedTemplate || isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Crafting your Resume...
+                    </>
+                  ) : (
+                    <>Generate My CV</>
+                  )}
+                </Button>
+                {selectedTemplate && (
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2">
+                    Selected: {cvTemplates.find(t => String(t.id) === selectedTemplate)?.name || selectedTemplate}
+                  </p>
+                )}
               </div>
-           </div>
+            </div>
+
+            <div className="px-8 py-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-0.5">Selected Style</p>
+                <p className="text-sm font-bold text-slate-900">{cvTemplates.find(t => String(t.id) === selectedTemplate)?.name || "Please select a template"}</p>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Button variant="outline" className="flex-1 sm:flex-none h-11 px-6 rounded-xl" onClick={() => setShowTemplateOverlay(false)}>Cancel</Button>
+                <Button
+                  variant="hero"
+                  className="flex-1 sm:flex-none h-11 px-8 rounded-xl shadow-xl shadow-primary/20"
+                  disabled={!selectedTemplate || isGenerating}
+                  onClick={() => selectedTemplate && handleGenerateResume(selectedTemplate)}
+                >
+                  {isGenerating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                  {isGenerating ? "Analyzing JD & Generating..." : "Generate My CV"}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
       {/* Resume Preview Overlay */}
       {showResumePreview && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-           <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] animate-in zoom-in-95 duration-300">
-              <div className="px-8 py-4 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
-                 <div>
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                       <FileText className="w-5 h-5 text-primary" /> 
-                       Resume Preview
-                    </h2>
-                 </div>
-                 <button onClick={() => setShowResumePreview(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                    <X className="w-6 h-6 text-slate-400" />
-                 </button>
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] animate-in zoom-in-95 duration-300">
+            <div className="px-8 py-4 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Resume Preview
+                </h2>
               </div>
+              <button onClick={() => setShowResumePreview(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                <X className="w-6 h-6 text-slate-400" />
+              </button>
+            </div>
 
-              <div className="flex-1 overflow-hidden bg-slate-100 relative">
-                 {previewUrl ? (
-                   <iframe 
-                     src={`/api/files/preview?url=${encodeURIComponent(previewUrl)}#toolbar=0`} 
-                     className="w-full h-full border-none"
-                     title="Resume Content"
-                   />
-                 ) : (
-                   <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
-                      <Loader2 className="w-8 h-8 animate-spin" />
-                      <p className="font-bold text-sm">Loading document...</p>
-                   </div>
-                 )}
-              </div>
+            <div className="flex-1 overflow-hidden bg-slate-100 relative">
+              {previewUrl ? (
+                <iframe
+                  src={`/api/files/preview?url=${encodeURIComponent(previewUrl)}#toolbar=0`}
+                  className="w-full h-full border-none"
+                  title="Resume Content"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <p className="font-bold text-sm">Loading document...</p>
+                </div>
+              )}
+            </div>
 
-              <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                 <Button className="rounded-xl px-8" onClick={() => setShowResumePreview(false)}>
-                    Close Preview
-                 </Button>
-              </div>
-           </div>
+            <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+              <Button className="rounded-xl px-8" onClick={() => setShowResumePreview(false)}>
+                Close Preview
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

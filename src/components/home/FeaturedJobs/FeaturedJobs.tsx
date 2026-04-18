@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import JobCard from "@/shared/cards/JobCard/JobCard";
@@ -9,6 +9,33 @@ import { FeaturedJobsProps } from "@/types/components";
 
 export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
   const jobsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (jobsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = jobsRef.current;
+      // Use a larger threshold for mobile sub-pixel issues
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    // Extensive check sequence to ensure layout is settled
+    checkScroll();
+    const t1 = setTimeout(checkScroll, 100);
+    const t2 = setTimeout(checkScroll, 500);
+    const t3 = setTimeout(checkScroll, 1000);
+    
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      window.removeEventListener('resize', checkScroll);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [jobs]);
 
   if (!jobs || !Array.isArray(jobs) || jobs.length === 0) return null;
 
@@ -45,28 +72,45 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
         </div>
         
         <div className="relative group/carousel">
-          {/* Side Navigation Buttons - Higher placement to avoid buttons */}
+          {/* Side Navigation Buttons */}
           <button 
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
               if (jobsRef.current) jobsRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+              setTimeout(checkScroll, 500);
             }}
-            className="absolute left-5 md:-left-4 top-[35%] -translate-y-1/2 z-50 h-9 w-9 md:h-12 md:w-12 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
+            disabled={jobs.length <= 1}
+            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
+              canScrollLeft 
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+                : "bg-white border-slate-200 text-slate-400 opacity-60"
+            }`}
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
           </button>
           
           <button 
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
               if (jobsRef.current) jobsRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+              setTimeout(checkScroll, 500);
             }}
-            className="absolute right-5 md:-right-4 top-[35%] -translate-y-1/2 z-50 h-9 w-9 md:h-12 md:w-12 rounded-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-100 text-[#1e3a8a] flex items-center justify-center active:scale-90 transition-all"
+            disabled={jobs.length <= 1}
+            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
+              canScrollRight 
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+                : "bg-white border-slate-200 text-slate-400 opacity-60"
+            }`}
           >
-            <ChevronRight className="h-6 w-6" />
+            <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
           </button>
 
           <div 
             ref={jobsRef} 
-            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8 px-4 md:px-12" 
+            onScroll={checkScroll}
+            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8 px-4 md:px-12 snap-x snap-mandatory" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {jobs.map((job) => {
@@ -74,7 +118,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               const companyLogo = job.employer?.company_logo || "";
 
               return (
-                <div key={job.id} className="w-[280px] md:w-[380px] shrink-0">
+                <div key={job.id} className="w-[280px] md:w-[380px] shrink-0 snap-start">
                   <JobCard
                     id={job.id}
                     title={job.title}

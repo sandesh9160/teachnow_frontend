@@ -134,26 +134,11 @@ export default function QuickAuthModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-3 sm:pt-3 scrollbar-hide">
-          <div className="flex bg-slate-100/80 p-1 rounded-xl mb-4 border border-slate-200/60 relative">
-            <div 
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm border border-slate-100 transition-all duration-300 ease-in-out ${role === "employer" ? "translate-x-full" : "translate-x-0"}`}
-            />
-            <button 
-              type="button"
-              onClick={() => setRole("job_seeker")}
-              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold transition-colors duration-200 ${role === "job_seeker" ? "text-primary" : "text-slate-500 hover:text-slate-700"}`}
-            >
+          <div className="flex bg-slate-100/80 p-1 rounded-xl mb-4 border border-slate-200/60">
+            <div className="flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold text-primary bg-white rounded-lg shadow-sm border border-slate-100">
               <User className="h-3.5 w-3.5" />
-              Job Seeker
-            </button>
-            <button 
-              type="button"
-              onClick={() => setRole("employer")}
-              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold transition-colors duration-200 ${role === "employer" ? "text-primary" : "text-slate-500 hover:text-slate-700"}`}
-            >
-              <Building2 className="h-3.5 w-3.5" />
-              Employer
-            </button>
+               Login
+            </div>
           </div>
 
           <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-2">
