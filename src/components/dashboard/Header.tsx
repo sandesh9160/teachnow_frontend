@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { User, LogOut, ChevronDown, Menu, Building2, GraduationCap } from "lucide-react";
+import { LogOut, ChevronDown, Menu, GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import { normalizeMediaUrl } from "@/services/api/client";

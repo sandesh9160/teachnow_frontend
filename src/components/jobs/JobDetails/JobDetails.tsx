@@ -4,17 +4,11 @@ import Link from "next/link";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import {
   Bookmark,
-  Briefcase,
-  ChevronRight,
-  Clock3,
-  GraduationCap,
   MapPin,
   Share2,
   TrendingUp,
   Globe,
-
   Building2,
-  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
@@ -80,9 +74,9 @@ function formatPostedDate(date?: string): string {
 
 export default function JobDetails({ job, slug }: JobDetailsProps) {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState("description");
+  // const [activeTab, setActiveTab] = useState("description");
   const { isLoggedIn, user } = useClientSession();
-  const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
+  const { bookmarks, fetchBookmarks, toggleBookmark } = useBookmarks();
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -145,12 +139,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
     { label: title, isCurrent: true },
   ];
 
-  const tabs = [
-    { id: "description", label: "Description" },
-    { id: "responsibilities", label: "Responsibilities" },
-    { id: "requirements", label: "Requirements" },
-    { id: "benefits", label: "Benefits" },
-  ];
+
 
   const similarJobs = Array.isArray(job.similar_jobs) ? job.similar_jobs : [];
 
@@ -276,76 +265,40 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               </div>
             </section>
 
-            {/* Content Tabs Section */}
-            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-              <div className="flex border-b border-slate-100 overflow-x-auto no-scrollbar scroll-smooth">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "px-6 sm:px-8 py-4 sm:py-5 text-[13px] sm:text-[14px] font-bold transition-all whitespace-nowrap border-b-2",
-                      activeTab === tab.id 
-                        ? "border-[#2e3fc7] text-[#2e3fc7]" 
-                        : "border-transparent text-slate-500 hover:text-slate-900"
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="p-6 sm:p-8 min-h-[300px] sm:min-h-[400px]">
-                {activeTab === "description" && (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <h2 className="text-lg sm:text-xl font-bold text-[#111827] mb-4 sm:mb-6">About This Role</h2>
-                    <div 
-                      className="text-[14px] sm:text-[15px] leading-relaxed text-slate-600 font-medium space-y-4"
-                      dangerouslySetInnerHTML={{ __html: job.description || "No description provided." }}
-                    />
-                  </div>
-                )}
-
-                {(activeTab === "responsibilities" || activeTab === "requirements" || activeTab === "benefits") && (
-                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                     <h2 className="text-lg sm:text-xl font-bold text-[#111827] mb-4 sm:mb-6">
-                        {activeTab === "responsibilities" ? "Key Responsibilities" : 
-                         activeTab === "requirements" ? "Requirements & Qualifications" : "Benefits & Perks"}
-                     </h2>
-                     <ul className="space-y-3.5 sm:space-y-4">
-                        {(activeTab === "responsibilities" ? (
-                          (job as any).responsibilities ? (Array.isArray((job as any).responsibilities) ? (job as any).responsibilities : [(job as any).responsibilities]) : [
-                            "Deliver engaging physics lectures for Intermediate students",
-                            "Prepare study materials and practice problem sets",
-                            "Conduct regular tests and analyze student performance",
-                            "Guide students in IIT-JEE preparation",
-                            "Stay updated with the latest exam patterns"
-                          ]
-                        ) : activeTab === "requirements" ? (
-                          (job as any).requirements ? (Array.isArray((job as any).requirements) ? (job as any).requirements : [(job as any).requirements]) : [
-                            "M.Sc. in Physics from a reputed university",
-                            "3+ years of experience in IIT-JEE coaching or teaching",
-                            "Strong problem-solving and analytical skills",
-                            "Ability to simplify complex concepts for students"
-                          ]
-                        ) : (
-                          (job as any).benefits ? (Array.isArray((job as any).benefits) ? (job as any).benefits : [(job as any).benefits]) : [
-                            "Performance-based incentives",
-                            "Health insurance",
-                            "Annual bonus",
-                            "Transport facility"
-                          ]
-                        )).map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-2.5 sm:gap-3 text-[13px] sm:text-[14px] text-slate-600 font-medium leading-relaxed">
-                            <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 shrink-0 mt-0.5" />
-                            {item}
-                          </li>
-                        ))}
-                     </ul>
-                   </div>
-                )}
+            {/* Job Description Section */}
+            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+              <div className="p-6 sm:p-10 min-h-[400px]">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-8 border-b border-slate-50 pb-5">Job Description</h2>
+                <div 
+                  className="jd-rich-text text-slate-700 text-[15px] sm:text-[16px] leading-[1.8] font-normal"
+                  style={{
+                    fontFamily: 'inherit',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: job.description || "<p>No description provided.</p>" }}
+                />
               </div>
             </section>
+            
+            <style jsx global>{`
+              .jd-rich-text h1, .jd-rich-text h2, .jd-rich-text h3 {
+                color: #111827;
+                font-weight: 700;
+                margin-top: 1.5rem;
+                margin-bottom: 0.75rem;
+              }
+              .jd-rich-text h1 { font-size: 1.5rem; }
+              .jd-rich-text h2 { font-size: 1.25rem; }
+              .jd-rich-text h3 { font-size: 1.1rem; }
+              .jd-rich-text ul, .jd-rich-text ol {
+                 padding-left: 1.5rem;
+                 margin-bottom: 1rem;
+              }
+              .jd-rich-text ul { list-style-type: disc; }
+              .jd-rich-text ol { list-style-type: decimal; }
+              .jd-rich-text li { margin-bottom: 0.5rem; }
+              .jd-rich-text p { margin-bottom: 1rem; }
+              .jd-rich-text strong { color: #111827; font-weight: 700; }
+            `}</style>
 
             {/* Similar Jobs Section */}
             {similarJobs.length > 0 && (

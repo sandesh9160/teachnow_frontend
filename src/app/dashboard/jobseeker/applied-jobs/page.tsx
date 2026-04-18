@@ -81,10 +81,10 @@ export default function AppliedJobsPage() {
     if (s === 'under review' || s === 'reviewing' || s === 'accepted') 
       return "bg-[#EEF2FF] text-[#4F46E5]";
     if (s === 'applied' || s === 'pending') 
-      return "bg-[#F1F5F9] text-[#64748B]";
+      return "bg-[#F1F5F9] text-[#1E293B]";
     if (s === 'rejected' || s === 'declined') 
       return "bg-[#FEF2F2] text-[#DC2626]";
-    return "bg-[#F1F5F9] text-[#64748B]";
+    return "bg-[#F1F5F9] text-[#1E293B]";
   };
 
   const stats = {
@@ -99,7 +99,7 @@ export default function AppliedJobsPage() {
       {/* Page Header - Compact */}
       <div className="space-y-0">
         <h1 className="text-[22px] font-bold text-[#0F172A] tracking-tight">My Applications</h1>
-        <p className="text-[12px] text-slate-400 font-medium">Manage your progress</p>
+        <p className="text-[12px] text-[#0F172A] opacity-70 font-medium">Manage your progress</p>
       </div>
 
       {/* Stats row - Ultra Compact */}
@@ -112,7 +112,7 @@ export default function AppliedJobsPage() {
         ].map((s, idx) => (
           <div key={idx} className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm flex flex-col items-center justify-center text-center">
             <span className="text-lg font-bold text-[#0F172A] leading-tight">{s.value}</span>
-            <span className="text-[10px] font-semibold text-slate-400 capitalize">{s.label}</span>
+            <span className="text-[10px] font-semibold text-[#0F172A] opacity-60 capitalize">{s.label}</span>
           </div>
         ))}
       </div>
@@ -146,7 +146,7 @@ export default function AppliedJobsPage() {
 
                       <div className="min-w-0">
                         <h3 className="text-[13px] font-bold text-[#0F172A] truncate leading-none mb-1">{app.job?.title || "Position Title"}</h3>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-slate-400">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[#0F172A] opacity-70">
                           <div className="flex items-center gap-1 min-w-0">
                             <Building2 className="w-2.5 h-2.5 shrink-0 opacity-40" />
                             <span className="text-[10.5px] font-medium truncate">{app.job?.employer?.company_name || app.company_name || "Enterprise"}</span>
@@ -200,7 +200,7 @@ export default function AppliedJobsPage() {
                     ? "bg-[#0046B5] text-white shadow-md shadow-blue-900/10" 
                     : !link.url 
                     ? "text-slate-300 cursor-not-allowed" 
-                    : "bg-white border border-slate-100 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    : "bg-white border border-slate-100 text-slate-900 hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
                   {decodeLabel(link.label)}
@@ -215,7 +215,7 @@ export default function AppliedJobsPage() {
             <Briefcase className="w-7 h-7 text-slate-300" />
           </div>
           <h3 className="text-base font-bold text-[#0F172A] mb-1">No applications yet</h3>
-          <p className="text-[11px] text-slate-500 max-w-xs mx-auto mb-6 font-medium leading-relaxed">
+          <p className="text-[11px] text-[#0F172A] opacity-70 max-w-xs mx-auto mb-6 font-medium leading-relaxed">
             Ready for your next step? Start browsing jobs.
           </p>
           <Link href="/jobs">

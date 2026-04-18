@@ -120,11 +120,25 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
         //console.log(`[API] Success ${method} ${endpoint}`, res.data);
         return res.data;
     } catch (error: any) {
+        const status = error?.response?.status;
         const finalError = {
             message: error?.response?.data?.message || error?.message || "Request failed",
-            status: error?.response?.status,
+            status,
             data: error?.response?.data,
         };
+
+        if (status === 401) {
+            if (typeof window !== "undefined") {
+              // We use a custom event or just direct redirect to avoid multiple toasts
+              // if multiple requests fail at once.
+              if (!(window as any)._isRedirectingToLogin) {
+                  (window as any)._isRedirectingToLogin = true;
+                  // Use a small delay to allow toast to be visible if we were using a toast here
+                  // but we can also just redirect and handle toast in login page or via URL param
+                  window.location.href = "/auth/login?session_expired=1";
+              }
+            }
+        }
 
         if (!silentCodes.includes(finalError?.status)) {
             //console.error("fetchAPI error:", finalError);

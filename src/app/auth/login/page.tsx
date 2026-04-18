@@ -20,20 +20,31 @@ function LoginContent() {
   const redirectMessage = searchParams?.get("message");
   // const { replace } = require("next/navigation"); // Inline for safety in client component or use hook
 
-  // Show redirect message as toast if present
+  // Show redirect message or session expired as toast if present
   useState(() => {
-    if (typeof window !== "undefined" && redirectMessage) {
-      setTimeout(() => {
-        toast.error(redirectMessage, {
-          description: "Please sign in to continue your session.",
-          duration: 5000,
-        });
-        
-        // Clean URL to remove message param
-        const url = new URL(window.location.href);
-        url.searchParams.delete("message");
-        window.history.replaceState({}, "", url.toString());
-      }, 100);
+    if (typeof window !== "undefined") {
+      const isSessionExpired = searchParams?.get("session_expired");
+      if (isSessionExpired || redirectMessage) {
+        setTimeout(() => {
+          if (isSessionExpired) {
+            toast.error("Session expired. Please login again.", {
+              description: "Your session has timed out due to inactivity.",
+              duration: 5000,
+            });
+          } else if (redirectMessage) {
+            toast.error(redirectMessage, {
+              description: "Please sign in to continue your session.",
+              duration: 5000,
+            });
+          }
+          
+          // Clean URL to remove params
+          const url = new URL(window.location.href);
+          url.searchParams.delete("message");
+          url.searchParams.delete("session_expired");
+          window.history.replaceState({}, "", url.toString());
+        }, 100);
+      }
     }
     return null;
   });

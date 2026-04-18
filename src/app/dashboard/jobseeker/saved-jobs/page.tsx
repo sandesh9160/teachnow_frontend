@@ -39,7 +39,7 @@ export default function SavedJobsPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-[28px] font-bold text-[#0F172A] tracking-tight leading-none">Saved Jobs</h1>
-          <p className="text-[13px] text-slate-500 font-medium">Your collection of opportunities</p>
+          <p className="text-[13px] text-[#0F172A] opacity-70 font-medium">Your collection of opportunities</p>
         </div>
         <div className="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-[12px] font-bold border border-blue-100/50">
           {bookmarks.length} Total Saved
@@ -105,7 +105,7 @@ export default function SavedJobsPage() {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic animate-pulse">Syncing Collection...</p>
         </div>
       ) : filteredBookmarks.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBookmarks.map((job: any) => (
             <JobCard
               key={job.id}
@@ -129,7 +129,7 @@ export default function SavedJobsPage() {
             <BookmarkX className="w-8 h-8 text-slate-300" />
           </div>
           <h3 className="text-lg font-bold text-[#0F172A] mb-1">No matches found</h3>
-          <p className="text-[11px] text-slate-500 max-w-xs mb-8 font-medium leading-relaxed">
+          <p className="text-[11px] text-[#0F172A] opacity-70 max-w-xs mb-8 font-medium leading-relaxed">
             Try adjusting your search or filters to find what you&apos;re looking for.
           </p>
           <button 

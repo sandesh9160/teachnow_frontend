@@ -7,37 +7,33 @@ import { useEducation } from "@/hooks/useEducation";
 import { useExperience } from "@/hooks/useExperience";
 import type { EducationPayload, EducationRecord } from "@/types/education";
 import type { ExperiencePayload, ExperienceRecord } from "@/types/experience";
-import { Loader2, User, Mail, Phone, MapPin, Briefcase, GraduationCap, Plus, Camera, XCircle, ShieldCheck, Trash2, Edit2, Calendar, Globe, Clock, Tag, CheckSquare, Square, X, ChevronRight } from "lucide-react";
+import { 
+  Loader2, Mail, MapPin, Briefcase, GraduationCap, 
+   Camera, Trash2, Edit2, CheckSquare, Square, 
+  X, BookOpen, Award, UserCircle, 
+  Globe, Languages, Search
+} from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
 import { toast } from "sonner";
 import { DatePicker } from "@/shared/ui/DatePicker/DatePicker";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isAfter } from "date-fns";
 
-function toEducationPayload(form: {
-  institution: string;
-  degree: string;
-  field_of_study: string;
-  start_date: string;
-  end_date: string;
-  grade: string;
-  description: string;
-}): EducationPayload {
+function toEducationPayload(form: any): EducationPayload {
   return {
     degree: form.degree,
     institution: form.institution,
-    field_of_study: form.field_of_study,
-    start_year: form.start_date?.slice(0, 4) ?? "",
-    end_year: form.end_date?.slice(0, 4) ?? "",
+    field_of_study: form.field_of_study ?? "",
+    start_year: form.start_date ? String(new Date(form.start_date).getFullYear()) : "",
+    end_year: form.end_date ? String(new Date(form.end_date).getFullYear()) : "",
     grade: form.grade?.trim() ?? "",
-    description: form.description,
+    description: form.description ?? "",
   };
 }
 
 function recordToFormDates(edu: EducationRecord) {
-  const start =
-    edu.start_date ?? (edu.start_year ? `${String(edu.start_year).slice(0, 4)}-01-01` : "");
+  const start = edu.start_date ?? (edu.start_year ? `${String(edu.start_year).slice(0, 4)}-01-01` : "");
   const end = edu.end_date ?? (edu.end_year ? `${String(edu.end_year).slice(0, 4)}-01-01` : "");
   return { start_date: start, end_date: end };
 }
@@ -46,16 +42,16 @@ function toExperiencePayload(form: any): ExperiencePayload {
   return {
     job_title: form.job_title,
     company_name: form.company_name,
-    location: form.location,
+    location: form.location ?? "",
     start_date: form.start_date,
     end_date: form.is_current ? undefined : form.end_date,
     is_current: form.is_current ? 1 : 0,
-    description: form.description,
+    description: form.description ?? "",
   };
 }
 
 function mapServerProfile(initial: Record<string, any>) {
-  const data = initial.data || initial;
+  const data = initial?.data || initial || {};
   return {
     name: String(data.user?.name || data.name || data.full_name || ""),
     email: String(data.user?.email || data.email || ""),
@@ -68,7 +64,16 @@ function mapServerProfile(initial: Record<string, any>) {
     dob: data.dob ? String(data.dob).split("T")[0] : "",
     portfolio_website: String(data.portfolio_website || ""),
     profile_photo: String(data.profile_photo || ""),
-    skills: Array.isArray(data.skills) ? data.skills.map((s: any) => s.id || s) : [],
+    gender: String(data.gender || ""),
+    open_to_work: String(data.open_to_work || "Actively Looking"),
+    notice_period: String(data.notice_period || ""),
+    expected_salary: String(data.expected_salary || ""),
+    preferred_location: String(data.preferred_location || ""),
+    teaching_mode: String(data.teaching_mode || ""),
+    skills: Array.isArray(data.skills) ? data.skills : [],
+    subjects: Array.isArray(data.subjects) ? data.subjects : [],
+    certifications: Array.isArray(data.certifications) ? data.certifications : [],
+    languages: Array.isArray(data.languages) ? data.languages : [],
   };
 }
 
@@ -80,11 +85,10 @@ export default function ProfileFormClient({
   isNewProfile?: boolean;
 }) {
   const router = useRouter();
-  const { getProfile, updateProfile, createProfile } = useProfile();
+  const { updateProfile, createProfile } = useProfile();
   const {
     data: education,
-    loading: eduLoading,
-    error: eduError,
+    // loading: eduLoading,
     createEducation,
     updateEducation,
     deleteEducation,
@@ -92,16 +96,15 @@ export default function ProfileFormClient({
 
   const {
     data: experiences,
-    loading: expLoading,
-    error: expError,
+    // loading: expLoading,
     createExperience,
     updateExperience,
     deleteExperience,
   } = useExperience();
 
-  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"view" | "edit">(isNewProfile ? "edit" : "view");
   const [saving, setSaving] = useState(false);
-  const [isNew, setIsNew] = useState(isNewProfile);
+  const [isNew] = useState(isNewProfile);
 
   const [showEduForm, setShowEduForm] = useState(false);
   const [editingEduId, setEditingEduId] = useState<number | string | null>(null);
@@ -110,40 +113,17 @@ export default function ProfileFormClient({
   const [editingExpId, setEditingExpId] = useState<number | string | null>(null);
 
   const [profileData, setProfileData] = useState(() => mapServerProfile(initialResponse));
-  const [availableSkills, setAvailableSkills] = useState<any[]>(
+  const [availableSkills] = useState<any[]>(
     Array.isArray(initialResponse.skills) ? (initialResponse.skills as any[]) : []
   );
 
-  // If initialResponse.skills contains the user's skills (not just suggestions), 
-  // ensure they are in profileData.skills
-  useEffect(() => {
-    const skills = (initialResponse as any).skills;
-    if (Array.isArray(skills) && skills.length > 0) {
-      setProfileData(prev => ({
-        ...prev,
-        skills: skills.map((s: any) => s.id || s)
-      }));
-    }
-  }, [initialResponse]);
-
   const [eduFormData, setEduFormData] = useState({
-    institution: "",
-    degree: "",
-    field_of_study: "",
-    start_date: "",
-    end_date: "",
-    grade: "",
-    description: "",
+    institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "",
+    grade_type: "Percentage" as "Percentage" | "CGPA"
   });
 
   const [expFormData, setExpFormData] = useState({
-    job_title: "",
-    company_name: "",
-    location: "",
-    start_date: "",
-    end_date: "",
-    is_current: false,
-    description: "",
+    job_title: "", company_name: "", location: "", start_date: "", end_date: "", is_current: false, description: ""
   });
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -151,6 +131,10 @@ export default function ProfileFormClient({
 
   const [localEduList, setLocalEduList] = useState<EducationRecord[]>([]);
   const [localExpList, setLocalExpList] = useState<ExperienceRecord[]>([]);
+
+  const [skillInput, setSkillInput] = useState("");
+  const [langInput, setLangInput] = useState("");
+  const [certInput, setCertInput] = useState("");
 
   useEffect(() => {
     if (education) setLocalEduList(education);
@@ -164,12 +148,11 @@ export default function ProfileFormClient({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        toast.error("File is too large. Please select an image under 2MB.");
+        toast.error("File is too large. Under 2MB required.");
         return;
       }
       setPhotoFile(file);
       setPhotoPreview(URL.createObjectURL(file));
-      toast.info("Profile photo updated locally. Click 'Update Profile' to save.");
     }
   };
 
@@ -180,135 +163,55 @@ export default function ProfileFormClient({
     return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
   };
 
-  const [skillInput, setSkillInput] = useState("");
-  const [skillSuggestions, setSkillSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isSearchingSkills, setIsSearchingSkills] = useState(false);
+  const handleAddCustomSkill = () => {
+    const val = skillInput.trim();
+    if (!val) return;
+    if (!profileData.skills.includes(val)) {
+      setProfileData(prev => ({ ...prev, skills: [...prev.skills, val] }));
+    }
+    setSkillInput("");
+  };
 
-  // Debounced skills search
-  useEffect(() => {
-    if (!skillInput.trim()) {
-      setSkillSuggestions([]);
-      setShowSuggestions(false);
+  const handleAddLanguage = () => {
+    const val = langInput.trim();
+    if (!val) return;
+    if (!profileData.languages.includes(val)) {
+      setProfileData(prev => ({ ...prev, languages: [...prev.languages, val] }));
+    }
+    setLangInput("");
+  };
+
+  const handleAddCertification = () => {
+    const val = certInput.trim();
+    if (!val) return;
+    if (!profileData.certifications.includes(val)) {
+      setProfileData(prev => ({ ...prev, certifications: [...prev.certifications, val] }));
+    }
+    setCertInput("");
+  };
+
+  const handleEduSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eduFormData.institution.trim()) {
+      toast.error("Institution name is required");
+      return;
+    }
+    if (!eduFormData.degree.trim()) {
+      toast.error("Degree is required");
+      return;
+    }
+    if (!eduFormData.start_date) {
+      toast.error("Start date is required");
+      return;
+    }
+    if (eduFormData.end_date && isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
+      toast.error("End date cannot be before start date");
       return;
     }
 
-    const timer = setTimeout(async () => {
-      try {
-        setIsSearchingSkills(true);
-        const { fetchAPI } = await import("@/services/api/client");
-        const res = await fetchAPI<any>(`/open/skills/search?q=${encodeURIComponent(skillInput)}`).catch(() => null);
-        
-        const term = skillInput.toLowerCase().trim();
-        
-        if (res?.data && Array.isArray(res.data)) {
-          const apiResults = res.data;
-          const localMatches = availableSkills.filter(s => 
-            s.name.toLowerCase().startsWith(term) &&
-            !apiResults.some((apiS: any) => apiS.name.toLowerCase() === s.name.toLowerCase())
-          );
-          
-          const combined = [...apiResults, ...localMatches].sort((a, b) => 
-            a.name.localeCompare(b.name)
-          );
-
-          setSkillSuggestions(combined.slice(0, 10));
-        } else {
-          const filtered = availableSkills
-            .filter(s => s.name.toLowerCase().startsWith(term))
-            .sort((a, b) => a.name.localeCompare(b.name));
-          setSkillSuggestions(filtered.slice(0, 10));
-        }
-        setShowSuggestions(true);
-      } catch (err) {
-        const filtered = availableSkills.filter(s => 
-          s.name.toLowerCase().includes(skillInput.toLowerCase())
-        );
-        setSkillSuggestions(filtered.slice(0, 10));
-        setShowSuggestions(true);
-      } finally {
-        setIsSearchingSkills(false);
-      }
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [skillInput, availableSkills]);
-  useEffect(() => {
-    let cancelled = false;
-    async function loadData() {
-      try {
-        setLoading(true);
-        const res = await getProfile();
-        if (cancelled) return;
-
-        if (res?.data) {
-          setProfileData(mapServerProfile(res));
-          // If the server returns user skills at top level, sync them
-          if (Array.isArray(res.skills)) {
-            setAvailableSkills(res.skills);
-            setProfileData(prev => ({
-              ...prev,
-              skills: res.skills.map((s: any) => s.id || s)
-            }));
-          }
-        }
-      } catch {
-        /* fallback to initialProfile */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    void loadData();
-    return () => { cancelled = true; };
-  }, [getProfile]);
-
-  const toggleSkill = (id: number | string) => {
-    setProfileData((prev: any) => {
-      const skills = Array.isArray(prev.skills) ? prev.skills : [];
-      const targetId = String(id).toLowerCase().trim();
-
-      const isSelected = skills.some((s: any) =>
-        String(s.id || s).toLowerCase().trim() === targetId
-      );
-
-      const newSkills = isSelected
-        ? skills.filter((s: any) => String(s.id || s).toLowerCase().trim() !== targetId)
-        : [...skills, id];
-
-      return { ...prev, skills: newSkills };
-    });
-  };
-
-  const handleAddCustomSkill = (e?: React.FormEvent, customVal?: string) => {
-    e?.preventDefault();
-    const val = customVal || skillInput.trim();
-    if (!val) return;
-
-    // Check if already exists in selected skills
-    const exists = profileData.skills.some((s: any) =>
-      String(s.name || s).toLowerCase().trim() === val.toLowerCase().trim()
-    );
-
-    if (!exists) {
-      setProfileData(prev => ({
-        ...prev,
-        skills: [...prev.skills, val]
-      }));
-
-      // Also add to availableSkills locally so it shows up in the grid
-      const inAvailable = availableSkills.some(s => s.name.toLowerCase() === val.toLowerCase());
-      if (!inAvailable) {
-        setAvailableSkills(prev => [...prev, { id: val, name: val, is_custom: 1 }]);
-      }
-    }
-    setSkillInput("");
-    setShowSuggestions(false);
-  };
-
-  const handleEduSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     const newRecord = {
       ...eduFormData,
+      grade: `${eduFormData.grade_type}: ${eduFormData.grade}`,
       id: editingEduId || `new_${Date.now()}`,
       is_new: !editingEduId,
       is_dirty: true
@@ -319,20 +222,23 @@ export default function ProfileFormClient({
     } else {
       setLocalEduList(prev => [...prev, { ...newRecord, is_new: true }]);
     }
-    setEduFormData({ institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "" });
+    setEduFormData({ institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "", grade_type: "Percentage" });
     setShowEduForm(false);
     setEditingEduId(null);
   };
 
   const handleEduEdit = (edu: EducationRecord) => {
     const { start_date, end_date } = recordToFormDates(edu);
+    const rawGrade = edu.grade ?? "";
+    const isCGPA = rawGrade.toLowerCase().includes("cgpa");
     setEduFormData({
       institution: edu.institution ?? "",
       degree: edu.degree ?? "",
       field_of_study: edu.field_of_study ?? "",
       start_date,
       end_date,
-      grade: edu.grade ?? "",
+      grade: rawGrade.replace(/Percentage:|CGPA:/i, "").trim(),
+      grade_type: isCGPA ? "CGPA" : "Percentage",
       description: edu.description ?? "",
     });
     setEditingEduId(edu.id);
@@ -340,19 +246,28 @@ export default function ProfileFormClient({
   };
 
   const handleEduDelete = (id: number | string) => {
-    toast("Remove this education entry?", {
-      action: {
-        label: "Remove",
-        onClick: () => {
-          setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
-          toast.success("Education marked for removal. Save profile to confirm.");
-        }
-      }
-    });
+    setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
   };
 
-  const handleExpSubmit = async (e: React.FormEvent) => {
+  const handleExpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!expFormData.job_title.trim()) {
+      toast.error("Job title is required");
+      return;
+    }
+    if (!expFormData.company_name.trim()) {
+      toast.error("Organization name is required");
+      return;
+    }
+    if (!expFormData.start_date) {
+      toast.error("Start date is required");
+      return;
+    }
+    if (!expFormData.is_current && expFormData.end_date && isAfter(parseISO(expFormData.start_date), parseISO(expFormData.end_date))) {
+      toast.error("End date cannot be before start date");
+      return;
+    }
+
     const newRecord = {
       ...expFormData,
       id: editingExpId || `new_${Date.now()}`,
@@ -385,802 +300,644 @@ export default function ProfileFormClient({
   };
 
   const handleExpDelete = (id: number | string) => {
-    toast("Remove this experience entry?", {
-      action: {
-        label: "Remove",
-        onClick: () => {
-          setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
-          toast.success("Experience marked for removal. Save profile to confirm.");
-        }
-      }
-    });
+    setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleSubmit = async () => {
+    if (!profileData.name.trim()) {
+      toast.error("Full name is required");
+      return;
+    }
+    if (!profileData.title.trim()) {
+      toast.error("Professional title is required");
+      return;
+    }
+    if (!profileData.location.trim()) {
+      toast.error("Location is required");
+      return;
+    }
+    if (!profileData.bio.trim()) {
+      toast.error("Bio is required");
+      return;
+    }
+    if (profileData.bio.trim().length < 50) {
+      toast.error("Bio should be at least 50 characters");
+      return;
+    }
+
     try {
       setSaving(true);
-      
-      const skillNames = profileData.skills.map((skillIdOrName: any) => {
+      console.log("[ProfileDebug] Starting submission...");
+      console.log("[ProfileDebug] Current Profile Data:", profileData);
+      console.log("[ProfileDebug] Skills to map:", profileData.skills);
+
+      const skillNames = (profileData.skills || []).map((skillIdOrName: any) => {
         const skill = availableSkills.find(s => String(s.id) === String(skillIdOrName));
         return skill ? skill.name : skillIdOrName;
       });
+      console.log("[ProfileDebug] Mapped Skill Names:", skillNames);
 
-      // 1. Sync Profile FIRST (required if it's a new user, otherwise edu/exp will fail)
       let profileResult: any;
       if (photoFile) {
+        console.log("[ProfileDebug] Uploading with photo...");
         const { uploadFile } = await import("@/actions/FileUpload");
         const formData = new FormData();
-        if (!isNew) {
-          formData.append("_method", "PUT");
-        }
+        if (!isNew) formData.append("_method", "PUT");
+        
         Object.entries(profileData).forEach(([key, value]) => {
-          if (key === 'skills') {
-            skillNames.forEach((name: any) => formData.append("skills[]", String(name)));
-          } else if (key !== 'profile_photo' && key !== 'skills' && key !== 'email') {
+          if (key === 'skills' || key === 'subjects' || key === 'certifications' || key === 'languages') {
+            const list = (value as any[] || []);
+            console.log(`[ProfileDebug] Appending list ${key}:`, list);
+            list.forEach(v => formData.append(`${key}[]`, typeof v === 'string' ? v : v.name));
+          } else if (key !== 'profile_photo' && key !== 'email') {
             formData.append(key, value !== null && value !== undefined ? String(value) : "");
             if (key === 'title') formData.append('job_title', String(value));
           }
         });
         formData.append("profile_photo", photoFile);
-        formData.append("profile_image", photoFile);
         profileResult = await uploadFile("jobseeker/profile", { method: "POST", data: formData });
       } else {
-        // Exclude internal/read-only fields from the update payload
         const { email, profile_photo, ...safeData } = profileData;
-        const payload = { 
-          ...safeData, 
-          job_title: safeData.title, // Alias for backend compatibility
-          skills: skillNames 
-        };
-        profileResult = isNew 
-          ? await createProfile(payload)
-          : await updateProfile(payload);
+        const payload = { ...safeData, job_title: safeData.title, skills: skillNames };
+        console.log("[ProfileDebug] Submitting JSON payload:", payload);
+        profileResult = isNew ? await createProfile(payload) : await updateProfile(payload);
       }
 
-      // Check if profile sync failed
+      console.log("[ProfileDebug] Primary Profile Update Result:", profileResult);
+
       if (profileResult?.status === false) {
-        toast.error(profileResult.message || profileResult.error || "Profile update failed");
-        return; // Abort saving edu/exp if profile failed
+        toast.error(profileResult.message || "Update failed");
+        return;
       }
 
-      // If successful, show success toast from backend message if available
-      toast.success(profileResult.message || (isNew ? "Profile created successfully!" : "Profile updated successfully!"));
-      if (isNew) setIsNew(false);
-
-      const newPhoto = profileResult?.data?.profile?.profile_photo || profileResult?.data?.profile_photo || profileResult?.profile_photo;
-      if (newPhoto) {
-        setProfileData(prev => ({ ...prev, profile_photo: String(newPhoto) }));
-      }
-      setPhotoFile(null);
-      setPhotoPreview(null);
-
-      // 2. Sync Education
-      const eduResults = await Promise.all(localEduList.map(async (edu) => {
+      console.log("[ProfileDebug] Syncing Education Records:", localEduList);
+      await Promise.all(localEduList.map(async (edu) => {
         if ((edu as any).is_deleted) {
+          console.log(`[ProfileDebug] Deleting Education: ${edu.id}`);
           return deleteEducation(edu.id);
-        } else if ((edu as any).is_new) {
-          const { is_new, is_dirty, is_deleted, id, ...payload } = edu as any;
-          return createEducation(toEducationPayload(payload as any));
-        } else if ((edu as any).is_dirty) {
-          const { is_new, is_dirty, is_deleted, id, ...payload } = edu as any;
-          return updateEducation(edu.id, toEducationPayload(payload as any));
         }
-        return { status: true };
+        if ((edu as any).is_new) {
+          const payload = toEducationPayload(edu as any);
+          console.log("[ProfileDebug] Creating Education:", payload);
+          return createEducation(payload);
+        }
+        if ((edu as any).is_dirty) {
+          const payload = toEducationPayload(edu as any);
+          console.log(`[ProfileDebug] Updating Education ${edu.id}:`, payload);
+          return updateEducation(edu.id, payload);
+        }
       }));
 
-      // 3. Sync Experience
-      const expResults = await Promise.all(localExpList.map(async (exp) => {
+      console.log("[ProfileDebug] Syncing Experience Records:", localExpList);
+      await Promise.all(localExpList.map(async (exp) => {
         if ((exp as any).is_deleted) {
+          console.log(`[ProfileDebug] Deleting Experience: ${exp.id}`);
           return deleteExperience(exp.id);
-        } else if ((exp as any).is_new) {
-          const { is_new, is_dirty, is_deleted, id, ...payload } = exp as any;
-          return createExperience(toExperiencePayload(payload as any));
-        } else if ((exp as any).is_dirty) {
-          const { is_new, is_dirty, is_deleted, id, ...payload } = exp as any;
-          return updateExperience(exp.id, toExperiencePayload(payload as any));
         }
-        return { status: true };
+        if ((exp as any).is_new) {
+          const payload = toExperiencePayload(exp as any);
+          console.log("[ProfileDebug] Creating Experience:", payload);
+          return createExperience(payload);
+        }
+        if ((exp as any).is_dirty) {
+          const payload = toExperiencePayload(exp as any);
+          console.log(`[ProfileDebug] Updating Experience ${exp.id}:`, payload);
+          return updateExperience(exp.id, payload);
+        }
       }));
 
-      // Check if any sync failed
-      const hasSyncErrors = [...eduResults, ...expResults].some(r => r && (r as any).status === false);
-      if (hasSyncErrors) {
-        // Collect server error messages
-        const errorMsgs = [...eduResults, ...expResults]
-          .filter(r => r && (r as any).status === false)
-          .map(r => (r as any).message || "Sync failed")
-          .join(", ");
-        toast.error(`Warning: ${errorMsgs}`);
-      } else {
-        // Check if any significant changes were made to edu/exp and they all succeeded
-        const wasEduChanged = localEduList.some((e: any) => e.is_new || e.is_dirty || e.is_deleted);
-        const wasExpChanged = localExpList.some((e: any) => e.is_new || e.is_dirty || e.is_deleted);
-        
-        if (wasEduChanged || wasExpChanged) {
-           toast.success("Additional details synced successfully.");
-        }
-      }
-
+      toast.success("Profile updated successfully!");
+      setMode("view");
       router.refresh();
     } catch (err: any) {
+      console.error("[ProfileDebug] CRITICAL ERROR:", err);
       toast.error(err.message || "An unexpected error occurred.");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex p-12 justify-center items-center h-full">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-gray-500 font-medium animate-pulse">Loading your profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12 px-4 md:px-0">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-800 tracking-tight leading-tight">My Profile</h1>
-          <p className="text-slate-600 mt-1 text-xs md:text-sm font-medium opacity-90">Manage your professional identity and career preferences.</p>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-indigo-600 font-bold bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100/50">
-          <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-          Sync Status: LIVE
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-linear-to-r from-indigo-50/5 via-indigo-50/2 to-transparent p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row items-center gap-4 md:gap-6">
-          <div className="relative group">
-            <div
-              className="w-20 h-20 rounded-2xl bg-white border-2 border-white shadow-lg overflow-hidden relative group cursor-pointer"
-              onClick={() => document.getElementById("photo-upload")?.click()}
-            >
-              {photoPreview || profileData.profile_photo ? (
-                <img
-                  src={photoPreview || getFullImageUrl(profileData.profile_photo)!}
-                  alt="Profile"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              ) : (
-                <div className="w-full h-full bg-indigo-600 flex items-center justify-center text-3xl font-bold text-white uppercase">
-                  {profileData.name?.charAt(0) || "U"}
+  const ProfileHeader = ({ isEdit = false }: { isEdit?: boolean }) => (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden relative">
+      <div className="h-20 bg-indigo-500 bg-linear-to-r from-indigo-500 to-blue-400" />
+      <div className="px-5 pb-5 relative">
+        <div className="flex items-end gap-3.5 -mt-8 mb-4">
+          <div 
+            className={`w-18 h-18 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative ${isEdit ? 'cursor-pointer group' : ''}`}
+            onClick={() => isEdit && document.getElementById("photo-upload")?.click()}
+          >
+             {photoPreview || profileData.profile_photo ? (
+                <img src={photoPreview || getFullImageUrl(profileData.profile_photo)!} alt="" className="w-full h-full object-cover rounded-xl" />
+             ) : (
+                <div className="w-full h-full bg-slate-50 flex items-center justify-center text-xl font-bold text-indigo-900 uppercase">
+                  {profileData.name?.[0]}
                 </div>
-              )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera className="w-5 h-5 text-white" />
-              </div>
+             )}
+             {isEdit && (
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+             )}
+          </div>
+          <div className="flex-1 pb-0.5 min-w-0">
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight truncate">{profileData.name}</h2>
+            <p className="text-slate-500 text-[13px] font-medium truncate">{profileData.title || "Educator"}</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-50 mt-1">
+          <div className="flex items-center gap-2.5 text-slate-600">
+            <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <span className="text-[12px] font-semibold truncate">{profileData.email}</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-slate-600">
+            <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <span className="text-[12px] font-semibold truncate">{profileData.location || "Location not set"}</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-slate-600">
+            <Briefcase className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <span className="text-[12px] font-semibold">{profileData.experience_years || 0} Years Experience</span>
+          </div>
+        </div>
+      </div>
+      {isEdit && <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />}
+    </div>
+  );
+
+  const renderProfileView = () => (
+    <div className="max-w-3xl mx-auto space-y-4 pb-8 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between gap-3 mb-1 px-4 sm:px-0">
+        <div>
+          <h1 className="text-lg font-bold text-slate-800 tracking-tight">Educator Profile</h1>
+          <p className="text-slate-400 text-[11px] font-medium">Your professional identity on TeachNow</p>
+        </div>
+        <Button onClick={() => setMode("edit")} className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 h-8 text-[12px] font-semibold shadow-xs">
+          <Edit2 className="w-3 h-3 mr-1.5" /> Edit Profile
+        </Button>
+      </div>
+
+      <ProfileHeader />
+
+      <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs space-y-4">
+        <h3 className="text-[12px] font-semibold text-slate-900 border-b border-slate-50 pb-2 flex items-center gap-2">
+          <Search className="w-3.5 h-3.5 text-indigo-500" /> Job Preferences
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">Status</p>
+            <p className="text-[13px] font-semibold text-slate-700">{profileData.open_to_work}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">Notice Period</p>
+            <p className="text-[13px] font-semibold text-slate-700">{profileData.notice_period || "Immediate"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">Expected Salary</p>
+            <p className="text-[13px] font-semibold text-slate-700">{profileData.expected_salary || "Negotiable"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">Preferred Location</p>
+            <p className="text-[13px] font-semibold text-slate-700">{profileData.preferred_location || "Anywhere"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">Teaching Mode</p>
+            <p className="text-[13px] font-semibold text-slate-700">{profileData.teaching_mode || "Hybrid"}</p>
+          </div>
+        </div>
+      </div>
+
+      {profileData.bio && (
+        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs">
+          <h3 className="text-[12px] font-semibold text-slate-900 mb-2.5 flex items-center gap-2">
+            <UserCircle className="w-3.5 h-3.5 text-indigo-500" /> About Me
+          </h3>
+          <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-[14px] font-medium">{profileData.bio}</p>
+          {profileData.portfolio_website && (
+            <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2">
+              <Globe className="w-3.5 h-3.5 text-slate-400" />
+              <a href={profileData.portfolio_website} target="_blank" className="text-[13px] text-indigo-600 font-semibold hover:underline">{profileData.portfolio_website}</a>
             </div>
-            <input
-              id="photo-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handlePhotoChange}
-            />
-            {photoFile && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setPhotoFile(null); setPhotoPreview(null); }}
-                className="absolute -top-1 -right-1 bg-white p-1 rounded-full shadow-md border border-gray-100 text-red-500 hover:text-red-600 transition-colors"
-              >
-                <XCircle className="w-3.5 h-3.5" />
-              </button>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+          <h3 className="text-[13px] font-bold text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-wide">
+             <Briefcase className="w-4 h-4 text-slate-400" /> Experience
+          </h3>
+          <div className="space-y-8">
+            {localExpList.filter(e => !(e as any).is_deleted).length > 0 ? (
+              localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
+                <div key={exp.id} className="border-l-2 border-slate-50 pl-5">
+                  <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{exp.job_title}</h4>
+                  <p className="text-indigo-600 font-medium text-[13px] mt-0.5">{exp.company_name}{exp.location ? `, ${exp.location}` : ''}</p>
+                  <p className="text-slate-400 text-[12px] font-semibold mt-1">
+                    {exp.start_date?.split("-")[0]} — {exp.is_current ? "Present" : exp.end_date?.split("-")[0] || "—"}
+                  </p>
+                  {exp.description && <p className="text-slate-500 text-[12px] mt-2 leading-relaxed">{exp.description}</p>}
+                </div>
+              ))
+            ) : (
+              <p className="text-slate-400 italic text-[12px]">No experience added.</p>
             )}
           </div>
-          <div className="text-center md:text-left space-y-0.5">
-            <h2 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">{profileData.name || "Add your name"}</h2>
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 text-slate-500 font-semibold text-[11px] md:text-xs">
-              <span className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded-lg border border-indigo-100/30">
-                <Briefcase className="w-3.5 h-3.5" /> {profileData.title || "Professional Profile"}
-              </span>
-              <span className="flex items-center gap-1.5 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">
-                <MapPin className="w-3.5 h-3.5 text-slate-400" /> {profileData.location || "Location not set"}
-              </span>
-            </div>
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6 bg-white">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b-2 border-slate-50">
-              <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-indigo-600" />
-              </div>
-              <h3 className="text-sm font-bold text-slate-800">Personal Information</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-xs text-gray-500">Full Name</Label>
-                <div className="relative">
-                  <Input
-                    id="name"
-                    name="name"
-                    value={profileData.name}
-                    onChange={handleChange}
-                    required
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    suppressHydrationWarning
-                  />
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs text-gray-500">Email Address</Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={profileData.email}
-                    onChange={handleChange}
-                    required
-                    disabled
-                    className="pl-9 h-10 rounded-lg border-gray-200 bg-gray-50 text-gray-600 font-medium cursor-not-allowed text-sm"
-                    suppressHydrationWarning
-                  />
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="phone" className="text-xs text-gray-500">Phone Number</Label>
-                <div className="relative">
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={profileData.phone}
-                    onChange={handleChange}
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    placeholder="+91 XXXXX XXXXX"
-                    suppressHydrationWarning
-                  />
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="dob" className="text-xs font-bold text-slate-500">Date of Birth</Label>
-                <DatePicker 
-                  date={profileData.dob ? parseISO(profileData.dob) : undefined}
-                  setDate={(d) => setProfileData({...profileData, dob: d ? format(d, 'yyyy-MM-dd') : ""})}
-                  placeholder="Select your birth date"
-                  className="rounded-xl border-slate-200 bg-slate-50/10"
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex items-center gap-3 pb-3 border-b-2 border-slate-100">
-              <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
-                <Briefcase className="w-4 h-4 text-indigo-600" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-800">Professional Details</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
-              <div className="space-y-1.5 md:col-span-2">
-                <Label htmlFor="title" className="text-xs text-gray-500">Current/Desired Job Title</Label>
-                <div className="relative">
-                  <Input
-                    id="title"
-                    name="title"
-                    value={profileData.title}
-                    onChange={handleChange}
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    placeholder="e.g. Physics Teacher, Software Engineer"
-                    suppressHydrationWarning
-                  />
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="location" className="text-xs font-bold text-gray-500 uppercase">Current Location</Label>
-                <div className="relative">
-                  <Input
-                    id="location"
-                    name="location"
-                    value={profileData.location}
-                    onChange={handleChange}
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    placeholder="City, State"
-                    suppressHydrationWarning
-                  />
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="portfolio_website" className="text-xs font-bold text-gray-500 uppercase">Portfolio Website</Label>
-                <div className="relative">
-                  <Input
-                    id="portfolio_website"
-                    name="portfolio_website"
-                    value={profileData.portfolio_website}
-                    onChange={handleChange}
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    placeholder="https://yourportfolio.com"
-                    suppressHydrationWarning
-                  />
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="experience_years" className="text-xs text-gray-500">Years of Experience</Label>
-                <div className="relative">
-                  <Input
-                    id="experience_years"
-                    name="experience_years"
-                    type="number"
-                    value={profileData.experience_years}
-                    onChange={handleChange}
-                    className="pl-9 h-10 rounded-lg border-gray-200 focus:border-primary/50 focus:ring-primary/5 bg-gray-50/10 text-sm"
-                    suppressHydrationWarning
-                  />
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="availability" className="text-xs text-gray-500">Availability</Label>
-                <select
-                  id="availability"
-                  name="availability"
-                  value={profileData.availability}
-                  onChange={handleChange}
-                  className="flex w-full rounded-lg border border-gray-200 bg-gray-50/10 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 h-10"
-                >
-                  <option value="open">Open to Opportunities</option>
-                  <option value="immediate">Immediate Joiner</option>
-                  <option value="notice-period">In Notice Period</option>
-                  <option value="not-available">Not Available</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5 md:col-span-2">
-                <Label htmlFor="bio" className="text-xs text-gray-500">Professional Summary</Label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  value={profileData.bio}
-                  onChange={handleChange}
-                  rows={3}
-                  className="flex w-full rounded-lg border border-gray-200 bg-gray-50/10 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 transition-all duration-200"
-                  placeholder="Summarize your professional background and top achievements."
-                  suppressHydrationWarning
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b-2 border-slate-100">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
-                    <Tag className="w-4 h-4 text-indigo-600" />
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+          <h3 className="text-[13px] font-bold text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-wide">
+             <GraduationCap className="w-4 h-4 text-slate-400" /> Education
+          </h3>
+          <div className="space-y-8">
+            {localEduList.filter(e => !(e as any).is_deleted).length > 0 ? (
+              localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
+                <div key={edu.id} className="border-l-2 border-slate-50 pl-5">
+                  <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{edu.degree}</h4>
+                  <p className="text-slate-500 font-medium text-[13px] mt-1 space-x-1">
+                    <span>{edu.institution}</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="text-slate-400 font-semibold">{edu.start_date?.split("-")[0]} — {edu.end_date?.split("-")[0]}</span>
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    {edu.field_of_study && <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest">{edu.field_of_study}</p>}
+                    {edu.grade && <span className="text-[11px] font-bold text-emerald-600">{edu.grade}</span>}
                   </div>
-                  <h2 className="text-lg font-bold text-slate-800">Skills & Expertise</h2>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium ml-11">Add skills to appear in more relevant search results.</p>
-              </div>
-              <div className="relative flex items-center gap-2 max-w-xs w-full group">
-                <div className="relative w-full">
-                  <Input
-                    placeholder="Search or add skills..."
-                    value={skillInput}
-                    onFocus={() => skillInput.trim() && setShowSuggestions(true)}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddCustomSkill();
-                      }
-                      if (e.key === "Escape") setShowSuggestions(false);
-                    }}
-                    className="h-9 text-xs rounded-xl pr-8 bg-slate-50/50 border-slate-200 focus:bg-white transition-all"
-                  />
-                  {isSearchingSkills && (
-                    <Loader2 className="absolute right-9 top-1/2 -translate-y-1/2 w-3 h-3 animate-spin text-primary/40" />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleAddCustomSkill()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:scale-110 transition-transform"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
-
-                  {/* Suggestions Dropdown */}
-                  {showSuggestions && skillSuggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="max-h-60 overflow-y-auto pt-1">
-                        {skillSuggestions.map((s, idx) => {
-                          const isAlreadyAdded = profileData.skills.some((ps: any) => 
-                            String(ps.name || ps).toLowerCase() === s.name.toLowerCase()
-                          );
-                          
-                          return (
-                            <button
-                              key={`${s.id}-${idx}`}
-                              type="button"
-                              onClick={() => {
-                                if (!isAlreadyAdded) handleAddCustomSkill(undefined, s.name);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 text-[12px] font-semibold flex items-center justify-between transition-colors border-b border-slate-50 last:border-0 ${
-                                isAlreadyAdded 
-                                  ? "bg-slate-50/50 text-slate-400 cursor-not-allowed" 
-                                  : "hover:bg-primary/5 text-slate-700 active:bg-primary/10"
-                              }`}
-                            >
-                              <span className="capitalize">{s.name}</span>
-                              {isAlreadyAdded ? (
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                              ) : (
-                                <Plus className="w-3.5 h-3.5 text-primary/30 group-hover:text-primary transition-colors" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="p-2 bg-slate-50 border-t border-slate-100">
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Enter to add custom skill</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {showSuggestions && skillInput.trim() && skillSuggestions.length === 0 && !isSearchingSkills && (
-                    <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-4 text-center">
-                       <p className="text-[11px] text-slate-500 font-medium">No matches found. Press Enter to add "<span className="font-bold text-slate-900">{skillInput}</span>"</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {/* Actual Profile Skills */}
-              <div className="flex flex-wrap gap-2.5 mt-2 min-h-[40px] p-3 rounded-2xl bg-slate-50/50 border border-dashed border-slate-100">
-                {Array.isArray(profileData.skills) && profileData.skills.length > 0 ? (
-                  profileData.skills.map((skillId: any) => {
-                    const targetId = String(skillId.id || skillId).toLowerCase().trim();
-                    const skillInfo = availableSkills.find(s => String(s.id).toLowerCase().trim() === targetId);
-                    const displayName = skillInfo?.name || String(skillId.name || skillId);
-
-                    return (
-                      <button
-                        key={targetId}
-                        type="button"
-                        onClick={() => toggleSkill(targetId)}
-                        className="group flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 border bg-primary text-white border-primary scale-[1.02] ring-1 ring-primary/20"
-                      >
-                        {displayName}
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSkill(targetId);
-                          }}
-                          className="ml-1 p-0.5 rounded-full hover:bg-white/20 transition-colors"
-                        >
-                          <X className="w-3 h-3 text-white" />
-                        </span>
-                      </button>
-                    );
-                  })
-                ) : (
-                  <p className="text-slate-400 font-medium italic text-[11px] py-1">No skills added yet. Type above to add your expertise.</p>
-                )}
-              </div>
-            </div>
-          </section>
-        </form>
-      </div>
-
-      {/* Education Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 md:p-6 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-indigo-600" />
-            </div>
-            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Education</h2>
+              ))
+            ) : (
+              <p className="text-slate-400 italic text-[12px]">Academic details missing.</p>
+            )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={eduLoading}
-            onClick={() => { setShowEduForm(!showEduForm); if (!showEduForm) setEditingEduId(null); }}
-            className="rounded-lg h-9 px-3 text-[11px] font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
-          >
-            {showEduForm ? "Cancel" : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Add New</>}
-          </Button>
-        </div>
-
-        {eduError && (
-          <div className="p-4 mx-6 mt-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-xs font-semibold">
-            {eduError}
-          </div>
-        )}
-
-        {showEduForm && (
-          <form onSubmit={handleEduSubmit} className="p-6 md:p-8 border-b-2 border-slate-50 bg-slate-50/30 space-y-6 animate-in slide-in-from-top-4 duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Institution</Label>
-                <Input
-                  value={eduFormData.institution}
-                  onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
-                  placeholder="University Name"
-                  required
-                  className="rounded-xl h-11 bg-white border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Degree</Label>
-                <Input
-                  value={eduFormData.degree}
-                  onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })}
-                  placeholder="e.g. Bachelor's"
-                  required
-                  className="rounded-xl h-11 bg-white border-slate-100"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Field of Study</Label>
-                <Input
-                  value={eduFormData.field_of_study}
-                  onChange={(e) => setEduFormData({ ...eduFormData, field_of_study: e.target.value })}
-                  placeholder="e.g. Computer Science"
-                  required
-                  className="rounded-xl h-11 bg-white border-slate-100"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Grade / Percentage</Label>
-                <Input
-                  value={eduFormData.grade}
-                  onChange={(e) => setEduFormData({ ...eduFormData, grade: e.target.value })}
-                  placeholder="e.g. 8.5 CGPA"
-                  className="rounded-xl h-11 bg-white border-slate-100"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-500 ml-1">Start Date</Label>
-                  <DatePicker 
-                    date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined}
-                    setDate={(d) => setEduFormData({...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})}
-                    placeholder="Joined date"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-500 ml-1">End Date</Label>
-                  <DatePicker 
-                    date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined}
-                    setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})}
-                    placeholder="Left date"
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Highlights</Label>
-                <textarea
-                  value={eduFormData.description}
-                  onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
-                  rows={2}
-                  className="flex w-full rounded-xl border border-slate-100 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-hidden"
-                  placeholder="Coursework, projects, achievements..."
-                />
-              </div>
-            </div>
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={saving || eduLoading} className="rounded-xl h-11 px-10 font-bold bg-slate-800 hover:bg-slate-900 shadow-lg shadow-slate-200">
-                {editingEduId ? "Update Record" : "Save Record"}
-              </Button>
-            </div>
-          </form>
-        )}
-
-        <div className="divide-y-2 divide-slate-50">
-          {(eduLoading && !localEduList?.length) ? (
-            <div className="p-16 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-200" /></div>
-          ) : localEduList?.filter(e => !(e as any).is_deleted).length ? (
-            localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
-              <div key={edu.id} className="p-4 flex items-center justify-between group hover:bg-slate-50 transition-all duration-300 rounded-xl border-b border-slate-50 last:border-0 border-l-2 border-l-transparent hover:border-l-emerald-500">
-                <div className="flex gap-4 items-center">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-200/50 group-hover:rotate-6 transition-transform duration-500">
-                    <GraduationCap className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{(edu.degree ?? "—")}</h4>
-                    <p className="text-slate-500 text-xs font-semibold">{edu.institution ?? "—"}</p>
-                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold mt-1">
-                      <span className="flex items-center gap-1 bg-slate-100/80 px-2 py-0.5 rounded-full text-slate-500">
-                        <Calendar className="w-3 h-3" /> {(edu.start_year ?? edu.start_date) ?? "—"} — {(edu.end_year ?? edu.end_date) || "Present"}
-                      </span>
-                      {edu.grade && <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100/50">{edu.grade}</span>}
-                      {(edu as any).is_dirty || (edu as any).is_new ? <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[8px] border border-amber-200">PENDING</span> : null}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 translate-x-1">
-                  <button type="button" onClick={() => handleEduEdit(edu)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"><Edit2 className="w-4 h-4" /></button>
-                  <button type="button" onClick={() => handleEduDelete(edu.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-10 text-center flex flex-col items-center gap-2">
-              <p className="text-gray-400 text-sm font-medium italic">No education records found.</p>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Experience Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 md:p-6 border-b border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <Briefcase className="w-4 h-4 text-indigo-600" />
-            </div>
-            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Work Experience</h2>
+      <div className="bg-white p-7 rounded-xl border border-slate-100 shadow-xs space-y-8">
+        <div>
+          <h3 className="text-[13px] font-bold text-slate-900 mb-5 flex items-center gap-2 uppercase tracking-wide">
+             <BookOpen className="w-4 h-4 text-slate-400" /> Subjects & Skills
+          </h3>
+          <div className="flex flex-wrap gap-x-10 gap-y-3">
+            {([...(profileData.skills || []), ...(profileData.certifications || [])]).map((item: any, i: number) => (
+               <span key={i} className="text-indigo-600 font-bold text-[13px] tracking-tight">
+                 {typeof item === 'string' ? item : item.name}
+               </span>
+            ))}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={expLoading}
-            onClick={() => { setShowExpForm(!showExpForm); if (!showExpForm) setEditingExpId(null); }}
-            className="rounded-lg h-9 px-3 text-[11px] font-bold border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all active:scale-95"
-          >
-            {showExpForm ? "Cancel" : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Add New</>}
-          </Button>
         </div>
 
-        {expError && (
-          <div className="p-4 mx-6 mt-4 rounded-xl bg-red-50 border border-red-100 text-red-700 text-xs font-semibold">
-            {expError}
+        {profileData.languages?.length > 0 && (
+          <div>
+            <h3 className="text-[13px] font-bold text-slate-900 mb-5 flex items-center gap-2 uppercase tracking-wide">
+               <Languages className="w-4 h-4 text-slate-400" /> Languages
+            </h3>
+            <div className="flex flex-wrap gap-x-10 gap-y-3">
+              {profileData.languages.map((lang: any, i: number) => (
+                 <span key={i} className="text-slate-600 font-bold text-[13px] tracking-tight">
+                   {typeof lang === 'string' ? lang : lang.name}
+                 </span>
+              ))}
+            </div>
           </div>
         )}
-
-        {showExpForm && (
-          <form onSubmit={handleExpSubmit} className="p-6 md:p-8 border-b-2 border-slate-50 bg-slate-50/30 space-y-6 animate-in slide-in-from-top-4 duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Job Title</Label>
-                <Input
-                  value={expFormData.job_title}
-                  onChange={(e) => setExpFormData({ ...expFormData, job_title: e.target.value })}
-                  placeholder="e.g. Senior Teacher"
-                  required
-                  className="rounded-xl h-11 bg-white border-slate-100"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Organization</Label>
-                <Input
-                  value={expFormData.company_name}
-                  onChange={(e) => setExpFormData({ ...expFormData, company_name: e.target.value })}
-                  placeholder="School or Company Name"
-                  required
-                  className="rounded-xl h-11 bg-white border-slate-100"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-500 ml-1">Start Date</Label>
-                  <DatePicker 
-                    date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined}
-                    setDate={(d) => setExpFormData({...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})}
-                    placeholder="Start date"
-                  />
-                </div>
-                {!expFormData.is_current && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold text-slate-500 ml-1">End Date</Label>
-                    <DatePicker 
-                      date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined}
-                      setDate={(d) => setExpFormData({...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})}
-                      placeholder="End date"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="md:col-span-2 flex items-center gap-3 py-2">
-                 <button
-                  type="button"
-                  onClick={() => setExpFormData({ ...expFormData, is_current: !expFormData.is_current })}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                    expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-100 hover:border-indigo-200"
-                  }`}
-                >
-                  {expFormData.is_current ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                  Working here
-                </button>
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <Label className="text-xs font-bold text-slate-500 ml-1">Description</Label>
-                <textarea
-                  value={expFormData.description}
-                  onChange={(e) => setExpFormData({ ...expFormData, description: e.target.value })}
-                  rows={2}
-                  className="flex w-full rounded-xl border border-slate-100 bg-white px-4 py-3 text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all outline-hidden"
-                  placeholder="Key responsibilities and achievements..."
-                />
-              </div>
-            </div>
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={saving || expLoading} className="rounded-xl h-11 px-10 font-bold bg-slate-800 hover:bg-slate-900 shadow-lg shadow-slate-200">
-                {editingExpId ? "Update Record" : "Save Record"}
-              </Button>
-            </div>
-          </form>
-        )}
-
-        <div className="divide-y-2 divide-slate-50">
-          {(expLoading && !localExpList?.length) ? (
-            <div className="p-16 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-200" /></div>
-          ) : localExpList?.filter(e => !(e as any).is_deleted).length ? (
-            localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
-              <div key={exp.id} className="p-4 flex items-center justify-between group hover:bg-slate-50 transition-all duration-300 rounded-xl border-b border-slate-50 last:border-0 border-l-2 border-l-transparent hover:border-l-indigo-500">
-                <div className="flex gap-4 items-center">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200/50 group-hover:rotate-6 transition-transform duration-500">
-                    <Briefcase className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-[15px] font-bold text-slate-800 leading-tight">{exp.job_title}</h4>
-                    <p className="text-slate-500 text-xs font-semibold">{exp.company_name}</p>
-                    <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold mt-1">
-                      <span className="flex items-center gap-1 bg-slate-100/80 px-2 py-0.5 rounded-full text-slate-500">
-                        <Calendar className="w-3 h-3" /> {exp.start_date?.split("T")[0]} — {exp.is_current ? "Present" : (exp.end_date?.split("T")[0] || "—")}
-                      </span>
-                      {exp.location && <span className="flex items-center gap-1 text-slate-400 font-bold"><MapPin className="w-3 h-3" /> {exp.location}</span>}
-                      {(exp as any).is_dirty || (exp as any).is_new ? <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[8px] border border-amber-200">PENDING</span> : null}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 translate-x-1">
-                  <button type="button" onClick={() => handleExpEdit(exp)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"><Edit2 className="w-4 h-4" /></button>
-                  <button type="button" onClick={() => handleExpDelete(exp.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-10 text-center flex flex-col items-center gap-2">
-              <p className="text-gray-400 text-sm font-medium italic">No work experience found.</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Global Save Button */}
-      <div className="flex justify-end pt-4 mt-6 border-t border-slate-100">
-        <Button 
-          onClick={handleSubmit} 
-          disabled={saving} 
-          className="w-full sm:w-auto min-w-[200px] rounded-xl h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[13px] shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
-        >
-          {saving ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Syncing...</>
-          ) : (
-            <>Update Profile <ChevronRight className="w-4 h-4" /></>
-          )}
-        </Button>
       </div>
     </div>
   );
+
+  const renderProfileEdit = () => (
+    <div className="max-w-3xl mx-auto space-y-5 pb-10 animate-in slide-in-from-right-4 duration-500 px-4 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-slate-800 tracking-tight">Update Profile</h1>
+          <p className="text-slate-400 text-[12px] font-medium mt-0.5">Edit your recruitment-ready profile</p>
+        </div>
+        <div className="flex items-center gap-2">
+           <Button variant="outline" onClick={() => setMode("view")} className="h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
+           <Button onClick={handleSubmit} disabled={saving} className="h-8 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[12px]">
+             {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : null} Save Final
+           </Button>
+        </div>
+      </div>
+
+      <ProfileHeader isEdit />
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-6 space-y-8">
+          <section className="space-y-6">
+            <h3 className="text-[13px] font-semibold text-slate-900 border-b border-slate-50 pb-2">Basic Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+               <div className="space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Full Name <span className="text-red-500">*</span></Label>
+                 <Input name="name" value={profileData.name} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+               </div>
+               <div className="space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Professional Title <span className="text-red-500">*</span></Label>
+                 <Input name="title" value={profileData.title} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+               </div>
+               <div className="space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Location <span className="text-red-500">*</span></Label>
+                 <Input name="location" value={profileData.location} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+               </div>
+               <div className="space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Gender</Label>
+                 <select name="gender" value={profileData.gender} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                 </select>
+               </div>
+               <div className="space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Portfolio Website</Label>
+                 <Input name="portfolio_website" value={profileData.portfolio_website} onChange={handleChange} placeholder="https://..." className="h-10 rounded-lg text-[13px] border-slate-200" />
+               </div>
+               <div className="space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Date of Birth</Label>
+                 <DatePicker 
+                    date={profileData.dob ? parseISO(profileData.dob) : undefined}
+                    setDate={(d) => setProfileData({...profileData, dob: d ? format(d, 'yyyy-MM-dd') : ""})}
+                    className="h-10 rounded-lg text-[13px] bg-white border border-slate-200"
+                 />
+               </div>
+               <div className="md:col-span-2 space-y-1.5">
+                 <Label className="text-[13px] font-semibold text-slate-700">Professional Bio <span className="text-red-500">*</span></Label>
+                 <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className="w-full rounded-lg border border-slate-200 bg-white p-3 text-[13px] outline-none" placeholder="Share your teaching philosophy and experience..." />
+               </div>
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h3 className="text-[13px] font-semibold text-slate-900 border-b border-slate-50 pb-2">Job Preferences</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Open to Work Status</Label>
+                <select name="open_to_work" value={profileData.open_to_work} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                   <option value="Actively Looking">Actively Looking</option>
+                   <option value="Open to Opportunities">Open to Opportunities</option>
+                   <option value="Not Looking">Not Looking</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Notice Period</Label>
+                <select name="notice_period" value={profileData.notice_period} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                   <option value="Immediate">Immediate</option>
+                   <option value="15 Days">15 Days</option>
+                   <option value="30 Days">30 Days</option>
+                   <option value="60 Days">60 Days</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Expected Salary</Label>
+                <Input name="expected_salary" value={profileData.expected_salary} onChange={handleChange} placeholder="e.g. 5,00,000" className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Preferred Location</Label>
+                <Input name="preferred_location" value={profileData.preferred_location} onChange={handleChange} placeholder="City name" className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[12px] font-medium text-slate-600">Teaching Mode</Label>
+                <select name="teaching_mode" value={profileData.teaching_mode} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                   <option value="Offline">Offline</option>
+                   <option value="Online">Online</option>
+                   <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-5">
+            <div className="flex items-center justify-between gap-4 border-b border-slate-50 pb-2">
+               <h3 className="text-[13px] font-semibold text-slate-900">Work History</h3>
+               <button type="button" onClick={() => {setShowExpForm(!showExpForm); setEditingExpId(null);}} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700">
+                 {showExpForm ? "Cancel" : "Add Experience"}
+               </button>
+            </div>
+
+            {showExpForm && (
+              <div className="bg-slate-50 p-5 rounded-xl border border-slate-100 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <Label className="text-[12px] font-medium text-slate-600">Job Title <span className="text-red-500">*</span></Label>
+                    <Input value={expFormData.job_title} onChange={(e) => setExpFormData({...expFormData, job_title: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[12px] font-medium text-slate-600">Institution Name <span className="text-red-500">*</span></Label>
+                    <Input value={expFormData.company_name} onChange={(e) => setExpFormData({...expFormData, company_name: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[12px] font-medium text-slate-600">Location</Label>
+                    <Input value={expFormData.location} onChange={(e) => setExpFormData({...expFormData, location: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[12px] font-medium text-slate-600">Timeline <span className="text-red-500">*</span></Label>
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
+                       <div className="flex-1 space-y-1">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Start Date</p>
+                          <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
+                       </div>
+                       <span className="hidden sm:flex h-10 items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest shrink-0">TO</span>
+                       <div className="flex-1 space-y-1">
+                          <p className="text-[12px] font-semibold text-slate-500">End Date</p>
+                          <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
+                       </div>
+                    </div>
+                  </div>
+                  <div className="md:col-span-2 flex items-center gap-3">
+                    <button type="button" onClick={() => setExpFormData(p => ({...p, is_current: !p.is_current}))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-200"}`}>
+                      {expFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Working
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button type="button" onClick={handleExpSubmit} className="h-8 px-5 rounded-lg bg-slate-800 text-white font-semibold text-[11px]">{editingExpId ? "Update Record" : "Add Record"}</Button>
+                </div>
+              </div>
+            )}
+
+            <div className="divide-y divide-slate-50">
+              {localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
+                <div key={exp.id} className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-slate-50">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><Briefcase className="w-4 h-4" /></div>
+                    <div>
+                      <h4 className="font-semibold text-slate-800 text-[13px]">{exp.job_title}</h4>
+                      <p className="text-[11px] font-medium text-slate-400">{exp.company_name}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <button type="button" onClick={() => handleExpEdit(exp)} className="p-2 text-indigo-600 hover:bg-white rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button type="button" onClick={() => handleExpDelete(exp.id)} className="p-2 text-red-500 hover:bg-white rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                </div>
+              ))}
+              {localExpList.filter(e => !(e as any).is_deleted).length === 0 && (
+                <p className="text-[12px] text-slate-400 italic p-4 text-center">No work history added yet.</p>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-5">
+            <div className="flex items-center gap-3 border-b border-slate-50 pb-2">
+               <h3 className="text-[13px] font-semibold text-slate-900 flex-1">Education</h3>
+               <button type="button" onClick={() => {setShowEduForm(!showEduForm); setEditingEduId(null);}} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700">
+                 {showEduForm ? "Cancel" : "Add Education"}
+               </button>
+            </div>
+            
+            {showEduForm && (
+               <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100/50 space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-700">Degree <span className="text-red-500">*</span></Label>
+                      <Input value={eduFormData.degree} onChange={(e) => setEduFormData({...eduFormData, degree: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-700">Institution <span className="text-red-500">*</span></Label>
+                      <Input value={eduFormData.institution} onChange={(e) => setEduFormData({...eduFormData, institution: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-700">Field of Study</Label>
+                      <Input value={eduFormData.field_of_study} onChange={(e) => setEduFormData({...eduFormData, field_of_study: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-700">Grade (CGPA / %)</Label>
+                      <div className="flex gap-2">
+                        <select 
+                          value={eduFormData.grade_type} 
+                          onChange={(e) => setEduFormData({...eduFormData, grade_type: e.target.value as any})}
+                          className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[12px] outline-none shrink-0"
+                        >
+                          <option value="Percentage">Percentage</option>
+                          <option value="CGPA">CGPA</option>
+                        </select>
+                        <Input value={eduFormData.grade} onChange={(e) => setEduFormData({...eduFormData, grade: e.target.value})} placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85%" : "e.g. 9.2"} className="h-10 rounded-lg text-sm bg-white" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 md:col-span-2">
+                      <Label className="text-[13px] font-semibold text-slate-700">Joined Timeline <span className="text-red-500">*</span></Label>
+                      <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
+                         <div className="flex-1 space-y-1">
+                            <p className="text-[12px] font-semibold text-slate-500">Start Date</p>
+                            <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
+                         </div>
+                         <span className="hidden sm:flex h-10 items-center text-[10px] text-slate-400 font-bold uppercase tracking-widest shrink-0">TO</span>
+                         <div className="flex-1 space-y-1">
+                            <p className="text-[12px] font-semibold text-slate-500">End Date</p>
+                            <DatePicker date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <Button type="button" onClick={handleEduSubmit} className="h-8 px-6 rounded-lg bg-emerald-600 text-white font-semibold text-[11px]">Save Education</Button>
+                  </div>
+               </div>
+            )}
+
+            <div className="divide-y divide-slate-50 mb-6">
+              {localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
+                <div key={edu.id} className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-slate-50">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500"><GraduationCap className="w-4 h-4" /></div>
+                    <div>
+                      <h4 className="font-semibold text-slate-800 text-[13px]">{edu.degree}</h4>
+                      <p className="text-[11px] font-medium text-slate-400">{edu.institution}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <button type="button" onClick={() => handleEduEdit(edu)} className="p-2 text-indigo-600 hover:bg-white rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button type="button" onClick={() => handleEduDelete(edu.id)} className="p-2 text-red-500 hover:bg-white rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                </div>
+              ))}
+              {localEduList.filter(e => !(e as any).is_deleted).length === 0 && (
+                <p className="text-[12px] text-slate-400 italic p-4 text-center">Academic background empty.</p>
+              )}
+            </div>
+
+            <div className="space-y-8 pt-1">
+               <div className="space-y-4">
+                  <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
+                     <Award className="w-3.5 h-3.5 text-slate-400" /> Skills & Subjects
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      placeholder="Add a skill or subject..." value={skillInput} onChange={(e) => setSkillInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomSkill())}
+                      className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
+                    />
+                    <Button type="button" onClick={handleAddCustomSkill} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {profileData.skills.map((s: any, idx: number) => (
+                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-50 text-slate-600 font-semibold text-[11px] rounded-lg border border-slate-100">
+                        {typeof s === 'string' ? s : s.name}
+                        <button type="button" onClick={() => setProfileData(p => ({...p, skills: p.skills.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-slate-300 hover:text-red-500"><X className="w-3 h-3" /></button>
+                      </span>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
+                     <BookOpen className="w-3.5 h-3.5 text-slate-400" /> Certifications
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      placeholder="CTET, NET, Montessori... (Enter to add)" value={certInput} onChange={(e) => setCertInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCertification())}
+                      className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
+                    />
+                    <Button type="button" onClick={handleAddCertification} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {profileData.certifications.map((c: any, idx: number) => (
+                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-emerald-50 text-emerald-700 font-semibold text-[11px] rounded-lg border border-emerald-100">
+                        {typeof c === 'string' ? c : c.name}
+                        <button type="button" onClick={() => setProfileData(p => ({...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-emerald-300 hover:text-red-500"><X className="w-3 h-3" /></button>
+                      </span>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="space-y-4">
+                  <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
+                     <Languages className="w-3.5 h-3.5 text-slate-400" /> Languages Known
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      placeholder="English, Hindi, Telugu... (Enter to add)" value={langInput} onChange={(e) => setLangInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddLanguage())}
+                      className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
+                    />
+                    <Button type="button" onClick={handleAddLanguage} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {profileData.languages.map((l: any, idx: number) => (
+                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-indigo-50 text-indigo-700 font-semibold text-[11px] rounded-lg border border-indigo-100">
+                        {typeof l === 'string' ? l : l.name}
+                        <button type="button" onClick={() => setProfileData(p => ({...p, languages: p.languages.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-indigo-300 hover:text-red-500"><X className="w-3 h-3" /></button>
+                      </span>
+                    ))}
+                  </div>
+               </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3 px-4 sm:px-0">
+         <Button variant="outline" onClick={() => setMode("view")} className="px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
+         <Button onClick={handleSubmit} disabled={saving} className="px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
+           Save Final Profile
+         </Button>
+      </div>
+    </div>
+  );
+
+  return mode === "view" ? renderProfileView() : renderProfileEdit();
 }

@@ -9,7 +9,7 @@ import { EmailSignInAction } from "@/lib/sign-in";
 import { fetchAPI } from "@/services/api/client";
 import { toast } from "sonner";
 import { resetSharedClientSession } from "@/hooks/useClientSession";
-import { Mail, Lock, User, ArrowLeft, Building2 } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft} from "lucide-react";
 
 interface QuickAuthModalProps {
   open: boolean;
@@ -35,7 +35,7 @@ export default function QuickAuthModal({
   initialMode = "login"
 }: QuickAuthModalProps) {
   const [mode, setMode] = useState<"login" | "register">(initialMode);
-  const [role, setRole] = useState<"job_seeker" | "employer">("job_seeker");
+  const [role] = useState<"job_seeker" | "employer">("job_seeker");
   const [loading, setLoading] = useState(false);
 
   // Form states

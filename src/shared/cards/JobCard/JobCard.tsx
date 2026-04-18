@@ -121,10 +121,10 @@ const JobCard = ({
               <h3 className={`text-[19px] font-semibold transition-colors mb-1.5 tracking-tight ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
                 {title}
               </h3>
-              <div className="flex flex-col gap-1 text-slate-400">
+              <div className="flex flex-col gap-1 text-[#0F172A]/60">
                 <div className="flex items-start gap-1.5 ">
                   <Building className="w-4 h-4 mt-0.5 shrink-0" />
-                  <p className="text-[15px] font-medium text-slate-500 line-clamp-2">{company}</p>
+                  <p className="text-[15px] font-medium text-[#0F172A]/70 line-clamp-2">{company}</p>
                 </div>
                 {isExpired ? (
                   <div className="flex items-center gap-1.5 ml-0.5">
@@ -155,7 +155,7 @@ const JobCard = ({
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px] font-medium text-slate-500 mb-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px] font-medium text-[#0F172A]/70 mb-2">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-slate-400" />
               <span>{location}</span>
@@ -185,7 +185,7 @@ const JobCard = ({
           {/* Tags Section - Capsule Shape */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {(tags && tags.length > 0 ? tags : ["Teacher", "Staff Selection"]).slice(0, 3).map((tag, idx) => (
-              <span key={idx} className="bg-[#f0f4f8] text-[#475569] px-3 py-0.5 rounded-full text-[12px] font-semibold">
+              <span key={idx} className="bg-[#f0f4f8] text-[#1e293b] px-3 py-0.5 rounded-full text-[12px] font-semibold">
                 {tag}
               </span>
             ))}

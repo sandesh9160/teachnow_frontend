@@ -68,6 +68,7 @@ export default function ApplyJobPage() {
       const timer = setTimeout(() => setShowAuthModal(true), 1500);
       return () => clearTimeout(timer);
     }
+    return;
   }, [mounted, isLoggedIn]);
 
   const [step, setStep] = useState(0);
@@ -451,7 +452,7 @@ export default function ApplyJobPage() {
         {!submitted && (
           <div className="mb-5">
             <div className="flex items-center justify-between">
-              {currentSteps.map((label, i) => {
+              {currentSteps.map((label, i: number) => {
                 let stepClass = "bg-muted text-muted-foreground";
                 const isActive = i === step;
                 const isCompleted = i < step;

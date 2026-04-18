@@ -18,19 +18,22 @@ interface DatePickerProps {
   setDate: (date?: Date) => void
   placeholder?: string
   className?: string
+  disabled?: boolean
 }
 
-export function DatePicker({ date, setDate, placeholder = "Pick a date", className }: DatePickerProps) {
+export function DatePicker({ date, setDate, placeholder = "Pick a date", className, disabled }: DatePickerProps) {
   const [open, setOpen] = React.useState(false)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={!disabled ? setOpen : undefined}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
+          disabled={disabled}
           className={cn(
             "w-full justify-start text-left font-normal h-11 rounded-xl border-slate-100 bg-white shadow-sm hover:border-indigo-100 transition-all",
             !date && "text-slate-500",
+            disabled && "opacity-50 cursor-not-allowed",
             className
           )}
         >

@@ -24,30 +24,40 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  const [month, setMonth] = React.useState<Date>(
-    ((props as any).selected instanceof Date ? (props as any).selected : props.defaultMonth) || new Date()
-  );
+  // Priority: props.month -> props.selected (if single) -> props.defaultMonth -> now
+  const initialMonth = React.useMemo(() => {
+    if (props.month) return props.month;
+    if (props.mode === "single" && (props as any).selected instanceof Date) return (props as any).selected;
+    return props.defaultMonth || new Date();
+  }, [props.month, props.mode, (props as any).selected, props.defaultMonth]);
 
-  const years = Array.from({ length: 121 }, (_, i) => 2050 - i);
+  const [internalMonth, setInternalMonth] = React.useState<Date>(initialMonth)
+
+  // Sync internal month if external props change
+  React.useEffect(() => {
+    if (props.month) {
+      setInternalMonth(props.month)
+    } else if (props.mode === "single" && (props as any).selected instanceof Date) {
+      const selected = (props as any).selected as Date;
+      // If we're not controlling month but date changes, we might want to follow it
+      if (selected.getMonth() !== internalMonth.getMonth() || selected.getFullYear() !== internalMonth.getFullYear()) {
+         setInternalMonth(selected)
+      }
+    }
+  }, [props.month, props.mode, (props as any).selected])
+
+  const handleMonthChange = (newMonth: Date) => {
+    setInternalMonth(newMonth)
+    props.onMonthChange?.(newMonth)
+  }
+
+  const years = Array.from({ length: 91 }, (_, i) => new Date().getFullYear() + 10 - i);
   const months = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
 
-  const handleMonthChange = (monthName: string) => {
-    const newMonth = new Date(month);
-    const monthIndex = months.findIndex(m => m === monthName);
-    if (monthIndex !== -1) {
-      newMonth.setMonth(monthIndex);
-      setMonth(newMonth);
-    }
-  };
-
-  const handleYearChange = (year: string) => {
-    const newMonth = new Date(month);
-    newMonth.setFullYear(parseInt(year));
-    setMonth(newMonth);
-  };
+  const currentMonth = internalMonth;
 
   return (
     <div 
@@ -55,9 +65,9 @@ function Calendar({
       onPointerDown={(e) => e.stopPropagation()}
     >
       <DayPicker
-        month={month}
-        onMonthChange={setMonth}
         showOutsideDays={showOutsideDays}
+        month={currentMonth}
+        onMonthChange={handleMonthChange}
         className={cn("w-full", className)}
       classNames={{
         months: "relative flex flex-col space-y-2",
@@ -67,11 +77,11 @@ function Calendar({
         nav: "absolute w-full flex justify-between px-0.5 z-10",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-white p-0 opacity-60 hover:opacity-100 shadow-xs border-slate-100 rounded-full"
+          "h-7 w-7 bg-white p-0 opacity-60 hover:opacity-100 shadow-xs border-slate-100 rounded-full flex items-center justify-center transition-all hover:bg-slate-50"
         ),
         button_next: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-white p-0 opacity-60 hover:opacity-100 shadow-xs border-slate-100 rounded-full"
+          "h-7 w-7 bg-white p-0 opacity-60 hover:opacity-100 shadow-xs border-slate-100 rounded-full flex items-center justify-center transition-all hover:bg-slate-50"
         ),
         month_grid: "w-full border-collapse",
         weekdays: "flex w-full mb-1",
@@ -79,11 +89,11 @@ function Calendar({
         week: "flex w-full mt-0.5",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-7.5 w-7.5 p-0 text-[12px] font-normal aria-selected:opacity-100 flex-1 hover:bg-slate-50 hover:text-indigo-600 transition-all rounded-full"
+          "h-8 w-8 p-0 text-[12px] font-normal aria-selected:opacity-100 flex-1 hover:bg-indigo-50 hover:text-indigo-600 transition-all rounded-lg flex items-center justify-center"
         ),
         selected:
-          "bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white focus:bg-indigo-600 focus:text-white rounded-full font-semibold",
-        today: "text-indigo-600 font-bold bg-indigo-50/70 rounded-full",
+          "bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white focus:bg-indigo-600 focus:text-white rounded-lg font-semibold shadow-md shadow-indigo-600/20",
+        today: "text-indigo-600 font-bold bg-indigo-50/70 rounded-lg",
         outside: "text-slate-200 opacity-30",
         disabled: "text-slate-200 opacity-50",
         hidden: "invisible",
@@ -100,36 +110,55 @@ function Calendar({
         },
         MonthCaption: () => (
           <div className="flex items-center gap-0.5 z-20">
-            <Select value={months[month.getMonth()]} onValueChange={handleMonthChange}>
-              <SelectTrigger className="h-7 py-0 px-1.5 text-[12.5px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-colors rounded-md min-w-[55px] justify-center gap-0.5">
+            <Select 
+              value={months[currentMonth.getMonth()]} 
+              onValueChange={(mName) => {
+                const newMonth = new Date(currentMonth);
+                newMonth.setMonth(months.indexOf(mName));
+                handleMonthChange(newMonth);
+              }}
+            >
+              <SelectTrigger 
+                onPointerDown={(e) => e.stopPropagation()}
+                className="h-7 py-0 px-2 text-[12.5px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-colors rounded-md min-w-[60px] justify-center gap-0.5 shadow-none z-30"
+              >
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="min-w-[90px] rounded-xl border-slate-100 shadow-2xl">
+              <SelectContent className="min-w-[100px] border-slate-100 shadow-2xl rounded-xl z-[100]">
                 {months.map((m) => (
-                  <SelectItem key={m} value={m} className="text-xs font-medium rounded-lg py-1">{m}</SelectItem>
+                  <SelectItem key={m} value={m} className="text-xs font-semibold py-1.5 cursor-pointer">{m}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={month.getFullYear().toString()} onValueChange={handleYearChange}>
-              <SelectTrigger className="h-7 py-0 px-1.5 text-[12.5px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-colors rounded-md justify-center gap-0.5">
+            <Select 
+              value={currentMonth.getFullYear().toString()} 
+              onValueChange={(y) => {
+                const newMonth = new Date(currentMonth);
+                newMonth.setFullYear(parseInt(y));
+                handleMonthChange(newMonth);
+              }}
+            >
+              <SelectTrigger 
+                onPointerDown={(e) => e.stopPropagation()}
+                className="h-7 py-0 px-2 text-[12.5px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-colors rounded-md justify-center gap-0.5 shadow-none z-30"
+              >
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="min-w-[80px] rounded-xl border-slate-100 shadow-2xl">
+              <SelectContent className="min-w-[80px] border-slate-100 shadow-2xl rounded-xl z-[100]">
                 {years.map((y) => (
-                  <SelectItem key={y} value={y.toString()} className="text-xs font-medium rounded-lg py-1">{y}</SelectItem>
+                  <SelectItem key={y} value={y.toString()} className="text-xs font-semibold py-1.5 cursor-pointer">{y}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         ),
       }}
-      captionLayout="label"
-      fixedWeeks
       {...props}
     />
     </div>
   )
 }
+
 Calendar.displayName = "Calendar"
 
 export { Calendar }
