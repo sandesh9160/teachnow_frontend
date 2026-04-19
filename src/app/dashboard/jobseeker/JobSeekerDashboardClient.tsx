@@ -9,7 +9,6 @@ import {
   ArrowRight, 
   Search, 
   Settings, 
-  User, 
   FileText 
 } from "lucide-react";
 import Link from "next/link";
@@ -57,14 +56,14 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
       ) : (
         <>
           {/* Top Analytics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Jobs Applied Card */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#1E1B4B] to-[#312E81] p-5 rounded-2xl shadow-lg group">
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <p className="text-indigo-100/70 font-medium text-[13px] mb-1">Jobs Applied</p>
                   <p className="text-3xl font-bold text-white mb-1.5">{data?.total_applied ?? 0}</p>
-                  <p className="text-[11px] font-medium text-indigo-200/50">+3 this week</p>
+                  <p className="text-[11px] font-medium text-indigo-200/50">Total applications sent</p>
                 </div>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
@@ -77,31 +76,19 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
               <div className="relative z-10">
                 <p className="text-indigo-100/70 font-medium text-[13px] mb-1">Saved Jobs</p>
                 <p className="text-3xl font-bold text-white mb-1.5">{data?.total_bookmarked ?? 0}</p>
-                <p className="text-[11px] font-medium text-indigo-200/50">2 expiring soon</p>
+                <p className="text-[11px] font-medium text-indigo-200/50">Opportunities tracked</p>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
                 <Bookmark className="w-6 h-6 text-white opacity-80" />
               </div>
             </div>
 
-            {/* Profile Completion Card */}
+            {/* Interview Invitations Card */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#059669] to-[#10B981] p-5 rounded-2xl shadow-lg">
               <div className="relative z-10">
-                <p className="text-slate-100 font-medium text-[13px] mb-1">Profile Completion</p>
-                <p className="text-3xl font-bold text-white mb-1.5">85%</p>
-                <p className="text-[11px] font-medium text-emerald-100/70">Add resume to complete</p>
-              </div>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
-                <User className="w-6 h-6 text-white opacity-80" />
-              </div>
-            </div>
-
-            {/* Interview Invitations Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#EA580C] to-[#F97316] p-5 rounded-2xl shadow-lg">
-              <div className="relative z-10">
-                <p className="text-slate-100 font-medium text-[13px] mb-1">Interview Invitations</p>
+                <p className="text-slate-100 font-medium text-[13px] mb-1">Shortlisted Jobs</p>
                 <p className="text-3xl font-bold text-white mb-1.5">{data?.total_shortlisted ?? 0}</p>
-                <p className="text-[11px] font-medium text-orange-100/70">+1 this week</p>
+                <p className="text-[11px] font-medium text-emerald-100/70">Proceeding to next steps</p>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
                 <Star className="w-6 h-6 text-white opacity-80" />
@@ -164,7 +151,11 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                           <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border ${
                             app?.status?.toLowerCase() === 'applied' 
                               ? 'bg-blue-50 text-blue-600 border-blue-100' 
-                              : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              : app?.status?.toLowerCase() === 'shortlisted'
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              : app?.status?.toLowerCase() === 'rejected'
+                              ? 'bg-rose-50 text-rose-600 border-rose-100'
+                              : 'bg-slate-50 text-slate-600 border-slate-100'
                           }`}>
                             {app?.status || "Applied"}
                           </span>

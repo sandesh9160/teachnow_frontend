@@ -18,18 +18,17 @@ import {
   Zap,
   Sparkles,
 } from "lucide-react";
-// import { Button } from "@/shared/ui/Buttons/Buttons";
-// import { Badge } from "@/shared/ui/Badge/Badge";
 import { toast } from "sonner";
 import { normalizeMediaUrl } from "@/lib/utils";
 
 export default function ResumeManagementPage() {
   const {
-    loading,
+    loading: resumesLoading,
     fetchResumes,
     removeGenerated,
     generatedResumes = []
   } = useResumes();
+  
   const {
     templates,
     loading: cvLoading,
@@ -37,29 +36,34 @@ export default function ResumeManagementPage() {
     generateCV,
   } = useCV();
 
-  const [selectedTemplate, setSelectedTemplate] = useState<number | string | null>(null);
-  const [previewTemplate, setPreviewTemplate] = useState<any | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   const [lastGeneratedCV, setLastGeneratedCV] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchTemplates();
-  }, [fetchTemplates]);
+    void fetchResumes();
+  }, [fetchTemplates, fetchResumes]);
 
-  const handleGenerate = async (templateId: number | string) => {
+  useEffect(() => {
+    if (templates.length > 0 && !selectedTemplate) {
+      setSelectedTemplate(templates[0]);
+    }
+  }, [templates, selectedTemplate]);
+
+  const handleGenerate = async (templateId?: any) => {
+    const tplId = templateId || selectedTemplate?.id;
+    if (!tplId) return;
     try {
-      setSelectedTemplate(templateId);
-      const res = await generateCV({ template_id: templateId });
+      const res = await generateCV({ template_id: tplId });
       const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url;
       if (url) {
         setLastGeneratedCV(normalizeMediaUrl(url));
-        toast.success("CV Generated and added to history!");
-      } else {
-        toast.success("CV is being generated and will appear below.");
+        toast.success("Resume updated!");
       }
-      // Explicitly refresh both master and generated lists
       await fetchResumes();
     } catch {
-      toast.error("Failed to generate CV.");
+      toast.error("Failed to generate PDF.");
     }
   };
 
@@ -68,81 +72,44 @@ export default function ResumeManagementPage() {
     const fullUrl = normalizeMediaUrl(url);
     const link = document.createElement("a");
     link.href = fullUrl;
-    link.setAttribute("download", `Teacher_Resume_${Date.now()}.pdf`);
+    link.setAttribute("download", `My_Professional_CV.pdf`);
     link.setAttribute("target", "_blank");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
-
   const handleDeleteGenerated = async (id: number | string) => {
-    toast("Delete this document?", {
-      id: "confirm-delete-gen",
-      duration: Infinity,
-      description: "This action cannot be undone.",
+    toast("Remove from history?", {
+      description: "This will permanently delete this version.",
       action: {
         label: "Delete",
         onClick: async () => {
           try {
             await removeGenerated(id);
-            toast.success("Generated CV deleted.");
+            toast.success("Resume deleted.");
           } catch {
-            toast.error("Failed to delete generated CV.");
+            toast.error("Failed to delete.");
           }
         }
-      },
-      cancel: {
-        label: "Keep",
-        onClick: () => { }
-      },
-      classNames: {
-        actionButton: "!bg-rose-600 !text-white hover:!bg-rose-700",
-        cancelButton: "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
       }
     });
   };
 
-  if (loading && generatedResumes.length === 0) {
+  if (resumesLoading && generatedResumes.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto space-y-8 pb-32 px-4 md:px-8 mt-10 animate-pulse">
-        {/* Header Skeleton */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="h-9 w-64 bg-slate-100 rounded-xl" />
-            <div className="h-4 w-96 bg-slate-50 rounded-lg shrink-0" />
-            <div className="h-3 w-32 bg-slate-50 rounded-md" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-          <div className="xl:col-span-12 space-y-10">
-             {/* Template Grid Skeleton */}
-             <div className="space-y-6">
-                <div className="h-6 w-48 bg-slate-100 rounded-lg" />
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                   {[1,2,3,4,5,6].map(i => (
-                     <div key={i} className="aspect-[3/4] bg-white border border-slate-100 rounded-2xl shadow-sm" />
-                   ))}
-                </div>
-             </div>
-             
-             {/* History Skeleton */}
-             <div className="space-y-6">
-                <div className="h-6 w-40 bg-slate-100 rounded-lg" />
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                   {[1,2,3].map(i => (
-                     <div key={i} className="aspect-[4/5] bg-white border border-slate-100 rounded-2xl shadow-sm" />
-                   ))}
-                </div>
-             </div>
-          </div>
+      <div className="max-w-[1600px] mx-auto p-6 space-y-10 animate-pulse">
+        <div className="h-16 bg-slate-50 rounded-2xl w-full" />
+        <div className="flex gap-6">
+           <div className="w-64 h-96 bg-slate-50 rounded-2xl" />
+           <div className="flex-1 h-[600px] bg-slate-50 rounded-2xl" />
+           <div className="w-80 h-[500px] bg-slate-50 rounded-2xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-32 px-4 md:px-8 mt-4 lg:mt-6 relative">
+    <div className="max-w-7xl mx-auto space-y-6 pb-32 px-4 md:px-8 mt-4 lg:mt-6 relative">
       {/* Generation Overlay */}
       {cvLoading && selectedTemplate && (
         <div className="fixed inset-0 bg-slate-900/10 z-50 flex items-center justify-center animate-in fade-in duration-300">
@@ -161,13 +128,13 @@ export default function ResumeManagementPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-black tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-black tracking-tight">
             AI Resume Builder
           </h1>
-          <p className="text-slate-500 mt-1 font-medium text-xs md:text-sm">Generate professional CVs tailored for specific job roles.</p>
-          <div className="flex items-center gap-2 mt-4">
+          <p className="text-slate-500 mt-1 font-medium text-[11px] md:text-xs">Generate professional CVs tailored for specific job roles.</p>
+          <div className="flex items-center gap-2 mt-3">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-            <p className="text-slate-400 font-semibold text-[11px] md:text-[13px] uppercase tracking-wider">High Fidelity Templates</p>
+            <p className="text-slate-400 font-semibold text-[10px] md:text-[11px] uppercase tracking-wider">High Fidelity Templates</p>
           </div>
         </div>
       </div>
@@ -265,7 +232,7 @@ export default function ResumeManagementPage() {
               <h2 className="text-base font-bold text-black tracking-tight">Built History ({generatedResumes.length})</h2>
             </div>
 
-            {loading && generatedResumes.length === 0 ? (
+            {resumesLoading && generatedResumes.length === 0 ? (
               <div className="flex justify-center py-20 bg-indigo-50/20 rounded-2xl border border-indigo-100/50">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-200" />
               </div>

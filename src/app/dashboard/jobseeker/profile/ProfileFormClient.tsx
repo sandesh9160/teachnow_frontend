@@ -1082,7 +1082,7 @@ export default function ProfileFormClient({
                           .filter(s => {
                             const name = s.name.toLowerCase();
                             const query = skillInput.toLowerCase();
-                            const isAlreadySelected = profileData.skills.some(ps => (typeof ps === 'string' ? ps : ps.name).toLowerCase() === name);
+                            const isAlreadySelected = profileData.skills.some((ps: any) => (typeof ps === 'string' ? ps : ps.name).toLowerCase() === name);
                             return name.includes(query) && !isAlreadySelected;
                           })
                           .sort((a, b) => {
