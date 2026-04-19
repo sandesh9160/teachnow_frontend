@@ -51,7 +51,8 @@ export function useBookmarks() {
         const rawData = res?.data || [];
         const mappedJobs = rawData.map((item: any) => ({
           ...item.job,
-          bookmarkId: item.id
+          bookmarkId: item.id,
+          bookmarkedAt: item.created_at
         }));
         notify(mappedJobs);
         globalFetched = true;

@@ -24,8 +24,9 @@ const JobCard = ({
   slug, 
   logo, 
   institutionType,
-  expiresAt 
-}: JobCardProps & { expiresAt?: string }) => {
+  expiresAt,
+  savedAt
+}: JobCardProps & { expiresAt?: string; savedAt?: string }) => {
   const { bookmarks, toggleBookmark } = useBookmarks();
   const isSavedStatus = bookmarks.some((job) => String(job.id) === String(id));
   const [saved, setSaved] = useState(isSavedStatus);
@@ -128,8 +129,8 @@ const JobCard = ({
                 </div>
                 {isExpired ? (
                   <div className="flex items-center gap-1.5 ml-0.5">
-                    <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded uppercase tracking-wider">
-                      Access Expired
+                    <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-red-100">
+                      Job Expired
                     </span>
                   </div>
                 ) : institutionType && (
@@ -168,16 +169,20 @@ const JobCard = ({
               <Clock3 className="w-4 h-4 text-slate-400" />
               <span>{(() => {
                 if (isExpired) return "Closed";
+                if (savedAt) {
+                  const savedAgo = formatTimeAgo(savedAt);
+                  return savedAgo === "Just now" ? "Saved Just now" : `Saved ${savedAgo}`;
+                }
                 const ago = formatTimeAgo(posted);
-                return ago.includes("ago") || ago === "Just now" || ago === "Recently" ? ago : `Posted on ${ago}`;
+                return ago.includes("ago") || ago === "Just now" || ago === "Recently" ? `Posted ${ago}` : `Posted on ${ago}`;
               })()}</span>
             </div>
           </div>
 
           <div className="flex justify-end mb-3">
             {salary && salary !== "Not disclosed" && (
-              <div className={`text-[17px] font-semibold ${isExpired ? "text-slate-400" : "text-slate-900"}`}>
-                ₹{salary}
+              <div className={`text-[17px] font-bold ${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} tracking-tight`}>
+                ₹{salary.replace(/\.00/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </div>
             )}
           </div>
@@ -196,9 +201,9 @@ const JobCard = ({
             {isExpired ? (
               <button 
                 disabled
-                className="flex-1 h-[44px] rounded-xl bg-slate-100 text-slate-400 font-semibold text-[14px] cursor-not-allowed border border-slate-200"
+                className="flex-1 h-[44px] rounded-xl bg-slate-50 text-slate-400 font-bold text-[13px] cursor-not-allowed border border-slate-100 uppercase tracking-widest"
               >
-                Expired
+                Vacancy Closed
               </button>
             ) : (
               <>

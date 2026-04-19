@@ -14,6 +14,7 @@ export default function SavedJobsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("All");
 
   useEffect(() => {
     void fetchBookmarks();
@@ -23,15 +24,26 @@ export default function SavedJobsPage() {
   const locations = ["All", ...Array.from(new Set(bookmarks.map((j: any) => j.location).filter(Boolean)))];
   const types = ["All", ...Array.from(new Set(bookmarks.map((j: any) => j.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase())).filter(Boolean)))];
 
-  const filteredBookmarks = bookmarks.filter((job: any) => {
-    const typeLabel = job.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time";
-    const matchesSearch = job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.employer?.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = selectedLocation === "All" || job.location === selectedLocation;
-    const matchesType = selectedType === "All" || typeLabel === selectedType;
-    
-    return matchesSearch && matchesLocation && matchesType;
-  });
+  const filteredBookmarks = bookmarks
+    .filter((job: any) => {
+      const typeLabel = job.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time";
+      const isExpired = job.expires_at ? new Date(job.expires_at) < new Date() : false;
+      
+      const matchesSearch = job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           job.employer?.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesLocation = selectedLocation === "All" || job.location === selectedLocation;
+      const matchesType = selectedType === "All" || typeLabel === selectedType;
+      const matchesStatus = selectedStatus === "All" || (selectedStatus === "Active" ? !isExpired : isExpired);
+      
+      return matchesSearch && matchesLocation && matchesType && matchesStatus;
+    })
+    .sort((a: any, b: any) => {
+      const isAExpired = a.expires_at ? new Date(a.expires_at) < new Date() : false;
+      const isBExpired = b.expires_at ? new Date(b.expires_at) < new Date() : false;
+      if (isAExpired && !isBExpired) return 1;
+      if (!isAExpired && isBExpired) return -1;
+      return 0;
+    });
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 pt-4 px-4 md:px-0">
@@ -49,14 +61,29 @@ export default function SavedJobsPage() {
       {/* Filter Bar - Premium Consistent Version */}
       <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm/5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-          <div className="md:col-span-6 relative group">
+          <div className="md:col-span-3 relative group">
             <Input
-              placeholder="Search by title or company..."
+              placeholder="Search jobs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-10 text-[13px] rounded-xl border-slate-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 bg-white transition-all"
             />
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+          </div>
+          
+          <div className="md:col-span-3 relative group">
+             <select 
+               value={selectedStatus}
+               onChange={(e) => setSelectedStatus(e.target.value)}
+               className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-4 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
+             >
+               <option value="All">All Status</option>
+               <option value="Active">Active Only</option>
+               <option value="Expired">Expired</option>
+             </select>
+             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+                <ChevronDown className="w-3.5 h-3.5" />
+             </div>
           </div>
 
           <div className="md:col-span-3 relative group">
@@ -107,20 +134,21 @@ export default function SavedJobsPage() {
       ) : filteredBookmarks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBookmarks.map((job: any) => (
-            <JobCard
-              key={job.id}
-              id={job.id}
-              title={job.title}
-              company={job.employer?.company_name || "Institution"}
-              logo={job.employer?.company_logo}
-              location={job.location}
-              slug={job.slug}
-              type={job.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time"}
-              salary={job.salary_range || `${job.salary_min} - ${job.salary_max}`}
-              tags={[]}
-              posted={job.created_at}
-              expiresAt={job.expires_at}
-            />
+              <JobCard
+                key={job.id}
+                id={job.id}
+                title={job.title}
+                company={job.employer?.company_name || "Institution"}
+                logo={job.employer?.company_logo}
+                location={job.location}
+                slug={job.slug}
+                type={job.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time"}
+                salary={job.salary_range || `${job.salary_min} - ${job.salary_max}`}
+                tags={[]}
+                posted={job.created_at}
+                expiresAt={job.expires_at}
+                savedAt={job.bookmarkedAt}
+              />
           ))}
         </div>
       ) : (
@@ -137,6 +165,7 @@ export default function SavedJobsPage() {
               setSearchQuery("");
               setSelectedLocation("All");
               setSelectedType("All");
+              setSelectedStatus("All");
             }}
             className="px-8 h-10 bg-indigo-600 text-white rounded-xl text-[11px] font-bold shadow-lg shadow-indigo-600/10 hover:bg-indigo-700 transition-all"
           >
