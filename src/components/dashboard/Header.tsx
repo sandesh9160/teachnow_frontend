@@ -33,6 +33,11 @@ export function DashboardHeader({
             <GraduationCap className="w-5 h-5" />
           </div>
           <span className="text-xl font-bold text-[#1E1B4B] tracking-tight">TeachNow</span>
+          {user?.role === "employer" && (
+            <span className="px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#4F46E5] text-[10px] font-medium tracking-tight">
+              Employer
+            </span>
+          )}
         </Link>
       </div>
 

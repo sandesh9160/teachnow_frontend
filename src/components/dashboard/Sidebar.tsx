@@ -19,7 +19,10 @@ import {
   Users,
   X,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Verified,
+  Settings,
+  HelpCircle
 } from "lucide-react";
 import { useState } from "react";
 
@@ -46,15 +49,18 @@ export function DashboardSidebar({
   ];
 
   const employerLinks = [
-    { label: "Overview", href: "/dashboard/employer", icon: LayoutGrid },
-    { label: "Company", href: "/dashboard/employer/company-profile", icon: Building2 },
-    { label: "New Post", href: "/dashboard/employer/post-job", icon: PlusCircle },
-    { label: "Manage Jobs", href: "/dashboard/employer/jobs", icon: ClipboardList },
-    { label: "Recruiters", href: "/dashboard/employer/recruiters", icon: Users },
-    { label: "Documents", href: "/dashboard/employer/institution-verification", icon: FileText },
-    { label: "Alerts", href: "/dashboard/employer/notifications", icon: Bell },
-    { label: "Feedback", href: "/dashboard/employer/testimonials", icon: MessageSquare },
+    { label: "Dashboard", href: "/dashboard/employer", icon: LayoutGrid },
+    { label: "Institution Verification", href: "/dashboard/employer/institution-verification", icon: Verified },
+    { label: "Post a Job", href: "/dashboard/employer/post-job", icon: PlusCircle },
+    { label: "Manage Jobs", href: "/dashboard/employer/jobs", icon: Briefcase },
+    { label: "Applicants", href: "/dashboard/employer/applicants", icon: Users },
+    { label: "Company Profile", href: "/dashboard/employer/company-profile", icon: Building2 },
     { label: "Billing", href: "/dashboard/employer/purchase-history", icon: CreditCard },
+    { label: "Settings", href: "/dashboard/employer/settings", icon: Settings },
+  ];
+
+  const bottomLinks = [
+    { label: "Help Center", href: "/help", icon: HelpCircle },
   ];
 
   const recruiterLinks = [
@@ -137,6 +143,25 @@ export function DashboardSidebar({
                );
              })}
           </div>
+
+          {userRole === "employer" && (
+            <div className="mt-8 pt-8 border-t border-slate-50 space-y-1">
+              {bottomLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={onClose}
+                    className="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 group"
+                  >
+                    <Icon className="h-[18px] w-[18px] shrink-0 opacity-50 group-hover:opacity-100 transition-all" />
+                    {!collapsed && <span className="tracking-tight truncate">{link.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* BACK TO HOME */}
@@ -152,7 +177,7 @@ export function DashboardSidebar({
         {/* LOGOUT AT BOTTOM */}
         <div className={`p-4 border-t border-slate-50 transition-all duration-500 ${collapsed ? 'px-2' : 'px-4'}`}>
            <LogoutSubmitButton
-             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 group active:scale-[0.98] ${
+             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[12px] font-medium transition-all duration-300 group active:scale-[0.98] ${
                collapsed 
                ? "justify-center text-rose-600" 
                : "text-rose-600 hover:bg-rose-50"
@@ -160,7 +185,7 @@ export function DashboardSidebar({
            >
              <LogOut className={`h-[16px] w-[16px] transition-transform duration-300 ${collapsed ? 'scale-110' : 'group-hover:-translate-x-1'}`} />
              {!collapsed && (
-               <span className="uppercase tracking-widest text-[10px] font-bold animate-in fade-in duration-300 whitespace-nowrap">
+               <span className="tracking-tight text-xs animate-in fade-in duration-300 whitespace-nowrap">
                  Sign Out
                </span>
              )}

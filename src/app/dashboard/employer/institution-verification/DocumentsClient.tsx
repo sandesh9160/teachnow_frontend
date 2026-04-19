@@ -10,11 +10,16 @@ import {
   PlusCircle,
   FileUp,
   X,
-  ChevronLeft
+  ChevronLeft,
+  CheckCircle2,
+  Trash2,
+  Calendar,
+  ExternalLink,
+  ChevronRight
 } from "lucide-react";
+import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { Label } from "@/shared/ui/Label/Label";
 import { cn, normalizeMediaUrl } from "@/lib/utils";
 import { uploadFile } from "@/actions/FileUpload";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
@@ -38,6 +43,7 @@ export default function DocumentsClient() {
   const [documents, setDocuments] = useState<EmployerDocument[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedDocType, setSelectedDocType] = useState<string>("");
+  const [showUploadform, setShowUploadForm] = useState(false);
 
   const [previewData, setPreviewData] = useState<{ url: string; original: string; name: string } | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
@@ -53,7 +59,6 @@ export default function DocumentsClient() {
       }
     } catch (e: any) {
       console.error("Failed to fetch documents:", e);
-      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -66,15 +71,8 @@ export default function DocumentsClient() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!selectedDocType) {
-      toast.error("Please select a document type first.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size exceeds 10MB limit.");
+      toast.error("Please select a document type.");
       return;
     }
 
@@ -90,19 +88,33 @@ export default function DocumentsClient() {
       });
 
       if (res?.status) {
-        toast.success("Document uploaded successfully!");
+        toast.success("Document uploaded!");
+        setShowUploadForm(false);
+        setSelectedDocType("");
         void fetchDocuments();
       } else {
-        toast.error(res?.message || "Failed to upload document.");
+        toast.error(res?.message || "Upload failed.");
       }
     } catch (err: any) {
-      toast.error("An unexpected error occurred during upload.");
+      toast.error("An error occurred.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this document?")) return;
+    try {
+      const res = await dashboardServerFetch<any>(`employer/documents/${id}`, { method: 'DELETE' });
+      if (res?.status) {
+        toast.success("Document deleted");
+        void fetchDocuments();
+      }
+    } catch (e) {
+      toast.error("An error occurred");
+    }
+  };
 
   const handlePreview = (doc: EmployerDocument) => {
     if (!doc.document_file) return;
@@ -110,8 +122,7 @@ export default function DocumentsClient() {
     const ext = (doc.document_file || "").split('.').pop()?.toLowerCase();
     
     let preview = fullUrl;
-    // Use Google Docs Viewer for PDF and Office documents for professional preview and to bypass X-Frame-Options
-    if (ext === 'doc' || ext === 'docx' || ext === 'pdf') {
+    if (ext === 'pdf' || ext === 'doc' || ext === 'docx') {
       preview = `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`;
     }
     
@@ -124,307 +135,209 @@ export default function DocumentsClient() {
   };
 
   const docTypes = [
-    { value: "institution_registration", label: "Institution Registration" },
+    { value: "institution_registration", label: "Institution Registration Certificate" },
+    { value: "government_license", label: "Government License / Accreditation" },
+    { value: "approval_document", label: "College / School Approval Document" },
     { value: "pan_card", label: "PAN Card" },
-    { value: "gst_certificate", label: "GST Certificate" },
     { value: "id_proof", label: "Identity Proof (Admin)" },
-    { value: "other", label: "Other Supporting Documents" }
+    { value: "other", label: "Other Supporting Document" }
   ];
 
+  const verifiedCount = documents.filter(d => d.is_verified === 1 || d.status === 'verified').length;
+  const isFullyVerified = verifiedCount > 0 && verifiedCount === documents.length;
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 space-y-4 relative">
-      {/* Right Sidebar Preview Panel */}
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-8 font-sans">
+      {/* Preview Overlay */}
       {previewData && (
-        <div className="fixed inset-0 z-100 overflow-hidden group font-sans">
-           <div 
-             className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] transition-opacity animate-in fade-in duration-500" 
-             onClick={() => setPreviewData(null)}
-           />
-           
-           <div className="absolute inset-y-0 right-0 max-w-full flex">
-              <div className="w-screen max-w-2xl bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out border-l border-slate-100">
-                 
-                 <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
-                    <div className="flex items-center gap-4">
-                       <div className="w-11 h-11 rounded-2xl bg-primary/5 text-primary flex items-center justify-center border border-primary/10 shadow-sm transition-transform hover:scale-105">
-                          <FileText className="w-5.5 h-5.5" />
-                       </div>
-                       <div>
-                          <h3 className="text-base font-semibold text-slate-800 tracking-tight capitalize">{previewData.name}</h3>
-                          <div className="flex items-center gap-2 mt-0.5">
-                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm" />
-                             <p className="text-xs font-medium text-slate-400">Record integrity verified</p>
-                          </div>
-                       </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+           <div className="absolute inset-0 bg-[#1E1B4B]/20 backdrop-blur-sm" onClick={() => setPreviewData(null)} />
+           <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh] animate-in fade-in zoom-in duration-300">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                 <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                       <FileText className="w-5 h-5 text-indigo-600" />
                     </div>
-                    <div className="flex items-center gap-2">
-                       <Button 
-                         variant="ghost" 
-                         size="sm" 
-                         className="h-10 w-10 p-0 rounded-2xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group"
-                         onClick={() => setPreviewData(null)}
-                       >
-                          <X className="w-5 h-5 text-slate-400 group-hover:text-slate-800" />
-                       </Button>
+                    <div>
+                       <h3 className="text-base font-semibold text-[#1E1B4B]">{previewData.name}</h3>
+                       <p className="text-[10px] text-slate-400 font-medium">Confidential institutional record</p>
                     </div>
                  </div>
-                 
-                 <div className="flex-1 overflow-y-auto bg-slate-50/10 p-6 flex items-start justify-center custom-scrollbar">
-                    <div className="w-full bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-full flex items-center justify-center relative">
-                       {isPreviewLoading && (
-                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-[1px] z-10 animate-in fade-in duration-300">
-                            <Loader2 className="w-8 h-8 animate-spin text-primary/30" />
-                            <p className="text-xs font-medium text-slate-400 mt-3">Syncing preview...</p>
-                         </div>
-                       )}
-                       
-                       {previewData.url.match(/\.(jpg|jpeg|png|webp|gif|svg)/i) && !previewData.url.includes('docs.google.com') ? (
-                          <img 
-                            src={previewData.url} 
-                            alt="Document Preview" 
-                            onLoad={() => setIsPreviewLoading(false)}
-                            className={cn(
-                              "w-full h-auto object-contain pointer-events-none p-4 transition-opacity duration-500",
-                              isPreviewLoading ? "opacity-0" : "opacity-100"
-                            )}
-                          />
-                       ) : (
-                          <iframe 
-                            src={previewData.url} 
-                            onLoad={() => setIsPreviewLoading(false)}
-                            className={cn(
-                              "w-full h-[85vh] border-none bg-slate-50 transition-opacity duration-500",
-                              isPreviewLoading ? "opacity-0" : "opacity-100"
-                            )}
-                            title="Document Content"
-                          />
-                       )}
+                 <button onClick={() => setPreviewData(null)} className="p-2 hover:bg-slate-50 rounded-full transition-colors">
+                    <X className="w-5 h-5 text-slate-400" />
+                 </button>
+              </div>
+              
+              <div className="flex-1 bg-slate-50 relative overflow-hidden">
+                 {isPreviewLoading && (
+                   <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 transition-opacity">
+                      <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                   </div>
+                 )}
+                 {previewData.url.match(/\.(jpg|jpeg|png|webp|gif|svg)/i) && !previewData.url.includes('docs.google.com') ? (
+                    <div className="w-full h-full flex items-center justify-center p-8">
+                       <img src={previewData.url} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg shadow-lg bg-white" onLoad={() => setIsPreviewLoading(false)} />
                     </div>
-                 </div>
- 
-                 <div className="px-6 py-6 border-t border-slate-100 bg-white shrink-0 flex items-center justify-between gap-4">
-                    <div className="space-y-1">
-                       <div className="flex items-center gap-2 text-emerald-600">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span className="text-xs font-medium">Secure Encryption Active</span>
-                       </div>
-                       <p className="text-xs font-medium text-slate-300 leading-none">Private institutional data vault</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                       <Button 
-                         variant="outline" 
-                         size="sm" 
-                         className="h-10 px-5 rounded-xl font-medium text-xs border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
-                         onClick={() => window.open(previewData.original, "_blank")}
-                       >
-                          <Eye className="w-4 h-4 mr-2" /> Pop-out
-                       </Button>
-                       <Button 
-                         variant="default" 
-                         size="sm" 
-                         className="h-10 px-8 rounded-xl font-medium text-xs shadow-lg shadow-primary/10 bg-primary hover:bg-primary/90 transition-all"
-                         onClick={() => setPreviewData(null)}
-                       >
-                          Close
-                       </Button>
-                    </div>
+                 ) : (
+                    <iframe src={previewData.url} className="w-full h-full border-none bg-white" onLoad={() => setIsPreviewLoading(false)} title="Viewer" />
+                 )}
+              </div>
+              
+              <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between gap-4 bg-white shrink-0">
+                 <p className="text-xs text-slate-400 font-medium">Viewing secure document vault</p>
+                 <div className="flex items-center gap-3">
+                    <Button variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs" onClick={() => window.open(previewData.original, '_blank')}>
+                       <ExternalLink className="w-4 h-4 mr-2" /> Full Screen
+                    </Button>
+                    <Button className="h-9 px-6 rounded-lg text-xs bg-[#1E1B4B]" onClick={() => setPreviewData(null)}>Close</Button>
                  </div>
               </div>
            </div>
         </div>
       )}
 
-      {/* Back Button */}
-      <div className="flex items-center gap-2 mb-2">
-        <button 
-          onClick={() => window.history.back()}
-          className="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-primary transition-all group"
-        >
-          <div className="w-6 h-6 rounded-lg border bg-white flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/5 transition-all shadow-sm">
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </div>
-          Back to Overview
-        </button>
+      {/* Header with Right-Side Upload Button */}
+      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-6">
+         <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-[#1E1B4B]">Institution Verification</h1>
+            <p className="text-sm text-slate-400">Manage and track your institutional credentials</p>
+         </div>
+         
+         <Button 
+            onClick={() => setShowUploadForm(!showUploadform)}
+            className={cn(
+               "h-10 px-6 rounded-lg font-semibold text-xs transition-all shadow-sm flex items-center gap-2",
+               showUploadform ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+            )}
+         >
+            {showUploadform ? <X className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+            {showUploadform ? "Cancel" : "Upload Document"}
+         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner">
-            <FileText className="w-5 h-5" />
-          </div>
-          <div className="space-y-0.5">
-            <h1 className="text-lg font-semibold text-gray-900 tracking-tight">Institutional Verification</h1>
-            <p className="text-xs font-medium text-gray-400">
-               Manage credentials & verification records
-            </p>
-          </div>
-        </div>
+      {/* Verification Status Box */}
+      {documents.length > 0 && (
+         <div className={cn(
+            "rounded-2xl border p-6 flex flex-col md:flex-row items-start md:items-center gap-6 shadow-sm",
+            isFullyVerified ? "bg-emerald-50/30 border-emerald-100" : "bg-white border-slate-100"
+         )}>
+            <div className={cn(
+               "w-12 h-12 rounded-full flex items-center justify-center shrink-0 border",
+               isFullyVerified ? "bg-[#D1FAE5] border-[#D1FAE5] text-[#059669]" : "bg-blue-50 border-blue-100 text-blue-600"
+            )}>
+               {isFullyVerified ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+            </div>
+            <div className="flex-1 space-y-1">
+               <div className="flex items-center gap-3">
+                  <h3 className="text-base font-semibold text-[#1E1B4B]">Verification Status:</h3>
+                  <span className={cn(
+                     "px-3 py-0.5 rounded-lg text-[11px] font-semibold",
+                     isFullyVerified ? "bg-[#D1FAE5] text-[#059669]" : "bg-blue-50 text-blue-600"
+                  )}>{isFullyVerified ? "Verified" : "Under Process"}</span>
+               </div>
+               <p className="text-sm text-slate-500">
+                  {isFullyVerified 
+                    ? "Your institution has been verified. You can now post jobs." 
+                    : "Your documents are being processed. Verification usually takes 24-48 hours."}
+               </p>
+            </div>
+         </div>
+      )}
 
-        <div className="flex items-center gap-3">
-           <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-emerald-100" />
-              <span className="text-xs font-medium text-emerald-700">Records Synchronized</span>
-           </div>
-        </div>
-      </div>
+      {/* Progress Bar */}
+      {documents.length > 0 && (
+         <div className="space-y-3">
+            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+               <div className="h-full bg-indigo-600 transition-all duration-1000 ease-out" style={{ width: `${(verifiedCount / documents.length) * 100}%` }} />
+            </div>
+            <div className="flex justify-end">
+               <p className="text-xs font-semibold text-slate-500">{verifiedCount}/{documents.length} verified</p>
+            </div>
+         </div>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-4">
-           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
-              <div className="flex items-center gap-2 border-l-4 border-indigo-500 pl-3">
-                 <ShieldCheck className="w-4 h-4 text-indigo-500" />
-                 <h2 className="text-sm font-semibold text-gray-900">Credential Upload</h2>
-              </div>
+      {/* Inline Upload Form (Simple) */}
+      {showUploadform && (
+         <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 transition-all animate-in slide-in-from-top-4 duration-300">
+            <div className="max-w-2xl mx-auto space-y-4">
+               <div className="text-center space-y-1 mb-4">
+                  <h3 className="text-base font-semibold text-[#1E1B4B]">Select Document Category</h3>
+                  <p className="text-xs text-slate-500">Choose a type and select your file for verification.</p>
+               </div>
+               <div className="flex flex-col sm:flex-row gap-3">
+                  <select 
+                     value={selectedDocType}
+                     onChange={(e) => setSelectedDocType(e.target.value)}
+                     className="flex-1 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+                  >
+                     <option value="">Select Category...</option>
+                     {docTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                  <Button 
+                     onClick={() => !uploading && fileInputRef.current?.click()}
+                     className="h-11 px-8 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm shadow-md shadow-blue-50 flex items-center gap-2 shrink-0"
+                     disabled={uploading}
+                  >
+                     {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
+                     {uploading ? "Uploading..." : "Select & Upload"}
+                  </Button>
+               </div>
+               <p className="text-center text-[10px] text-slate-400 font-medium pt-2 italic">
+                  Supported: PDF, JPG, PNG, DOC (Max 10MB)
+               </p>
+            </div>
+         </div>
+      )}
 
-              <div className="space-y-4">
-                 <div className="space-y-1.5 font-medium">
-                    <Label className="text-xs text-gray-400 ml-0.5">Category</Label>
-                    <select 
-                      value={selectedDocType}
-                      onChange={(e) => setSelectedDocType(e.target.value)}
-                      className="w-full h-10 rounded-lg border border-gray-200 bg-gray-50/50 px-3 text-xs font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:bg-gray-50 transition-colors"
-                    >
-                      <option value="">Select category...</option>
-                      {docTypes.map(type => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
-                      ))}
-                    </select>
-                 </div>
-
-                 <div 
-                   onClick={() => fileInputRef.current?.click()}
-                   className={cn(
-                     "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group",
-                     uploading ? "opacity-50 cursor-not-allowed bg-gray-50/50" : "hover:bg-primary/5 hover:border-primary/30 border-gray-100"
-                   )}
-                 >
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                      disabled={uploading}
-                    />
-                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-gray-300 group-hover:text-primary transition-colors border border-gray-100 group-hover:border-primary/20 shadow-sm group-hover:shadow-md">
-                       {uploading ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <FileUp className="w-6 h-6" />}
-                    </div>
-                    <div className="text-center space-y-1">
-                       <p className="text-xs font-semibold text-gray-900 leading-none">
-                         {uploading ? "Processing..." : "Select Document"}
-                       </p>
-                       <p className="text-[10px] text-gray-400 font-medium opacity-60">PDF, JPG up to 10MB</p>
-                    </div>
-                 </div>
-
-                 <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl space-y-2 shadow-sm">
-                    <div className="flex items-center gap-2 text-amber-600">
-                       <AlertCircle className="w-3.5 h-3.5" />
-                       <span className="text-xs font-semibold">Security Notice</span>
-                    </div>
-                    <p className="text-xs text-amber-900 font-medium leading-relaxed opacity-70">
-                       Verification SLA: 24-48 Hours. Ensure clarity for faster approval.
-                    </p>
-                 </div>
-              </div>
-           </div>
-        </div>
-
-        <div className="lg:col-span-2 space-y-4">
-           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 min-h-[500px] flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                 <div className="flex items-center gap-2 border-l-4 border-primary pl-3">
-                    <PlusCircle className="w-4 h-4 text-primary" />
-                    <h2 className="text-sm font-semibold text-gray-900">Credential Vault</h2>
-                 </div>
-                 <div className="text-xs font-medium text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10 shadow-sm">
-                    {documents.length} Records
-                 </div>
-              </div>
-
-              <div className="flex-1">
-                 {loading && documents.length === 0 ? (
-                   <div className="h-full flex items-center justify-center flex-col gap-3 py-20">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary/10" />
-                      <p className="text-xs font-medium text-gray-300">Syncing records...</p>
-                   </div>
-                 ) : documents.length > 0 ? (
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {documents.map((doc) => (
-                        <div key={doc.id} className="p-4 rounded-xl border border-gray-100 bg-white hover:border-primary/20 transition-all flex items-start gap-4 shadow-sm hover:shadow-md group relative overflow-hidden">
-                           <div className="absolute top-0 right-0 w-12 h-12 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity -mr-6 -mt-6 rounded-full" />
-                           <div className={cn(
-                             "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-inner transition-transform group-hover:scale-105 relative z-10",
-                             (doc.is_verified === 1 || doc.status === 'verified') ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-blue-50 text-blue-600 border-blue-100"
-                           )}>
-                             <FileText className="w-5 h-5" />
+      {/* Required Documents List - Backend Data only */}
+      <div className="space-y-4">
+         <h2 className="text-lg font-semibold text-[#1E1B4B]">Stored Credentials</h2>
+         <div className="space-y-3">
+            {loading ? (
+               <div className="py-20 flex flex-col items-center justify-center gap-3"><Loader2 className="w-8 h-8 animate-spin text-slate-200" /><p className="text-xs text-slate-300">Syncing with vault...</p></div>
+            ) : documents.length > 0 ? (
+               documents.map((doc) => {
+                  const isImg = doc.document_file.match(/\.(jpg|jpeg|png|webp|gif|svg)/i);
+                  const thumbUrl = normalizeMediaUrl(doc.document_file);
+                  return (
+                     <div key={doc.id} className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-100 transition-all shadow-sm">
+                        <div className="flex items-center gap-4">
+                           <div className="w-14 h-14 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shrink-0">
+                              {isImg ? <img src={thumbUrl} alt="Preview" className="w-full h-full object-cover" /> : <FileText className="w-6 h-6 text-slate-300" />}
                            </div>
-                           <div className="flex-1 min-w-0 relative z-10 pt-0.5">
-                              <div className="flex items-center justify-between mb-0.5">
-                                 <h4 className="text-sm font-semibold text-gray-900 truncate pr-2">
-                                   {(doc.document_type || "File").replace(/_/g, " ")}
-                                 </h4>
-                                 {(doc.is_verified === 1 || doc.status === 'verified') ? (
-                                   <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm border border-white" />
-                                 ) : (
-                                   <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse border border-white" />
-                                 )}
-                              </div>
-                              {(doc.is_verified === 1 || doc.status === 'verified') && (
-                                <p className="text-[10px] font-medium text-emerald-500 truncate mb-2">
-                                  Verified
-                                </p>
-                              )}
-                              <div className="flex items-center gap-1">
-                                 <Button 
-                                   onClick={() => handlePreview(doc)}
-                                   size="sm" 
-                                   variant="ghost" 
-                                   className="h-7 px-2.5 rounded-lg text-[10px] font-medium text-primary bg-primary/5 hover:bg-primary/10 transition-all border border-primary/10 shadow-sm"
-                                 >
-                                    <Eye className="w-3.5 h-3.5 mr-1.5" /> View
-                                 </Button>
+                           <div className="space-y-0.5">
+                              <h4 className="text-[14px] font-semibold text-[#1E1B4B] capitalize leading-none">{doc.document_type.replace(/_/g, " ")}</h4>
+                              <div className="flex items-center gap-3 pt-1">
+                                 <p className="text-[10px] font-medium text-slate-400 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> Uploaded on {new Date(doc.created_at).toLocaleDateString('en-GB')}</p>
+                                 <span className={cn(
+                                    "text-[9px] font-bold uppercase tracking-tight",
+                                    (doc.is_verified === 1 || doc.status === 'verified') ? "text-emerald-600" : "text-amber-500"
+                                 )}>{(doc.is_verified === 1 || doc.status === 'verified') ? "Verified" : "Under Review"}</span>
                               </div>
                            </div>
                         </div>
-                      ))}
-                   </div>
-                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-gray-50/20 rounded-2xl border border-dashed border-gray-200">
-                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 border border-gray-100 shadow-inner text-gray-200">
-                          <PlusCircle className="w-8 h-8" />
-                       </div>
-                       <h3 className="text-sm font-semibold text-gray-900 mb-1">Vault Empty</h3>
-                       <p className="text-xs text-gray-400 font-medium max-w-[200px] leading-relaxed mx-auto opacity-60">
-                          Upload institution certificates for account trust synchronization.
-                       </p>
-                    </div>
-                 )}
-              </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between bg-slate-50/10 -mx-6 -mb-6 px-6 pb-6 rounded-b-xl">
-                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-inner">
-                       <ShieldCheck className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-0.5">
-                       <p className="text-xs font-semibold text-gray-900">Encryption Status</p>
-                       <p className="text-[10px] font-medium text-gray-400 leading-none opacity-60">Institutional protection active</p>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <div className="text-right">
-                       <p className="text-xs font-semibold text-gray-900">Approval SLA</p>
-                       <p className="text-[10px] font-semibold text-blue-500 leading-none">24 - 48 Hours</p>
-                    </div>
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center border border-blue-100 shadow-inner">
-                       <Clock className="w-5 h-5" />
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
+                        <div className="flex items-center gap-2">
+                           <Button onClick={() => handlePreview(doc)} variant="outline" size="sm" className="h-8 px-4 rounded-lg text-[#1E1B4B] border-slate-200 hover:bg-slate-50 text-[11px] font-semibold flex items-center gap-2">
+                              <Eye className="w-3.5 h-3.5" /> Preview
+                           </Button>
+                           <button onClick={() => handleDelete(doc.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                     </div>
+                  );
+               })
+            ) : (
+               <div className="py-32 text-center border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center animate-in fade-in">
+                  <PlusCircle className="w-12 h-12 text-slate-100 mb-4" />
+                  <h3 className="text-sm font-semibold text-slate-400">Vault Currently Empty</h3>
+                  <p className="text-xs text-slate-300 mt-1 max-w-[200px]">Use the upload button at the top to add your first document.</p>
+               </div>
+            )}
+         </div>
       </div>
+
+      {/* Hidden File Input */}
+      <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" disabled={uploading} />
     </div>
   );
 }

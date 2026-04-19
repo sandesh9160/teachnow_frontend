@@ -3,16 +3,18 @@
 import {
    Users,
    Briefcase,
-   // TrendingUp,
    PlusCircle,
-   AlertCircle,
    ArrowRight,
-   // UserCheck,
    Calendar,
-   // Settings,
-   Star,
+   PieChart,
+   Building2,
+   CheckCircle2,
+   Eye,
+   MapPin,
+   Clock,
    Zap,
-   Verified
+   CreditCard,
+   Check
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -25,6 +27,8 @@ interface LatestJob {
    title: string;
    job_status: string;
    created_at: string;
+   total_applications_count?: number;
+   location?: string;
 }
 
 interface LatestApplication {
@@ -35,11 +39,13 @@ interface LatestApplication {
       title: string;
    };
    job_seeker: {
+      id: number;
       title: string;
       profile_photo: string | null;
       user: {
          name: string;
       };
+      experience_years?: number;
    };
 }
 
@@ -48,9 +54,18 @@ interface DashboardStats {
    total_applications?: number;
    shortlisted_candidates?: number;
    total_recruiters?: number;
-   total_remaining_credits?: number;
+   total_remaining_credits?: string | number;
    active_featured_jobs?: number;
-   subscription?: any;
+   subscription?: {
+      plan_name: string;
+      total_credits: number;
+      used_credits: number;
+      remaining_credits: number;
+      expires_at: string;
+      featured_jobs_total: number;
+      featured_jobs_used: number;
+      remaining_featured_jobs: number;
+   };
    subscription_expiring_soon?: boolean;
    company_verification?: number;
    company_featured?: boolean;
@@ -63,7 +78,7 @@ interface DashboardStats {
    };
 }
 
-const ApplicationAvatar = ({ src, alt }: { src: string | null, alt: string }) => {
+const ApplicationAvatar = ({ src, alt, initials }: { src: string | null, alt: string, initials?: string }) => {
   const [error, setError] = useState(false);
   
   const getFullImageUrl = (path: string | null) => {
@@ -77,8 +92,8 @@ const ApplicationAvatar = ({ src, alt }: { src: string | null, alt: string }) =>
 
   if (!fullUrl || error) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-200">
-        <Users className="w-5 h-5" />
+      <div className="w-full h-full flex items-center justify-center bg-[#E0E7FF] text-[#4338CA] font-medium text-xs">
+        {initials || alt[0]}
       </div>
     );
   }
@@ -104,283 +119,220 @@ export default function EmployerDashboardClient({
    userRole?: string
 }) {
    const basePath = `/dashboard/${userRole}`;
+   const sub = dashboardData?.subscription;
 
    const stats = [
       {
-         label: "Active Listings",
+         label: "Total jobs",
          value: dashboardData?.total_jobs?.toString() || "0",
+         subtext: "Active listings",
          icon: Briefcase,
-         color: "blue",
-         trend: "Total Jobs"
+         gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
+         textColor: "text-white"
       },
       {
-         label: "Total Applicants",
+         label: "Total applicants",
          value: dashboardData?.total_applications?.toString() || "0",
+         subtext: "Career seekers",
          icon: Users,
-         color: "indigo",
-         trend: "Engagement"
+         gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
+         textColor: "text-white"
       },
       {
-         label: "Recruiters",
-         value: dashboardData?.total_recruiters?.toString() || "0",
-         icon: Users,
-         color: "purple",
-         trend: "Team Size"
+         label: "Shortlisted",
+         value: dashboardData?.shortlisted_candidates?.toString() || "0",
+         subtext: "Top talent",
+         icon: CheckCircle2,
+         gradient: "from-[#10B981] to-[#047857]", // Green
+         textColor: "text-white"
       },
       {
-         label: "Featured Jobs",
-         value: dashboardData?.active_featured_jobs?.toString() || "0",
-         icon: Star,
-         color: "amber",
-         trend: "Premium"
+         label: "Remaining credits",
+         value: dashboardData?.total_remaining_credits?.toString() || "0",
+         subtext: "Account balance",
+         icon: Zap,
+         gradient: "from-[#F97316] to-[#C2410C]", // Orange
+         textColor: "text-white"
       },
    ];
 
    return (
-      <div className="max-w-6xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-700 pb-12">
-         {/* Simple Header */}
-         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-            <div className="space-y-1">
-               <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Employer dashboard</h1>
+      <div className="max-w-7xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-12">
+         {/* Page Header */}
+         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-0.5">
                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-slate-400">Welcome, {welcomeName}</span>
-                  <span className="w-1 h-1 rounded-full bg-slate-300" />
-                  <span className="text-xs font-medium text-emerald-500">Live system synchronized</span>
+                  <h1 className="text-2xl font-semibold text-[#1E1B4B] tracking-tight">Employer Dashboard</h1>
+                  {dashboardData?.company_verification === 1 && (
+                     <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
+                        <Check className="w-2.5 h-2.5" /> Verified
+                     </div>
+                  )}
                </div>
+               <p className="text-xs text-[#1E1B4B]">Welcome back, {dashboardData?.employer_profile?.company_name || welcomeName}</p>
             </div>
 
             <Link href={`${basePath}/post-job`}>
-               <Button size="sm" className="h-10 px-6 rounded-xl font-medium text-xs transition-all shadow-sm active:scale-95 text-white">
-                  <PlusCircle className="w-4 h-4 mr-2" /> Post a job
+               <Button className="h-10 px-6 rounded-lg font-semibold text-xs bg-[#2563EB] hover:bg-[#1D4ED8] transition-all shadow-md shadow-blue-50 flex items-center gap-2">
+                  <PlusCircle className="w-4 h-4" /> Post a Job
                </Button>
             </Link>
          </div>
 
-         {/* Stats Grid */}
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat, i) => (
-               <div key={i} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity -mr-8 -mt-8 rounded-full" />
+         {/* Current Plan Card - Refined Light Aesthetic */}
+         {sub && (
+            <div className="bg-white rounded-[20px] p-5 border border-indigo-100 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none" />
+               <div className="relative z-10 flex gap-4 md:items-center">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                     <CreditCard className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div>
+                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-0.5">Current Plan</p>
+                     <h2 className="text-xl font-semibold text-[#1E1B4B]">{sub.plan_name}</h2>
+                     <p className="text-[11px] text-[#1E1B4B] opacity-60">Expires on {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  </div>
+               </div>
 
-                  <div className="flex items-start justify-between mb-4 relative z-10 font-medium">
-                     <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center border shadow-inner transition-transform group-hover:scale-105",
-                        stat.color === 'blue' && "bg-blue-50 text-blue-600 border-blue-100",
-                        stat.color === 'indigo' && "bg-indigo-50 text-indigo-600 border-indigo-100",
-                        stat.color === 'emerald' && "bg-emerald-50 text-emerald-600 border-emerald-100",
-                        stat.color === 'green' && "bg-emerald-50 text-emerald-600 border-emerald-100",
-                        stat.color === 'purple' && "bg-purple-50 text-purple-600 border-purple-100",
-                        stat.color === 'amber' && "bg-amber-50 text-amber-600 border-amber-100",
-                     )}>
-                        <stat.icon className="w-5 h-5" />
-                     </div>
-                     <span className={cn(
-                        "text-[10px] font-semibold px-2 py-0.5 rounded-md border",
-                        stat.color === 'blue' && "text-blue-500 border-blue-100 bg-blue-50/30",
-                        stat.color === 'indigo' && "text-indigo-500 border-indigo-100 bg-indigo-50/30",
-                        stat.color === 'emerald' && "text-emerald-500 border-emerald-100 bg-emerald-50/30",
-                        stat.color === 'green' && "text-emerald-500 border-emerald-100 bg-emerald-50/30",
-                        stat.color === 'purple' && "text-purple-500 border-purple-100 bg-purple-50/30",
-                        stat.color === 'amber' && "text-amber-500 border-amber-100 bg-amber-50/30",
-                     )}>{stat.trend}</span>
+               <div className="relative z-10 grid grid-cols-3 gap-8 md:border-l md:border-indigo-50 md:pl-8">
+                  <div>
+                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-1">Total Credits</p>
+                     <p className="text-lg font-semibold text-[#1E1B4B]">{sub.total_credits}</p>
                   </div>
-
-                  <div className="space-y-0.5 relative z-10">
-                     <p className="text-[11px] font-medium text-slate-400">{stat.label}</p>
-                     <h3 className="text-xl font-semibold text-slate-900 leading-tight">{stat.value}</h3>
+                  <div>
+                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-1">Used</p>
+                     <p className="text-lg font-semibold text-rose-500">{sub.used_credits}</p>
+                  </div>
+                  <div>
+                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-1">Remaining</p>
+                     <p className="text-lg font-semibold text-emerald-600">{sub.remaining_credits}</p>
                   </div>
                </div>
-            ))}
-         </div>
-
-         {/* Subscription & Multi-info Section */}
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Credit Balance Card */}
-            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-               <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-inner shrink-0">
-                  <Zap className="w-6 h-6" />
-               </div>
-               <div className="flex-1">
-                  <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none mb-1.5">Posting credits</p>
-                  <div className="flex items-center justify-between">
-                     <h3 className="text-xl font-bold text-slate-900">{dashboardData?.total_remaining_credits || 0}</h3>
-                     <Link href={`${basePath}/purchase-history`}>
-                        <span className="text-[10px] font-medium text-primary bg-primary/5 px-2 py-1 rounded-md border border-primary/10 hover:bg-primary/10 transition-colors">Buy more</span>
-                     </Link>
-                  </div>
-               </div>
-            </div>
-
-            {/* Featured Status Card */}
-            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-               <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0",
-                  dashboardData?.company_featured ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-300 border-slate-100"
-               )}>
-                  <Star className={cn("w-6 h-6", dashboardData?.company_featured && "fill-amber-500/20")} />
-               </div>
-               <div className="flex-1">
-                  <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none mb-1.5">Premium status</p>
-                  <div className="flex flex-col">
-                     <h3 className={cn("text-sm font-semibold", dashboardData?.company_featured ? "text-amber-600" : "text-slate-400")}>
-                        {dashboardData?.company_featured ? "Featured institution" : "Standard account"}
-                     </h3>
-                     {dashboardData?.company_featured_until && (
-                        <p className="text-[9px] text-slate-400 font-medium">Expires: {new Date(dashboardData.company_featured_until).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
-                     )}
-                  </div>
-               </div>
-            </div>
-
-            {/* Verification Status Card */}
-            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4">
-               <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center border shadow-inner shrink-0",
-                  dashboardData?.company_verification === 1 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-500 border-amber-100"
-               )}>
-                  {dashboardData?.company_verification === 1 ? <Verified className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
-               </div>
-               <div className="flex-1">
-                  <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none mb-1.5">Identity match</p>
-                  <div className="flex flex-col">
-                     <h3 className={cn("text-sm font-semibold", dashboardData?.company_verification === 1 ? "text-emerald-700" : "text-amber-600")}>
-                        {dashboardData?.company_verification === 1 ? "Verified institution" : "Verification pending"}
-                     </h3>
-                     <Link href={`${basePath}/institution-verification`} className="w-fit">
-                        <span className="text-[9px] font-medium text-slate-400 hover:text-primary transition-colors underline underline-offset-2 decoration-slate-200">Manage details</span>
-                     </Link>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         {/* Admin Notice */}
-         {dashboardData?.company_verification !== 1 && (
-            <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-500">
-               <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-amber-500 border border-amber-100 shadow-inner shrink-0">
-                     <AlertCircle className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-0.5">
-                     <p className="text-xs font-semibold text-amber-900">Account under review</p>
-                     <p className="text-xs text-amber-800/70 font-medium leading-relaxed">
-                        Complete your institution verification to unlock all features.
-                     </p>
-                  </div>
-               </div>
-               <Link href={`${basePath}/institution-verification`} className="w-full sm:w-auto">
-                  <Button size="sm" variant="outline" className="h-9 w-full px-5 rounded-xl bg-white text-amber-600 border-amber-200 hover:bg-amber-50 text-xs font-semibold transition-all">
-                     Verify now
+               
+               <Link href={`${basePath}/purchase-history`} className="relative z-10">
+                  <Button variant="outline" className="h-9 px-6 rounded-lg border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm">
+                     Upgrade Plan
                   </Button>
                </Link>
             </div>
          )}
 
-         {/* Main Grid */}
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* Recent Applications */}
-            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[460px] overflow-hidden">
-               <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center gap-2.5 font-medium">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm" />
-                  <h2 className="text-xs font-semibold text-slate-800">Recent applications</h2>
+         {/* Stats Grid - Live Data Only */}
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {stats.map((stat, i) => (
+               <div key={i} className={cn(
+                  "relative h-28 rounded-[16px] p-4 flex flex-col justify-between overflow-hidden shadow-sm",
+                  "bg-gradient-to-br", stat.gradient, stat.textColor
+               )}>
+                  <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                     <stat.icon className="w-6 h-6 opacity-80" />
+                  </div>
+                  
+                  <div className="relative z-10 space-y-0.5">
+                     <p className="text-[11px] font-medium opacity-90">{stat.label}</p>
+                     <h3 className="text-3xl font-semibold tracking-tight">{stat.value}</h3>
+                  </div>
+                  
+                  <div className="relative z-10">
+                     <p className="text-[10px] opacity-70 italic">{stat.subtext}</p>
+                  </div>
+               </div>
+            ))}
+         </div>
+
+         {/* Main Content Grid: Live Lists Only */}
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Recent Applicants Column */}
+            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+               <div className="px-5 py-3.5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                  <h2 className="text-[15px] font-semibold text-[#1E1B4B]">Recent applicants</h2>
+                  <Link href={`${basePath}/applicants`} className="text-[11px] font-semibold text-primary flex items-center gap-1.5 group">
+                     View All <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                  </Link>
                </div>
 
-               <div className="flex-1">
+               <div className="divide-y divide-slate-50">
                   {dashboardData?.latest_applications && dashboardData.latest_applications.length > 0 ? (
-                     <div className="divide-y divide-slate-50">
-                        {dashboardData.latest_applications.slice(0, 6).map((app) => (
-                           <div key={app.id} className="p-4 hover:bg-slate-50/30 transition-colors flex items-center gap-4 group cursor-pointer">
-                              <div className="relative w-11 h-11 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform flex items-center justify-center">
-                                 <ApplicationAvatar 
-                                    src={app.job_seeker.profile_photo} 
-                                    alt={app.job_seeker.user.name} 
-                                 />
-                              </div>
-                              <div className="flex-1 min-w-0 font-medium">
-                                 <h4 className="text-sm font-semibold text-slate-900 truncate flex items-center gap-2">
-                                    {app.job_seeker.user.name}
-                                    <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 italic">{app.job_seeker.title}</span>
-                                 </h4>
-                                 <p className="text-[11px] text-slate-500 truncate mt-1">Applied for <span className="text-primary font-semibold">{app.job.title}</span></p>
-                              </div>
-                              <div className="text-right shrink-0">
-                                 <span className={cn(
-                                    "px-2 py-0.5 rounded-md text-[10px] font-semibold border shadow-sm",
-                                    app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-slate-50 text-slate-400 border-slate-100"
-                                 )}>
-                                    {app.status}
-                                 </span>
-                                 <p className="text-[10px] text-slate-300 mt-1.5 font-medium">{new Date(app.created_at).toLocaleDateString('en-GB')}</p>
-                              </div>
+                     dashboardData.latest_applications.slice(0, 5).map((app) => (
+                        <div key={app.id} className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                           <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
+                              <ApplicationAvatar 
+                                 src={app.job_seeker.profile_photo} 
+                                 alt={app.job_seeker.user.name} 
+                                 initials={app.job_seeker.user.name.split(' ').map(n=>n[0]).join('')}
+                              />
                            </div>
-                        ))}
-                     </div>
-                  ) : (
-                     <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-slate-50/10">
-                        <div className="w-16 h-16 bg-white border border-slate-100 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-                           <Users className="w-8 h-8 text-slate-100" />
+                           
+                           <div className="flex-1 min-w-0">
+                              <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
+                                 {app.job_seeker.user.name}
+                              </h4>
+                              <p className="text-[11px] text-[#1E1B4B]">
+                                 Applied for {app.job.title}
+                              </p>
+                           </div>
+
+                           <div className="flex items-center gap-3 shrink-0">
+                              <span className="text-[10px] text-black opacity-40 hidden sm:block">
+                                 {new Date(app.created_at).toLocaleDateString('en-GB')}
+                              </span>
+                              <Button variant="outline" size="sm" className="h-7 px-3 rounded-md bg-white text-[#10B981] border-[#D1FAE5] hover:bg-[#ECFDF5] text-[10px] font-semibold capitalize">
+                                 {app.status}
+                              </Button>
+                           </div>
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900 mb-1">No applications yet</h3>
-                        <p className="text-xs text-slate-400 max-w-xs mb-6 font-medium leading-relaxed">Candidates will appear here as soon as they apply for your job posts.</p>
-                        <Link href={`${basePath}/post-job`}>
-                           <Button variant="outline" size="sm" className="h-10 px-6 rounded-xl text-xs font-semibold border-slate-200 hover:bg-slate-50 transition-all shadow-sm">Post a job</Button>
-                        </Link>
+                     ))
+                  ) : (
+                     <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
+                        <Users className="w-10 h-10 mb-2" />
+                        <p className="text-xs font-semibold">No recent applicants</p>
                      </div>
                   )}
                </div>
             </div>
 
-            {/* Sidebar Active Positions */}
-            <div className="space-y-5">
-               <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between font-medium">
-                     <h2 className="text-xs font-semibold text-slate-900">Active positions</h2>
-                     <Link href={`${basePath}/jobs`} className="text-[11px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1.5 transition-all active:scale-95">
-                        Manage <ArrowRight className="w-3.5 h-3.5" />
-                     </Link>
-                  </div>
-                  <div className="divide-y divide-slate-50 max-h-[360px] overflow-y-auto custom-scrollbar">
-                     {dashboardData?.latest_jobs && dashboardData.latest_jobs.length > 0 ? (
-                        dashboardData.latest_jobs.map((job) => (
-                           <div key={job.id} className="p-4 hover:bg-slate-50/30 transition-all group flex items-start gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-inner group-hover:border-primary/20 transition-all">
-                                 <Briefcase className="w-4.5 h-4.5 text-slate-300 group-hover:text-primary transition-colors" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                 <div className="flex items-center justify-between gap-2">
-                                    <h4 className="text-xs font-semibold text-slate-800 group-hover:text-primary transition-colors truncate">{job.title}</h4>
-                                    <span className={cn(
-                                       "text-[10px] font-semibold px-1.5 py-0.5 rounded-md border",
-                                       job.job_status === 'open' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-rose-50 text-rose-600 border-rose-100"
-                                    )}>
-                                       {job.job_status}
-                                    </span>
-                                 </div>
-                                 <p className="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-400 font-medium">
-                                    <Calendar className="w-3 h-3 text-slate-300" /> Posted on {new Date(job.created_at).toLocaleDateString('en-GB')}
-                                 </p>
-                              </div>
-                           </div>
-                        ))
-                     ) : (
-                        <div className="p-10 text-center text-xs text-slate-300 font-medium">No open positions found.</div>
-                     )}
-                  </div>
+            {/* Recent Job Posts Column */}
+            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+               <div className="px-5 py-3.5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                  <h2 className="text-[15px] font-semibold text-[#1E1B4B]">Recent job posts</h2>
+                  <Link href={`${basePath}/jobs`} className="text-[11px] font-semibold text-primary flex items-center gap-1.5 group">
+                     View All <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                  </Link>
                </div>
 
-               {/* Profile Progress / Action */}
-               <Link href={`${basePath}/post-job`} className="block group font-medium">
-                  <div className="bg-primary p-5 rounded-xl shadow-xl shadow-primary/10 flex items-center justify-between hover:translate-y-[-2px] transition-all relative overflow-hidden text-white">
-                     <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12" />
-                     <div className="space-y-1 relative z-10">
-                        <p className="text-[10px] font-medium text-white/50">Grow your team</p>
-                        <h4 className="text-sm font-semibold tracking-tight">Post a new opening</h4>
+               <div className="divide-y divide-slate-50">
+                  {dashboardData?.latest_jobs && dashboardData.latest_jobs.length > 0 ? (
+                     dashboardData.latest_jobs.slice(0, 5).map((job) => (
+                        <div key={job.id} className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                           <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                 <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
+                                    {job.title}
+                                 </h4>
+                                 <span className={cn(
+                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 uppercase tracking-tight",
+                                    job.job_status === 'open' ? "bg-[#D1FAE5] text-[#059669]" : "bg-slate-100 text-black/50"
+                                 )}>
+                                    {job.job_status}
+                                 </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-[10px] text-[#1E1B4B]">
+                                 <span className="flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
+                              </div>
+                           </div>
+
+                           <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px] shrink-0">
+                              Applicants
+                           </Button>
+                        </div>
+                     ))
+                  ) : (
+                     <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
+                        <Briefcase className="w-10 h-10 mb-2" />
+                        <p className="text-xs font-semibold">No recent posts</p>
                      </div>
-                     <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform relative z-10 shadow-lg">
-                        <PlusCircle className="w-6 h-6" />
-                     </div>
-                  </div>
-               </Link>
+                  )}
+               </div>
             </div>
          </div>
       </div>
