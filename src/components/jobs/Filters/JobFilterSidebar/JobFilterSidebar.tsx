@@ -62,6 +62,7 @@ export const JobFilterSidebar = ({
         <button 
           onClick={handleClearAll}
           className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+          suppressHydrationWarning={true}
         >
           Clear all
         </button>

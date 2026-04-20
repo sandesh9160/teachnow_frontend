@@ -37,6 +37,7 @@ export const PaginationFilter = ({
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="w-full appearance-none bg-white rounded-xl px-5 py-2.5 pr-10 text-sm font-semibold text-slate-600 border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 cursor-pointer transition-all hover:border-slate-300"
+            suppressHydrationWarning={true}
           >
             {sortOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
           </select>
@@ -49,6 +50,7 @@ export const PaginationFilter = ({
             value={resultsPerPage}
             onChange={(e) => setResultsPerPage(Number(e.target.value))}
             className="w-full appearance-none bg-white rounded-xl px-5 py-2.5 pr-10 text-sm font-semibold text-slate-600 border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 cursor-pointer transition-all hover:border-slate-300"
+            suppressHydrationWarning={true}
           >
             {pageOptions.map(opt => <option key={opt} value={opt}>{opt} per page</option>)}
           </select>

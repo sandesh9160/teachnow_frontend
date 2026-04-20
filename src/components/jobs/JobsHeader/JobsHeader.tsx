@@ -108,6 +108,7 @@ export const JobsHeader = ({
                   placeholder="Job title, subject..."
                   autoComplete="off"
                   className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-sm md:text-base"
+                  suppressHydrationWarning={true}
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
@@ -154,6 +155,7 @@ export const JobsHeader = ({
                   placeholder="City or remote"
                   autoComplete="off"
                   className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-sm md:text-base"
+                  suppressHydrationWarning={true}
                   value={location}
                   onChange={(e) => {
                     setLocation(e.target.value);
