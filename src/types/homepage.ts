@@ -41,6 +41,7 @@ export type Job = {
     name: string;
     slug?: string;
   };
+  location_image?: string;
 };
 
 
@@ -146,6 +147,7 @@ export type City = {
   name: string;
   image: string;
   jobs_count?: number;
+  active_jobs_count?: number;
 };
 
 export type Category = {

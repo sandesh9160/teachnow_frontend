@@ -525,7 +525,7 @@ export default function ProfileFormClient({
           </div>
           <div className="flex-1 pb-0.5 min-w-0">
             <h2 className="text-lg font-bold text-black tracking-tight truncate">{profileData.name || "Name not set"}</h2>
-            <p className="text-black/60 text-[13px] font-medium truncate">{profileData.title || "No title set"}</p>
+            <p className="text-black/70 text-[13px] font-medium truncate">{profileData.title || "No title set"}</p>
           </div>
         </div>
         
@@ -568,32 +568,32 @@ export default function ProfileFormClient({
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Status</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Status</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.open_to_work}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Notice Period</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Notice Period</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.notice_period || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Expected Salary</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Expected Salary</p>
             <p className="text-[13px] font-semibold text-black">{profileData.expected_salary || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Preferred Location</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Preferred Location</p>
             <p className="text-[13px] font-semibold text-black">{profileData.preferred_location || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Total Experience</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Total Experience</p>
             <p className="text-[13px] font-semibold text-black">{profileData.experience_years || 0} Years</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Teaching Mode</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Teaching Mode</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.teaching_mode || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-black/40 tracking-tight mb-0.5">Availability</p>
-            <p className="text-[13px] font-semibold text-slate-700 uppercase">{profileData.availability || "Not specified"}</p>
+            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Availability</p>
+            <p className="text-[13px] font-semibold text-slate-700">{profileData.availability || "Not specified"}</p>
           </div>
         </div>
       </div>
@@ -616,12 +616,12 @@ export default function ProfileFormClient({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[13px] font-bold text-black flex items-center gap-2 tracking-wide">
+            <h3 className="text-[13px] font-bold text-black flex items-center gap-2">
                <Briefcase className="w-4 h-4 text-black/30" /> Experience
             </h3>
             <button 
               onClick={() => { setMode("edit"); setShowExpForm(true); }}
-              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+              className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
               Edit
             </button>
@@ -646,12 +646,12 @@ export default function ProfileFormClient({
 
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[13px] font-bold text-black flex items-center gap-2 tracking-wide">
+            <h3 className="text-[13px] font-bold text-black flex items-center gap-2">
                <GraduationCap className="w-4 h-4 text-black/30" /> Education
             </h3>
             <button 
               onClick={() => { setMode("edit"); setShowEduForm(true); }}
-              className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-widest"
+              className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
               Edit
             </button>
@@ -681,12 +681,12 @@ export default function ProfileFormClient({
 
       <div className="bg-white p-7 rounded-xl border border-slate-100 shadow-xs space-y-8 mt-6">
         <div>
-          <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2 tracking-wide">
+          <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
              <BookOpen className="w-4 h-4 text-black/30" /> Subjects & Skills
           </h3>
           <div className="flex flex-wrap gap-x-10 gap-y-3">
             {(profileData.skills || []).map((item: any, i: number) => (
-               <span key={i} className="text-indigo-600 font-bold text-[13px] tracking-tight">
+               <span key={i} className="text-indigo-600 font-semibold text-[13px]">
                  {typeof item === 'string' ? item : item.name}
                </span>
             ))}
@@ -695,15 +695,15 @@ export default function ProfileFormClient({
 
         {profileData.certifications?.length > 0 && (
           <div>
-            <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2 tracking-wide">
+            <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
                <Award className="w-4 h-4 text-black/30" /> Certifications
             </h3>
             <div className="space-y-4">
               {profileData.certifications.map((cert: any, i: number) => (
                  <div key={i} className="flex flex-col">
-                   <p className="text-black font-bold text-[13px] tracking-tight">{typeof cert === 'string' ? cert : cert.name}</p>
+                   <p className="text-black font-semibold text-[13px]">{typeof cert === 'string' ? cert : cert.name}</p>
                    {cert.issuer && (
-                     <p className="text-black/40 text-[11px] font-semibold mt-0.5">
+                     <p className="text-black/60 text-[11px] font-medium mt-0.5">
                        {cert.issuer} {cert.issued_at ? ` · ${cert.issued_at.split("-")[0]}` : ''}
                      </p>
                    )}
@@ -715,12 +715,12 @@ export default function ProfileFormClient({
  
         {profileData.languages?.length > 0 && (
           <div>
-            <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2 tracking-wide">
+            <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
                <Languages className="w-4 h-4 text-black/30" /> Languages
             </h3>
             <div className="flex flex-wrap gap-x-10 gap-y-3">
               {profileData.languages.map((lang: any, i: number) => (
-                 <span key={i} className="text-black/80 font-bold text-[13px] tracking-tight">
+                 <span key={i} className="text-black/80 font-semibold text-[13px]">
                    {typeof lang === 'string' ? lang : lang.name}
                  </span>
               ))}
@@ -934,12 +934,12 @@ export default function ProfileFormClient({
                     <Label className="text-[12px] font-medium text-slate-600">Timeline <span className="text-red-500">*</span></Label>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
                        <div className="flex-1 space-y-1">
-                          <p className="text-[10px] font-bold text-black/40 tracking-tight">Start Date</p>
+                          <p className="text-[10px] font-semibold text-black/60">Start Date</p>
                           <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                        </div>
-                       <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-bold tracking-widest shrink-0">to</span>
+                       <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
                        <div className="flex-1 space-y-1">
-                          <p className="text-[11px] font-bold text-black/60 tracking-tight uppercase">End Date</p>
+                          <p className="text-[11px] font-semibold text-black/60">End Date</p>
                           <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                        </div>
                     </div>
@@ -1022,9 +1022,9 @@ export default function ProfileFormClient({
                             <p className="text-[12px] font-semibold text-slate-500">Start Date</p>
                             <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                          </div>
-                         <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-bold tracking-widest shrink-0">to</span>
+                         <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
                          <div className="flex-1 space-y-1">
-                            <p className="text-[11px] font-bold text-black/60 tracking-tight uppercase">End Date</p>
+                            <p className="text-[11px] font-semibold text-black/60">End Date</p>
                             <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
                          </div>
                       </div>
@@ -1185,11 +1185,11 @@ export default function ProfileFormClient({
                     {profileData.certifications.map((c: any, idx: number) => (
                       <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl min-w-[220px] relative group pointer-events-auto">
                         <div className="flex items-center justify-between gap-4">
-                          <p className="font-bold text-emerald-900 text-[13px] tracking-tight">{typeof c === 'string' ? c : c.name}</p>
+                          <p className="font-semibold text-emerald-900 text-[13px]">{typeof c === 'string' ? c : c.name}</p>
                           <button type="button" onClick={() => setProfileData(p => ({...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx)}))} className="p-1 text-emerald-300 hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
                         </div>
                         {(c.issuer || c.issued_at) && (
-                          <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest mt-2">
+                          <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
                              {c.issuer} {c.issued_at ? ` · ${c.issued_at.split("-")[0]}` : ''}
                           </p>
                         )}

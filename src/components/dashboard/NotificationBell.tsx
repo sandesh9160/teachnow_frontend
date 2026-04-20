@@ -28,13 +28,11 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-all duration-300 group"
+        className="relative p-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl transition-all duration-300 group"
       >
-        <Bell className="w-5 h-5 group-hover:scale-110 transition-transform" />
+        <Bell className="w-5 h-5 group-hover:scale-105 transition-transform" />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm ring-1 ring-primary/20">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white shadow-sm" />
         )}
       </button>
 

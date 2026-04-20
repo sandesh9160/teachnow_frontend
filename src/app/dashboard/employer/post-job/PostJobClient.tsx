@@ -4,20 +4,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { 
   Briefcase, 
-
   Loader2,
-
   Save,
   Trash2,
- 
   ToggleLeft,
   Hash,
   DollarSign,
-
   FileText,
   GraduationCap,
   Eye,
- 
   X,
   Plus
 } from "lucide-react";
@@ -98,7 +93,42 @@ export default function PostJobClient({
     { id: 5, name: "Preview & Publish", icon: Eye },
   ];
 
-  const handleNext = () => { if (currentStep < 5) setCurrentStep(currentStep + 1); };
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 1:
+        if (!formData.title.trim()) return { title: "Missing Title", desc: "Please provide a catchy title for your job listing." };
+        if (!formData.category_id) return { title: "Subject Required", desc: "Select a subject category to help candidates find your job." };
+        if (!formData.job_type) return { title: "Job Type", desc: "Is this a full-time or part-time position? Please select one." };
+        if (!formData.school_name.trim()) return { title: "Institution Name", desc: "Please enter the name of your school or institute." };
+        if (!formData.location) return { title: "Location Missing", desc: "Tell candidates where this job is located." };
+        break;
+      case 2:
+        if (!description || description.replace(/<[^>]*>/g, '').trim().length < 20) 
+          return { title: "Details Needed", desc: "A brief description (min 20 chars) helps candidates understand the role better." };
+        break;
+      case 3:
+        if (!formData.education_qualification.trim()) return { title: "Qualification", desc: "Please specify the required education for this role." };
+        break;
+      case 4:
+        if (!deadline) return { title: "Deadline Missing", desc: "When should applications close? Please pick a date." };
+        if (!formData.salary_min) return { title: "Min Salary", desc: "Please provide a minimum monthly salary range." };
+        if (!formData.salary_max) return { title: "Max Salary", desc: "Please provide a maximum monthly salary range." };
+        if (Number(formData.salary_min) > Number(formData.salary_max)) 
+          return { title: "Salary Order", desc: "The minimum salary shouldn't be higher than the maximum." };
+        break;
+    }
+    return null;
+  };
+
+  const handleNext = () => {
+    const error = validateStep(currentStep);
+    if (error) {
+      toast.error(error.title, { description: error.desc });
+      return;
+    }
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
+  };
+
   const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
 
   const addSkill = () => {
@@ -120,6 +150,13 @@ export default function PostJobClient({
   };
 
   const handleSubmit = async () => {
+    const error = validateStep(4); // Re-validate step 4 before submitting
+    if (error) {
+      toast.error(error.title, { description: error.desc });
+      setCurrentStep(4);
+      return;
+    }
+
     setLoading(true);
     const data = { ...formData, description, deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", featured: featured ? 1 : 0, questions };
     try {
@@ -320,14 +357,25 @@ export default function PostJobClient({
                     ))}
                  </div>
                </div>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-4 border-t border-slate-50">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-6 border-t border-slate-50">
                   <div className="space-y-2">
-                     <Label className="text-[10px] text-slate-400 font-medium">Deadline</Label>
-                     <DatePicker date={deadline} setDate={setDeadline} className="h-11" />
+                     <Label className="text-xs md:text-sm font-medium text-slate-700">Application Deadline *</Label>
+                     <DatePicker 
+                        date={deadline} 
+                        setDate={setDeadline} 
+                        className="h-12 bg-slate-50 border-slate-50 focus:bg-white" 
+                        placeholder="Select deadline date"
+                     />
                   </div>
                   <div className="space-y-2">
-                     <Label className="text-[10px] text-slate-400 font-medium">Openings</Label>
-                     <Input type="number" value={formData.vacancies} onChange={(e) => updateField("vacancies", e.target.value)} className="h-11" />
+                     <Label className="text-xs md:text-sm font-medium text-slate-700">Number of Openings</Label>
+                     <Input 
+                        type="number" 
+                        value={formData.vacancies} 
+                        onChange={(e) => updateField("vacancies", e.target.value)} 
+                        className="h-12 bg-slate-50 border-slate-50 text-sm" 
+                        placeholder="e.g. 2"
+                     />
                   </div>
                </div>
             </div>

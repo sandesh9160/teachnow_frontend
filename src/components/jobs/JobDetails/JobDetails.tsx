@@ -144,6 +144,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   const similarJobs = Array.isArray(job.similar_jobs) ? job.similar_jobs : [];
 
   const getBannerImage = () => {
+    if (job.location_image) return normalizeMediaUrl(job.location_image);
+    
     const loc = (job.location || "").toLowerCase();
     if (loc.includes("delhi")) return "/images/cities/delhi.jpg";
     if (loc.includes("mumbai")) return "/images/cities/mumbai.jpg";

@@ -83,7 +83,7 @@ export default async function HomePage() {
       {categories && categories.length > 0 && <Categories categories={categories} />}
 
       {institutions && institutions.length > 0 && <FeaturedInstitutions institutions={institutions} />}
-      {cities && cities.length > 0 && <BrowseByCity cities={cities} />}
+      {cities && cities.length > 0 && <BrowseByCity cities={cities} totalJobs={stats?.total_jobs} />}
       {jobs && jobs.length > 0 && <FeaturedJobs jobs={jobs} />}
       {stats && <HeroStats stats={stats} />}
 

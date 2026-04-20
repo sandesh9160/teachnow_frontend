@@ -7,9 +7,10 @@ import { normalizeMediaUrl } from "@/services/api/client";
 
 interface BrowseByCityProps {
   cities: City[];
+  totalJobs?: number;
 }
 
-export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
+export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
 
   if (!cities || !Array.isArray(cities) || cities.length === 0) return null;
 
@@ -30,7 +31,7 @@ export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
             Explore teaching jobs in major <span className="text-blue-600">Indian cities</span>
           </h2>
           <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
-            Find opportunities in your preferred location
+            Find opportunities {totalJobs ? `among ${totalJobs}+ ` : "in your "}preferred location
           </p>
         </div>
       </div>
@@ -61,7 +62,7 @@ export const BrowseByCity = ({ cities }: BrowseByCityProps) => {
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <h3 className="text-xl font-bold text-white tracking-tight leading-tight mb-1">{city.name}</h3>
                   <p className="text-sm font-medium text-white/90">
-                    {city.jobs_count || 0}+ Teaching Jobs
+                    {city.active_jobs_count ?? city.jobs_count ?? 0} Teaching Jobs
                   </p>
                 </div>
               </Link>

@@ -74,13 +74,20 @@ async function fetchNavigation(): Promise<NavigationData | null> {
     const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation", {
       revalidate: REVALIDATE_SECONDS,
     });
-    // Ensure company_logos is accessible from the navigation data
-    const data = res.data || (res as any);
+    const rawResponse = res as any;
+    const data = res.data ?? rawResponse;
+    
+    // If data is an array, it's the list of menus
+    // If data is an object, it might contain a menus property
+    const menus = Array.isArray(data) ? data : (data?.menus || []);
+    
     return {
-      ...data,
-      company_logos: data?.company_logos || (res as any)?.company_logos || [],
+      ...(typeof data === 'object' && !Array.isArray(data) ? data : {}),
+      menus,
+      company_logos: data?.company_logos || rawResponse?.company_logos || [],
     };
-  } catch {
+  } catch (error) {
+    // console.error("[fetchNavigation] Error:", error);
     return null;
   }
 }

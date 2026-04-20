@@ -31,7 +31,12 @@ export function DashboardShell({
     footerData?.company || 
     navData?.companies?.list?.[0];
   
-  const companyName = rawCompany?.company_name || rawCompany?.name || rawCompany?.title || "Teach Now";
+  const companyName = 
+    rawCompany?.company_name || 
+    rawCompany?.brand_name || 
+    rawCompany?.name || 
+    rawCompany?.title || 
+    "Teach Now";
   const rawLogo = rawCompany?.company_logo || rawCompany?.logo || rawCompany?.brand_logo;
   const companyLogo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
   

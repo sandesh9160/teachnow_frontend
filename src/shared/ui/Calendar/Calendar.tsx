@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 import "react-day-picker/style.css"
 
@@ -109,7 +109,7 @@ function Calendar({
           );
         },
         MonthCaption: () => (
-          <div className="flex items-center gap-0.5 z-20">
+          <div className="flex items-center justify-center gap-1.5 z-20 w-full px-10">
             <Select 
               value={months[currentMonth.getMonth()]} 
               onValueChange={(mName) => {
@@ -120,13 +120,13 @@ function Calendar({
             >
               <SelectTrigger 
                 onPointerDown={(e) => e.stopPropagation()}
-                className="h-7 py-0 px-2 text-[12.5px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-colors rounded-md min-w-[60px] justify-center gap-0.5 shadow-none z-30"
+                className="h-8 py-0 px-2 text-[13px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-all rounded-lg justify-center gap-0.5 shadow-none z-30"
               >
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="min-w-[100px] border-slate-100 shadow-2xl rounded-xl z-[100]">
+              <SelectContent className="min-w-[110px] border-slate-100 shadow-2xl rounded-xl z-[100] bg-white">
                 {months.map((m) => (
-                  <SelectItem key={m} value={m} className="text-xs font-semibold py-1.5 cursor-pointer">{m}</SelectItem>
+                  <SelectItem key={m} value={m} className="text-xs font-semibold py-2 cursor-pointer focus:bg-indigo-50 focus:text-indigo-600 transition-colors uppercase tracking-tight">{m}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -140,13 +140,13 @@ function Calendar({
             >
               <SelectTrigger 
                 onPointerDown={(e) => e.stopPropagation()}
-                className="h-7 py-0 px-2 text-[12.5px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-colors rounded-md justify-center gap-0.5 shadow-none z-30"
+                className="h-8 py-0 px-2 text-[13px] font-bold border-none bg-transparent hover:bg-slate-50 focus:ring-0 transition-all rounded-lg justify-center gap-0.5 shadow-none z-30"
               >
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="min-w-[80px] border-slate-100 shadow-2xl rounded-xl z-[100]">
+              <SelectContent className="min-w-[90px] border-slate-100 shadow-2xl rounded-xl z-[100] bg-white text-slate-800">
                 {years.map((y) => (
-                  <SelectItem key={y} value={y.toString()} className="text-xs font-semibold py-1.5 cursor-pointer">{y}</SelectItem>
+                  <SelectItem key={y} value={y.toString()} className="text-xs font-semibold py-2 cursor-pointer focus:bg-indigo-50 focus:text-indigo-600 transition-colors">{y}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

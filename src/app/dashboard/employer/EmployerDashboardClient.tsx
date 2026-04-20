@@ -242,9 +242,6 @@ export default function EmployerDashboardClient({
             <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
                <div className="px-5 py-3.5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                   <h2 className="text-[15px] font-semibold text-[#1E1B4B]">Recent applicants</h2>
-                  <Link href={`${basePath}/applicants`} className="text-[11px] font-semibold text-primary flex items-center gap-1.5 group">
-                     View All <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                  </Link>
                </div>
 
                <div className="divide-y divide-slate-50">
@@ -291,9 +288,6 @@ export default function EmployerDashboardClient({
             <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
                <div className="px-5 py-3.5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                   <h2 className="text-[15px] font-semibold text-[#1E1B4B]">Recent job posts</h2>
-                  <Link href={`${basePath}/jobs`} className="text-[11px] font-semibold text-primary flex items-center gap-1.5 group">
-                     View All <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                  </Link>
                </div>
 
                <div className="divide-y divide-slate-50">

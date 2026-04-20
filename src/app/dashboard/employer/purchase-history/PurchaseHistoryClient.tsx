@@ -4,14 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { 
   CheckCircle2, 
   Download, 
-  Crown,
-  History,
-  Zap,
-  ShieldCheck,
+  CreditCard,
   Loader2,
   AlertCircle,
   FileText,
-  BadgeCent
+  Calendar,
+  Clock,
+  ArrowUpRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
@@ -24,10 +23,6 @@ interface Plan {
     job_posts_limit: number;
     validity_days: number;
     job_live_days: number;
-    features?: string[];
-    is_active?: number;
-    created_at?: string;
-    updated_at?: string;
     is_current: boolean;
 }
 
@@ -35,15 +30,14 @@ interface CurrentSubscription {
     id: number;
     employer_id: number;
     plan_id: number;
-    order_id: number;
     job_posts_total: number;
     job_posts_used: number;
+    featured_jobs_total: number;
+    featured_jobs_used: number;
     purchase_date: string;
     starts_at: string;
     expires_at: string;
     status: string;
-    created_at: string | null;
-    updated_at: string;
 }
 
 interface Payment {
@@ -52,9 +46,8 @@ interface Payment {
   payment_method: string;
   payment_status: string;
   transaction_id: string;
-  plan_name?: string;
+  plan_name: string;
   created_at: string | null;
-  updated_at: string | null;
 }
 
 interface Invoice {
@@ -107,21 +100,23 @@ export default function PurchaseHistoryClient() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
-        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
-        <p className="text-xs text-gray-400 font-medium tracking-normal">Loading billing history...</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-8 h-8 text-[#00359E] animate-spin" />
+        <p className="text-sm text-slate-500 font-medium">Loading billing details...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
-        <AlertCircle className="w-8 h-8 text-red-500" />
-        <p className="text-sm text-gray-500 font-medium tracking-normal">{error}</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
+          <AlertCircle className="w-6 h-6 text-red-500" />
+        </div>
+        <p className="text-slate-600 font-medium">{error}</p>
         <button 
           onClick={fetchHistory}
-          className="text-xs font-bold text-blue-600 hover:underline"
+          className="px-4 py-2 bg-[#00359E] text-white rounded-lg text-sm font-semibold hover:bg-[#002B80] transition-colors"
         >
           Try Again
         </button>
@@ -129,230 +124,317 @@ export default function PurchaseHistoryClient() {
     );
   }
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString.split(' ')[0] || dateString;
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (e) {
+      return dateString.split(' ')[0] || dateString;
+    }
+  };
+
   const plans = data?.plans || [];
   const invoices = data?.invoices || [];
   const payments = data?.payments || [];
-
-  // Simple mapping for icons and colors based on plan name or index
-  const getPlanStyles = (plan: Plan, index: number) => {
-    const name = plan.name.toLowerCase();
-    if (name.includes('basic') || name.includes('starter') || index === 0) {
-      return { icon: Zap, color: 'emerald' };
-    }
-    if (name.includes('pro') || name.includes('standard') || index === 1) {
-      return { icon: ShieldCheck, color: 'blue' };
-    }
-    return { icon: Crown, color: 'indigo' };
-  };
+  const sub = data?.current_subscription;
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-4 sm:space-y-6 overflow-x-hidden">
-      {/* Mobile-Optimized Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-gray-100">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-8 font-sans overflow-x-hidden pb-12">
+      {/* Header & Sub Usage */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-0.5">
-          <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-normal">Billing & Subscription</h1>
-          <p className="text-[11px] sm:text-xs text-gray-400 font-medium tracking-normal">Manage your plans, payments and invoices</p>
+          <h2 className="text-2xl font-semibold text-[#0F172A]">Billing</h2>
+          <p className="text-slate-500 text-sm">Manage your subscription and invoices</p>
         </div>
+
+        {sub && (
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-blue-100 shadow-sm transition-all hover:shadow-md">
+            <div className="space-y-0.5 min-w-0">
+              <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Credits</p>
+              <p className="text-sm sm:text-lg font-semibold text-[#00359E] truncate">{sub.job_posts_total - sub.job_posts_used} <span className="text-[10px] sm:text-xs font-medium text-slate-400">/ {sub.job_posts_total}</span></p>
+            </div>
+            <div className="space-y-0.5 border-l border-slate-100 pl-3 sm:pl-4 min-w-0">
+              <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Status</p>
+              <div className="flex items-center gap-1 min-w-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <p className="text-[11px] sm:text-sm font-semibold text-emerald-600 capitalize truncate">{sub.status}</p>
+              </div>
+            </div>
+            <div className="space-y-0.5 border-l border-slate-100 pl-3 sm:pl-4 min-w-0">
+              <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Expires</p>
+              <p className="text-[11px] sm:text-sm font-semibold text-slate-800 truncate">{formatDate(sub.expires_at)}</p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Mobile-Responsive Plans Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-4">
-        {plans.map((plan, index) => {
-          const styles = getPlanStyles(plan, index);
-          const Icon = styles.icon;
+      {/* Pricing Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+        {plans.map((plan) => {
+          const isCurrent = plan.is_current;
+          const price = plan.offer_price === "0.00" || plan.offer_price === "0" ? "Free" : `₹${Number(plan.offer_price).toLocaleString('en-IN')}`;
           
           return (
             <div 
               key={plan.id}
               className={cn(
-                "relative bg-white rounded-xl p-4 sm:p-5 flex flex-col gap-5 sm:gap-6 shadow-sm border transition-all",
-                plan.is_current 
-                  ? "border-blue-600 ring-4 ring-blue-50/30" 
-                  : "border-gray-100"
+                "rounded-2xl p-6 flex flex-col border transition-all duration-300 relative",
+                isCurrent 
+                  ? "border-[#1E3A8A] bg-[#F1F5F9] shadow-lg shadow-blue-900/5 ring-1 ring-[#1E3A8A]" 
+                  : "border-slate-200 bg-white hover:border-blue-200"
               )}
             >
-              {plan.is_current && (
-                <div className="absolute top-2.5 right-2.5 bg-blue-600 text-white px-1.5 py-0.5 rounded text-[8px] font-semibold tracking-normal">
-                  Active
+              {isCurrent && (
+                <div className="absolute -top-3 left-6 px-3 py-1 bg-[#1E3A8A] text-white text-[10px] font-semibold rounded-full shadow-lg">
+                  Current Active Plan
                 </div>
               )}
 
-              <div className="space-y-3 sm:space-y-4">
-                 <div className="flex items-center gap-2.5">
-                    <div className={cn(
-                      "w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0",
-                      styles.color === 'emerald' && "bg-emerald-50 text-emerald-600",
-                      styles.color === 'blue' && "bg-blue-50 text-blue-600",
-                      styles.color === 'indigo' && "bg-indigo-50 text-indigo-600",
-                    )}>
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </div>
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-900 tracking-normal">{plan.name}</h3>
-                 </div>
-                
-                 <div className="flex items-baseline gap-1">
-                   <span className="text-xl sm:text-2xl font-semibold text-gray-900 leading-none">₹{plan.offer_price}</span>
-                   <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold">/{plan.validity_days} days</span>
-                   {plan.actual_price !== plan.offer_price && (
-                      <span className="text-[10px] text-gray-300 line-through ml-1">₹{plan.actual_price}</span>
-                   )}
-                 </div>
+              <div className="space-y-6 flex-1">
+                <div>
+                  <h3 className="text-[14px] font-semibold text-slate-900 mb-3">{plan.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-semibold text-slate-900 tracking-tight">{price}</span>
+                    {price !== "Free" && (
+                      <span className="text-[13px] text-slate-400 font-medium">/ package</span>
+                    )}
+                  </div>
+                  {plan.actual_price !== plan.offer_price && (
+                    <p className="text-[12px] text-slate-300 line-through font-medium">₹{Number(plan.actual_price).toLocaleString('en-IN')}</p>
+                  )}
+                </div>
 
-                 <div className="space-y-2 pt-1 border-t border-gray-50">
-                   {(plan.features || []).map((feature, i) => (
-                     <div key={i} className="flex items-start gap-2.5">
-                       <CheckCircle2 className={cn(
-                          "w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 mt-0.5",
-                          plan.is_current ? "text-blue-500" : "text-emerald-500"
-                       )} />
-                       <span className="text-[10px] sm:text-[11px] text-gray-500 font-bold leading-tight tracking-normal">{feature}</span>
-                     </div>
-                   ))}
-                   <div className="flex items-start gap-2.5">
-                      <CheckCircle2 className={cn(
-                          "w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 mt-0.5",
-                          plan.is_current ? "text-blue-500" : "text-emerald-500"
-                       )} />
-                      <span className="text-[10px] sm:text-[11px] text-gray-500 font-bold leading-tight tracking-normal">{plan.job_posts_limit} Job Posts</span>
-                   </div>
-                 </div>
+                <div className="space-y-3.5 pt-1">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                      <FileText className="w-3 h-3 text-[#1E3A8A]" />
+                    </div>
+                    <span className="text-[13px] text-slate-600 font-medium">{plan.job_posts_limit} Job Postings</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                      <Clock className="w-3 h-3 text-emerald-600" />
+                    </div>
+                    <span className="text-[13px] text-slate-600 font-medium">Package valid for {plan.validity_days} days</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                      <Calendar className="w-3 h-3 text-indigo-600" />
+                    </div>
+                    <span className="text-[13px] text-slate-600 font-medium">Jobs live for {plan.job_live_days} days</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-4.5 h-4.5 text-[#10B981]" strokeWidth={2.5} />
+                    </div>
+                    <span className="text-[13px] text-slate-600 font-medium">Email Support</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-auto pt-2">
-                <button 
-                  className={cn(
-                    "w-full h-8 sm:h-9 rounded-lg font-semibold text-[10px] tracking-normal transition-all",
-                    plan.is_current 
-                      ? "bg-blue-600 text-white shadow-md hover:bg-blue-700" 
-                      : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 font-bold border border-gray-100"
-                  )}
-                >
-                  {plan.is_current ? "Current Plan" : "Upgrade"}
-                </button>
+              <div className="mt-8">
+                {isCurrent ? (
+                  <div className="w-full py-2.5 px-6 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center gap-2 font-semibold text-[13px] shadow-sm">
+                    Active Plan
+                  </div>
+                ) : (
+                  <button className="w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 bg-white text-[#1E3A8A] border border-blue-100 hover:bg-blue-50/50 flex items-center justify-center gap-2 group">
+                    Upgrade Now <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </button>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        {/* Payment History Table */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
-            <div className="flex items-center gap-2.5">
-                <BadgeCent className="w-3.5 h-3.5 text-gray-400" />
-                <h2 className="text-[10px] sm:text-xs font-semibold text-gray-900 tracking-normal">Payment History</h2>
-            </div>
+      <div className="flex flex-col gap-10">
+        {/* Payment History Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-lg font-semibold text-[#0F172A]">Payment History</h2>
           </div>
-
-          <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
-            <table className="w-full text-left min-w-[500px]">
-              <thead className="bg-gray-50/50 border-b border-gray-100">
-                <tr>
-                  <th className="px-4 py-2.5 text-[9px] font-semibold text-gray-600 ">Transaction ID</th>
-                  <th className="px-4 py-2.5 text-[9px] font-semibold text-gray-600 ">Plan</th>
-                  <th className="px-4 py-2.5 text-[9px] font-semibold text-gray-600  text-center">Method</th>
-                  <th className="px-4 py-2.5 text-[9px] font-semibold text-gray-600  text-right">Amount</th>
-                  <th className="px-4 py-2.5 text-[9px] font-semibold text-gray-600  text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {payments.length > 0 ? payments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-gray-50/50 transition-all group">
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-gray-900 tracking-normal block truncate max-w-[120px]">
-                          {payment.transaction_id || payment.id}
+          
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Plan Name</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Transaction Details</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Method</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-right">Amount</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {payments.length > 0 ? payments.map((payment) => (
+                    <tr key={payment.id} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="px-5 py-4">
+                        <span className="text-[14px] font-semibold text-slate-900">{payment.plan_name}</span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="space-y-0.5">
+                          <p className="text-[13px] font-medium text-slate-700">{payment.transaction_id.slice(0, 16).toUpperCase()}</p>
+                          <p className="text-[11px] text-slate-400">{payment.created_at ? formatDate(payment.created_at) : `ID: pay_${payment.id}`}</p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold tracking-tight">{payment.payment_method}</span>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <span className="text-[14px] font-semibold text-slate-900">₹{Number(payment.amount).toLocaleString('en-IN')}</span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <span className={cn(
+                          "px-3 py-1 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5",
+                          payment.payment_status === 'success' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                        )}>
+                          <div className={cn("w-1.5 h-1.5 rounded-full", payment.payment_status === 'success' ? "bg-emerald-500" : "bg-rose-500")} />
+                          {payment.payment_status.charAt(0).toUpperCase() + payment.payment_status.slice(1)}
                         </span>
-                        <span className="text-[8px] font-bold text-gray-300 tracking-normal uppercase">#PAYMENT-{payment.id}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                       <span className="text-[10px] sm:text-[11px] font-bold text-gray-600 tracking-normal">
-                          {payment.plan_name || "N/A"}
-                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                       <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-500 text-[8px] font-bold uppercase tracking-wider">
-                          {payment.payment_method}
-                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                       <span className="text-[10px] sm:text-[11px] font-bold text-gray-900">₹{payment.amount}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                       <span className={cn(
-                          "px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider",
-                          payment.payment_status.toLowerCase() === 'success' 
-                            ? "bg-emerald-50 text-emerald-600 border border-emerald-100/30" 
-                            : "bg-red-50 text-red-600 border border-red-100/30"
-                       )}>
-                          {payment.payment_status}
-                       </span>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center">
-                       <p className="text-[10px] font-bold text-gray-300">No payments recorded</p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center opacity-40">
+                        <CreditCard className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                        <p className="text-sm font-semibold">No payments found</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {payments.length > 0 ? payments.map((payment) => (
+                <div key={payment.id} className="p-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors">
+                  <div className="text-slate-400 shrink-0">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[14px] font-semibold text-slate-900 leading-tight truncate">{payment.plan_name}</h4>
+                    <p className="text-[12px] text-slate-400 font-medium">{payment.created_at ? formatDate(payment.created_at) : payment.transaction_id.slice(0, 8).toUpperCase()}</p>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[14px] font-semibold text-slate-900">₹{Number(payment.amount).toLocaleString('en-IN')}</span>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-semibold border",
+                      payment.payment_status === 'success' ? "bg-[#ECFDF5] text-[#059669] border-emerald-100/50" : "bg-rose-50 text-rose-600 border-rose-100/50"
+                    )}>
+                      {payment.payment_status === 'success' ? 'Paid' : payment.payment_status.charAt(0).toUpperCase() + payment.payment_status.slice(1)}
+                    </span>
+                    <button className="p-1 text-slate-300 hover:text-slate-600 transition-colors">
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )) : (
+                <div className="py-12 text-center opacity-40">
+                  <CreditCard className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                  <p className="text-sm font-semibold text-slate-400">No payments found</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Invoices List Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
-            <div className="flex items-center gap-2.5">
-                <FileText className="w-3.5 h-3.5 text-gray-400" />
-                <h2 className="text-[10px] sm:text-xs font-semibold text-gray-900 tracking-normal">Recent Invoices</h2>
-            </div>
-            {invoices.length > 0 && (
-              <button className="text-[9px] font-semibold text-blue-600 tracking-normal">
-                  Download All
-              </button>
-            )}
+        {/* Invoice History Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-lg font-semibold text-[#0F172A]">Invoice History</h2>
           </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Invoice Number</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Date</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-right">Amount</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {invoices.length > 0 ? invoices.map((invoice) => (
+                    <tr key={invoice.id} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <span className="text-[14px] font-semibold text-slate-900">{invoice.invoice_number}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="text-[13px] text-slate-500 font-medium">{formatDate(invoice.invoice_date)}</span>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <span className="text-[14px] font-semibold text-slate-900">₹{Number(invoice.amount).toLocaleString('en-IN')}</span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[11px] font-semibold">Paid</span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <button className="p-2 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all">
+                          <Download className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center opacity-40">
+                        <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                        <p className="text-sm font-semibold text-slate-400">No invoices generated</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="divide-y divide-gray-50">
-            {invoices.length > 0 ? invoices.map((invoice) => (
-              <div key={invoice.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50/50 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 border border-gray-100">
-                    <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {invoices.length > 0 ? invoices.map((invoice) => (
+                <div key={invoice.id} className="p-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors">
+                  <div className="text-slate-400 shrink-0">
+                    <CreditCard className="w-5 h-5" />
                   </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-[10px] sm:text-[11px] font-semibold text-gray-900 tracking-normal">{invoice.invoice_number}</h4>
-                    <p className="text-[8px] sm:text-[9px] font-bold text-gray-400 tracking-normaler">{invoice.invoice_date}</p>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[14px] font-semibold text-slate-900 leading-tight truncate">{invoice.invoice_number}</h4>
+                    <p className="text-[12px] text-slate-400 font-medium">{formatDate(invoice.invoice_date)}</p>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3 sm:gap-6">
-                  <div className="text-right flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                    <span className="text-[11px] sm:text-xs font-semibold text-gray-900 tracking-normal">₹{invoice.amount}</span>
-                    <span className="bg-emerald-50 text-emerald-600 px-1 py-0.5 rounded text-[8px] sm:text-[9px] font-semibold tracking-normal border border-emerald-100/30 self-end sm:self-center">
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[14px] font-semibold text-slate-900">₹{Number(invoice.amount).toLocaleString('en-IN')}</span>
+                    <span className="bg-[#ECFDF5] text-[#059669] px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-100/50">
                       Paid
                     </span>
+                    <button className="p-1 text-slate-300 hover:text-slate-600 transition-colors">
+                      <Download className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button className="p-1.5 sm:p-2 rounded-lg text-gray-300 hover:text-gray-900 transition-colors border border-transparent hover:border-gray-100">
-                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </button>
                 </div>
-              </div>
-            )) : (
-              <div className="px-6 py-10 text-center space-y-2">
-                <History className="w-6 h-6 text-gray-200 mx-auto" />
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No invoices found</p>
-              </div>
-            )}
+              )) : (
+                <div className="py-12 text-center opacity-40">
+                  <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                  <p className="text-sm font-semibold text-slate-400">No invoices generated</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-

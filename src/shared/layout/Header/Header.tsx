@@ -216,14 +216,19 @@ const SimpleDropdown = ({
 function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: NavMenu | null): string {
   if (!menu) return "#";
 
-  const rawUrl = String(menu.url || "").trim();
+  let rawUrl = String(menu.url || "").trim();
 
   // If it's an external absolute URL, return as is
   if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
 
-  // We ignore /open/ prefixes from the backend as they are typically API paths, 
-  // and we prefer our custom slug-based internal routing.
-  if (rawUrl.startsWith("/") && !rawUrl.startsWith("/open/")) return rawUrl;
+  // Clean /open/ prefixes and ensure leading slash
+  if (rawUrl.startsWith("open/")) {
+    rawUrl = "/" + rawUrl.replace(/^open\//, "");
+  } else if (rawUrl.startsWith("/open/")) {
+    rawUrl = rawUrl.replace(/^\/open\//, "/");
+  }
+
+  if (rawUrl.startsWith("/") && rawUrl.length > 1) return rawUrl;
 
   const slug = String(menu.slug || "").trim().replace(/^\/+|\/+$/g, "");
   const parentSlug = String(parent?.slug || "").trim().toLowerCase();
@@ -235,7 +240,7 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
     "pricing": "pricing-plans",
     "free-cv-resume-builder": "ai-resume-builder",
     "faq": "faqs",
-    "/open/home/faqs": "faqs", // Explicitly map the API URL as well
+    "faqs": "faqs",
   };
 
   const finalSlug = staticLinkMap[slug.toLowerCase()] || staticLinkMap[rawUrl] || slug;
@@ -247,17 +252,26 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
   if (finalSlug === "institutes" || finalSlug === "institutions") return "/institutions";
   if (finalSlug) return `/${finalSlug}`;
 
-  return rawUrl || "#";
+  return rawUrl || "/";
 }
 
 function mapNavigationData(navData: NavigationData | null): any[] {
   if (!navData?.menus) return [];
 
-  return navData.menus
-    .filter((m: NavMenu) => m.is_active === 1 && m.show_in_nav === 1)
+  const allMenus = Array.isArray(navData.menus) ? navData.menus : [];
+
+  // Filter for top-level menus only (parent_id is null or 0)
+  return allMenus
+    .filter((m: NavMenu) => 
+      m.is_active === 1 && 
+      (!m.parent_id || m.parent_id === null) &&
+      (m.show_in_nav === 1 || m.slug === "jobs" || m.title?.toLowerCase().includes("job"))
+    )
     .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
     .map((menu: NavMenu) => {
-      const children = (menu.children_recursive || [])
+      // Handle both backend property names for children
+      const rawChildren = (menu as any).children || menu.children_recursive || [];
+      const children = rawChildren
         .filter((c: NavMenu) => c.is_active === 1 && c.show_in_nav === 1)
         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 
@@ -272,7 +286,8 @@ function mapNavigationData(navData: NavigationData | null): any[] {
           structure = {
             sections: children
               .map((section: NavMenu) => {
-                const grandChildren = (section.children_recursive || [])
+                const rawGrandChildren = (section as any).children || section.children_recursive || [];
+                const grandChildren = rawGrandChildren
                   .filter((link: NavMenu) => link.is_active === 1 && link.show_in_nav === 1);
 
                 const linksSource = grandChildren.length > 0 ? grandChildren : [section];
@@ -337,11 +352,11 @@ const DesktopAuth = ({
 
   if (!isLoggedIn) {
     return (
-      <div className="flex items-center gap-2">
-        <Button asChild variant="ghost" size="sm" className="font-bold text-gray-600 hover:text-primary transition-colors">
-          <Link href="/auth/login">Login</Link>
+      <div className="flex items-center gap-2 xl:gap-8">
+        <Button asChild variant="ghost" size="sm" className="font-bold text-gray-600 hover:text-primary transition-colors whitespace-nowrap">
+          <Link href="/auth/login">Register / Login</Link>
         </Button>
-        <Button asChild variant="hero" size="sm" className="rounded-lg px-5 h-9 font-bold bg-primary shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20">
+        <Button asChild variant="hero" size="sm" className="rounded-lg px-5 h-10 font-bold bg-[#3b49df] shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20 whitespace-nowrap">
           <Link href="/auth/employer-login">Post a Job</Link>
         </Button>
       </div>
@@ -534,70 +549,69 @@ const Header = ({
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300">
-      <div className="flex h-20 w-full max-w-none items-center justify-between px-4" ref={navRef}>
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2.5 group shrink-0" onClick={closeAll}>
-            {companyLogo ? (
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-                <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
-              </div>
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">
-                {companyName[0] || "T"}
-              </div>
-            )}
-            <span className="font-display text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none">
-              {brandSecondaryPart}
-              {brandPrimaryPart ? (
-                <span className="text-primary">{brandPrimaryPart}</span>
-              ) : null}
-            </span>
-          </Link>
+      <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-12" ref={navRef}>
+        {/* Logo Section */}
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0" onClick={closeAll}>
+          {companyLogo ? (
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
+              <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+            </div>
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">
+              {companyName[0] || "T"}
+            </div>
+          )}
+          <span className="font-display text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none">
+            {brandSecondaryPart}
+            {brandPrimaryPart ? (
+              <span className="text-primary">{brandPrimaryPart}</span>
+            ) : null}
+          </span>
+        </Link>
 
-          {/* Dynamic Navigation (Desktop) */}
-          <div className="hidden items-center gap-2 xl:flex">
-            {mappedMenus.map((menu) => {
-              if (menu.isMega && menu.structure) {
-                return (
-                  <MegaMenu
-                    key={menu.id}
-                    label={menu.title}
-                    data={menu.structure}
-                    active={activeDropdown === menu.slug}
-                    onToggle={() => toggleDropdown(menu.slug)}
-                    onClose={closeAll}
-                    isMobile={false}
-                  />
-                );
-              }
-              if (menu.hasChildren && menu.structure && Array.isArray(menu.structure)) {
-                return (
-                  <SimpleDropdown
-                    key={menu.id}
-                    label={menu.title}
-                    items={menu.structure}
-                    active={activeDropdown === menu.slug}
-                    onToggle={() => toggleDropdown(menu.slug)}
-                    onClose={closeAll}
-                    isMobile={false}
-                    isJobs={menu.isJobs}
-                  />
-                );
-              }
+        {/* Navigation Links (Centered) */}
+        <nav className="hidden items-center gap-1 xl:flex ">
+          {mappedMenus.map((menu) => {
+            if (menu.isMega && menu.structure) {
               return (
-                <Link
+                <MegaMenu
                   key={menu.id}
-                  href={menu.url}
-                  className={`rounded-lg px-4 py-2 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${pathname === menu.url ? "text-primary bg-primary/5 shadow-inner" : "text-gray-500"}`}
-                >
-                  {menu.title}
-                </Link>
+                  label={menu.title}
+                  data={menu.structure}
+                  active={activeDropdown === menu.slug}
+                  onToggle={() => toggleDropdown(menu.slug)}
+                  onClose={closeAll}
+                  isMobile={false}
+                />
               );
-            })}
-          </div>
-        </div>
+            }
+            if (menu.hasChildren && menu.structure && Array.isArray(menu.structure)) {
+              return (
+                <SimpleDropdown
+                  key={menu.id}
+                  label={menu.title}
+                  items={menu.structure}
+                  active={activeDropdown === menu.slug}
+                  onToggle={() => toggleDropdown(menu.slug)}
+                  onClose={closeAll}
+                  isMobile={false}
+                  isJobs={menu.isJobs}
+                />
+              );
+            }
+            return (
+              <Link
+                key={menu.id}
+                href={menu.url}
+                className={`rounded-lg px-3.5 py-2 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${pathname === menu.url ? "text-primary bg-primary/5 shadow-inner" : "text-gray-500"}`}
+              >
+                {menu.title}
+              </Link>
+            );
+          })}
+        </nav>
 
-        {/* Action Belt (Desktop) */}
+        {/* Action Belt (Right) */}
         <div className="hidden items-center gap-4 lg:flex">
           <DesktopAuth
             mounted={mounted}

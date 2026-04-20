@@ -58,7 +58,10 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
           {/* Top Analytics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Jobs Applied Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#1E1B4B] to-[#312E81] p-5 rounded-2xl shadow-lg group">
+            <Link 
+              href="/dashboard/jobseeker/applied-jobs"
+              className="relative overflow-hidden bg-gradient-to-br from-[#1E1B4B] to-[#312E81] p-5 rounded-2xl shadow-lg group hover:ring-2 hover:ring-indigo-300 transition-all duration-300"
+            >
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <p className="text-indigo-100/70 font-medium text-[13px] mb-1">Jobs Applied</p>
@@ -66,31 +69,34 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                   <p className="text-[11px] font-medium text-indigo-200/50">Total applications sent</p>
                 </div>
               </div>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-white/20 transition-all">
                 <Briefcase className="w-6 h-6 text-white opacity-80" />
               </div>
-            </div>
+            </Link>
 
             {/* Saved Jobs Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#312E81] to-[#4338CA] p-5 rounded-2xl shadow-lg">
+            <Link 
+              href="/dashboard/jobseeker/saved-jobs"
+              className="relative overflow-hidden bg-gradient-to-br from-[#312E81] to-[#4338CA] p-5 rounded-2xl shadow-lg group hover:ring-2 hover:ring-indigo-300 transition-all duration-300"
+            >
               <div className="relative z-10">
                 <p className="text-indigo-100/70 font-medium text-[13px] mb-1">Saved Jobs</p>
                 <p className="text-3xl font-bold text-white mb-1.5">{data?.total_bookmarked ?? 0}</p>
                 <p className="text-[11px] font-medium text-indigo-200/50">Opportunities tracked</p>
               </div>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-white/20 transition-all">
                 <Bookmark className="w-6 h-6 text-white opacity-80" />
               </div>
-            </div>
+            </Link>
 
             {/* Interview Invitations Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#059669] to-[#10B981] p-5 rounded-2xl shadow-lg">
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#059669] to-[#10B981] p-5 rounded-2xl shadow-lg group">
               <div className="relative z-10">
                 <p className="text-slate-100 font-medium text-[13px] mb-1">Shortlisted Jobs</p>
                 <p className="text-3xl font-bold text-white mb-1.5">{data?.total_shortlisted ?? 0}</p>
                 <p className="text-[11px] font-medium text-emerald-100/70">Proceeding to next steps</p>
               </div>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:rotate-12 transition-all">
                 <Star className="w-6 h-6 text-white opacity-80" />
               </div>
             </div>
@@ -101,24 +107,25 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
             <h3 className="text-[15px] font-bold text-[#1E1B4B]">Quick Actions</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {[
-                { label: "Browse Jobs", desc: "Explore 12,000+ teaching opportunities", icon: Search, color: "text-blue-500", bg: "bg-blue-50" },
-                { label: "Saved Jobs", desc: "View your bookmarked positions", icon: Bookmark, color: "text-indigo-500", bg: "bg-indigo-50" },
-                { label: "My Applications", desc: "Track your application status", icon: Briefcase, color: "text-emerald-500", bg: "bg-emerald-50", link: "Get started ↗" },
-                { label: "Update Resume", desc: "Keep your resume current", icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-                { label: "Profile Settings", desc: "Manage your teacher profile", icon: Settings, color: "text-indigo-600", bg: "bg-indigo-50" },
+                { label: "Browse Jobs", desc: "Explore 12,000+ teaching opportunities", icon: Search, color: "text-blue-500", bg: "bg-blue-50", href: "/jobs" },
+                { label: "Saved Jobs", desc: "View your bookmarked positions", icon: Bookmark, color: "text-indigo-500", bg: "bg-indigo-50", href: "/dashboard/jobseeker/saved-jobs" },
+                { label: "My Applications", desc: "Track your application status", icon: Briefcase, color: "text-emerald-500", bg: "bg-emerald-50", href: "/dashboard/jobseeker/applied-jobs" },
+                { label: "Update Resume", desc: "Keep your resume current", icon: FileText, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/jobseeker/resume-manager" },
               ].map((action) => (
-                <div key={action.label} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all group flex flex-col justify-between h-full">
+                <Link 
+                  key={action.label} 
+                  href={action.href}
+                  className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-primary/20 hover:-translate-y-1 transition-all group flex flex-col justify-between h-full"
+                >
                   <div>
                     <div className={`w-10 h-10 rounded-xl ${action.bg} ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                       <action.icon className="w-5 h-5" />
                     </div>
-                    <h4 className="text-[13.5px] font-bold text-indigo-950/80 mb-1">{action.label}</h4>
+                    <h4 className="text-[13.5px] font-bold text-indigo-950/80 mb-1 group-hover:text-primary transition-colors">{action.label}</h4>
                     <p className="text-[11px] text-indigo-600/70 font-medium leading-relaxed mb-3">{action.desc}</p>
                   </div>
-                  {action.link && (
-                    <span className="text-[11px] font-bold text-emerald-600 mt-auto">{action.link}</span>
-                  )}
-                </div>
+                  <span className="text-[10px] font-bold text-primary group-hover:translate-x-1 transition-transform">Explore ↗</span>
+                </Link>
               ))}
             </div>
           </div>
@@ -137,13 +144,17 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                 {data?.recent_applications?.length ? (
                   <div className="divide-y divide-slate-50">
                     {data.recent_applications.map((app) => (
-                      <div key={app.job_id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                      <Link 
+                        key={app.job_id} 
+                        href={`/dashboard/jobseeker/applied-jobs`}
+                        className="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 transition-colors group/row"
+                      >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0 group-hover/row:bg-white transition-colors">
                             {app?.company_name?.[0] || app?.title?.[0]}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[13px] font-bold text-indigo-950 truncate">{app?.title}</p>
+                            <p className="text-[13px] font-bold text-indigo-950 truncate group-hover/row:text-primary transition-colors">{app?.title}</p>
                             <p className="text-[11px] font-medium text-indigo-600/70 truncate">{app?.company_name}</p>
                           </div>
                         </div>
@@ -161,7 +172,7 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                           </span>
                           <span className="text-[10px] font-medium text-slate-400">{formatAppliedAt(app?.applied_at)}</span>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -188,13 +199,17 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                     { title: "Secondary Math Educator", location: "Bangalore, India", salary: "₹45,000 - ₹75,000", time: "5h ago" },
                     { title: "English Language Specialist", location: "Delhi, India", salary: "₹60,000 - ₹90,000", time: "1d ago" },
                   ].map((job, idx) => (
-                    <div key={idx} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                    <Link 
+                      key={idx} 
+                      href="/jobs"
+                      className="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 transition-colors group/row"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0 border border-indigo-100">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0 border border-indigo-100 group-hover/row:bg-white transition-colors">
                           <Briefcase className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] font-bold text-indigo-950 truncate">{job.title}</p>
+                          <p className="text-[13px] font-bold text-indigo-950 truncate group-hover/row:text-primary transition-colors">{job.title}</p>
                           <div className="flex items-center gap-2">
                              <p className="text-[11px] font-medium text-indigo-600/70 truncate">{job.location}</p>
                              <span className="w-1 h-1 rounded-full bg-slate-200" />
@@ -205,7 +220,7 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                       <div className="shrink-0 ml-4">
                         <span className="text-[11px] font-medium text-slate-400">{job.time}</span>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

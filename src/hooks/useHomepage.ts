@@ -261,7 +261,15 @@ export async function getFAQs(): Promise<any[]> {
 export async function getNavigation(): Promise<NavigationData | null> {
   try {
     const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation");
-    return res.data || (res as any);
+    const rawResponse = res as any;
+    const data = res.data ?? rawResponse;
+    const menus = Array.isArray(data) ? data : (data?.menus || []);
+    
+    return {
+      ...(typeof data === 'object' && !Array.isArray(data) ? data : {}),
+      menus,
+      company_logos: data?.company_logos || rawResponse?.company_logos || [],
+    };
   } catch (error: any) {
     if (error.status !== 404 && error.status !== 500) {
       //console.error(`Error in getNavigation hook:`, error); // Changed message to be specific to getNavigation
