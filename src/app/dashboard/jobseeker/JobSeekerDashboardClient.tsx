@@ -8,7 +8,6 @@ import {
   Star, 
   ArrowRight, 
   Search, 
-  Settings, 
   FileText 
 } from "lucide-react";
 import Link from "next/link";

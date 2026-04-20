@@ -6,19 +6,17 @@ import {
   MapPin, 
   Calendar, 
   Edit3, 
-  Trash2, 
   Search, 
   PlusCircle, 
   Clock,
   TrendingUp,
   Eye,
-  Users,
   Pause,
   Play,
   XCircle,
-  Loader2,
+
   CheckCircle2,
-  Layout
+
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -27,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
+// import { formatDistanceToNow } from "date-fns";
 
 interface Job {
   id: number;
@@ -50,14 +48,21 @@ interface Job {
   featured_until?: string;
 }
 
+interface PaginatedJobs {
+  data: Job[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
 interface JobsClientProps {
   initialData?: {
     status: boolean;
-    active_jobs?: { data: Job[] };
-    expired_jobs?: { data: Job[] };
-    closed_jobs?: { data: Job[] };
-    paused_jobs?: { data: Job[] };
-    drafts_jobs?: { data: Job[] };
+    active_jobs?: PaginatedJobs;
+    expired_jobs?: PaginatedJobs;
+    closed_jobs?: PaginatedJobs;
+    paused_jobs?: PaginatedJobs;
+    drafts_jobs?: PaginatedJobs;
     total_applicants?: number;
     total_jobs?: number;
   };
@@ -66,14 +71,11 @@ interface JobsClientProps {
 export default function JobsClient({ 
   initialData,
   userRole = "employer"
-}: { 
-  initialData?: any,
-  userRole?: string
-}) {
+}: JobsClientProps & { userRole?: string }) {
   const router = useRouter();
   const basePath = `/dashboard/${userRole}`;
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'paused' | 'closed' | 'drafts'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'paused' | 'closed' | 'drafts' | 'expired' | 'featured'>('all');
   const [loadingId, setLoadingId] = useState<number | null>(null);
   
   const activeJobs: Job[] = initialData?.active_jobs?.data || [];
@@ -304,25 +306,25 @@ export default function JobsClient({
       </div>
 
       {/* Pagination Section */}
-      {initialData?.active_jobs?.last_page > 1 && (
+      {(initialData?.active_jobs?.last_page || 0) > 1 && (
         <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-50">
            <Button 
             variant="outline" 
-            disabled={initialData.active_jobs.current_page === 1}
-            onClick={() => router.push(`${basePath}/jobs?active_page=${initialData.active_jobs.current_page - 1}`)}
+            disabled={initialData?.active_jobs?.current_page === 1}
+            onClick={() => router.push(`${basePath}/jobs?active_page=${(initialData?.active_jobs?.current_page || 1) - 1}`)}
             className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
            >
               Previous
            </Button>
            
            <div className="flex items-center gap-1">
-              {Array.from({ length: initialData.active_jobs.last_page }, (_, i) => i + 1).map((pg) => (
+              {Array.from({ length: initialData?.active_jobs?.last_page || 0 }, (_, i) => i + 1).map((pg) => (
                 <Button 
                   key={pg}
                   onClick={() => router.push(`${basePath}/jobs?active_page=${pg}`)}
                   className={cn(
                     "w-9 h-9 rounded-xl text-xs font-bold transition-all",
-                    initialData.active_jobs.current_page === pg 
+                    initialData?.active_jobs?.current_page === pg 
                     ? "bg-[#312E81] text-white shadow-md" 
                     : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
                   )}
@@ -334,8 +336,8 @@ export default function JobsClient({
 
            <Button 
             variant="outline" 
-            disabled={initialData.active_jobs.current_page === initialData.active_jobs.last_page}
-            onClick={() => router.push(`${basePath}/jobs?active_page=${initialData.active_jobs.current_page + 1}`)}
+            disabled={initialData?.active_jobs?.current_page === initialData?.active_jobs?.last_page}
+            onClick={() => router.push(`${basePath}/jobs?active_page=${(initialData?.active_jobs?.current_page || 0) + 1}`)}
             className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
            >
               Next

@@ -273,7 +273,7 @@ function mapNavigationData(navData: NavigationData | null): any[] {
       const rawChildren = (menu as any).children || menu.children_recursive || [];
       const children = rawChildren
         .filter((c: NavMenu) => c.is_active === 1 && c.show_in_nav === 1)
-        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        .sort((a: NavMenu, b: NavMenu) => (a.display_order || 0) - (b.display_order || 0));
 
       const hasChildren = children.length > 0;
       const isJobsMenu = menu.slug === "jobs" || menu.title?.toLowerCase().includes("job");

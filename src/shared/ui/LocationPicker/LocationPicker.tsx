@@ -171,7 +171,6 @@ import { useState, useEffect } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
-  Marker,
   Autocomplete,
 } from "@react-google-maps/api";
 import { MapPin, Search, LocateFixed } from "lucide-react";
@@ -193,6 +192,61 @@ const DEFAULT_CENTER = {
   lat: 17.385,
   lng: 78.4867,
 };
+
+// Helper component to manage AdvancedMarkerElement without deprecation warnings
+function MarkerManager({ 
+  map, 
+  position, 
+  onDragEnd, 
+  isLoaded 
+}: { 
+  map: google.maps.Map | null, 
+  position: google.maps.LatLngLiteral, 
+  onDragEnd: (lat: number, lng: number) => void,
+  isLoaded: boolean
+}) {
+  const [marker, setMarker] = useState<any>(null);
+
+  useEffect(() => {
+    if (!isLoaded || !map || marker) return;
+
+    const createMarker = async () => {
+      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
+      
+      const newMarker = new AdvancedMarkerElement({
+        map,
+        position,
+        gmpDraggable: true,
+      });
+
+      newMarker.addListener("dragend", () => {
+        const pos = newMarker.position as google.maps.LatLngLiteral;
+        if (pos) {
+          onDragEnd(pos.lat, pos.lng);
+        }
+      });
+
+      setMarker(newMarker);
+    };
+
+    createMarker();
+
+    return () => {
+      if (marker) {
+        marker.map = null;
+      }
+    };
+  }, [isLoaded, map]);
+
+  // Update position if it changes elsewhere
+  useEffect(() => {
+    if (marker && position) {
+      marker.position = position;
+    }
+  }, [marker, position]);
+
+  return null;
+}
 
 export function LocationPicker({
   lat,
@@ -317,7 +371,7 @@ export function LocationPicker({
       )}
 
       {/* Map */}
-      <div className="relative w-full h-[350px] rounded-xl overflow-hidden border">
+      <div className="relative w-full h-full min-h-[300px] border shadow-inner">
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
           center={safePosition}
@@ -329,24 +383,19 @@ export function LocationPicker({
             mapTypeControl: false,
             fullscreenControl: false,
             zoomControl: true,
+            mapId: "DEMO_MAP_ID", // Required for AdvancedMarkerElement
           }}
         >
-          <Marker
-            position={safePosition}
-            draggable
-            onDragEnd={(e) => {
-              if (e.latLng) {
-                updateLocation(
-                  e.latLng.lat(),
-                  e.latLng.lng()
-                );
-              }
-            }}
-            animation={
-              isLoaded ? google.maps.Animation.DROP : undefined
-            }
-          />
+          {/* Advanced Marker Implementation logic handled via useEffect */}
         </GoogleMap>
+        
+        {/* Effect-based Marker Management to avoid deprecation warnings */}
+        <MarkerManager 
+          map={map} 
+          position={safePosition} 
+          onDragEnd={(lat, lng) => updateLocation(lat, lng)}
+          isLoaded={isLoaded}
+        />
 
         {/* Overlay */}
         <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-md border rounded-lg px-3 py-2 flex items-center gap-3 shadow text-xs">

@@ -4,12 +4,12 @@ import {
    Users,
    Briefcase,
    PlusCircle,
-   ArrowRight,
    CheckCircle2,
    Clock,
    Zap,
    CreditCard,
-   Check
+   Check,
+
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -158,7 +158,7 @@ export default function EmployerDashboardClient({
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-0.5">
                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-semibold text-[#1E1B4B] tracking-tight">Employer Dashboard</h1>
+                  <h1 className="text-xl sm:text-2xl font-semibold text-black tracking-tight">Employer Dashboard</h1>
                   {dashboardData?.company_verification === 1 && (
                      <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
                         <Check className="w-2.5 h-2.5" /> Verified
@@ -175,39 +175,44 @@ export default function EmployerDashboardClient({
             </Link>
          </div>
 
-         {/* Current Plan Card - Refined Light Aesthetic */}
+         {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <div className="bg-white rounded-[20px] p-5 border border-indigo-100 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none" />
-               <div className="relative z-10 flex gap-4 md:items-center">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                     <CreditCard className="w-6 h-6 text-indigo-600" />
+            <div className="bg-white rounded-[24px] p-5 sm:p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+               <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
+               <div className="relative z-10 flex gap-4 md:items-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
+                     <CreditCard className="w-6 h-6" />
                   </div>
                   <div>
-                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-0.5">Current Plan</p>
-                     <h2 className="text-xl font-semibold text-[#1E1B4B]">{sub.plan_name}</h2>
-                     <p className="text-[11px] text-[#1E1B4B] opacity-60">Expires on {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                     <p className="text-[10px] font-semibold text-slate-400 capitalize mb-0.5">Current membership</p>
+                     <h2 className="text-xl font-semibold text-black tracking-tight">{sub.plan_name}</h2>
+                     <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <Clock className="w-3 h-3 text-amber-500" /> Renewal: {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                     </p>
                   </div>
                </div>
 
-               <div className="relative z-10 grid grid-cols-3 gap-8 md:border-l md:border-indigo-50 md:pl-8">
-                  <div>
-                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-1">Total Credits</p>
-                     <p className="text-lg font-semibold text-[#1E1B4B]">{sub.total_credits}</p>
+               <div className="relative z-10 flex flex-1 flex-wrap items-center justify-center sm:justify-start gap-8 lg:gap-14 lg:border-l lg:border-slate-100 lg:pl-10">
+                  <div className="flex flex-col gap-1">
+                     <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Total credits</span>
+                     <p className="text-xl font-semibold text-black">{sub.total_credits}</p>
                   </div>
-                  <div>
-                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-1">Used</p>
-                     <p className="text-lg font-semibold text-rose-500">{sub.used_credits}</p>
+                  <div className="flex flex-col gap-1">
+                     <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Utilized units</span>
+                     <p className="text-xl font-semibold text-rose-500">{sub.used_credits}</p>
                   </div>
-                  <div>
-                     <p className="text-[10px] font-semibold text-[#1E1B4B] opacity-40 mb-1">Remaining</p>
-                     <p className="text-lg font-semibold text-emerald-600">{sub.remaining_credits}</p>
+                  <div className="flex flex-col gap-1">
+                     <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Balance remaining</span>
+                     <div className="flex items-center gap-2">
+                        <p className="text-xl font-semibold text-emerald-600">{sub.remaining_credits}</p>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                     </div>
                   </div>
                </div>
                
-               <Link href={`${basePath}/purchase-history`} className="relative z-10">
-                  <Button variant="outline" className="h-9 px-6 rounded-lg border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm">
-                     Upgrade Plan
+               <Link href={`${basePath}/purchase-history`} className="relative z-10 lg:pl-4">
+                  <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
+                     Update Management
                   </Button>
                </Link>
             </div>
@@ -239,9 +244,9 @@ export default function EmployerDashboardClient({
          {/* Main Content Grid: Live Lists Only */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Recent Applicants Column */}
-            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-               <div className="px-5 py-3.5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                  <h2 className="text-[15px] font-semibold text-[#1E1B4B]">Recent applicants</h2>
+            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                  <h2 className="text-[14px] font-semibold text-black">Recent candidates</h2>
                </div>
 
                <div className="divide-y divide-slate-50">
@@ -285,9 +290,9 @@ export default function EmployerDashboardClient({
             </div>
 
             {/* Recent Job Posts Column */}
-            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-               <div className="px-5 py-3.5 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                  <h2 className="text-[15px] font-semibold text-[#1E1B4B]">Recent job posts</h2>
+            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                  <h2 className="text-[14px] font-semibold text-black">Active vacancies</h2>
                </div>
 
                <div className="divide-y divide-slate-50">
@@ -300,8 +305,8 @@ export default function EmployerDashboardClient({
                                     {job.title}
                                  </h4>
                                  <span className={cn(
-                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 uppercase tracking-tight",
-                                    job.job_status === 'open' ? "bg-[#D1FAE5] text-[#059669]" : "bg-slate-100 text-black/50"
+                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
+                                    job.job_status === 'open' ? "bg-[#D1FAE5] text-[#059669]" : "bg-slate-100 text-slate-600"
                                  )}>
                                     {job.job_status}
                                  </span>

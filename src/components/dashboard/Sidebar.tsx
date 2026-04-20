@@ -16,13 +16,10 @@ import {
   CreditCard,
   Bell,
   LogOut,
-  Users,
   X,
   PanelLeftClose,
   PanelLeftOpen,
-  Verified,
-  Settings,
-  HelpCircle
+  Verified
 } from "lucide-react";
 import { useState } from "react";
 
