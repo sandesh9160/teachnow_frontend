@@ -18,6 +18,7 @@ import {
    Target,
    Loader2
 } from "lucide-react";
+
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -189,7 +190,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                                     <div className="flex items-center gap-5 border-l border-slate-100 pl-5 shrink-0">
                                        <div className="space-y-0.5 text-right">
                                           <p className="text-[9px] font-medium text-slate-400 tracking-wider">Ideal answer</p>
-                                          <span className="text-[12px] font-semibold text-indigo-600>{q.recruiter_answer}</span>
+                                          <span className="text-[12px] font-semibold text-indigo-600">{q.recruiter_answer}</span>
                                        </div>
                                     </div>
                                  </div>
