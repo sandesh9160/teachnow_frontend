@@ -55,14 +55,14 @@ export default function ResourcesPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+        <div className="w-full px-4 py-2 sm:px-6 lg:px-12">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
       {/* Consistent Header Section */}
       <section className="bg-white border-b border-slate-100 py-4 sm:py-5">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-12">
           <h1 className="text-3xl font-bold text-slate-900 md:text-4xl tracking-tight mb-2">
             Teaching Resources
           </h1>
@@ -74,7 +74,7 @@ export default function ResourcesPage() {
 
       {/* Modern Filter Strip (Keep this design) */}
       <section className="bg-white border-b border-slate-100 shadow-sm sticky top-[101px] z-30">
-        <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="w-full px-4 py-4 sm:px-6 lg:px-12">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex flex-wrap items-center gap-3">
               <button
@@ -124,7 +124,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Sectioned Grid Content */}
-      <div className="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8 space-y-8">
+      <div className="w-full px-4 pt-10 pb-12 sm:px-6 lg:px-12 space-y-12">
         {loading && (
           <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border border-slate-100 shadow-sm italic text-slate-400">
             <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
@@ -155,10 +155,10 @@ export default function ResourcesPage() {
             }, {} as Record<string, ResourceData[]>)
           ).map(([category, items], sectionIndex) => (
             <div key={category} className="group/section">
-              <div className="flex items-center justify-between mb-4 px-1">
+              <div className="flex items-center justify-between mb-6 px-1">
                 <div className="flex items-center gap-3">
-                  <div className="h-6 w-1 bg-primary rounded-full" />
-                  <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                  <div className="h-7 w-1 bg-primary rounded-full" />
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                     {category}
                   </h2>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">

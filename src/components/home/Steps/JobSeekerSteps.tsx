@@ -35,11 +35,11 @@ export const JobSeekerSteps = () => {
   return (
     <section className="bg-white py-20 md:py-28">
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
-        <div className="text-center mb-16">
-          <h2 className="text-[32px] md:text-[40px] font-bold text-[#111827] tracking-tight mb-4">
+        <div className="text-center mb-14 px-4">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Get Your Job in 4 Simple Steps
           </h2>
-          <p className="text-[17px] md:text-[19px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
             Follow these steps to land your dream job on TeachNow
           </p>
         </div>

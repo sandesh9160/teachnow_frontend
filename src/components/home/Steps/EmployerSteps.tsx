@@ -31,11 +31,11 @@ export const EmployerSteps = () => {
   return (
     <section className="py-16 bg-white overflow-hidden text-black">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-        <div className="text-center mb-12 px-4">
-          <h2 className="text-[28px] md:text-[40px] font-bold text-black tracking-tight mb-2">
+        <div className="text-center mb-14 px-4">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Steps to Post a Job
           </h2>
-          <p className="text-[15px] md:text-[17px] text-black font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
             Hire qualified teachers quickly with TeachNow.
           </p>
         </div>

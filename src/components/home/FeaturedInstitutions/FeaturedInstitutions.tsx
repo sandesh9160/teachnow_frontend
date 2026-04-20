@@ -39,11 +39,11 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
       <div className="max-w-none w-full">
         
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-[#111827] tracking-tight sm:text-4xl mb-3">
+        <div className="text-center mb-14 px-4">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Top Institutions Hiring
           </h2>
-          <p className="text-lg font-medium text-slate-500">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
             Leading institutions actively looking for educators
           </p>
         </div>

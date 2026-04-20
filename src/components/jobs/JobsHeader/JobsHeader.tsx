@@ -95,8 +95,8 @@ export const JobsHeader = ({
 
   return (
     <section className="bg-white/50 backdrop-blur-sm relative py-3 md:py-4">
-      <div className="container relative z-10 px-4">
-        <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div className="mx-auto w-full">
           <div className="bg-white rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.06)] flex flex-col md:flex-row items-stretch md:items-center gap-2 p-1.5 transition-all duration-300 border border-slate-50">
             
             {/* Subject/Role Search */}

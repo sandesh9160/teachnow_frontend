@@ -44,20 +44,20 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
       <div className="max-w-none w-full">
         {/* Header - Center Title with Right-aligned "View All" */}
         <div className="relative mb-10 px-4 md:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-[#111827] md:text-4xl">
+          <div className="text-center mb-14 px-4">
+            <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
               Featured <span className="text-blue-600">Jobs</span>
             </h2>
-            <p className="mt-2 text-lg text-slate-500 font-medium tracking-wide">
+            <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
               Hand-picked opportunities from top institutions
             </p>
           </div>
-          <div className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 hidden md:block">
+          <div className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 hidden md:block z-10">
             <Link 
               href="/jobs" 
-              className="group flex items-center gap-2 text-blue-600 font-bold hover:underline"
+              className="group flex items-center gap-2 text-blue-600 font-bold hover:underline bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-blue-50 shadow-sm"
             >
-              View All Jobs <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              View All <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
           {/* Mobile View All */}

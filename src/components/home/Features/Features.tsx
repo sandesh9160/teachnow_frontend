@@ -11,11 +11,11 @@ export const Features = () => {
   return (
     <section className="bg-[#f8faff] py-20 md:py-24">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-[32px] md:text-[42px] font-bold text-black tracking-tight">
+        <div className="text-center mb-14 px-4">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Why TeachNow?
           </h2>
-          <p className="mt-4 text-[17px] md:text-[19px] text-black font-semibold">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
             Empowering educators and enabling schools to thrive together
           </p>
         </div>

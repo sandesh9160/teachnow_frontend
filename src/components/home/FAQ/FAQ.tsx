@@ -14,11 +14,11 @@ export const FAQ = ({ faqs }: FAQProps) => {
   return (
     <section className="bg-[#f8faff] py-10 px-4">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8 px-4">
-          <h2 className="text-[26px] md:text-[32px] font-bold text-[#111827] tracking-tight mb-2">
+        <div className="text-center mb-14 px-4">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Frequently Asked Questions
           </h2>
-          <p className="text-[15px] md:text-[16px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
             Find answers to common questions from our community
           </p>
         </div>

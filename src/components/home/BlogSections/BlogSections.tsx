@@ -49,22 +49,24 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
     <section className="py-16 bg-white overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Header with All Posts Link */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-          <div className="text-left">
-            <h2 className="text-[28px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
+        <div className="relative mb-14 px-4">
+          <div className="text-center">
+            <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
               Career Resources
             </h2>
-            <p className="text-[15px] md:text-[17px] text-slate-500 font-medium">
+            <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
               Tips, insights, and career advice for educators
             </p>
           </div>
           
-          <Link 
-            href="/blogs" 
-            className="flex items-center gap-2 text-[14px] font-semibold text-blue-600 hover:text-blue-700 transition-all group pb-0.5"
-          >
-            All Posts <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-          </Link>
+          <div className="absolute right-4 md:right-0 bottom-0 sm:top-1/2 sm:-translate-y-1/2 hidden md:block">
+            <Link 
+              href="/blogs" 
+              className="flex items-center gap-2 text-[14px] font-bold text-blue-600 hover:text-blue-700 transition-all group px-4 py-2 rounded-full bg-white shadow-sm border border-slate-100"
+            >
+              All Posts <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
         </div>
 
         {/* Carousel Container */}

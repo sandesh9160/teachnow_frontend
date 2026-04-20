@@ -62,10 +62,10 @@ export const Categories = ({ categories }: CategoriesProps) => {
 
         {/* Header - Matching requested text and style */}
         <div className="text-center mb-14 px-4">
-          <h2 className="text-[32px] md:text-[42px] font-bold text-[#111827] tracking-tight mb-3">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Popular Categories
           </h2>
-          <p className="text-[17px] md:text-[19px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
             Explore teaching roles by category
           </p>
         </div>

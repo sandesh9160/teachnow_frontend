@@ -17,20 +17,20 @@ export default function ContactPage() {
     <div className="bg-[#F8FAFC] min-h-screen">
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+        <div className="w-full px-4 py-2 sm:px-6 lg:px-12">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
       <section className="bg-white border-b border-slate-100 py-12 md:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="w-full px-4 sm:px-6 lg:px-12 text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 md:text-5xl tracking-tight leading-tight">Contact <span className="text-primary italic">Us</span></h1>
+            <h1 className="text-3xl font-bold text-slate-900 md:text-5xl leading-tight">Contact <span className="text-primary italic">Us</span></h1>
             <p className="mt-5 text-lg text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">Have questions? We'd love to hear from you. Our team is here to help.</p>
           </div>
         </div>
       </section>
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
+      <div className="w-full px-4 py-16 sm:px-6 lg:px-12">
         <div className="grid gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
           <div className="space-y-6">
             {[
