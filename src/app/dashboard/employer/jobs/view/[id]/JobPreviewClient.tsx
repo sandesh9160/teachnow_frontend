@@ -19,14 +19,14 @@ import {
   ShieldCheck,
   Star,
   Users2,
-  RefreshCw
+  RefreshCw,
+  Target
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-
 import { toast } from "sonner";
 
 interface JobPreviewClientProps {
@@ -77,131 +77,142 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
   };
 
   const DetailItem = ({ label, value, icon: Icon, colorClass }: any) => (
-    <div className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-100 bg-white shadow-sm transition-all hover:bg-slate-50/50 group overflow-hidden relative">
-       <div className="absolute top-0 right-0 w-12 h-12 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity -mr-6 -mt-6 rounded-full" />
+    <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-50 bg-white shadow-xs transition-all hover:bg-slate-50/50 group">
        <div className={cn(
-         "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border shadow-inner transition-transform group-hover:scale-105 relative z-10", 
-         colorClass || "bg-primary/5 text-primary border-primary/10"
+         "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105", 
+         colorClass || "bg-indigo-50/50 text-indigo-500 border-indigo-100/50"
        )}>
-          <Icon className="w-5 h-5" />
+          <Icon className="w-4.5 h-4.5" />
        </div>
-       <div className="min-w-0 space-y-0.5 relative z-10 pt-0.5">
-          <p className="text-[10px] font-medium text-slate-400 leading-none">{label}</p>
-          <p className="text-sm font-semibold text-slate-900 leading-tight truncate">{value}</p>
+       <div className="min-w-0">
+          <p className="text-[11px] font-medium text-slate-900 mb-0.5">{label}</p>
+          <p className="text-[13px] font-semibold text-slate-900 leading-tight truncate">{value}</p>
        </div>
     </div>
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 space-y-4 pb-20 font-sans text-slate-700 overflow-x-hidden">
-      {/* Refined Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group">
-         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-primary/20 transition-all duration-700" />
-         
-         <div className="space-y-2 relative">
-            <button 
-              onClick={() => window.history.back()} 
-              className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-primary transition-all mb-1 active:scale-95"
-            >
-               <ChevronLeft className="w-3.5 h-3.5 text-primary" /> Back to listings
-            </button>
+    <div className="max-w-6xl mx-auto px-4 py-4 space-y-5 pb-20 font-sans text-slate-800">
+      
+      {/* Compact Header */}
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all hover:border-indigo-100/50">
+        <div className="space-y-3">
+          <button 
+            onClick={() => window.history.back()} 
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-all active:scale-95"
+          >
+             <ChevronLeft className="w-3.5 h-3.5" /> Back to job list
+          </button>
+          
+          <div className="space-y-2">
             <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 leading-tight">{job.title}</h1>
             <div className="flex flex-wrap items-center gap-2">
-               <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-                 <MapPin className="w-3.5 h-3.5 text-emerald-500" /> {job.location}
+               <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-900 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                 <MapPin className="w-3.5 h-3.5 text-indigo-400" /> {job.location}
                </span>
-               <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100/50">
+               <span className="text-[12px] font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100/50">
                  {job.job_type?.replace('_', ' ')}
                </span>
                <span className={cn(
-                  "px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold border uppercase tracking-widest shadow-sm whitespace-nowrap",
-                  job.status === 'approved' ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"
+                  "px-3 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap",
+                  job.status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
                )}>
-                  {job.status === 'approved' ? "Admin Approved" : "Pending Approval"}
+                  {job.status === 'approved' ? "Approved" : "Pending Approval"}
                </span>
-               {job.featured && (
-                 <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold border uppercase tracking-widest shadow-sm whitespace-nowrap bg-amber-500 text-white border-amber-600 flex items-center gap-1">
-                   <Star className="w-2.5 h-2.5 fill-white" /> Featured
-                 </span>
-               )}
                <span className={cn(
-                  "px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold border uppercase tracking-widest shadow-sm whitespace-nowrap",
-                  job.job_status === 'open' ? "bg-indigo-50 text-indigo-700 border-indigo-200" : 
-                  job.job_status === 'filled' ? "bg-rose-50 text-rose-700 border-rose-200" : 
-                  "bg-slate-50 text-slate-700 border-slate-200"
+                  "px-3 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap",
+                  job.job_status === 'open' ? "bg-indigo-600 text-white border-indigo-700" : 
+                  job.job_status === 'filled' ? "bg-rose-50 text-rose-600 border-rose-100" : 
+                  "bg-slate-50 text-slate-400 border-slate-100"
                )}>
                   {job.job_status === 'open' ? "Live" : job.job_status}
                </span>
+               {job.featured === 1 && (
+                 <>
+                   <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold border border-indigo-700 flex items-center gap-1.5 shadow-sm">
+                     <Star className="w-3 h-3 fill-white" /> Featured
+                   </span>
+                   {job.featured_until && (
+                     <span className="bg-amber-50 text-amber-700 px-3 py-1 rounded-lg text-[10px] font-bold border border-amber-100 flex items-center gap-1.5">
+                       <Calendar className="w-3 h-3" /> Featured Until {new Date(job.featured_until).toLocaleDateString('en-GB')}
+                     </span>
+                   )}
+                 </>
+               )}
             </div>
-         </div>
+          </div>
+        </div>
 
-         <div className="flex items-center gap-1.5 sm:gap-2 relative w-full sm:w-auto mt-2 sm:mt-0 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+        <div className="flex flex-wrap items-center gap-2">
             <Link href={`/dashboard/employer/jobs/view/${job.id}/applicants`}>
-               <Button variant="outline" size="sm" className="h-8 sm:h-10 px-3 sm:px-5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all shadow-sm shrink-0">
-                  <Users className="w-3 sm:w-3.5 h-3 sm:h-3.5 mr-1 sm:mr-2" /> Applicants
+               <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
+                  <Users className="w-4 h-4 text-indigo-500" /> View Applicants
                </Button>
             </Link>
             {job.job_status !== 'filled' && (
               <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
-                 <Button variant="outline" size="sm" className="h-8 sm:h-10 px-3 sm:px-5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold border-slate-200 hover:bg-slate-50 transition-all shadow-sm shrink-0">
-                    <Edit3 className="w-3 sm:w-3.5 h-3 sm:h-3.5 mr-1 sm:mr-2" /> Edit
+                 <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <Edit3 className="w-4 h-4 text-indigo-500" /> Edit Job
                  </Button>
               </Link>
             )}
             <Link href={`/jobs/${job.slug}`} target="_blank">
-               <Button size="sm" className="h-8 sm:h-10 px-4 sm:px-6 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] text-white shrink-0">
-                  Preview <ExternalLink className="w-3 sm:w-3.5 h-3 sm:h-3.5 ml-1 sm:mr-2" />
+               <Button className="h-10 px-6 rounded-xl text-xs font-semibold bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-lg shadow-indigo-100 flex items-center gap-2">
+                  Live Preview <ExternalLink className="w-3.5 h-3.5" />
                </Button>
             </Link>
-         </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-         {/* Main Content Area */}
+         
+         {/* Main Description */}
          <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[500px]">
-               <div className="p-6 space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-50 pb-4">
-                    <div className="flex items-center gap-3">
-                       <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                          <FileText className="w-5 h-5" />
-                       </div>
-                       <h2 className="text-sm font-semibold text-slate-900">Requirement brief</h2>
-                    </div>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+               <div className="p-6 space-y-6">
+                  <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+                     <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                        <FileText className="w-4 h-4" />
+                     </div>
+                     <h2 className="text-sm font-semibold text-slate-900">Job Description</h2>
                   </div>
                   
                   <div 
-                    className="prose prose-sm max-w-none text-slate-600 leading-relaxed font-medium tiptap-preview px-1"
+                    className="prose prose-indigo max-w-none 
+                      prose-headings:text-slate-900 prose-headings:font-bold prose-headings:mt-6 prose-headings:mb-3
+                      prose-p:text-slate-800 prose-p:leading-relaxed prose-p:mb-4
+                      prose-ul:list-disc prose-ul:pl-5 prose-ul:mb-4
+                      prose-ol:list-decimal prose-ol:pl-5 prose-ol:mb-4
+                      prose-li:text-slate-800 prose-li:mb-1
+                      prose-strong:text-slate-900 prose-strong:font-bold
+                      tiptap-preview px-1"
                     dangerouslySetInnerHTML={{ __html: job.description }}
                   />
                </div>
 
                {questions && questions.length > 0 && (
-                 <div className="bg-slate-50/20 p-6 space-y-5 border-t border-slate-100">
+                 <div className="bg-slate-50/20 p-6 space-y-5 border-t border-slate-50">
                     <div className="flex items-center gap-3">
-                       <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-inner">
-                          <Sparkles className="w-5 h-5" />
+                       <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                          <Target className="w-4 h-4" />
                        </div>
-                       <h2 className="text-sm font-semibold text-slate-900">Screening questionnaire</h2>
+                       <h2 className="text-sm font-bold text-slate-800">Screening Questions</h2>
                     </div>
                     <div className="grid grid-cols-1 gap-3">
                        {questions.map((q, idx) => (
-                         <div key={idx} className="p-4 rounded-xl border border-slate-100 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 group transition-all hover:border-primary/20 shadow-sm">
+                         <div key={idx} className="p-4 rounded-2xl border border-slate-100 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-indigo-100/50">
                              <div className="flex items-center gap-4">
-                                <span className="w-6 h-6 rounded-lg flex items-center justify-center bg-slate-50 text-[11px] font-semibold text-slate-400 border border-slate-100 shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                <span className="w-6 h-6 rounded-lg flex items-center justify-center bg-slate-50 text-[11px] font-bold text-slate-600 border border-slate-100 shrink-0">
                                   {idx + 1}
                                 </span>
-                                <p className="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors">
+                                <p className="text-[13px] font-bold text-slate-900">
                                   {q.question}
                                 </p>
                              </div>
-                             <div className="flex items-center gap-5 border-l border-slate-100 pl-5 py-0.5 sm:py-0 shrink-0">
-                                <div className="space-y-0.5">
-                                   <p className="text-[10px] font-medium text-slate-400 leading-none">Ideal answer</p>
-                                   <span className="text-xs font-semibold text-primary capitalize">{q.recruiter_answer}</span>
-                                 </div>
-                                 <div className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 text-[10px] font-semibold text-emerald-600">
-                                    {q.question_type}
+                             <div className="flex items-center gap-5 border-l border-slate-100 pl-5 shrink-0">
+                                <div className="space-y-0.5 text-right">
+                                   <p className="text-[9px] font-bold text-slate-400 tracking-wider">Ideal answer</p>
+                                   <span className="text-[12px] font-bold text-indigo-600 capitalize">{q.recruiter_answer}</span>
                                  </div>
                              </div>
                          </div>
@@ -212,94 +223,72 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
             </div>
          </div>
 
-         {/* Sidebar Stats */}
-         <div className="space-y-4">
+         {/* Sidebar */}
+         <div className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                <DetailItem 
                   label="Category" 
-                  value={job.category?.name || "General Teaching"} 
+                  value={job.category?.name || "General"} 
                   icon={Layers} 
-                  colorClass="bg-blue-50 text-blue-600 border-blue-100"
+                  colorClass="bg-blue-50 text-blue-600 border-blue-100/50"
                />
                <DetailItem 
-                  label="Vacancies" 
-                  value={`${job.vacancies} Positions`} 
+                  label="Available Positions" 
+                  value={`${job.vacancies} Vacancies`} 
                   icon={Users} 
-                  colorClass="bg-indigo-50 text-indigo-600 border-indigo-100"
+                  colorClass="bg-indigo-50 text-indigo-600 border-indigo-100/50"
                />
                <DetailItem 
-                  label="Annual salary" 
+                  label="Offered Salary" 
                   value={`₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`} 
                   icon={DollarSign} 
-                  colorClass="bg-emerald-50 text-emerald-600 border-emerald-100"
+                  colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50"
                />
                <DetailItem 
-                  label="Experience req." 
+                  label="Required Experience" 
                   value={`${job.experience_required}y (${job.experience_type})`} 
                   icon={Briefcase} 
-                  colorClass="bg-purple-50 text-purple-600 border-purple-100"
-               />
-               <DetailItem 
-                  label="Gender preference" 
-                  value={job.gender || "Any"} 
-                  icon={Users2} 
-                  colorClass="bg-pink-50 text-pink-600 border-pink-100"
-               />
-               <DetailItem 
-                  label={job.featured ? "Featured until" : "Featured job"} 
-                  value={job.featured ? (job.featured_until ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Premium active") : "No"} 
-                  icon={Star} 
-                  colorClass={job.featured ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"}
+                  colorClass="bg-purple-50 text-purple-600 border-purple-100/50"
                />
             </div>
             
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-5 relative overflow-hidden">
-               <div className="absolute bottom-0 right-0 w-24 h-24 bg-slate-50 opacity-40 rounded-full -mb-12 -mr-12" />
-               <div className="flex items-center gap-2 mb-1 relative z-10 border-l-2 border-primary pl-3">
-                  <h3 className="text-xs font-semibold text-slate-900">Job milestones</h3>
-               </div>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
+               <h3 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider mb-2">Job Milestones</h3>
                
-               <div className="space-y-3 relative z-10">
+               <div className="space-y-4">
                   {[
-                    { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
-                    { label: 'Deadline', value: job.deadline || job.application_deadline ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Rolling", icon: Clock, color: 'rose' },
-                    { label: 'Approval', value: job.status === 'approved' ? "Verified" : "Pending", icon: ShieldCheck, color: job.status === 'approved' ? 'emerald' : 'amber' },
-                    { label: 'Status', value: job.job_status === 'open' ? "Live" : job.job_status === 'filled' ? "Filled" : job.job_status, icon: RefreshCw, color: job.job_status === 'open' ? 'indigo' : 'rose' }
+                    { label: 'Posted Date', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
+                    { label: 'Application Deadline', value: job.deadline || job.application_deadline ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Not Specified", icon: Clock, color: 'rose' },
+                    { label: 'Platform Approval', value: job.status === 'approved' ? "Verified" : "Under Review", icon: ShieldCheck, color: job.status === 'approved' ? 'emerald' : 'amber' },
                   ].map((item, i) => (
-                    <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 p-2.5 sm:p-0 rounded-xl sm:rounded-none bg-slate-50 sm:bg-transparent border border-slate-100 sm:border-0 group/row">
-                       <p className="text-[10px] font-bold text-slate-400 group-hover/row:text-slate-600 transition-colors uppercase tracking-tight">{item.label}</p>
-                       <div className="flex items-center gap-2 min-w-0">
-                          <item.icon className={cn(
-                            "w-3.5 h-3.5 shrink-0",
-                            item.color === 'indigo' && "text-indigo-400",
-                            item.color === 'rose' && "text-rose-400",
-                            item.color === 'emerald' && "text-emerald-400",
-                            item.color === 'amber' && "text-amber-400"
-                          )} />
-                          <p className={cn(
-                            "text-[10px] font-bold px-2.5 py-1 rounded-lg border shadow-sm truncate capitalize",
-                            item.color === 'indigo' && "bg-indigo-50 text-indigo-700 border-indigo-100",
-                            item.color === 'rose' && "bg-rose-50 text-rose-700 border-rose-100",
-                            item.color === 'emerald' && "bg-emerald-50 text-emerald-700 border-emerald-100",
-                            item.color === 'amber' && "bg-amber-50 text-amber-700 border-amber-100"
+                    <div key={i} className="flex items-center justify-between gap-4 group/item">
+                       <div className="flex items-center gap-2.5">
+                          <div className={cn(
+                            "w-7 h-7 rounded-lg flex items-center justify-center border border-transparent group-hover/item:border-current transition-all",
+                            item.color === 'indigo' && "bg-indigo-50 text-indigo-500",
+                            item.color === 'rose' && "bg-rose-50 text-rose-500",
+                            item.color === 'emerald' && "bg-emerald-50 text-emerald-500",
+                            item.color === 'amber' && "bg-amber-50 text-amber-500"
                           )}>
-                            {item.value}
-                          </p>
+                             <item.icon className="w-3.5 h-3.5" />
+                          </div>
+                          <p className="text-[12px] font-medium text-slate-900">{item.label}</p>
                        </div>
+                       <p className="text-[12px] font-semibold text-slate-900">{item.value}</p>
                     </div>
                   ))}
                </div>
 
-               <div className="pt-6 border-t border-slate-50 mt-2 space-y-3 relative z-10">
+               <div className="pt-5 border-t border-slate-50 space-y-2">
                   {job.job_status !== 'filled' && (
                     <Button 
                       onClick={() => handleAction('filled')}
                       disabled={!!loadingAction}
                       variant="outline" 
-                      className="w-full h-11 rounded-xl text-xs font-semibold text-emerald-600 border-emerald-100 bg-emerald-50/20 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
+                      className="w-full h-10 rounded-xl text-xs font-semibold text-emerald-600 border-emerald-100 bg-emerald-50/10 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
                     >
-                      {loadingAction === 'filled' ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                      Close position
+                      {loadingAction === 'filled' ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                      Mark Position Filled
                     </Button>
                   )}
                   
@@ -307,10 +296,10 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                     onClick={() => handleAction('delete')}
                     disabled={!!loadingAction}
                     variant="outline" 
-                    className="w-full h-11 rounded-xl text-xs font-semibold text-red-500 border-red-50 bg-red-50/10 hover:bg-red-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                    className="w-full h-10 rounded-xl text-xs font-semibold text-rose-500 border-rose-50 bg-rose-50/10 hover:bg-rose-50 transition-all flex items-center justify-center gap-2"
                   >
-                    {loadingAction === 'delete' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 text-red-500" />}
-                    Delete job listing
+                    {loadingAction === 'delete' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Delete Listing
                   </Button>
                </div>
             </div>

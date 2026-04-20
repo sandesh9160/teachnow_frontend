@@ -57,9 +57,6 @@ export function DashboardSidebar({
     { label: "Billing", href: "/dashboard/employer/purchase-history", icon: CreditCard },
   ];
 
-  const bottomLinks = [
-    { label: "Help Center", href: "/help", icon: HelpCircle },
-  ];
 
   const recruiterLinks = [
     { label: "Overview", href: "/dashboard/recruiter", icon: LayoutGrid },
@@ -142,24 +139,6 @@ export function DashboardSidebar({
              })}
           </div>
 
-          {userRole === "employer" && (
-            <div className="mt-8 pt-8 border-t border-slate-50 space-y-1">
-              {bottomLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={onClose}
-                    className="flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 group"
-                  >
-                    <Icon className="h-[18px] w-[18px] shrink-0 opacity-50 group-hover:opacity-100 transition-all" />
-                    {!collapsed && <span className="tracking-tight truncate">{link.label}</span>}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* BACK TO HOME */}

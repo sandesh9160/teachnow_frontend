@@ -10,7 +10,8 @@ import {
   Mail,
   ShieldCheck,
   MapPin,
-
+  Clock,
+  Check,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -125,41 +126,31 @@ export default function CompanyProfileClient({
 
   if (!profile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] gap-2">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        <p className="text-xs text-gray-500 font-medium">Loading profile...</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Loading profile data...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
-      {/* Compact Header */}
-      <div className="flex flex-col gap-4 border-b pb-4 border-gray-100">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-normal whitespace-nowrap">{profile.company_name || 'Institution Profile'}</h1>
-              {profile.is_verified === 1 && (
-                <span className="hidden xs:inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-700 rounded-md text-[8px] font-semibold border border-green-100 tracking-normal ">
-                  <ShieldCheck className="w-2 h-2" /> Verified
-                </span>
-              )}
-            </div>
-            <p className="text-[10px] sm:text-xs text-gray-400 font-medium tracking-normal">Manage your branding presence</p>
+    <div className="max-w-6xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-20">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{profile.company_name || 'Institution Profile'}</h1>
+            {profile.is_verified === 1 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold border border-emerald-100">
+                <Check className="w-2.5 h-2.5" /> Verified
+              </span>
+            )}
           </div>
-          <div className="xs:hidden">
-              {profile.is_verified === 1 && (
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              )}
-          </div>
-          <div className="hidden sm:block text-[9px] font-bold text-gray-400 tracking-normal bg-gray-50 border px-2 py-1 rounded">
-             Draft State
-          </div>
+          <p className="text-[13px] font-medium text-slate-900">Manage your institution's branding and public presence.</p>
         </div>
         
-        {/* Compact Nav Tabs */}
-        <div className="bg-gray-50 p-1 rounded-xl border flex items-center gap-0.5 overflow-x-auto no-scrollbar max-w-full sm:max-w-none shadow-inner">
+        {/* Nav Tabs - Modern Pill Style */}
+        <div className="flex items-center gap-1 p-1 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-x-auto no-scrollbar">
           {[
             { id: "identity", label: "Identity", icon: Building2 },
             { id: "contact", label: "Contact", icon: Globe },
@@ -169,60 +160,65 @@ export default function CompanyProfileClient({
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
               className={cn(
-                "flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 whitespace-nowrap",
+                "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap flex items-center gap-2",
                 activeTab === tab.id 
-                ? "bg-white text-primary shadow-sm border border-gray-200" 
-                : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
+                ? "bg-[#312E81] text-white shadow-sm" 
+                : "text-slate-900 hover:bg-white/50"
               )}
             >
-              <tab.icon className={cn("w-3.5 h-3.5", activeTab === tab.id ? "text-primary" : "text-gray-400")} />
+              <tab.icon className={cn("w-3.5 h-3.5", activeTab === tab.id ? "text-white" : "text-indigo-400")} />
               {tab.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Main Content Card (Simple & Compact) */}
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="px-4 sm:px-6 py-4 border-b bg-gray-50/20 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border flex items-center justify-center text-primary">
-                {activeTab === "identity" && <Building2 className="w-4 h-4" />}
-                {activeTab === "contact" && <Globe className="w-4 h-4" />}
-                {activeTab === "location" && <MapPin className="w-4 h-4" />}
+      {/* Main Content Card */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden transition-all hover:border-indigo-100/50">
+        <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+          <div className="flex items-center gap-3">
+             <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 shadow-inner flex items-center justify-center text-indigo-600">
+                {activeTab === "identity" && <Building2 className="w-4.5 h-4.5" />}
+                {activeTab === "contact" && <Globe className="w-4.5 h-4.5" />}
+                {activeTab === "location" && <MapPin className="w-4.5 h-4.5" />}
              </div>
-             <h2 className="text-xs font-bold text-gray-900">
-                {activeTab === "identity" && "Branding & Identity"}
-                {activeTab === "contact" && "Communication Channels"}
-                {activeTab === "location" && "Physical Presence"}
-             </h2>
-          </div>
-          <div className="text-[9px] font-bold text-gray-400 tracking-normal bg-white border px-2 py-1 rounded">
-             Draft State
+             <div>
+               <h2 className="text-[14px] font-semibold text-slate-900">
+                  {activeTab === "identity" && "Branding & Identity"}
+                  {activeTab === "contact" && "Communication Channels"}
+                  {activeTab === "location" && "Physical Presence"}
+               </h2>
+               <p className="text-[10px] font-medium text-slate-500">All fields are visible to candidates.</p>
+             </div>
           </div>
         </div>
         
-          <div className="p-4 sm:p-6">
+        <div className="p-5 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               {activeTab === "identity" && (
-                <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
-                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gray-50/30 p-4 sm:p-6 border rounded-xl">
+                <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-slate-50/30 p-5 sm:p-6 border border-slate-100 rounded-2xl transition-all hover:bg-slate-50/50">
                   <div 
-                    className="relative w-20 h-20 rounded-xl bg-white border shadow-sm overflow-hidden group shrink-0 cursor-pointer hover:border-primary/50 transition-colors"
+                    className="relative w-24 h-24 rounded-2xl bg-white border border-slate-100 shadow-inner overflow-hidden group shrink-0 cursor-pointer hover:border-indigo-300 transition-all duration-300 active:scale-95"
                     onClick={() => document.getElementById("logo-upload")?.click()}
                   >
                     {logoPreview || profile.company_logo ? (
                       <Image src={logoPreview || getLogoUrl(profile.company_logo)!} alt="Logo" fill className="object-cover" />
                     ) : (
-                      <Building2 className="w-8 h-8 text-gray-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
+                        <Building2 className="w-8 h-8 mb-1" />
+                        <span className="text-[8px] font-bold uppercase tracking-widest">No Logo</span>
+                      </div>
                     )}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Upload className="text-white w-4 h-4" />
+                    <div className="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
+                      <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+                        <Upload className="text-white w-4 h-4" />
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-0.5 text-center sm:text-left">
-                    <h4 className="text-sm font-bold text-gray-900">Institution Logo</h4>
-                    <p className="text-xs text-gray-500 max-w-sm">JPG/PNG recommended. Square aspect ratio.</p>
+                  <div className="space-y-1.5 text-center sm:text-left">
+                    <h4 className="text-sm font-semibold text-slate-900">Institution Logo</h4>
+                    <p className="text-[12px] font-medium text-slate-500 max-w-sm leading-relaxed">JPG or PNG recommended. Square aspect ratio provides the best visibility across our platform.</p>
                     <input 
                       id="logo-upload" 
                       type="file" 
@@ -230,54 +226,61 @@ export default function CompanyProfileClient({
                       className="hidden" 
                       onChange={handleLogoChange}
                     />
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      type="button" 
-                      onClick={() => document.getElementById("logo-upload")?.click()}
-                      className="mt-2 h-8 px-4 rounded-lg text-[10px] font-bold border-gray-200"
-                    >
-                      Change Logo
-                    </Button>
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        type="button" 
+                        onClick={() => document.getElementById("logo-upload")?.click()}
+                        className="h-8 px-4 rounded-xl text-[11px] font-semibold text-slate-600 border-slate-200 bg-white hover:bg-slate-50 transition-all"
+                      >
+                        Change Logo
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Institution Name</Label>
-                    <Input name="company_name" defaultValue={profile.company_name} className="h-10 rounded-lg text-sm" />
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Institution Name</Label>
+                    <Input name="company_name" defaultValue={profile.company_name} className="h-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Industry / Sector</Label>
-                    <Input name="industry" defaultValue={profile.industry || ""} className="h-10 rounded-lg text-sm" />
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Industry / Sector</Label>
+                    <Input name="industry" defaultValue={profile.industry || ""} className="h-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                   </div>
                    <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Institution Type</Label>
-                    <select 
-                      name="institution_type" 
-                      defaultValue={profile.institution_type || ""} 
-                      className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
-                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}
-                    >
-                      <option value="" disabled>Select Type</option>
-                      <option value="School">School</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Diploma">Diploma</option>
-                      <option value="UG">UG</option>
-                      <option value="PG">PG</option>
-                    </select>
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Institution Type</Label>
+                    <div className="relative">
+                      <select 
+                        name="institution_type" 
+                        defaultValue={profile.institution_type || ""} 
+                        className="h-11 w-full rounded-xl border border-slate-100 bg-slate-50/30 px-4 text-[14px] font-medium text-slate-900 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-100 outline-none transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>Select Type</option>
+                        <option value="School">School</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="UG">UG</option>
+                        <option value="PG">PG</option>
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Slug URL</Label>
-                    <Input name="slug" defaultValue={profile.slug} disabled className="h-10 rounded-lg bg-gray-50 text-gray-400 text-xs italic" />
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Slug URL</Label>
+                    <Input name="slug" defaultValue={profile.slug} disabled className="h-11 rounded-xl bg-slate-50 border-slate-100 text-slate-400 text-[13px] font-medium cursor-not-allowed opacity-70" />
                   </div>
-                  <div className="space-y-1.5 md:col-span-2">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">About Section</Label>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">About Section</Label>
                     <textarea 
                       name="company_description" 
                       rows={4} 
+                      placeholder="Describe your institution..."
                       defaultValue={profile.company_description || ""} 
-                      className="w-full text-sm p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none font-medium h-24"
+                      className="w-full text-[14px] font-medium p-4 rounded-xl border border-slate-100 focus:ring-1 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-slate-50/30 min-h-24 scrollbar-thin"
                     />
                   </div>
                 </div>
@@ -285,75 +288,92 @@ export default function CompanyProfileClient({
             )}
 
             {activeTab === "contact" && (
-              <div className="space-y-8 animate-in fade-in duration-200">
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Website</Label>
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Official Website</Label>
                     <div className="relative group">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary transition-colors" />
-                      <Input name="website" defaultValue={profile.website || ""} className="h-10 pl-10 rounded-lg text-sm" />
+                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 group-focus-within:scale-110 transition-all" />
+                      <Input name="website" defaultValue={profile.website || ""} className="h-11 pl-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Help Email</Label>
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Help desk Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input name="email" defaultValue={profile.email} disabled className="h-10 pl-10 rounded-lg bg-gray-50 text-gray-500 text-sm" />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400" />
+                      <Input name="email" defaultValue={profile.email} disabled className="h-11 pl-11 rounded-xl bg-slate-50 border-slate-100 text-slate-500 text-[14px] font-medium opacity-70" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Phone Number</Label>
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Phone Number</Label>
                     <div className="relative group">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary transition-colors" />
-                      <Input name="phone" defaultValue={profile.phone || ""} className="h-10 pl-10 rounded-lg text-sm" />
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 group-focus-within:scale-110 transition-all" />
+                      <Input name="phone" defaultValue={profile.phone || ""} className="h-11 pl-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                     </div>
                   </div>
                 </div>
-
-
               </div>
             )}
 
             {activeTab === "location" && (
-              <div className="space-y-8 animate-in fade-in duration-200">
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5 lg:col-span-1">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Street Address</Label>
-                    <Input name="address" defaultValue={profile.address || ""} className="h-10 rounded-lg text-sm" />
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Street Address</Label>
+                    <Input name="address" defaultValue={profile.address || ""} className="h-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">City</Label>
-                    <Input name="city" defaultValue={profile.city || ""} className="h-10 rounded-lg text-sm" />
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">City</Label>
+                    <Input name="city" defaultValue={profile.city || ""} className="h-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold text-gray-500 ml-0.5">Country</Label>
-                    <Input name="country" defaultValue={profile.country || "INDIA"} className="h-10 rounded-lg text-sm" />
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Country</Label>
+                    <Input name="country" defaultValue={profile.country || "INDIA"} className="h-11 rounded-xl text-[14px] font-medium border-slate-100 focus:ring-1 focus:ring-indigo-100 bg-slate-50/30" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between mb-1">
-                    <Label className="text-[10px] font-bold text-gray-500">Map Integration</Label>
-                    <span className="text-[8px] font-bold text-blue-500 tracking-normaler">Live GIS Pin</span>
+                    <Label className="text-[11px] font-bold text-slate-400 px-1 uppercase tracking-wider">Map Integration</Label>
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">Live GIS Data</span>
                   </div>
-                  <div className="rounded-xl overflow-hidden border shadow-sm">
+                  <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50">
                     <LocationPicker 
                       lat={profile.latitude} 
                       lng={profile.longitude} 
                       onChange={handleMapChange} 
-                      className="w-full" 
+                      className="w-full opacity-0 animate-in fade-in fill-mode-forwards duration-1000 delay-300" 
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-[10px] text-gray-400 font-bold tracking-wider">Save required to confirm change</p>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" type="button" onClick={() => window.location.reload()} className="flex-1 sm:flex-initial h-10 px-4 rounded-lg text-[10px] font-bold tracking-normal text-gray-400 border-gray-200  whitespace-nowrap">Discard</Button>
-                <Button size="sm" type="submit" disabled={loading} className="flex-1 sm:flex-initial h-10 px-5 rounded-lg text-[11px] font-bold tracking-normal shadow-md  whitespace-nowrap min-w-0 sm:min-w-[160px] flex items-center justify-center gap-2">
+            <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center border border-amber-100">
+                   <Clock className="w-4 h-4 text-amber-600" />
+                </div>
+                <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Save required to confirm changes</p>
+              </div>
+              
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  type="button" 
+                  onClick={() => window.location.reload()} 
+                  className="flex-1 sm:flex-initial h-10 px-6 rounded-xl text-[12px] font-bold text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all"
+                >
+                  Discard Changes
+                </Button>
+                <Button 
+                  size="sm" 
+                  type="submit" 
+                  disabled={loading} 
+                  className="flex-1 sm:flex-initial h-10 px-8 rounded-xl text-[12px] font-bold bg-[#312E81] hover:bg-[#1E1B4B] shadow-lg shadow-indigo-100/50 transition-all flex items-center justify-center gap-2"
+                >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                  <span className="truncate">Update Profile</span>
+                  Save Profile
                 </Button>
               </div>
             </div>
