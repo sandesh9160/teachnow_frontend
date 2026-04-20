@@ -19,8 +19,21 @@ import { Label } from "@/shared/ui/Label/Label";
 import Image from "next/image";
 import { EmployerProfile } from "@/types/employer";
 import { cn } from "@/lib/utils";
-import { LocationPicker } from "@/shared/ui/LocationPicker/LocationPicker";
+import dynamic from "next/dynamic";
 import { toast } from "sonner";
+
+// High-Fidelity Optimization: Dynamically load heavy Map components to keep TTI (Time to Interactive) low.
+const LocationPicker = dynamic(
+  () => import("@/shared/ui/LocationPicker/LocationPicker").then((mod) => mod.LocationPicker),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-64 w-full bg-gray-50 animate-pulse rounded-xl flex items-center justify-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        Initializing Map Engine...
+      </div>
+    )
+  }
+);
 
 type TabType = "identity" | "contact" | "location";
 

@@ -4,27 +4,22 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { 
   Briefcase, 
-  Tag, 
-  MapPin, 
-  ChevronRight, 
-  PlusCircle, 
+
   Loader2,
-  Clock,
-  Layers,
-  Sparkles,
+
   Save,
   Trash2,
-  ListTodo,
-  HelpCircle,
+ 
   ToggleLeft,
   Hash,
   DollarSign,
-  Edit3,
-  Users,
-  ChevronLeft,
-  RefreshCw,
-  ArrowUp,
-  ArrowDown
+
+  FileText,
+  GraduationCap,
+  Eye,
+ 
+  X,
+  Plus
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -60,566 +55,403 @@ export default function PostJobClient({
   userRole = "employer"
 }: PostJobClientProps & { userRole?: string }) {
   const basePath = `/dashboard/${userRole}`;
-  // Resolve core job metadata and screening questions
   const job = isEdit ? initialData?.job : initialData;
   const initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
 
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    title: job?.title || "",
+    category_id: job?.category_id || "",
+    job_type: job?.job_type || "",
+    location: job?.location || "",
+    experience_type: job?.experience_type || "experienced",
+    experience_required: job?.experience_required || "",
+    school_name: job?.school_name || "",
+    vacancies: job?.vacancies || 1,
+    gender: job?.gender || "both",
+    salary_min: job?.salary_min?.split('.')[0] || "",
+    salary_max: job?.salary_max?.split('.')[0] || "",
+    education_qualification: job?.education_qualification || "",
+    skills: Array.isArray(job?.skills) ? job.skills : [],
+    benefits: Array.isArray(job?.benefits) ? job.benefits : [],
+  });
+
   const [description, setDescription] = useState(job?.description || "");
-  const [featured, setFeatured] = useState(job?.featured === 1);
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const [deadline, setDeadline] = useState<Date | undefined>(
     job?.deadline || job?.application_deadline ? new Date(job.deadline || job.application_deadline) : undefined
   );
+  const featured = job?.featured === 1;
+  const [newSkill, setNewSkill] = useState("");
 
-  const addQuestion = (type: "boolean" | "numeric" | "text") => {
-    setQuestions([
-      ...questions,
-      { 
-        question: "", 
-        question_type: type, 
-        recruiter_answer: type === "boolean" ? "yes" : "" 
-      }
-    ]);
+  const updateField = (name: string, value: any) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const removeQuestion = (idx: number) => {
-    setQuestions(questions.filter((_, i) => i !== idx));
+  const steps = [
+    { id: 1, name: "Job Details", icon: Briefcase },
+    { id: 2, name: "Job Description", icon: FileText },
+    { id: 3, name: "Requirements", icon: GraduationCap },
+    { id: 4, name: "Salary & Benefits", icon: DollarSign },
+    { id: 5, name: "Preview & Publish", icon: Eye },
+  ];
+
+  const handleNext = () => { if (currentStep < 5) setCurrentStep(currentStep + 1); };
+  const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
+
+  const addSkill = () => {
+    if (newSkill && !formData.skills.includes(newSkill)) {
+      updateField("skills", [...formData.skills, newSkill]);
+      setNewSkill("");
+    }
   };
 
-  const updateQuestion = (idx: number, field: keyof Question, val: string) => {
-    const newQuestions = [...questions];
-    newQuestions[idx] = { ...newQuestions[idx], [field]: val };
-    setQuestions(newQuestions);
+  const removeSkill = (skill: string) => {
+    updateField("skills", formData.skills.filter((s: string) => s !== skill));
   };
 
-  const moveQuestion = (idx: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && idx === 0) return;
-    if (direction === 'down' && idx === questions.length - 1) return;
-    const newQuestions = [...questions];
-    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-    [newQuestions[idx], newQuestions[targetIdx]] = [newQuestions[targetIdx], newQuestions[idx]];
-    setQuestions(newQuestions);
+  const toggleBenefit = (benefit: string) => {
+    const newBenefits = formData.benefits.includes(benefit)
+      ? formData.benefits.filter((b: string) => b !== benefit)
+      : [...formData.benefits, benefit];
+    updateField("benefits", newBenefits);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-      const data = {
-      title: formData.get("title"),
-      description: description,
-      category_id: formData.get("category_id"),
-      salary_min: formData.get("salary_min"),
-      salary_max: formData.get("salary_max"),
-      vacancies: formData.get("vacancies"),
-      location: formData.get("location"),
-      experience_type: formData.get("experience_type"),
-      experience_required: formData.get("experience_required"),
-      job_type: formData.get("job_type"),
-      gender: formData.get("gender"),
-      deadline: formData.get("deadline"),
-      featured: featured ? 1 : 0,
-      questions: questions,
-    };
-
+    const data = { ...formData, description, deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", featured: featured ? 1 : 0, questions };
     try {
-      const endpoint = isEdit 
-        ? `${userRole}/jobs/update/${job?.id}` 
-        : `${userRole}/jobs/create`;
-
-      const result = await dashboardServerFetch(endpoint, {
-        method: isEdit ? "PUT" : "POST",
-        data,
-      });
-
-      if (result.status === true) {
-        toast.success(result.message || (isEdit ? "Job updated successfully!" : "Job posted successfully!"));
-        setTimeout(() => {
-          window.location.href = `${basePath}/jobs`;
-        }, 1200);
+      const endpoint = isEdit ? `${userRole}/jobs/update/${job?.id}` : `${userRole}/jobs/create`;
+      const result = await dashboardServerFetch(endpoint, { method: isEdit ? "PUT" : "POST", data });
+      if (result.status) {
+        toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"));
+        setTimeout(() => { window.location.href = `${basePath}/jobs`; }, 1200);
       } else {
-        toast.error(result.message || "Something went wrong. Please check your inputs.");
+        toast.error(result.message || "Failed.");
       }
-    } catch (error: any) {
-      toast.error(error.message || "An unexpected error occurred.");
+    } catch (e: any) {
+      toast.error("Error occurred.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRepublish = async () => {
-    toast("Republish this job?", {
-      description: "It will be active for another 30 days.",
-      id: "confirm-republish",
-      duration: Infinity,
-      action: {
-        label: "Republish",
-        onClick: async () => {
-          setLoading(true);
-          try {
-            const result = await dashboardServerFetch(`${userRole}/jobs/${job?.id}/republish`, {
-              method: "PUT",
-            });
-
-            if (result.status === true) {
-              toast.success(result.message || "Job republished successfully!");
-              setTimeout(() => {
-                window.location.reload();
-              }, 1200);
-            } else {
-              toast.error(result.message || "Failed to republish job.");
-            }
-          } catch (error: any) {
-            toast.error(error.message || "An unexpected error occurred while republishing.");
-          } finally {
-            setLoading(false);
-          }
-        }
-      },
-      cancel: {
-        label: "Keep",
-        onClick: () => {}
-      }
-    });
+  const addQuestion = (type: "boolean" | "numeric" | "text") => setQuestions([...questions, { question: "", question_type: type, recruiter_answer: type === 'boolean' ? 'yes' : '' }]);
+  const removeQuestion = (idx: number) => setQuestions(questions.filter((_, i) => i !== idx));
+  const updateQuestion = (idx: number, field: keyof Question, val: string) => {
+    const n = [...questions]; n[idx] = { ...n[idx], [field]: val }; setQuestions(n);
   };
 
-  const isExpired = isEdit && (
-    job?.status?.toLowerCase() === 'expired' || 
-    job?.job_status?.toLowerCase() === 'expired' ||
-    (job?.expires_at && new Date(job.expires_at) < new Date())
-  );
+  const benefitOptions = ["Health Insurance", "Accommodation", "Transport Allowance", "Flexible Schedule", "Annual Bonus", "Paid Leaves"];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-4 space-y-4 font-sans text-slate-700 pb-20">
-      {/* Back Button */}
-      <button 
-        onClick={() => window.history.back()} 
-        className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-primary transition-colors mb-2 group w-fit active:scale-95"
-      >
-        <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> Back to Overview
-      </button>
+    <div className="max-w-4xl mx-auto px-4 py-6 font-sans text-slate-900 pb-32">
+      <div className="space-y-1">
+        <h1 className="text-xl md:text-2xl font-semibold text-[#1E1B4B]">Post a New Job</h1>
+        <p className="text-slate-400 text-xs md:text-sm">Create a job listing in 5 simple steps</p>
+      </div>
 
-      {/* Professional Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 bg-white p-4 rounded-2xl border shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className={cn(
-             "w-10 h-10 rounded-xl flex items-center justify-center border transition-all shadow-inner shrink-0",
-             isEdit ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-indigo-50 text-indigo-600 border-indigo-100"
-          )}>
-            {isEdit ? <Edit3 className="w-5 h-5" /> : <PlusCircle className="w-5 h-5" />}
-          </div>
-          <div className="space-y-0.5 min-w-0">
-            <h1 className="text-lg font-semibold text-slate-900 truncate">
-              {isEdit ? "Edit your job" : "Create a job post"}
-            </h1>
-            <p className="text-xs text-slate-400 truncate font-medium">
-              {isEdit ? `Updating: ${job?.title}` : "Fill in the details to find the best teachers."}
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-1.5 bg-slate-50/50 p-1 rounded-xl border border-slate-100 w-full sm:w-auto">
-           <button type="button" className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-indigo-600 bg-white shadow-sm border border-slate-200 flex items-center justify-center gap-2">
-             <Layers className="w-4 h-4" /> <span className="sm:inline">Details</span>
-           </button>
-           <button type="button" disabled className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-medium flex items-center justify-center gap-2 cursor-not-allowed opacity-40">
-             <Sparkles className="w-4 h-4" /> <span className="sm:inline">AI assistant</span>
-           </button>
+      {/* Stepper Indicator - Desktop Compact Side-by-Side Style */}
+      <div className="w-full py-4 md:py-8 overflow-hidden">
+        <div className="flex items-center justify-center flex-wrap gap-y-2 md:gap-x-0 max-w-4xl mx-auto px-1">
+          {steps.map((step, idx) => (
+            <div key={step.id} className="flex items-center group">
+              <button 
+                onClick={() => setCurrentStep(step.id)}
+                className="flex items-center gap-1.5 md:gap-2 transition-all active:scale-95 cursor-pointer"
+              >
+                <div className={cn(
+                  "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all bg-[#F8FAFC] border border-slate-50",
+                  currentStep >= step.id ? "bg-[#312E81] border-[#312E81] text-white shadow-sm" : "text-slate-400"
+                )}>
+                  <step.icon className="w-4 h-4 md:w-5 md:h-5" />
+                </div>
+                {/* Text Label - Hidden on Mobile */}
+                <span className={cn(
+                  "text-[11px] md:text-xs font-semibold whitespace-nowrap transition-colors hidden md:block", 
+                  currentStep === step.id ? "text-[#1E1B4B]" : "text-slate-400 group-hover:text-slate-600"
+                )}>
+                  {step.name}
+                </span>
+              </button>
+              {idx < steps.length - 1 && (
+                <div className={cn(
+                  "w-3 md:w-8 h-[1.5px] mx-1 md:mx-2 rounded-full transition-colors",
+                  currentStep > step.id ? "bg-[#312E81]" : "bg-slate-100"
+                )} />
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Detailed Content Hub */}
-          <div className="lg:col-span-2 space-y-5">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-5">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-8 min-h-[400px]">
+        {currentStep === 1 && (
+          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-300">
+            <h2 className="text-base md:text-lg font-semibold text-[#1E1B4B]">Job Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-4 md:pb-6">
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-xs md:text-sm font-medium text-slate-700">Job Title *</Label>
+                <Input value={formData.title} onChange={(e) => updateField("title", e.target.value)} placeholder="e.g. Mathematics Teacher" className="h-11 rounded-xl bg-slate-50 border-slate-50 focus:bg-white text-sm" />
+              </div>
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-500 ml-0.5">Job title</Label>
-                <div className="relative group">
-                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
-                  <input type="hidden" name="id" value={job?.id} />
-                  <Input 
-                    name="title" 
-                    defaultValue={job?.title}
-                    placeholder="e.g. Senior Physics Teacher" 
-                    className="h-11 pl-11 rounded-xl border-slate-100 text-sm font-medium focus:ring-1 focus:ring-indigo-500/10" 
-                    required 
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between ml-0.5">
-                  <Label className="text-xs font-medium text-slate-500">Job description</Label>
-                  <span className="text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">Editor active</span>
-                </div>
-                <div className="min-h-[300px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-500/10 transition-all">
-                  <TipTapEditor value={description} onChange={setDescription} />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-50 p-4 md:p-5 bg-slate-50/20 gap-4">
-                 <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
-                    <ListTodo className="w-4 h-4 text-indigo-600" />
-                    <h2 className="text-sm font-medium text-slate-900">Screening questions</h2>
-                 </div>
-                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("boolean")} className="h-8 px-3 text-[10px] rounded-xl border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition-all bg-white shrink-0 font-semibold">
-                      <ToggleLeft className="w-3.5 h-3.5 mr-1.5" /> Yes/No
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("numeric")} className="h-8 px-3 text-[10px] rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50 transition-all bg-white shrink-0 font-semibold">
-                      <Hash className="w-3.5 h-3.5 mr-1.5" /> Number
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" onClick={() => addQuestion("text")} className="h-8 px-3 text-[10px] rounded-xl border-emerald-100 text-emerald-600 hover:bg-emerald-50 transition-all bg-white shrink-0 font-semibold">
-                      <PlusCircle className="w-3.5 h-3.5 mr-1.5" /> Text
-                    </Button>
-                  </div>
-              </div>
-
-              <div className="p-4 sm:p-6 space-y-4">
-                {questions.length === 0 ? (
-                  <div className="py-12 text-center border border-dashed rounded-2xl border-slate-100 flex flex-col items-center gap-3 bg-slate-50/30">
-                     <HelpCircle className="w-8 h-8 text-slate-100" />
-                     <div className="space-y-1">
-                       <p className="text-sm font-semibold text-slate-400">No questions added</p>
-                       <p className="text-xs text-slate-300">Add filters to sort through applicants faster.</p>
-                     </div>
-                  </div>
-                ) : (
-                  questions.map((q, i) => (
-                     <div key={i} className="group bg-slate-50/50 rounded-xl border border-slate-100 overflow-hidden hover:border-primary/20 transition-all shadow-sm">
-                        {/* Question Header Actions */}
-                        <div className="px-4 py-2 bg-slate-100/30 border-b border-slate-50 flex items-center justify-between gap-4">
-                           <span className="text-[10px] font-medium text-slate-500">Question {i + 1} • {q.question_type}</span>
-                           
-                           <div className="flex items-center gap-1.5">
-                              {/* Move Controls */}
-                              <div className="flex items-center bg-white border border-slate-100 rounded-lg overflow-hidden shadow-sm shrink-0">
-                                 <button 
-                                   onClick={() => moveQuestion(i, 'up')} 
-                                   disabled={i === 0}
-                                   type="button" 
-                                   className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50 disabled:opacity-30 transition-colors border-r border-slate-100"
-                                 >
-                                    <ArrowUp className="w-3 h-3" />
-                                 </button>
-                                 <button 
-                                   onClick={() => moveQuestion(i, 'down')} 
-                                   disabled={i === questions.length - 1}
-                                   type="button" 
-                                   className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50 disabled:opacity-30 transition-colors"
-                                 >
-                                    <ArrowDown className="w-3 h-3" />
-                                 </button>
-                              </div>
-
-                              <button 
-                                onClick={() => addQuestion(q.question_type)} 
-                                title={`Add another ${q.question_type} question`}
-                                type="button" 
-                                className="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-indigo-400 hover:text-indigo-600 hover:border-indigo-100 hover:shadow-sm transition-all active:scale-90 shadow-sm"
-                              >
-                                 <PlusCircle className="w-3.5 h-3.5" />
-                              </button>
-                              <button 
-                                onClick={() => removeQuestion(i)} 
-                                title="Remove question"
-                                type="button" 
-                                className="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-rose-300 hover:text-rose-500 hover:border-rose-100 hover:shadow-sm transition-all active:scale-90 shadow-sm"
-                              >
-                                 <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                           </div>
-                        </div>
-
-                        <div className="p-4 space-y-4">
-                           <div className="space-y-2">
-                              <Label className="text-[10px] font-medium text-slate-400">Statement</Label>
-                              <Input 
-                                value={q.question} 
-                                onChange={(e) => updateQuestion(i, "question", e.target.value)}
-                                placeholder="e.g. Do you have experience with JEE coaching?" 
-                                className="h-10 rounded-xl text-sm font-medium border-slate-50 bg-white" 
-                              />
-                           </div>
-                       <div className="flex items-center gap-4">
-                          <div className="space-y-2 flex-1 max-w-[240px]">
-                             <Label className="text-[10px] font-medium text-slate-400">Correct criteria</Label>
-                             {q.question_type === "boolean" ? (
-                               <select 
-                                 value={q.recruiter_answer}
-                                 onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
-                                 className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold outline-none cursor-pointer focus:ring-1 focus:ring-primary/10 transition-all"
-                               >
-                                  <option value="yes">Must be Yes</option>
-                                  <option value="no">Must be No</option>
-                               </select>
-                             ) : q.question_type === "numeric" ? (
-                               <Input 
-                                 type="number"
-                                 value={q.recruiter_answer}
-                                 onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
-                                 placeholder="Threshold"
-                                 className="h-10 rounded-xl text-sm font-medium"
-                               />
-                             ) : (
-                               <Input 
-                                 value={q.recruiter_answer}
-                                 onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
-                                 placeholder="Expected answer"
-                                 className="h-10 rounded-xl text-sm font-medium"
-                               />
-                             )}
-                          </div>
-                        </div>
-                     </div>
-                  </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Logistics Tracking Sidebar */}
-          <div className="space-y-5">
-            {/* Featured Job Promotion */}
-            <div className="bg-white rounded-2xl border border-amber-100 shadow-sm p-4 md:p-5 overflow-hidden relative group transition-all hover:shadow-md">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50/50 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center border shadow-inner transition-colors",
-                    featured ? "bg-amber-500 text-white border-amber-600" : "bg-slate-50 text-slate-300 border-slate-100"
-                  )}>
-                    <Sparkles className={cn("w-4 h-4", featured && "fill-white/20")} />
-                  </div>
-                  <div className="flex flex-col">
-                    <Label className="text-xs font-semibold text-slate-900 cursor-pointer" htmlFor="featured-toggle">Featured Job</Label>
-                    <p className="text-[10px] text-amber-600 font-medium">Appear on top of search</p>
-                  </div>
-                </div>
-                <input 
-                  id="featured-toggle"
-                  type="checkbox" 
-                  checked={featured}
-                  onChange={(e) => setFeatured(e.target.checked)}
-                  className="w-5 h-5 rounded-lg border-amber-300 text-amber-500 focus:ring-amber-500 cursor-pointer transition-all active:scale-90"
-                />
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-5">
-              <div className="flex items-center gap-2 border-l-2 border-indigo-500 pl-3">
-                 <Tag className="w-4 h-4 text-indigo-500" />
-                 <h2 className="text-sm font-medium text-slate-900">Basic information</h2>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-400">Category</Label>
-                <select 
-                  name="category_id" 
-                  defaultValue={job?.category_id || ""}
-                  className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer group-hover:bg-slate-50 transition-all"
-                  required
-                >
-                  <option value="" disabled>Select category</option>
-                  {metadata.categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                <Label className="text-xs md:text-sm font-medium text-slate-700">Subject / Category *</Label>
+                <select value={formData.category_id} onChange={(e) => updateField("category_id", e.target.value)} className="w-full h-11 rounded-xl bg-slate-50 border-slate-50 px-4 text-sm focus:ring-1 focus:ring-slate-200 outline-none">
+                  <option value="">Select subject</option>
+                  {metadata.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-400">Job type</Label>
-                <select 
-                  name="job_type" 
-                  defaultValue={job?.job_type || ""}
-                  className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
-                  required
-                >
-                  <option value="" disabled>Select job type</option>
+                <Label className="text-xs md:text-sm font-medium text-slate-700">Job Type *</Label>
+                <select value={formData.job_type} onChange={(e) => updateField("job_type", e.target.value)} className="w-full h-11 rounded-xl bg-slate-50 border-slate-50 px-4 text-sm focus:ring-1 focus:ring-slate-200 outline-none">
+                  <option value="">Select type</option>
                   <option value="full_time">Full-time</option>
                   <option value="part_time">Part-time</option>
-                  <option value="contract">Contract</option>
-                  <option value="internship">Internship</option>
                 </select>
               </div>
-
-              <div className="grid grid-cols-1 gap-4 pt-1">
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-400">Requirement</Label>
-                   <select 
-                    name="experience_type" 
-                    defaultValue={job?.experience_type || ""}
-                    className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
-                    required
-                  >
-                    <option value="" disabled>Select</option>
-                    <option value="fresher">Fresher</option>
-                    <option value="experienced">Experienced</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-400">Years req.</Label>
-                  <Input 
-                    name="experience_required" 
-                    type="number" 
-                    defaultValue={job?.experience_required}
-                    placeholder="5" 
-                    className="h-10 rounded-xl text-sm font-medium border-slate-100" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 pt-1">
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-400">Gender</Label>
-                  <select 
-                    name="gender" 
-                    defaultValue={job?.gender || "both"}
-                    className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
-                    required
-                  >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="both">Both</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-400">Deadline</Label>
-                  <DatePicker 
-                    date={deadline} 
-                    setDate={setDeadline} 
-                    placeholder="Select deadline"
-                  />
-                  <input 
-                    type="hidden" 
-                    name="deadline" 
-                    value={deadline ? format(deadline, "yyyy-MM-dd") : ""} 
-                  />
-                </div>
-              </div>
-
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-4">
-              <div className="flex items-center gap-2 border-l-2 border-emerald-500 pl-3">
-                 <MapPin className="w-4 h-4 text-emerald-500" />
-                 <h2 className="text-sm font-medium text-slate-900">Location</h2>
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-xs md:text-sm font-medium text-slate-700">School / Institute Name *</Label>
+                <Input value={formData.school_name} onChange={(e) => updateField("school_name", e.target.value)} placeholder="e.g. Delhi Public School" className="h-11 rounded-xl bg-slate-50 border-slate-50 text-sm" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-400">Work location</Label>
-                <select 
-                  name="location" 
-                  defaultValue={job?.location || ""}
-                  className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer transition-all"
-                  required
-                >
-                  <option value="" disabled>Select location</option>
-                  {metadata.locations.map((loc, idx) => (
-                    <option key={idx} value={loc.name}>{loc.name}</option>
-                  ))}
+                <Label className="text-xs md:text-sm font-medium text-slate-700">City *</Label>
+                <select value={formData.location} onChange={(e) => updateField("location", e.target.value)} className="w-full h-11 rounded-xl bg-slate-50 border-slate-50 px-4 text-sm outline-none">
+                  <option value="">Select city</option>
+                  {metadata.locations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
                 </select>
               </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 md:p-5 space-y-5">
-              <div className="flex items-center gap-2 border-l-2 border-amber-500 pl-3">
-                 <DollarSign className="w-4 h-4 text-amber-500" />
-                 <h2 className="text-sm font-medium text-slate-900">Salary & openings</h2>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-400">Min salary</Label>
-                  <Input 
-                    name="salary_min" 
-                    type="number" 
-                    defaultValue={job?.salary_min?.split('.')[0]}
-                    placeholder="400,000" 
-                    className="h-10 rounded-xl text-sm font-medium border-slate-100" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-slate-400">Max salary</Label>
-                  <Input 
-                    name="salary_max" 
-                    type="number" 
-                    defaultValue={job?.salary_max?.split('.')[0]}
-                    placeholder="1,200,000" 
-                    className="h-10 rounded-xl text-sm font-medium border-slate-100" 
-                  />
-                </div>
-              </div>
-              
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-slate-500">Number of openings</Label>
-                <div className="relative">
-                   <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                   <Input 
-                     name="vacancies" 
-                     type="number" 
-                     defaultValue={job?.vacancies || 1} 
-                     className="h-10 pl-11 rounded-xl text-sm font-medium bg-slate-50/20 border-slate-100" 
-                     required 
-                   />
-                </div>
+                <Label className="text-xs md:text-sm font-medium text-slate-700">Experience Required</Label>
+                <Input value={formData.experience_required} onChange={(e) => updateField("experience_required", e.target.value)} placeholder="e.g. 3–5 years" className="h-11 rounded-xl bg-slate-50 border-slate-50 text-sm" />
               </div>
             </div>
           </div>
+        )}
+
+        {currentStep === 2 && (
+          <div className="space-y-6 animate-in fade-in duration-300 overflow-hidden">
+            <h2 className="text-base md:text-lg font-semibold text-[#1E1B4B]">Job Description</h2>
+            <div className="min-h-[300px] md:min-h-[350px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-slate-200 transition-all">
+               <TipTapEditor value={description} onChange={setDescription} minimal={true} />
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-300">
+            <h2 className="text-base md:text-lg font-semibold text-[#1E1B4B]">Requirements</h2>
+            <div className="space-y-6">
+               <div className="space-y-2">
+                 <Label className="text-xs md:text-sm font-medium text-slate-700">Education Qualification *</Label>
+                 <Input value={formData.education_qualification} onChange={(e) => updateField("education_qualification", e.target.value)} placeholder="e.g. B.Ed / M.Sc Mathematics" className="h-11 rounded-xl bg-slate-50 border-slate-50 text-sm" />
+               </div>
+               <div className="space-y-4 text-sm">
+                 <Label className="font-medium text-slate-700">Skills Required</Label>
+                 <div className="flex gap-2">
+                    <Input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} placeholder="Skills..." className="h-11 bg-slate-50 border-slate-50" />
+                    <Button onClick={addSkill} variant="outline" className="h-11 px-4 md:px-6 rounded-xl text-slate-600">Add</Button>
+                 </div>
+                 <div className="flex flex-wrap gap-2 py-1">
+                    {formData.skills.map((s: string) => (
+                       <span key={s} className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[11px] font-medium text-[#1E1B4B] flex items-center gap-2">
+                          {s} <X className="w-3 h-3 cursor-pointer opacity-40" onClick={() => removeSkill(s)} />
+                       </span>
+                    ))}
+                 </div>
+                 <div className="flex items-center flex-wrap gap-2 pt-1 text-[10px]">
+                    <span className="text-slate-400">Tips:</span>
+                    {["Team Leader", "Public Speaking"].map(s => (
+                       <button key={s} onClick={() => !formData.skills.includes(s) && updateField("skills", [...formData.skills, s])} className="text-slate-500 underline decoration-dotted">+ {s}</button>
+                    ))}
+                 </div>
+               </div>
+               <div className="pt-6 space-y-4 border-t border-slate-50">
+                  <div className="flex items-center justify-between">
+                     <h3 className="text-sm md:text-base font-semibold text-[#1E1B4B]">Screening Questions</h3>
+                     <div className="flex gap-1 text-slate-400">
+                        <button type="button" onClick={() => addQuestion("boolean")} className="p-1.5"><ToggleLeft className="w-4 h-4" /></button>
+                        <button type="button" onClick={() => addQuestion("numeric")} className="p-1.5"><Hash className="w-4 h-4" /></button>
+                        <button type="button" onClick={() => addQuestion("text")} className="p-1.5"><Plus className="w-4 h-4" /></button>
+                     </div>
+                  </div>
+                  <div className="space-y-3">
+                     {questions.map((q, i) => (
+                        <div key={i} className="bg-slate-50/40 p-3 md:p-4 rounded-xl border border-slate-50 flex flex-col md:flex-row items-end gap-3 md:gap-5">
+                           <div className="w-full md:flex-1 space-y-1.5 min-w-0 text-left">
+                              <label className="text-[10px] text-slate-400 font-medium uppercase block">Question {i+1}</label>
+                              <Input value={q.question} onChange={(e) => updateQuestion(i, "question", e.target.value)} className="h-10 bg-white border-slate-100 text-sm" />
+                           </div>
+                           <div className="w-full md:w-32 shrink-0 space-y-1.5 text-left">
+                              <label className="text-[10px] text-slate-400 font-medium uppercase block">Value</label>
+                              <select value={q.recruiter_answer} onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)} className="w-full h-10 rounded-xl bg-white border-slate-100 px-3 text-xs outline-none">
+                                 {q.question_type === 'boolean' ? <><option value="yes">Yes</option><option value="no">No</option></> : <option value="">...</option>}
+                              </select>
+                           </div>
+                           <button onClick={() => removeQuestion(i)} className="p-2 text-rose-300"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 4 && (
+          <div className="space-y-6 md:space-y-8 animate-in fade-in duration-300">
+            <h2 className="text-base md:text-lg font-semibold text-[#1E1B4B]">Salary & Benefits</h2>
+            <div className="space-y-6 md:space-y-8">
+               <div className="space-y-3">
+                 <Label className="text-sm font-medium text-slate-700">Salary Range (Monthly)</Label>
+                 <div className="grid grid-cols-2 gap-3 md:gap-4 items-center">
+                    <Input value={formData.salary_min} onChange={(e) => updateField("salary_min", e.target.value)} placeholder="Min ₹" className="h-11 bg-slate-50 border-slate-100 text-xs md:text-sm" />
+                    <Input value={formData.salary_max} onChange={(e) => updateField("salary_max", e.target.value)} placeholder="Max ₹" className="h-11 bg-slate-50 border-slate-100 text-xs md:text-sm" />
+                 </div>
+               </div>
+               <div className="space-y-4">
+                 <Label className="text-sm font-medium text-slate-700">Benefits</Label>
+                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
+                    {benefitOptions.map(b => (
+                       <label key={b} className="flex items-center gap-2 md:gap-2.5 p-3 md:p-3.5 rounded-xl border border-slate-50 bg-slate-50/30 text-left">
+                          <input type="checkbox" checked={formData.benefits.includes(b)} onChange={() => toggleBenefit(b)} className="w-3.5 h-3.5 md:w-4 md:h-4 rounded" />
+                          <span className="text-[10px] md:text-xs font-medium text-slate-600 line-clamp-1">{b}</span>
+                       </label>
+                    ))}
+                 </div>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-4 border-t border-slate-50">
+                  <div className="space-y-2">
+                     <Label className="text-[10px] text-slate-400 font-medium">Deadline</Label>
+                     <DatePicker date={deadline} setDate={setDeadline} className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                     <Label className="text-[10px] text-slate-400 font-medium">Openings</Label>
+                     <Input type="number" value={formData.vacancies} onChange={(e) => updateField("vacancies", e.target.value)} className="h-11" />
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 5 && (
+          <div className="space-y-6 md:space-y-10 animate-in fade-in duration-500">
+            <h2 className="text-base md:text-xl font-bold text-[#1E1B4B]">Preview Your Job Listing</h2>
+            
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 md:p-10 space-y-8 md:space-y-10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]">
+               <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                  <div className="space-y-1.5">
+                     <h3 className="text-2xl md:text-3xl font-bold text-[#1E1B4B] leading-tight capitalize tracking-tight">
+                        {formData.title || <span className="text-slate-200">Job Title</span>}
+                     </h3>
+                     <p className="text-slate-400 text-sm md:text-base font-medium">
+                        {formData.school_name || <span className="text-slate-200">Institution</span>} • {formData.location || <span className="text-slate-200">Location</span>}
+                     </p>
+                  </div>
+                  <div className="px-4 py-1.5 bg-[#ECFDF5] text-[#059669] rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider shrink-0">
+                     {formData.job_type.replace('_', ' ') || "Type"}
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                  <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                     <p className="text-[10px] md:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Salary</p>
+                     <p className={cn("text-sm md:text-base font-bold", formData.salary_min ? "text-[#1E1B4B]" : "text-slate-300")}>
+                        {formData.salary_min && formData.salary_max 
+                          ? `₹${Number(formData.salary_min).toLocaleString()} – ₹${Number(formData.salary_max).toLocaleString()}` 
+                          : "Not Disclosed"}
+                     </p>
+                  </div>
+                  <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                     <p className="text-[10px] md:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Experience</p>
+                     <p className={cn("text-sm md:text-base font-bold", formData.experience_required ? "text-[#1E1B4B]" : "text-slate-300")}>
+                        {formData.experience_required ? `${formData.experience_required} years` : "Not Specified"}
+                     </p>
+                  </div>
+                  <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                     <p className="text-[10px] md:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Qualification</p>
+                     <p className={cn("text-sm md:text-base font-bold truncate", formData.education_qualification ? "text-[#1E1B4B]" : "text-slate-300")}>
+                        {formData.education_qualification || "Not Specified"}
+                     </p>
+                  </div>
+               </div>
+
+               <div className="space-y-5">
+                  <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Description</h4>
+                  <div className="prose prose-sm md:prose-base prose-slate max-w-none text-slate-500 leading-relaxed min-h-[50px]">
+                     {description ? (
+                        <div dangerouslySetInnerHTML={{ __html: description }} />
+                     ) : (
+                        <span className="text-slate-200 italic font-medium">Description will appear here...</span>
+                     )}
+                  </div>
+               </div>
+
+               <div className="space-y-8 pt-4">
+                  {formData.skills.length > 0 && (
+                     <div className="space-y-4 animate-in slide-in-from-bottom-1">
+                        <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Skills</h4>
+                        <div className="flex flex-wrap gap-2.5 md:gap-3">
+                           {formData.skills.map((s: string) => (
+                              <span key={s} className="px-4 py-2 bg-[#EEF2FF] text-[#4F46E5] rounded-full text-[11px] md:text-xs font-bold transition-all hover:bg-indigo-100">
+                                 {s}
+                              </span>
+                           ))}
+                        </div>
+                     </div>
+                  )}
+                  {formData.benefits.length > 0 && (
+                     <div className="space-y-4 animate-in slide-in-from-bottom-1">
+                        <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Benefits</h4>
+                        <div className="flex flex-wrap gap-2.5 md:gap-3">
+                           {formData.benefits.map((b: string) => (
+                              <span key={b} className="px-4 py-2 bg-[#F0FDF4] text-[#059669] rounded-full text-[11px] md:text-xs font-bold transition-all hover:bg-emerald-100">
+                                 {b}
+                              </span>
+                           ))}
+                        </div>
+                     </div>
+                  )}
+               </div>
+            </div>
+         </div>
+        )}
+      </div>
+
+      {/* Navigation Footer - Responsive Buttons */}
+      <div className="flex items-center justify-between pt-8 border-t border-slate-50 gap-4">
+        <Button 
+          variant="outline" 
+          onClick={handleBack}
+          disabled={currentStep === 1 || loading}
+          className={cn(
+            "h-11 px-6 md:px-8 rounded-xl text-sm font-medium border-slate-200 text-slate-500 bg-white hover:bg-slate-50 transition-all",
+            currentStep === 1 && "invisible"
+          )}
+        >
+          Back
+        </Button>
+
+        <div className="flex-1 md:flex-none flex justify-end gap-3">
+          {currentStep < 5 ? (
+            <Button 
+              onClick={handleNext} 
+              className="h-11 w-full md:w-auto px-10 rounded-xl bg-[#1E3A8A] hover:bg-[#1E1B4B] text-white text-sm font-medium transition-all shadow-sm"
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleSubmit} 
+              disabled={loading} 
+              className="h-11 w-full md:w-auto px-12 rounded-xl bg-[#1E3A8A] hover:bg-[#1E1B4B] text-white text-sm font-medium shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {isEdit ? "Update" : "Publish"}
+            </Button>
+          )}
         </div>
-
-        {/* Action Center Footer */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-5 font-medium pb-24">
-           <div className="flex items-center gap-3 text-slate-400 bg-slate-50/50 px-4 py-2 rounded-full border border-slate-100">
-              <Clock className="w-4 h-4 text-emerald-500" />
-              <span className="text-[11px] font-semibold leading-none tracking-tight">Your job goes live instantly</span>
-           </div>
-           
-           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                type="button" 
-                className="h-11 w-full sm:w-auto px-8 rounded-xl text-xs font-semibold text-slate-500 border-slate-200 hover:bg-slate-50 transition-all active:scale-95"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </Button>
-
-              {isExpired && (
-                <Button 
-                  size="sm" 
-                  type="button" 
-                  disabled={loading} 
-                  onClick={handleRepublish}
-                  className="h-11 w-full sm:w-auto px-10 rounded-xl text-xs font-semibold shadow-lg bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/10 transition-all active:scale-95 text-white"
-                >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                  Republish job
-                </Button>
-              )}
-
-              <Button 
-                size="sm" 
-                type="submit" 
-                disabled={loading} 
-                className={cn(
-                  "h-11 w-full sm:w-auto px-10 rounded-xl text-xs font-semibold shadow-xl transition-all active:scale-95 text-white",
-                  isEdit ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/10" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20"
-                )}
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                {isEdit ? "Update details" : "Post job now"}
-                <ChevronRight className="w-4 h-4 ml-1 opacity-40" />
-              </Button>
-           </div>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }

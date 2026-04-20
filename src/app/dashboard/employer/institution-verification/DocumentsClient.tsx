@@ -3,21 +3,17 @@
 import { 
   FileText, 
   Loader2, 
-  ShieldCheck, 
   AlertCircle,
   Clock,
   Eye,
   PlusCircle,
   FileUp,
   X,
-  ChevronLeft,
   CheckCircle2,
   Trash2,
   Calendar,
   ExternalLink,
-  ChevronRight
 } from "lucide-react";
-import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn, normalizeMediaUrl } from "@/lib/utils";
@@ -144,7 +140,36 @@ export default function DocumentsClient() {
   ];
 
   const verifiedCount = documents.filter(d => d.is_verified === 1 || d.status === 'verified').length;
-  const isFullyVerified = verifiedCount > 0 && verifiedCount === documents.length;
+  const rejectedDoc = documents.find(d => d.status === 'rejected');
+  
+  // Status determination
+  let statusTitle = "Not Started";
+  let statusDesc = "Please upload your institutional documents to begin the verification process.";
+  let statusColor = "bg-slate-50 border-slate-100 text-slate-400";
+  let badgeColor = "bg-slate-100 text-slate-500";
+  let StatusIcon = Clock;
+
+  if (documents.length > 0) {
+    if (rejectedDoc) {
+      statusTitle = "Action Required";
+      statusDesc = rejectedDoc.admin_remark || "One of your documents was rejected. Please re-upload a clear copy.";
+      statusColor = "bg-rose-50/50 border-rose-100 text-rose-600";
+      badgeColor = "bg-rose-100 text-rose-600";
+      StatusIcon = AlertCircle;
+    } else if (verifiedCount === documents.length && documents.length >= 3) { // Assume min 3 for full verified
+      statusTitle = "Verified";
+      statusDesc = "Your institution is fully verified. You now have full access to recruit on TeachNow.";
+      statusColor = "bg-emerald-50/30 border-emerald-100 text-emerald-600";
+      badgeColor = "bg-[#D1FAE5] text-[#059669]";
+      StatusIcon = CheckCircle2;
+    } else {
+      statusTitle = "Under Process";
+      statusDesc = `We are currently reviewing your documents (${verifiedCount}/${documents.length} verified). This usually takes 24-48 hours.`;
+      statusColor = "bg-blue-50/30 border-blue-100 text-blue-600";
+      badgeColor = "bg-blue-50 text-blue-600";
+      StatusIcon = Clock;
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8 font-sans">
@@ -215,46 +240,45 @@ export default function DocumentsClient() {
          </Button>
       </div>
 
-      {/* Verification Status Box */}
-      {documents.length > 0 && (
+      {/* Dynamic Verification Status Box */}
+      <div className={cn(
+         "rounded-2xl border p-6 flex flex-col md:flex-row items-start md:items-center gap-6 shadow-sm transition-all",
+         statusColor
+      )}>
          <div className={cn(
-            "rounded-2xl border p-6 flex flex-col md:flex-row items-start md:items-center gap-6 shadow-sm",
-            isFullyVerified ? "bg-emerald-50/30 border-emerald-100" : "bg-white border-slate-100"
+            "w-12 h-12 rounded-full flex items-center justify-center shrink-0 border border-current opacity-80"
          )}>
-            <div className={cn(
-               "w-12 h-12 rounded-full flex items-center justify-center shrink-0 border",
-               isFullyVerified ? "bg-[#D1FAE5] border-[#D1FAE5] text-[#059669]" : "bg-blue-50 border-blue-100 text-blue-600"
-            )}>
-               {isFullyVerified ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
-            </div>
-            <div className="flex-1 space-y-1">
-               <div className="flex items-center gap-3">
-                  <h3 className="text-base font-semibold text-[#1E1B4B]">Verification Status:</h3>
-                  <span className={cn(
-                     "px-3 py-0.5 rounded-lg text-[11px] font-semibold",
-                     isFullyVerified ? "bg-[#D1FAE5] text-[#059669]" : "bg-blue-50 text-blue-600"
-                  )}>{isFullyVerified ? "Verified" : "Under Process"}</span>
-               </div>
-               <p className="text-sm text-slate-500">
-                  {isFullyVerified 
-                    ? "Your institution has been verified. You can now post jobs." 
-                    : "Your documents are being processed. Verification usually takes 24-48 hours."}
-               </p>
-            </div>
+            <StatusIcon className="w-6 h-6" />
          </div>
-      )}
+         <div className="flex-1 space-y-1">
+            <div className="flex items-center gap-3">
+               <h3 className="text-base font-semibold text-[#1E1B4B]">Verification Status:</h3>
+               <span className={cn(
+                  "px-3 py-0.5 rounded-lg text-[11px] font-semibold",
+                  badgeColor
+               )}>{statusTitle}</span>
+            </div>
+            <p className="text-sm text-slate-500">
+               {statusDesc}
+            </p>
+         </div>
+      </div>
 
       {/* Progress Bar */}
-      {documents.length > 0 && (
-         <div className="space-y-3">
-            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-               <div className="h-full bg-indigo-600 transition-all duration-1000 ease-out" style={{ width: `${(verifiedCount / documents.length) * 100}%` }} />
-            </div>
-            <div className="flex justify-end">
-               <p className="text-xs font-semibold text-slate-500">{verifiedCount}/{documents.length} verified</p>
-            </div>
+      <div className="space-y-3">
+         <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div 
+               className={cn(
+                  "h-full transition-all duration-1000 ease-out",
+                  verifiedCount === documents.length && documents.length > 0 ? "bg-emerald-500" : "bg-indigo-600"
+               )} 
+               style={{ width: documents.length > 0 ? `${(verifiedCount / documents.length) * 100}%` : '0%' }} 
+            />
          </div>
-      )}
+         <div className="flex justify-end">
+            <p className="text-xs font-semibold text-slate-500">{verifiedCount}/{documents.length || 0} verified</p>
+         </div>
+      </div>
 
       {/* Inline Upload Form (Simple) */}
       {showUploadform && (

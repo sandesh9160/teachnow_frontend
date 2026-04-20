@@ -5,12 +5,7 @@ import {
    Briefcase,
    PlusCircle,
    ArrowRight,
-   Calendar,
-   PieChart,
-   Building2,
    CheckCircle2,
-   Eye,
-   MapPin,
    Clock,
    Zap,
    CreditCard,
@@ -103,6 +98,7 @@ const ApplicationAvatar = ({ src, alt, initials }: { src: string | null, alt: st
        src={fullUrl}
        alt={alt}
        fill
+       sizes="(max-width: 768px) 32px, 48px"
        className="object-cover"
        onError={() => setError(true)}
     />
