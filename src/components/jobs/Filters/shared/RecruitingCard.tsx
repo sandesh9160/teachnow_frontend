@@ -5,18 +5,18 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 
 export function RecruitingCard() {
   return (
-    <div className="bg-[#E9F1FF] rounded-[2.5rem] p-8 relative overflow-hidden group">
-      <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-      <h4 className="text-xl font-bold text-slate-900 mb-4 relative z-10">
+    <div className="bg-[#EEF2FF] rounded-[24px] p-6 relative overflow-hidden group border border-indigo-100">
+      <div className="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
+      <h4 className="text-lg font-bold text-black mb-2 relative z-10">
         Recruiting?
       </h4>
-      <p className="text-sm text-slate-600 mb-8 relative z-10 leading-relaxed font-medium">
-        Advertise your jobs to millions of monthly users and search 15.8 million CVs in our database.
+      <p className="text-[12.5px] text-slate-500 mb-6 relative z-10 leading-relaxed font-medium">
+        Advertise your jobs to millions of monthly users and search our database.
       </p>
-      <Button className="w-full rounded-2xl h-14 font-bold flex items-center justify-center gap-3 relative z-10 shadow-lg shadow-primary/20">
-        Start Recruiting Now
+      <Button className="w-full rounded-xl h-11 text-xs font-bold bg-[#312E81] text-white flex items-center justify-center gap-2 relative z-10 shadow-lg shadow-indigo-100 hover:bg-[#1E1B4B] transition-all">
+        Start Recruiting
         <div className="bg-white/20 rounded-full p-1">
-          <ArrowUpRight className="h-4 w-4" />
+          <ArrowUpRight className="h-3 w-3" />
         </div>
       </Button>
     </div>

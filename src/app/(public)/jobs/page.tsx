@@ -10,7 +10,9 @@ import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
 import JobsGrid from "@/components/jobs/JobsGrid/JobsGrid";
 import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 import JobFilterSidebar from "@/components/jobs/Filters/JobFilterSidebar/JobFilterSidebar";
+import FilterCard from "@/components/jobs/Filters/shared/FilterCard";
 import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter";
+import { getFilters } from "@/hooks/useHomepage";
 
 import MobileFilters from "@/components/jobs/Filters/MobileFilters";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
@@ -22,6 +24,8 @@ function JobsContent() {
   const locationParam = searchParams?.get("location") || "";
 
   const { jobs, loading, error, fetchJobs } = useJobs();
+  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
+  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
 
   // UI/Filter State
   const [search, setSearch] = useState("");
@@ -40,6 +44,19 @@ function JobsContent() {
   const [sortBy, setSortBy] = useState("Default");
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const { categories, locations } = await getFilters();
+        setAvailableSubjects(categories.map((c: any) => c.name));
+        setAvailableLocations(locations.map((l: any) => l.name));
+      } catch (err) {
+        // console.error("Failed to fetch filters", err);
+      }
+    };
+    fetchFilterOptions();
+  }, []);
 
   useEffect(() => {
     void fetchJobs({
@@ -115,6 +132,30 @@ function JobsContent() {
       const jobType = normalizeType(job.job_type || "");
       const selectedTypes = new Set(selectedFilters.types.map((t) => normalizeType(t)));
       if (selectedTypes.size > 0 && !selectedTypes.has(jobType)) return false;
+    }
+
+    // Subject/Category Filter
+    if (selectedFilters.subjects.length > 0) {
+      const jobCategory = (job.category?.name || "").toLowerCase();
+      const jobTitle = (job.title || "").toLowerCase();
+      
+      const isMatch = selectedFilters.subjects.some(sub => {
+        const subLower = sub.toLowerCase();
+        // Exact match or includes
+        if (jobCategory.includes(subLower) || jobTitle.includes(subLower)) return true;
+        
+        // Fuzzy word match (check if any word from the filter exists in category/title)
+        const subWords = subLower.split(/\s+/).filter(w => w.length > 2); // only words > 2 chars
+        return subWords.some(word => jobCategory.includes(word) || jobTitle.includes(word));
+      });
+      
+      if (!isMatch) return false;
+    }
+
+    // Location Filter
+    if (selectedFilters.locations.length > 0) {
+      const jobLocation = job.location?.toLowerCase() || "";
+      if (!selectedFilters.locations.some(loc => jobLocation.includes(loc.toLowerCase()))) return false;
     }
 
     // Experience Filter (Multi-range support)
@@ -204,11 +245,15 @@ function JobsContent() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar */}
-          <aside className="hidden w-80 shrink-0 lg:block">
-            <JobFilterSidebar
-              selectedFilters={selectedFilters}
-              onToggle={(category, value) => handleToggle(category, value)}
-            />
+          <aside className="hidden w-64 shrink-0 lg:block pt-14">
+            <FilterCard>
+              <JobFilterSidebar
+                selectedFilters={selectedFilters}
+                onToggle={(category, value) => handleToggle(category, value)}
+                availableSubjects={availableSubjects}
+                availableLocations={availableLocations}
+              />
+            </FilterCard>
           </aside>
 
           {/* Job List */}
@@ -249,6 +294,8 @@ function JobsContent() {
           <JobFilterSidebar
             selectedFilters={selectedFilters}
             onToggle={(category, value) => handleToggle(category, value)}
+            availableSubjects={availableSubjects}
+            availableLocations={availableLocations}
           />
         }
       />

@@ -9,6 +9,7 @@ import { Job } from "@/types/homepage";
 import { useState, useEffect } from "react";
 import type { JobsFilters } from "@/types/jobs";
 import JobFilterSidebar from "@/components/jobs/Filters/JobFilterSidebar/JobFilterSidebar";
+import FilterCard from "@/components/jobs/Filters/shared/FilterCard";
 import JobCard from "@/shared/cards/JobCard/JobCard";
 import MobileFilters from "@/components/jobs/Filters/MobileFilters";
 import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
@@ -121,6 +122,30 @@ export default function JobListingView({
       if (!selectedTypes.has(jobType)) return false;
     }
 
+    // Subject/Category Filter
+    if (selectedFilters.subjects.length > 0) {
+      const jobCategory = (job.category?.name || "").toLowerCase();
+      const jobTitle = (job.title || "").toLowerCase();
+      
+      const isMatch = selectedFilters.subjects.some(sub => {
+        const subLower = sub.toLowerCase();
+        // Exact match or includes
+        if (jobCategory.includes(subLower) || jobTitle.includes(subLower)) return true;
+        
+        // Fuzzy word match (check if any word from the filter exists in category/title)
+        const subWords = subLower.split(/\s+/).filter(w => w.length > 2); // only words > 2 chars
+        return subWords.some(word => jobCategory.includes(word) || jobTitle.includes(word));
+      });
+      
+      if (!isMatch) return false;
+    }
+
+    // Location Filter
+    if (selectedFilters.locations.length > 0) {
+      const jobLocation = job.location?.toLowerCase() || "";
+      if (!selectedFilters.locations.some(loc => jobLocation.includes(loc.toLowerCase()))) return false;
+    }
+
     // Experience Filter (Multi-range support)
     if (selectedFilters.experience.length > 0) {
       const exp = Number(job.experience_required ?? Number.NaN);
@@ -178,18 +203,13 @@ export default function JobListingView({
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-4">
-          {/* Filters Sidebar */}
-          <aside className="hidden lg:block space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                <Filter className="h-4 w-4" /> Filters
-              </h2>
-            </div>
-
-            <JobFilterSidebar
-              selectedFilters={selectedFilters}
-              onToggle={handleToggle}
-            />
+          <aside className="hidden w-64 shrink-0 lg:block pt-14 px-1">
+            <FilterCard>
+              <JobFilterSidebar
+                selectedFilters={selectedFilters}
+                onToggle={handleToggle}
+              />
+            </FilterCard>
           </aside>
 
           {/* Jobs List */}
