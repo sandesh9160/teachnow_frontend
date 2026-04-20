@@ -14,6 +14,8 @@ import JobCard from "@/shared/cards/JobCard/JobCard";
 import MobileFilters from "@/components/jobs/Filters/MobileFilters";
 import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
 import { useRouter } from "next/navigation";
+import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter";
+import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 
 interface JobListingViewProps {
   readonly jobs: Job[];
@@ -44,6 +46,10 @@ export default function JobListingView({
     salary: initialFilters?.salary || [],
     institution_type: initialFilters?.institution_type || [],
   });
+
+  const [sortBy, setSortBy] = useState("Default");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resultsPerPage, setResultsPerPage] = useState(10);
 
     useEffect(() => {
       // Initialize search fields and title separately as requested
@@ -103,6 +109,7 @@ export default function JobListingView({
         ? prev[category].filter((v: string) => v !== value)
         : [...prev[category], value],
     }));
+    setCurrentPage(1);
   };
 
   const normalizeType = (value: string) =>
@@ -179,6 +186,18 @@ export default function JobListingView({
     return true;
   });
 
+  // Sorting logic
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
+    if (sortBy === "Salary: High to Low") return Number(b.salary_max || 0) - Number(a.salary_max || 0);
+    if (sortBy === "Experience: Low to High") return (a.experience_required || 0) - (b.experience_required || 0);
+    return 0; // Default matches API order
+  });
+
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(sortedJobs.length / resultsPerPage));
+  const startIndex = (currentPage - 1) * resultsPerPage;
+  const paginatedJobs = sortedJobs.slice(startIndex, startIndex + resultsPerPage);
+
   return (
     <div className="bg-[#F8FAFC] min-h-screen pb-12">
       {/* Consistent Breadcrumb Bar */}
@@ -214,23 +233,17 @@ export default function JobListingView({
 
           {/* Jobs List */}
           <div className="lg:col-span-3">
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-muted-foreground">Showing <span className="font-semibold text-foreground">{filteredJobs.length}</span> jobs</p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="hidden sm:inline">Sort by:</span>
-                <select 
-                   className="bg-transparent font-semibold text-foreground focus:outline-none cursor-pointer text-xs sm:text-sm"
-                   suppressHydrationWarning
-                >
-                  <option>Latest</option>
-                  <option>Salary: High to Low</option>
-                  <option>Experience: Low to High</option>
-                </select>
-              </div>
-            </div>
+            <PaginationFilter
+              totalResults={filteredJobs.length}
+              resultsPerPage={resultsPerPage}
+              setResultsPerPage={(v) => { setResultsPerPage(v); setCurrentPage(1); }}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              startIndex={startIndex}
+            />
 
             <div className="grid grid-cols-1 gap-6">  
-              {filteredJobs.map((job) => {
+              {paginatedJobs.map((job) => {
                 const salary = (() => {
                   const min = Number(job.salary_min || 0);
                   const max = Number(job.salary_max || 0);
@@ -268,6 +281,16 @@ export default function JobListingView({
                 <Link href="/jobs" className="mt-4 inline-block">
                   <Button variant="outline">Browse All Jobs</Button>
                 </Link>
+              </div>
+            )}
+
+            {!isSearching && filteredJobs.length > resultsPerPage && (
+              <div className="mt-8">
+                <JobPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             )}
           </div>

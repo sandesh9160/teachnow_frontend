@@ -102,7 +102,7 @@ async function lookupByCategory(s: string) {
     if (jobs.length === 0) return null;
 
     const name = Array.isArray(res) ? s : (res.name ?? res.category_name ?? s);
-    return { type: 'category' as const, data: { jobs, name } };
+    return { type: 'category' as const, data: { jobs, name, keyword: name } };
   } catch { return null; }
 }
 
@@ -119,9 +119,10 @@ async function lookupByLocation(s: string) {
     const safeJobs = jobs.length > 0 ? jobs : await searchJobs("", locationSlug);
     if (safeJobs.length === 0) return null;
 
+    const name = res?.location || res?.name || locationSlug || s;
     return {
       type: 'location' as const,
-      data: { jobs: safeJobs, name: res?.location || res?.name || locationSlug || s }
+      data: { jobs: safeJobs, name, location: name }
     };
   } catch { return null; }
 }
@@ -138,7 +139,7 @@ async function lookupBySearch(s: string) {
     if (!jobs || jobs.length === 0) return null;
 
     const name = [keyword, location].filter(Boolean).join(" in ") || "Search Results";
-    return { type: 'search' as const, data: { jobs, name } };
+    return { type: 'search' as const, data: { jobs, name, keyword, location } };
   } catch { return null; }
 }
 
@@ -243,15 +244,22 @@ export default async function PublicSlugPage({ params }: { readonly params: Prom
   }
 
   if (resolved.type === 'category') {
-    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} />;
+    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} initialKeyword={resolved.data.keyword} />;
   }
 
   if (resolved.type === 'location') {
-    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} />;
+    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} initialLocation={resolved.data.location} />;
   }
 
   if (resolved.type === 'search') {
-    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} />;
+    return (
+      <JobListingView 
+        jobs={resolved.data.jobs} 
+        pageName={resolved.data.name} 
+        initialKeyword={resolved.data.keyword} 
+        initialLocation={resolved.data.location} 
+      />
+    );
   }
 
   return notFound();

@@ -57,7 +57,7 @@ async function lookupByNavigation(s: string) {
           : (Array.isArray(data?.data) ? data.data : []));
 
       const jobs = jobsArray.map(normalizeJob);
-      return { type: 'category' as const, data: jobs, name: match.title };
+      return { type: 'category' as const, data: jobs, name: match.title, keyword: match.title };
     }
   } catch (err) {
     //console.error("Navigation lookup error:", err);
@@ -72,7 +72,7 @@ async function lookupByCategory(s: string) {
     if (catMatch) {
       // Use the name but also pass the category_id for better accuracy
       const jobs = await searchJobs(catMatch.name.toLowerCase(), "", catMatch.id);
-      return { type: 'category' as const, data: jobs, name: catMatch.name };
+      return { type: 'category' as const, data: jobs, name: catMatch.name, keyword: catMatch.name };
     }
   } catch { /* proceed */ }
   return null;
