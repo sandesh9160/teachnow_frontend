@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Filter } from "lucide-react";
+// import { Filter } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
 // import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";

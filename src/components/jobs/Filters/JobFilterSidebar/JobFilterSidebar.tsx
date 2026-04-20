@@ -1,7 +1,7 @@
 "use client";
 
 import { JobsFilters } from "@/types/jobs";
-import FilterCard from "../shared/FilterCard";
+// import FilterCard from "../shared/FilterCard";
 import FilterSection from "../shared/FilterSection";
 import CheckboxItem from "../shared/CheckboxItem";
 
