@@ -30,6 +30,7 @@ interface CurrentSubscription {
     id: number;
     employer_id: number;
     plan_id: number;
+    order_id?: number;
     job_posts_total: number;
     job_posts_used: number;
     featured_jobs_total: number;
@@ -38,6 +39,27 @@ interface CurrentSubscription {
     starts_at: string;
     expires_at: string;
     status: string;
+}
+
+interface Subscription {
+    id: number;
+    plan_id: number;
+    plan_name: string;
+    job_posts_total: number;
+    job_posts_used: number;
+    featured_jobs_total: number;
+    featured_jobs_used: number;
+    starts_at: string;
+    expires_at: string;
+    status: string;
+    is_active: boolean;
+}
+
+interface PaginatedData<T> {
+    data: T[];
+    total: number;
+    current_page: number;
+    last_page: number;
 }
 
 interface Payment {
@@ -62,8 +84,9 @@ interface Invoice {
 interface PurchaseHistoryData {
     plans: Plan[];
     current_subscription: CurrentSubscription | null;
-    payments: Payment[];
-    invoices: Invoice[];
+    payments: PaginatedData<Payment>;
+    invoices: PaginatedData<Invoice>;
+    subscriptions: PaginatedData<Subscription>;
 }
 
 interface ApiResponse {
@@ -136,8 +159,9 @@ export default function PurchaseHistoryClient() {
   };
 
   const plans = data?.plans || [];
-  const invoices = data?.invoices || [];
-  const payments = data?.payments || [];
+  const invoices = data?.invoices?.data || [];
+  const payments = data?.payments?.data || [];
+  const subscriptions = data?.subscriptions?.data || [];
   const sub = data?.current_subscription;
 
   return (
@@ -251,6 +275,114 @@ export default function PurchaseHistoryClient() {
       </div>
 
       <div className="flex flex-col gap-10">
+        {/* Subscription History Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-lg font-semibold text-[#0F172A]">Subscription History</h2>
+          </div>
+          
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Plan Details</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Usage (Jobs/Featured)</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Duration</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {subscriptions.length > 0 ? subscriptions.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <ArrowUpRight className="w-4 h-4" />
+                          </div>
+                          <span className="text-[14px] font-semibold text-slate-900">{item.plan_name}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                             <span className="text-[12px] font-medium text-slate-600">Jobs:</span>
+                             <span className="text-[12px] font-bold text-slate-900">{item.job_posts_used} / {item.job_posts_total}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                             <span className="text-[12px] font-medium text-slate-600">Featured:</span>
+                             <span className="text-[12px] font-bold text-slate-900">{item.featured_jobs_used} / {item.featured_jobs_total}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="space-y-0.5">
+                          <p className="text-[13px] font-semibold text-slate-700">{formatDate(item.starts_at)} - {formatDate(item.expires_at)}</p>
+                          <p className="text-[11px] text-slate-400 font-medium tracking-tight">Period</p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        <span className={cn(
+                          "px-3 py-1 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5",
+                          item.status === 'active' && item.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                        )}>
+                          <div className={cn("w-1.5 h-1.5 rounded-full", item.status === 'active' && item.is_active ? "bg-emerald-500" : "bg-slate-400")} />
+                          {item.status === 'active' && item.is_active ? "Active" : "Expired"}
+                        </span>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="py-12 text-center opacity-40">
+                        <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                        <p className="text-sm font-semibold text-slate-400">No subscriptions found</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-slate-100">
+               {subscriptions.length > 0 ? subscriptions.map((item) => (
+                 <div key={item.id} className="p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                       <h4 className="text-[14px] font-semibold text-slate-900">{item.plan_name}</h4>
+                       <span className={cn(
+                         "px-2 py-0.5 rounded-full text-[10px] font-semibold",
+                         item.status === 'active' && item.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                       )}>
+                         {item.status === 'active' && item.is_active ? "Active" : "Expired"}
+                       </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-1">
+                          <p className="text-[10px] font-semibold text-slate-400 tracking-wider">JOBS</p>
+                          <p className="text-[12px] font-bold text-slate-800">{item.job_posts_used} / {item.job_posts_total}</p>
+                       </div>
+                       <div className="space-y-1 text-right">
+                          <p className="text-[10px] font-semibold text-slate-400 tracking-wider">FEATURED</p>
+                          <p className="text-[12px] font-bold text-slate-800">{item.featured_jobs_used} / {item.featured_jobs_total}</p>
+                       </div>
+                    </div>
+                    <div className="pt-3 border-t border-slate-50 flex items-center justify-between text-[11px] text-slate-500 uppercase font-bold tracking-tight">
+                       <span>{formatDate(item.starts_at)}</span>
+                       <span className="text-slate-300 text-[18px]">→</span>
+                       <span>{formatDate(item.expires_at)}</span>
+                    </div>
+                 </div>
+               )) : (
+                 <div className="py-12 text-center opacity-40">
+                   <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                   <p className="text-sm font-semibold text-slate-400">No subscriptions found</p>
+                 </div>
+               )}
+            </div>
+          </div>
+        </div>
+
         {/* Payment History Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
