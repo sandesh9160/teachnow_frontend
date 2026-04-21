@@ -317,8 +317,6 @@ export default function ApplyJobPage() {
   const handleSubmit = async () => {
     if (!jobDetails?.id) return;
     try {
-      setIsSubmitting(true);
-
       // Collect all answers
       const answers: { question_id: number; candidate_answer: string }[] = [];
 
@@ -330,6 +328,14 @@ export default function ApplyJobPage() {
           });
         }
       });
+
+      console.log("DEBUG: Submitting application...", {
+        jobId: jobDetails.id,
+        answers,
+        resumeId: selectedResumeId
+      });
+
+      setIsSubmitting(true);
 
       const response = await apply(jobDetails.id, answers, selectedResumeId);
       console.log("DEBUG: Application successful response:", response);
