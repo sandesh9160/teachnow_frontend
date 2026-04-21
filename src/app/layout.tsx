@@ -8,7 +8,7 @@ import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://jobsvedika.in"),
   title: "TeachNow – Find Jobs, Build Resume, and Get Hired Faster",
   description: "India's #1 job portal for education professionals.",
 };

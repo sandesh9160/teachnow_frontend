@@ -7,7 +7,7 @@ const nextConfig = {
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'via.placeholder.com' },
-      { protocol: 'https', hostname: 'teachnowbackend.jobsvedika.in' },
+      { protocol: 'https', hostname: '**.jobsvedika.in' },
     ],
   },
   turbopack: {}, // ✅ just enable Turbopack

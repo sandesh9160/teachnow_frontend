@@ -38,7 +38,7 @@ function LoginContent() {
               duration: 5000,
             });
           }
-          
+
           // Clean URL to remove params
           const url = new URL(window.location.href);
           url.searchParams.delete("message");
