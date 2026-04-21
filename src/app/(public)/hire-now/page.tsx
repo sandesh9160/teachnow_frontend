@@ -32,12 +32,12 @@ export default function HireNowPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button size="lg" variant="hero" asChild>
-                  <Link href="/auth/employer-login">
+                  <Link href="/auth/login?role=employer_recruiter">
                     Register
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <Link href="/auth/employer-login">
+                  <Link href="/auth/login?role=employer_recruiter">
                     Login
                   </Link>
                 </Button>
@@ -148,12 +148,12 @@ export default function HireNowPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="hero" className="px-8 py-6 text-lg" asChild>
-              <Link href="/auth/employer-login">
+              <Link href="/auth/login?role=employer_recruiter">
                 Register
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="px-8 py-6 text-lg bg-background" asChild>
-              <Link href="/auth/employer-login">
+              <Link href="/auth/login?role=employer_recruiter">
                 Login
               </Link>
             </Button>

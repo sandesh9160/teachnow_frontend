@@ -346,11 +346,8 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
 
   // Determine login endpoint
   let endpoint = "/auth/login";
-  if (data.role === "employer") {
+  if (data.role === "employer" || data.role === "recruiter") {
     endpoint = "/auth/employer-login";
-  } else if (data.role === "recruiter") {
-    // Correct recruiter login endpoint as per user request
-    endpoint = "/recruiter/login";
   }
 
   // Use api instance for login, but manually add cookies and XSRF token

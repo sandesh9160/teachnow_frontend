@@ -98,7 +98,7 @@ export const Features = () => {
               
               <div className="mt-8">
                 <Button asChild className="bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
-                  <Link href="/auth/employer-login">
+                  <Link href="/auth/login?role=employer_recruiter">
                     Hire Teachers <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

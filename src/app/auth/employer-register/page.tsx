@@ -80,7 +80,7 @@ export default function EmployerRegisterPage() {
         },
       });
       toast.success("Employer account created!");
-      router.push("/auth/employer-login");
+      router.push("/auth/login?role=employer_recruiter");
     } catch (err: any) {
       toast.error(err?.message || "Registration failed");
     } finally {
@@ -274,7 +274,7 @@ export default function EmployerRegisterPage() {
 
           <p className="mt-8 text-center text-sm text-slate-500 font-medium">
             Already have institutional access?{" "}
-            <Link href="/auth/employer-login" className="font-bold text-secondary hover:underline underline-offset-4 decoration-secondary/30">
+            <Link href="/auth/login?role=employer_recruiter" className="font-bold text-secondary hover:underline underline-offset-4 decoration-secondary/30">
               Account Login
             </Link>
           </p>

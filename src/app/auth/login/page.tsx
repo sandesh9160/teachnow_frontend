@@ -13,7 +13,8 @@ type LoginRole = "job_seeker" | "employer" | "recruiter";
 function LoginContent() {
   const searchParams = useSearchParams();
   const [authLoading, setAuthLoading] = useState(false);
-  const [role, setRole] = useState<LoginRole>("job_seeker");
+  const initialRole = searchParams?.get("role") as LoginRole | "employer_recruiter";
+  const [role, setRole] = useState<LoginRole | "employer_recruiter">(initialRole || "job_seeker");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +57,7 @@ function LoginContent() {
       const res = await EmailSignInAction({
         email,
         password,
-        role
+        role: role === "employer_recruiter" ? "employer" : role
       });
 
       if (!res.status) {
@@ -75,29 +76,29 @@ function LoginContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-4 py-3">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-[1.2fr_1.8fr]">
+      <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-2">
 
         {/* LEFT PANEL — White + brand */}
-        <div className="relative hidden flex-col items-center justify-start gap-3 overflow-hidden bg-muted/10 p-4 pt-5 md:flex border-r border-border">
+        <div className="relative hidden flex-col items-center justify-center gap-6 overflow-hidden bg-muted/5 p-8 md:flex border-r border-border">
           <div className="relative z-10 flex flex-col items-center text-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
               <GraduationCap className="h-7 w-7 text-primary" />
             </div>
             <div>
               <h2 className="font-display text-xl font-bold text-foreground">TeachNow</h2>
-              <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-[180px]">
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-[240px]">
                 India's #1 education job portal
               </p>
             </div>
             <img
               src="/images/teacher-illustration.png"
               alt="Teacher"
-              className="w-56 drop-shadow-sm"
+              className="w-64 drop-shadow-sm"
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
             <div className="flex flex-col gap-2 w-full px-4">
               {["12,000+ active jobs", "3,500+ verified schools", "Trusted by educators"].map((t) => (
-                <div key={t} className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-[10px] text-foreground font-medium shadow-sm border border-border/50">
+                <div key={t} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs text-foreground font-medium shadow-sm border border-border/50">
                   <span className="text-primary font-bold">✓</span> {t}
                 </div>
               ))}
@@ -120,13 +121,12 @@ function LoginContent() {
             <p className="mt-1 text-xs text-muted-foreground font-medium">Sign in to your account to continue</p>
           </div>
 
-          {/* Role toggle */}
-          <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/20 p-1">
+          <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/20 p-1">
             <button
               type="button"
               suppressHydrationWarning
               onClick={() => setRole("job_seeker")}
-              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[9px] font-bold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               <User className="h-3 w-3" /> Job Seeker
@@ -134,20 +134,11 @@ function LoginContent() {
             <button
               type="button"
               suppressHydrationWarning
-              onClick={() => setRole("employer")}
-              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[9px] font-bold transition-all ${role === "employer" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+              onClick={() => setRole("employer_recruiter")}
+              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold transition-all ${role === "employer_recruiter" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               <Building2 className="h-3 w-3" /> Employer
-            </button>
-            <button
-              type="button"
-              suppressHydrationWarning
-              onClick={() => setRole("recruiter")}
-              className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[9px] font-bold transition-all ${role === "recruiter" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              <Briefcase className="h-3 w-3" /> Recruiter
             </button>
           </div>
 
@@ -208,7 +199,7 @@ function LoginContent() {
                   Signing in...
                 </div>
               ) : (
-                `Log In as ${role === "job_seeker" ? "Job Seeker" : role.charAt(0).toUpperCase() + role.slice(1)}`
+                `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`
               )}
             </button>
           </form>

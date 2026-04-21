@@ -28,7 +28,7 @@ function toEducationPayload(form: any): EducationPayload {
     start_year: form.start_date ? String(new Date(form.start_date).getFullYear()) : "",
     end_year: form.is_current ? "" : (form.end_date ? String(new Date(form.end_date).getFullYear()) : ""),
     grade: form.grade?.trim() ?? "",
-    description: form.description ?? "",
+    // description: form.description ?? "",
     is_current: form.is_current ? 1 : 0,
   };
 }
@@ -61,20 +61,20 @@ function mapServerProfile(initial: Record<string, any>) {
     title: String(data.title || data.job_title || data.headline || ""),
     bio: String(data.bio || data.about || data.summary || ""),
     experience_years: Number(data.experience_years || 0),
-    availability: String(data.availability || "open"),
+    availability: String(data.availability || "open"), 
     dob: data.dob ? String(data.dob).split("T")[0] : "",
     portfolio_website: String(data.portfolio_website || ""),
     profile_photo: String(data.profile_photo || ""),
     gender: String(data.gender || ""),
-    open_to_work: String(data.open_to_work || "Actively Looking"),
+    // open_to_work: String(data.open_to_work || "Actively Looking"),
     notice_period: String(data.notice_period || ""),
-    expected_salary: String(data.expected_salary || ""),
-    preferred_location: String(data.preferred_location || ""),
-    teaching_mode: String(data.teaching_mode || ""),
+    // expected_salary: String(data.expected_salary || ""),
+    // preferred_location: String(data.preferred_location || ""),
+    // teaching_mode: String(data.teaching_mode || ""),
     skills: Array.isArray(data.skills) ? data.skills : [],
-    subjects: Array.isArray(data.subjects) ? data.subjects : [],
+    // subjects: Array.isArray(data.subjects) ? data.subjects : [],
     certifications: Array.isArray(data.certifications) ? data.certifications : [],
-    languages: Array.isArray(data.languages) ? data.languages : [],
+    // languages: Array.isArray(data.languages) ? data.languages : [],
   };
 }
 
@@ -567,10 +567,10 @@ export default function ProfileFormClient({
           <Search className="w-3.5 h-3.5 text-indigo-500" /> Job Preferences
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
+          {/* <div>
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Status</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.open_to_work}</p>
-          </div>
+          </div> */}
           <div>
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Notice Period</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.notice_period || "Not specified"}</p>
@@ -587,10 +587,10 @@ export default function ProfileFormClient({
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Total Experience</p>
             <p className="text-[13px] font-semibold text-black">{profileData.experience_years || 0} Years</p>
           </div>
-          <div>
+          {/* <div>
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Teaching Mode</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.teaching_mode || "Not specified"}</p>
-          </div>
+          </div> */}
           <div>
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Availability</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.availability || "Not specified"}</p>

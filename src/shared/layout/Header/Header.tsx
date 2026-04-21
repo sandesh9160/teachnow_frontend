@@ -357,7 +357,7 @@ const DesktopAuth = ({
           <Link href="/auth/login">Register / Login</Link>
         </Button>
         <Button asChild variant="hero" size="sm" className="rounded-lg px-5 h-10 font-bold bg-[#3b49df] shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20 whitespace-nowrap">
-          <Link href="/auth/employer-login">Post a Job</Link>
+          <Link href="/auth/login?role=employer_recruiter">Post a Job</Link>
         </Button>
       </div>
     );
@@ -433,7 +433,7 @@ const MobileAuth = ({
     return (
       <div className="mt-4 flex flex-col gap-3 p-2">
         <Button asChild variant="outline" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login" onClick={closeAll}>Login</Link></Button>
-        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-primary"><Link href="/auth/employer-login" onClick={closeAll}>Post a Job</Link></Button>
+        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-primary"><Link href="/auth/login?role=employer_recruiter" onClick={closeAll}>Post a Job</Link></Button>
       </div>
     );
   }
