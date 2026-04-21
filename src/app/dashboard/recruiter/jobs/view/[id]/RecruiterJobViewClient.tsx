@@ -16,10 +16,9 @@ import {
    Calendar,
    ShieldCheck,
    Target,
-   // kdsk
    Loader2,
-   // TrendingUp,
-   // RefreshCw
+   TrendingUp,
+   RefreshCw
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -44,26 +43,32 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
       return term.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
    };
 
-   const handleAction = async (type: 'filled' | 'delete') => {
-      const actionLabel = type === 'filled' ? 'mark this job as filled' : 'permanently delete this job';
+   const handleAction = async (type: 'filled' | 'delete' | 'republish') => {
+      const actionLabel =
+         type === 'filled' ? 'mark this job as filled' :
+            type === 'delete' ? 'permanently delete this job' :
+               'republish this job';
 
       toast(`Are you sure you want to ${actionLabel}?`, {
          action: {
-            label: type === 'filled' ? 'Confirm Filled' : 'Delete',
+            label: type === 'filled' ? 'Mark Filled' : type === 'republish' ? 'Republish' : 'Delete',
             onClick: async () => {
                const endpoint = type === 'filled'
                   ? `recruiter/jobs/${job.id}/filled`
-                  : `recruiter/jobs/delete/${job.id}`;
+                  : type === 'republish'
+                     ? `recruiter/jobs/${job.id}/republish`
+                     : `recruiter/jobs/delete/${job.id}`;
 
                setLoadingAction(type);
                try {
+                  const method = type === 'delete' ? "POST" : "PUT";
                   const res = await dashboardServerFetch(endpoint, {
-                     method: type === 'filled' ? "PUT" : "POST",
+                     method: method,
                      data: {}
                   });
 
                   if (res.status === true) {
-                     toast.success(res.message || `Job ${type === 'filled' ? 'closed' : 'deleted'} successfully.`);
+                     toast.success(res.message || `Job ${type === 'filled' ? 'closed' : type === 'republish' ? 'republished' : 'deleted'} successfully.`);
                      setTimeout(() => {
                         window.location.href = `${basePath}/jobs`;
                      }, 1500);
@@ -89,7 +94,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
             <Icon className="w-4.5 h-4.5" />
          </div>
          <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-slate-400 mb-0.5">{label}</p>
+            <p className="text-[11px] font-semibold text-slate-600 mb-0.5">{label}</p>
             <p className="text-[13px] font-semibold text-slate-900">{value}</p>
          </div>
       </div>
@@ -105,7 +110,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                   onClick={() => window.history.back()}
                   className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-indigo-600 transition-all active:scale-95"
                >
-                  <ChevronLeft className="w-3.5 h-3.5" /> Back to Job List
+                  <ChevronLeft className="w-3.5 h-3.5" /> All Jobs
                </button>
 
                <div className="space-y-2">
@@ -125,14 +130,16 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      )}>
                         {job.status === 'approved' ? "Verified Post" : formatTerm(job.status || "Under Review")}
                      </span>
-                     <span className={cn(
-                        "px-3 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap",
-                        job.job_status === 'open' ? "bg-indigo-600 text-white border-indigo-700" :
-                           job.job_status === 'filled' ? "bg-rose-50 text-rose-600 border-rose-100" :
-                              "bg-slate-50 text-slate-400 border-slate-100"
-                     )}>
-                        {job.job_status === 'open' ? "Live Listing" : formatTerm(job.job_status)}
-                     </span>
+                     {job.featured === 1 && (
+                        <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm border border-indigo-700">
+                           <TrendingUp className="w-2.5 h-2.5" /> Featured on Home
+                        </span>
+                     )}
+                     {job.admin_featured === 1 && (
+                        <span className="bg-amber-500 text-white px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm border border-amber-600">
+                           <TrendingUp className="w-2.5 h-2.5" /> Admin Featured Listing
+                        </span>
+                     )}
                   </div>
                </div>
             </div>
@@ -140,13 +147,23 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
             <div className="flex flex-wrap items-center gap-2">
                <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
                   <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
-                     <Users className="w-4 h-4 text-indigo-500" /> {totalApplications} Applicants
+                     <Users className="w-4 h-4 text-indigo-500" /> View Applicants ({totalApplications})
                   </Button>
                </Link>
-               {job.job_status !== 'filled' && (
+               {job.job_status === 'expired' && (
+                  <Button
+                     onClick={() => handleAction('republish')}
+                     disabled={loadingAction === 'republish'}
+                     className="h-10 px-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm"
+                  >
+                     {loadingAction === 'republish' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                     Republish Job
+                  </Button>
+               )}
+               {job.job_status !== 'filled' && job.job_status !== 'expired' && (
                   <Link href={`${basePath}/jobs/edit/${job.id}`}>
                      <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
-                        <Edit3 className="w-4 h-4 text-indigo-500" /> Edit Requirement
+                        <Edit3 className="w-4 h-4 text-indigo-500" /> Edit Job
                      </Button>
                   </Link>
                )}
@@ -160,7 +177,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
 
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-            {/* Main Content Areas */}
+            {/* Main Description */}
             <div className="lg:col-span-2 space-y-5">
                <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
                   <div className="p-6 space-y-6">
@@ -168,7 +185,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                         <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
                            <FileText className="w-4 h-4" />
                         </div>
-                        <h2 className="text-sm font-semibold text-slate-900">Requirement Details</h2>
+                        <h2 className="text-sm font-semibold text-slate-900">About the Role</h2>
                      </div>
 
                      <div
@@ -183,7 +200,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
                               <Target className="w-4 h-4" />
                            </div>
-                           <h2 className="text-sm font-semibold text-slate-900">Screening Questions</h2>
+                           <h2 className="text-sm font-semibold text-slate-900">Candidate Questions</h2>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                            {questions.map((q: any, idx: number) => (
@@ -198,8 +215,8 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                                  </div>
                                  <div className="flex items-center gap-5 border-l border-slate-100 pl-5 shrink-0">
                                     <div className="space-y-0.5 text-right">
-                                       <p className="text-[9px] font-medium text-slate-400 tracking-wider">Ideal Answer</p>
-                                       <span className="text-[12px] font-semibold text-indigo-600">{formatTerm(q.recruiter_answer)}</span>
+                                       <p className="text-[9px] font-medium text-slate-400 tracking-wider">Expected Answer</p>
+                                       <span className="text-[12px] font-semibold text-indigo-600">{q.recruiter_answer}</span>
                                     </div>
                                  </div>
                               </div>
@@ -210,44 +227,62 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                </div>
             </div>
 
-            {/* Compact Sidebar */}
+            {/* Sidebar */}
             <div className="space-y-5">
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                   <DetailItem
-                     label="Category"
-                     value={job.category?.name || "General Teaching"}
+                     label="Subject"
+                     value={job.category?.name || "General"}
                      icon={Layers}
                      colorClass="bg-blue-50 text-blue-600 border-blue-100/50"
                   />
                   <DetailItem
-                     label="Vacancies"
+                     label="Openings"
                      value={`${job.vacancies} Positions`}
                      icon={Users}
                      colorClass="bg-indigo-50 text-indigo-600 border-indigo-100/50"
                   />
                   <DetailItem
-                     label="Budget / Salary"
+                     label="Monthly Salary"
                      value={`₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`}
                      icon={DollarSign}
                      colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50"
                   />
                   <DetailItem
-                     label="Experience Level"
-                     value={`${job.experience_required}y (${formatTerm(job.experience_type || 'Min')})`}
+                     label="Experience Required"
+                     value={`${job.experience_required}y (${formatTerm(job.experience_type)})`}
                      icon={Briefcase}
                      colorClass="bg-purple-50 text-purple-600 border-purple-100/50"
+                  />
+                  <DetailItem
+                     label="Home Page Featuring"
+                     value={job.featured === 1 ? "Active" : "Standard"}
+                     icon={TrendingUp}
+                     colorClass={job.featured === 1 ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" : "bg-slate-50 text-slate-400 border-slate-100/50"}
+                  />
+                  <DetailItem
+                     label="Featured Deadline"
+                     value={job.featured_until ? new Date(job.featured_until).toLocaleDateString('en-GB') : "No Deadline"}
+                     icon={Clock}
+                     colorClass="bg-rose-50 text-rose-600 border-rose-100/50"
+                  />
+                  <DetailItem
+                     label="Admin Home Status"
+                     value={job.admin_featured === 1 ? "Featured" : "Regular"}
+                     icon={ShieldCheck}
+                     colorClass={job.admin_featured === 1 ? "bg-amber-50 text-amber-600 border-amber-100/50" : "bg-slate-50 text-slate-400 border-slate-100/50"}
                   />
                </div>
 
                <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
-                  <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Requirement Lifecycle</h3>
+                  <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Key Dates</h3>
 
                   <div className="space-y-4">
                      {[
-                        { label: 'Published Date', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
-                        { label: 'Requirement Deadline', value: job.expires_at ? new Date(job.expires_at).toLocaleDateString('en-GB') : "Rolling Basis", icon: Clock, color: 'rose' },
+                        { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
+                        { label: 'Apply Before', value: job.deadline || job.application_deadline ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Not Specified", icon: Clock, color: 'rose' },
                         {
-                           label: 'Approval Status',
+                           label: 'Post Status',
                            value: job.status === 'approved'
                               ? "Verified"
                               : job.status === 'rejected'
@@ -260,6 +295,8 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                                  : 'amber',
                            icon: ShieldCheck
                         },
+                        ...(job.featured === 1 ? [{ label: 'Featured on Home', value: 'Active', icon: TrendingUp, color: 'indigo' }] : []),
+                        ...(job.admin_featured === 1 ? [{ label: 'Admin Featured', value: 'Active', icon: ShieldCheck, color: 'emerald' }] : []),
                      ].map((item, i) => (
                         <div key={i} className="flex items-center justify-between gap-4 group/item">
                            <div className="flex items-center gap-2.5">
@@ -288,7 +325,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                            className="w-full h-10 rounded-xl text-xs font-semibold text-emerald-600 border-emerald-100 bg-emerald-50/10 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
                         >
                            {loadingAction === 'filled' ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                           Mark Requirement Filled
+                           Mark as Filled
                         </Button>
                      )}
 
@@ -299,7 +336,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                         className="w-full h-10 rounded-xl text-xs font-semibold text-rose-500 border-rose-50 bg-rose-50/10 hover:bg-rose-50 transition-all flex items-center justify-center gap-2"
                      >
                         {loadingAction === 'delete' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                        Delete Listing
+                        Delete
                      </Button>
                   </div>
                </div>
