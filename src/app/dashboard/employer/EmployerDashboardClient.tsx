@@ -9,7 +9,8 @@ import {
    Zap,
    CreditCard,
    Check,
-
+   ShieldCheck,
+   Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -74,35 +75,35 @@ interface DashboardStats {
 }
 
 const ApplicationAvatar = ({ src, alt, initials }: { src: string | null, alt: string, initials?: string }) => {
-  const [error, setError] = useState(false);
-  
-  const getFullImageUrl = (path: string | null) => {
-    if (!path) return null;
-    if (path.startsWith('http')) return path;
-    const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
-    return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
-  };
+   const [error, setError] = useState(false);
 
-  const fullUrl = getFullImageUrl(src);
+   const getFullImageUrl = (path: string | null) => {
+      if (!path) return null;
+      if (path.startsWith('http')) return path;
+      const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
+      return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
+   };
 
-  if (!fullUrl || error) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#E0E7FF] text-[#4338CA] font-medium text-xs">
-        {initials || alt[0]}
-      </div>
-    );
-  }
+   const fullUrl = getFullImageUrl(src);
 
-  return (
-    <Image
-       src={fullUrl}
-       alt={alt}
-       fill
-       sizes="(max-width: 768px) 32px, 48px"
-       className="object-cover"
-       onError={() => setError(true)}
-    />
-  );
+   if (!fullUrl || error) {
+      return (
+         <div className="w-full h-full flex items-center justify-center bg-[#E0E7FF] text-[#4338CA] font-medium text-xs">
+            {initials || alt[0]}
+         </div>
+      );
+   }
+
+   return (
+      <Image
+         src={fullUrl}
+         alt={alt}
+         fill
+         sizes="(max-width: 768px) 32px, 48px"
+         className="object-cover"
+         onError={() => setError(true)}
+      />
+   );
 };
 
 export default function EmployerDashboardClient({
@@ -159,13 +160,13 @@ export default function EmployerDashboardClient({
             <div className="space-y-0.5">
                <div className="flex items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-semibold text-black tracking-tight">Employer Dashboard</h1>
-                  {dashboardData?.company_verification === 1 && (
+                  {(dashboardData as any)?.employer?.is_verified === 1 && (
                      <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
                         <Check className="w-2.5 h-2.5" /> Verified
                      </div>
                   )}
                </div>
-               <p className="text-xs text-[#1E1B4B]">Welcome back, {dashboardData?.employer_profile?.company_name || welcomeName}</p>
+               <p className="text-xs text-[#1E1B4B]">Welcome back, {(dashboardData as any)?.employer?.company_name || dashboardData?.employer_profile?.company_name || welcomeName}</p>
             </div>
 
             <Link href={`${basePath}/post-job`}>
@@ -209,12 +210,12 @@ export default function EmployerDashboardClient({
                      </div>
                   </div>
                </div>
-               
-               <Link href={`${basePath}/purchase-history`} className="relative z-10 lg:pl-4">
+
+               {/* <Link href="/pricing-plans" className="relative z-10 lg:pl-4">
                   <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
-                     Update Management
+                     Upgrade plan
                   </Button>
-               </Link>
+               </Link> */}
             </div>
          )}
 
@@ -228,17 +229,42 @@ export default function EmployerDashboardClient({
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                      <stat.icon className="w-6 h-6 opacity-80" />
                   </div>
-                  
+
                   <div className="relative z-10 space-y-0.5">
                      <p className="text-[11px] font-medium opacity-90">{stat.label}</p>
                      <h3 className="text-3xl font-semibold tracking-tight">{stat.value}</h3>
                   </div>
-                  
+
                   <div className="relative z-10">
                      <p className="text-[10px] opacity-70 italic">{stat.subtext}</p>
                   </div>
                </div>
             ))}
+         </div>
+
+         {/* Quick Management Hub */}
+         <div className="space-y-4">
+            <h2 className="text-[14px] font-bold text-black uppercase tracking-wider ml-1">Workspace focus</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               {[
+                  { label: "Manage jobs", icon: Briefcase, href: `${basePath}/jobs`, color: "bg-blue-50 text-blue-600", border: "border-blue-100" },
+                  { label: "Applicants", icon: Users, href: `${basePath}/applicants`, color: "bg-emerald-50 text-emerald-600", border: "border-emerald-100" },
+                  { label: "Hiring team", icon: ShieldCheck, href: `${basePath}/recruiters`, color: "bg-indigo-50 text-indigo-600", border: "border-indigo-100" },
+                  { label: "Profile", icon: Building2, href: `${basePath}/company-profile`, color: "bg-amber-50 text-amber-600", border: "border-amber-100" },
+               ].map((item, idx) => (
+                  <Link key={idx} href={item.href} className="group">
+                     <div className={cn(
+                        "h-24 rounded-2xl border bg-white p-4 flex flex-col justify-between transition-all hover:shadow-md hover:-translate-y-1 active:scale-95",
+                        item.border
+                     )}>
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors group-hover:scale-110", item.color)}>
+                           <item.icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-900">{item.label}</span>
+                     </div>
+                  </Link>
+               ))}
+            </div>
          </div>
 
          {/* Main Content Grid: Live Lists Only */}
@@ -254,13 +280,13 @@ export default function EmployerDashboardClient({
                      dashboardData.latest_applications.slice(0, 5).map((app) => (
                         <div key={app.id} className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
                            <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
-                              <ApplicationAvatar 
-                                 src={app.job_seeker.profile_photo} 
-                                 alt={app.job_seeker.user.name} 
-                                 initials={app.job_seeker.user.name.split(' ').map(n=>n[0]).join('')}
+                              <ApplicationAvatar
+                                 src={app.job_seeker.profile_photo}
+                                 alt={app.job_seeker.user.name}
+                                 initials={app.job_seeker.user.name.split(' ').map(n => n[0]).join('')}
                               />
                            </div>
-                           
+
                            <div className="flex-1 min-w-0">
                               <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
                                  {app.job_seeker.user.name}
@@ -274,7 +300,7 @@ export default function EmployerDashboardClient({
                               <span className="text-[10px] text-black opacity-40 hidden sm:block">
                                  {new Date(app.created_at).toLocaleDateString('en-GB')}
                               </span>
-                              <Button variant="outline" size="sm" className="h-7 px-3 rounded-md bg-white text-[#10B981] border-[#D1FAE5] hover:bg-[#ECFDF5] text-[10px] font-semibold capitalize">
+                              <Button variant="outline" size="sm" className={cn("h-7 px-3 rounded-md border text-[10px] font-semibold capitalize", getStatusStyles(app.status))}>
                                  {app.status}
                               </Button>
                            </div>
@@ -306,7 +332,7 @@ export default function EmployerDashboardClient({
                                  </h4>
                                  <span className={cn(
                                     "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
-                                    job.job_status === 'open' ? "bg-[#D1FAE5] text-[#059669]" : "bg-slate-100 text-slate-600"
+                                    getJobStatusStyles(job.job_status)
                                  )}>
                                     {job.job_status}
                                  </span>

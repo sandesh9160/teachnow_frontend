@@ -56,7 +56,7 @@ async function lookupByJob(s: string, rawSlug: string) {
 
       if (searchResults && searchResults.length > 0) {
         const bestMatch = searchResults.find(j => {
-          const sanitizedBackendSlug = sanitizeSlug(j.slug || String(j.id));
+          const sanitizedBackendSlug = sanitizeSlug(j.slug || String(j.id));  
           return sanitizedBackendSlug === s || j.title.toLowerCase().includes(keyword.toLowerCase());
         });
 

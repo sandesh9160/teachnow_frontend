@@ -33,7 +33,7 @@ interface EmployerDocument {
   updated_at: string;
 }
 
-export default function DocumentsClient() {
+export default function DocumentsClient({ isVerified = false }: { isVerified?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [documents, setDocuments] = useState<EmployerDocument[]>([]);
@@ -142,33 +142,30 @@ export default function DocumentsClient() {
   const verifiedCount = documents.filter(d => d.is_verified === 1 || d.status === 'verified').length;
   const rejectedDoc = documents.find(d => d.status === 'rejected');
   
-  // Status determination
-  let statusTitle = "Not Started";
-  let statusDesc = "Please upload your institutional documents to begin the verification process.";
-  let statusColor = "bg-slate-50 border-slate-100 text-slate-400";
-  let badgeColor = "bg-slate-100 text-slate-500";
+  // Status determination based on dashboard isVerified prop
+  let statusTitle = "Under Process";
+  let statusDesc = "We are currently reviewing your institutional documents. This usually takes 24-48 hours.";
+  let statusColor = "bg-blue-50/30 border-blue-100 text-blue-600";
+  let badgeColor = "bg-blue-50 text-blue-600";
   let StatusIcon = Clock;
-
-  if (documents.length > 0) {
-    if (rejectedDoc) {
-      statusTitle = "Action Required";
-      statusDesc = rejectedDoc.admin_remark || "One of your documents was rejected. Please re-upload a clear copy.";
-      statusColor = "bg-rose-50/50 border-rose-100 text-rose-600";
-      badgeColor = "bg-rose-100 text-rose-600";
-      StatusIcon = AlertCircle;
-    } else if (verifiedCount === documents.length && documents.length >= 3) { // Assume min 3 for full verified
-      statusTitle = "Verified";
-      statusDesc = "Your institution is fully verified. You now have full access to recruit on TeachNow.";
-      statusColor = "bg-emerald-50/30 border-emerald-100 text-emerald-600";
-      badgeColor = "bg-[#D1FAE5] text-[#059669]";
-      StatusIcon = CheckCircle2;
-    } else {
-      statusTitle = "Under Process";
-      statusDesc = `We are currently reviewing your documents (${verifiedCount}/${documents.length} verified). This usually takes 24-48 hours.`;
-      statusColor = "bg-blue-50/30 border-blue-100 text-blue-600";
-      badgeColor = "bg-blue-50 text-blue-600";
-      StatusIcon = Clock;
-    }
+  
+  if (isVerified) {
+    statusTitle = "Verified";
+    statusDesc = "Your institution is verified. You now have full access to recruit on TeachNow.";
+    statusColor = "bg-emerald-50/30 border-emerald-100 text-emerald-600";
+    badgeColor = "bg-[#D1FAE5] text-[#059669]";
+    StatusIcon = CheckCircle2;
+  } else if (rejectedDoc) {
+    statusTitle = "Action Required";
+    statusDesc = rejectedDoc.admin_remark || "One of your documents was rejected. Please re-upload a clear copy.";
+    statusColor = "bg-rose-50/50 border-rose-100 text-rose-600";
+    badgeColor = "bg-rose-100 text-rose-600";
+    StatusIcon = AlertCircle;
+  } else if (documents.length === 0) {
+    statusTitle = "Not Started";
+    statusDesc = "Please upload your institutional documents to begin the verification process.";
+    statusColor = "bg-slate-50 border-slate-100 text-slate-400";
+    badgeColor = "bg-slate-100 text-slate-500";
   }
 
   return (
@@ -264,21 +261,7 @@ export default function DocumentsClient() {
          </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="space-y-3">
-         <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-            <div 
-               className={cn(
-                  "h-full transition-all duration-1000 ease-out",
-                  verifiedCount === documents.length && documents.length > 0 ? "bg-emerald-500" : "bg-indigo-600"
-               )} 
-               style={{ width: documents.length > 0 ? `${(verifiedCount / documents.length) * 100}%` : '0%' }} 
-            />
-         </div>
-         <div className="flex justify-end">
-            <p className="text-xs font-semibold text-slate-500">{verifiedCount}/{documents.length || 0} verified</p>
-         </div>
-      </div>
+      {/* Removed Progress Bar and Count per user request */}
 
       {/* Inline Upload Form (Simple) */}
       {showUploadform && (
@@ -335,8 +318,10 @@ export default function DocumentsClient() {
                                  <p className="text-[10px] font-medium text-slate-400 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> Uploaded on {new Date(doc.created_at).toLocaleDateString('en-GB')}</p>
                                  <span className={cn(
                                     "text-[9px] font-bold uppercase tracking-tight",
-                                    (doc.is_verified === 1 || doc.status === 'verified') ? "text-emerald-600" : "text-amber-500"
-                                 )}>{(doc.is_verified === 1 || doc.status === 'verified') ? "Verified" : "Under Review"}</span>
+                                    doc.status === 'approved' ? "text-emerald-600" : (doc.status === 'rejected' ? "text-rose-600" : "text-amber-500")
+                                 )}>
+                                    {doc.status || "Pending"}
+                                 </span>
                               </div>
                            </div>
                         </div>
