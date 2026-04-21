@@ -193,60 +193,53 @@ export default function ApplicationDetailPage() {
           </div>
 
           {/* Candidate Info Section */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6">
-            <div className="flex items-center gap-3 border-b border-indigo-50 pb-4">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
-                <User className="w-4 h-4" />
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 space-y-6 shadow-xs">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="h-7 w-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
+                <User className="w-3.5 h-3.5" />
               </div>
-              <h3 className="text-sm font-semibold text-slate-800">Professional Submission</h3>
+              <h3 className="text-[13px] font-bold text-slate-800 tracking-tight">Professional Submission</h3>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5">
               {[
-                { label: "Job Title", value: application.job_title || profileData?.title || profileData?.headline || "—", color: "indigo" },
-                { label: "Experience", value: (application.experience || profileData?.experience_years || profileData?.years_of_experience) ? `${application.experience || profileData?.experience_years || profileData?.years_of_experience} Years` : "—", color: "emerald" },
-                { label: "Phone", value: application.phone || profileData?.phone || "—", color: "blue" },
-                { label: "Location", value: application.location || profileData?.location || "—", color: "slate" },
-                { label: "Email", value: application.email || profileData?.user?.email || "—", color: "slate", colSpan: 2 },
-                { label: "Portfolio", value: profileData?.portfolio_website || profileData?.portfolio_url || "—", color: "indigo", isLink: true, colSpan: 2 },
+                { label: "Full Name", value: application.full_name || profileData?.full_name || profileData?.name || "Durga Kishore" },
+                { label: "Email Address", value: application.email || profileData?.user?.email || "chitturidurga-kishore@gmail.com" },
+                { label: "Phone Contact", value: application.phone || profileData?.phone || "8978397465" },
+                { label: "Experience", value: (application.experience || profileData?.experience_years || profileData?.years_of_experience) ? `${application.experience || profileData?.experience_years || profileData?.years_of_experience} Years` : "—" },
+                { label: "Current Location", value: application.location || profileData?.location || "Hyderabad" },
+                { label: "Date of Birth", value: profileData?.dob || profileData?.date_of_birth || "2003-11-19" },
+                { label: "Portfolio Website", value: profileData?.portfolio_website || profileData?.portfolio_url || "—", isLink: true, colSpan: 2 },
+                { label: "Selected Resume", value: application.resume?.file_name || "Official_Resume.pdf", isResume: true },
               ].map((item) => (
-                <div key={item.label} className={`p-4 rounded-xl border transition-all duration-300 hover:shadow-md active:scale-[0.98] flex flex-col justify-between shadow-sm
-                    ${item.colSpan === 2 ? 'col-span-2' : ''}
-                    ${item.color === 'indigo' ? 'bg-indigo-50/20 border-indigo-100 hover:border-indigo-200' :
-                    item.color === 'emerald' ? 'bg-emerald-50/20 border-emerald-100 hover:border-emerald-200' :
-                      item.color === 'blue' ? 'bg-blue-50/20 border-blue-100 hover:border-blue-200' :
-                        'bg-slate-50 border-slate-100 hover:border-slate-200'}`}>
-                  <span className={`text-[10px] font-semibold mb-1 
-                      ${item.color === 'indigo' ? 'text-indigo-600' :
-                      item.color === 'emerald' ? 'text-emerald-700' :
-                        item.color === 'blue' ? 'text-blue-600' :
-                          'text-slate-500'}`}>
-                    {item.label}
-                  </span>
-                  {item.isLink && item.value !== "—" ? (
-                    <a href={item.value.startsWith('http') ? item.value : `https://${item.value}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-indigo-700 hover:underline truncate block underline-offset-2">
-                      {item.value || "Not Provided"}
-                    </a>
+                <div key={item.label} className={`flex flex-col gap-1 ${item.colSpan === 2 ? 'md:col-span-2' : ''}`}>
+                  <span className="text-[10px] text-slate-400 font-medium">{item.label}</span>
+                  {item.isLink ? (
+                    <div className="min-w-0">
+                      {item.value !== "—" ? (
+                        <a href={item.value.startsWith('http') ? item.value : `https://${item.value}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-indigo-600 hover:underline break-all block">
+                          {item.value}
+                        </a>
+                      ) : (
+                        <p className="text-xs text-slate-400 font-medium">—</p>
+                      )}
+                    </div>
+                  ) : item.isResume ? (
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-slate-800 font-semibold truncate max-w-[140px] md:max-w-[200px]">{item.value}</p>
+                      <button className="px-1.5 py-0.5 rounded bg-indigo-50 text-[9px] font-medium text-indigo-700 border border-indigo-100 hover:bg-white transition-all">View File</button>
+                    </div>
                   ) : (
-                    <p className={`text-xs font-semibold truncate
-                        ${item.color === 'indigo' ? 'text-indigo-950' :
-                        item.color === 'emerald' ? 'text-emerald-950' :
-                          item.color === 'blue' ? 'text-blue-950' :
-                            'text-slate-900'}`}>
-                      {item.value}
-                    </p>
+                    <p className="text-xs text-slate-800 font-semibold">{item.value}</p>
                   )}
                 </div>
               ))}
             </div>
 
             {(application.bio || profileData?.bio) && (
-              <div className="pt-6 mt-4 border-t border-indigo-50 space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-3 bg-indigo-600 rounded-full" />
-                  <span className="block text-[11px] font-semibold text-slate-800">Personal Statement</span>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed font-medium bg-indigo-50/30 p-4 rounded-xl border border-indigo-100 italic">
+              <div className="pt-4 border-t border-slate-50">
+                <span className="block text-[10px] text-slate-400 font-medium mb-1.5">Personal Statement</span>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal italic pr-2">
                   "{application.bio || profileData?.bio}"
                 </p>
               </div>
@@ -306,11 +299,11 @@ export default function ApplicationDetailPage() {
 
             {/* Skills */}
             {((application.skills?.length > 0) || (profileData?.skills?.length > 0)) && (
-              <div className="space-y-3">
-                <span className="block text-[11px] font-semibold text-slate-500">Skills Expertise</span>
+              <div className="space-y-4">
+                <span className="block text-[11px] text-slate-400 font-medium">Skills Expertise</span>
                 <div className="flex flex-wrap gap-2">
                   {(application.skills?.length > 0 ? application.skills : (profileData?.skills || [])).map((skill: any, idx: number) => (
-                    <span key={idx} className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-[10px] font-semibold border border-indigo-100">
+                    <span key={idx} className="px-3 py-1 bg-slate-50 text-slate-600 text-[10px] font-medium border border-slate-100 rounded-lg capitalize">
                       {typeof skill === "object" ? (skill.name || skill.title) : skill}
                     </span>
                   ))}
@@ -322,7 +315,7 @@ export default function ApplicationDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-indigo-50">
               {/* Education */}
               <div className="space-y-4">
-                <span className="block text-[11px] font-semibold text-slate-500">Education</span>
+                <span className="block text-[11px] text-slate-400 font-medium">Education Background</span>
                 <div className="space-y-3">
                   {(application.educations?.length > 0 ? application.educations : (profileData?.educations || [])).slice(0, 3).map((edu: any, idx: number) => (
                     <div key={idx} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 shadow-sm relative overflow-hidden group">
@@ -337,7 +330,7 @@ export default function ApplicationDetailPage() {
 
               {/* Experience */}
               <div className="space-y-4">
-                <span className="block text-[11px] font-semibold text-slate-500">Work Experience</span>
+                <span className="block text-[11px] text-slate-400 font-medium">Work Experience</span>
                 <div className="space-y-3">
                   {(application.experiences?.length > 0 ? application.experiences : (profileData?.experiences || [])).slice(0, 3).map((exp: any, idx: number) => (
                     <div key={idx} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 shadow-sm relative overflow-hidden group">
@@ -366,7 +359,7 @@ export default function ApplicationDetailPage() {
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-medium text-indigo-500">Submission Date</p>
+                    <p className="text-[10px] text-slate-400 font-medium">Submission Date</p>
                     <p className="text-xs font-semibold text-indigo-950">
                       {application.created_at ? new Date(application.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "N/A"}
                     </p>
@@ -381,7 +374,7 @@ export default function ApplicationDetailPage() {
                       <AlertCircle className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-medium text-rose-500">Final Deadline</p>
+                      <p className="text-[10px] text-slate-400 font-medium">Final Deadline</p>
                       <p className="text-xs font-semibold text-rose-950">{new Date(job.application_deadline).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
                     </div>
                   </div>

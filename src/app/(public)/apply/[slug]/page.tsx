@@ -827,7 +827,7 @@ export default function ApplyJobPage() {
                 <div className="space-y-6 mt-4">
                   {jobDetails.cover_letter_question_id && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">Cover Letter / Motivation</label>
+                      <label className="text-sm font-medium text-slate-700">Cover Letter / Motivation <span className="text-red-500 ml-1">*</span></label>
                       <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
                         <textarea
                           value={questionAnswers[jobDetails.cover_letter_question_id] || ""}
@@ -846,7 +846,7 @@ export default function ApplyJobPage() {
                     return (
                       <div key={q.id} className="space-y-3">
                         <label className="text-sm font-medium text-slate-700">
-                          {q.question}
+                          {q.question} <span className="text-red-500 ml-1">*</span>
                         </label>
 
                         {isBoolean ? (
@@ -871,10 +871,19 @@ export default function ApplyJobPage() {
                             {isNumeric ? (
                               <input
                                 type="number"
+                                min="0"
                                 value={questionAnswers[q.id] || ""}
-                                onChange={(e) => setQuestionAnswers({ ...questionAnswers, [q.id]: e.target.value })}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val === "" || parseFloat(val) >= 0) {
+                                    setQuestionAnswers({ ...questionAnswers, [q.id]: val });
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "-" || e.key === "e") e.preventDefault();
+                                }}
                                 className="w-full bg-transparent text-sm text-foreground focus:outline-none placeholder:text-muted-foreground/30"
-                                placeholder="Enter a number..."
+                                placeholder="Enter years (0 or more)..."
                               />
                             ) : (
                               <textarea
@@ -893,7 +902,7 @@ export default function ApplyJobPage() {
                   {/* Legacy Support for screening_questions */}
                   {jobDetails.screening_questions?.map((sq) => (
                     <div key={sq.id} className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">{sq.question}</label>
+                      <label className="text-sm font-medium text-slate-700">{sq.question} <span className="text-red-500 ml-1">*</span></label>
                       <div className="rounded-xl border border-border bg-background px-4 py-3 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
                         <textarea
                           value={questionAnswers[sq.id] || ""}
@@ -910,9 +919,25 @@ export default function ApplyJobPage() {
 
               <div className="flex gap-3 pt-6">
                 <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(step - 1)}>
-                  Cancel
+                  Back
                 </Button>
-                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => setStep(step + 1)}>
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
+                  // Mandatory Validation for all questions
+                  if (jobDetails.cover_letter_question_id && !questionAnswers[jobDetails.cover_letter_question_id]?.trim()) {
+                    toast.error("Please provide your Cover Letter/Motivation.");
+                    return;
+                  }
+
+                  const hasIncomplete = jobDetails.questions?.some(q => !questionAnswers[q.id]?.trim()) ||
+                    jobDetails.screening_questions?.some(sq => !questionAnswers[sq.id]?.trim());
+
+                  if (hasIncomplete) {
+                    toast.error("Please answer all recruiter questions to proceed.");
+                    return;
+                  }
+
+                  setStep(step + 1);
+                }}>
                   Continue Application <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -959,9 +984,9 @@ export default function ApplyJobPage() {
                             <button
                               type="button"
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePreviewResume(url); }}
-                              className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-all border border-primary/10"
+                              className="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-medium hover:bg-indigo-100 transition-all border border-indigo-100"
                             >
-                              VIEW FILE
+                              View File
                             </button>
                           </div>
                         );
@@ -969,21 +994,21 @@ export default function ApplyJobPage() {
                     },
                   ].map((item) => (
                     <div key={item.label} className="min-w-0 group">
-                      <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-1 group-hover:text-primary transition-colors">{item.label}</span>
-                      <div className="block font-bold text-foreground text-sm md:text-base">{item.value}</div>
+                      <span className="block text-[10px] font-medium text-slate-400 mb-1 group-hover:text-primary transition-colors">{item.label}</span>
+                      <div className="block font-semibold text-foreground text-sm md:text-base">{item.value}</div>
                     </div>
                   ))}
                 </div>
 
                 {candidate.skills.length > 0 && (
                   <div className="pt-2">
-                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-2">Skills Expertise</span>
+                    <span className="block text-[10px] font-medium text-slate-400 mb-2">Skills Expertise</span>
                     <div className="flex flex-wrap gap-2">
                       {candidate.skills.map((skill: any, idx: number) => {
                         const skillName = typeof skill === 'object' ? (skill.name || skill.title || "Skill") : String(skill);
                         return (
-                          <span key={idx} className="px-3 py-1 rounded-lg bg-primary/5 text-primary text-[11px] font-bold border border-primary/10 shadow-sm">
-                            {skillName.toUpperCase()}
+                          <span key={idx} className="px-3 py-1 rounded-lg bg-indigo-50/50 text-indigo-600 text-[11px] font-medium border border-indigo-100 shadow-sm capitalize">
+                            {skillName}
                           </span>
                         );
                       })}
@@ -994,7 +1019,7 @@ export default function ApplyJobPage() {
                 {candidate.bio && (
                   <div className="pt-6 border-t border-border/50 space-y-5">
                     <div className="bg-background/50 rounded-xl p-4 border border-border/30">
-                      <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-2">Professional Bio</span>
+                      <span className="block text-[10px] font-medium text-slate-400 mb-2">Professional Bio</span>
                       <div
                         className="text-sm text-muted-foreground leading-relaxed rich-text"
                         dangerouslySetInnerHTML={{ __html: candidate.bio.replace(/\n/g, '<br/>') }}
@@ -1005,7 +1030,7 @@ export default function ApplyJobPage() {
 
                 {candidate.educations.length > 0 && (
                   <div className="pt-6 border-t border-border/50">
-                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
+                    <span className="block text-[10px] font-medium text-slate-400 mb-3 flex items-center gap-2">
                       <GraduationCap className="w-3 h-3" /> Education History
                     </span>
                     <div className="space-y-3">
@@ -1013,10 +1038,10 @@ export default function ApplyJobPage() {
                         <div key={idx} className="bg-background/40 rounded-xl p-3 border border-border/20">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="text-sm font-bold text-foreground">{edu.degree} in {edu.field_of_study}</p>
+                              <p className="text-sm font-semibold text-foreground">{edu.degree} in {edu.field_of_study}</p>
                               <p className="text-xs text-muted-foreground font-medium">{edu.institution}</p>
                             </div>
-                            <span className="text-[10px] font-bold text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-medium text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
                               {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
                             </span>
                           </div>
@@ -1028,7 +1053,7 @@ export default function ApplyJobPage() {
 
                 {candidate.experiences.length > 0 && (
                   <div className="pt-6 border-t border-border/50">
-                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
+                    <span className="block text-[10px] font-medium text-slate-400 mb-3 flex items-center gap-2">
                       <Briefcase className="w-3 h-3" /> Professional Experience
                     </span>
                     <div className="space-y-3">
@@ -1036,13 +1061,13 @@ export default function ApplyJobPage() {
                         <div key={idx} className="bg-background/40 rounded-xl p-3 border border-border/20">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="text-sm font-bold text-foreground">{exp.job_title}</p>
+                              <p className="text-sm font-semibold text-foreground">{exp.job_title}</p>
                               <p className="text-xs text-muted-foreground font-medium">{exp.company_name}</p>
                               {exp.description && (
                                 <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{exp.description}</p>
                               )}
                             </div>
-                            <span className="text-[10px] font-bold text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-medium text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
                               {new Date(exp.start_date).getFullYear()} — {exp.is_current ? "Present" : (exp.end_date ? new Date(exp.end_date).getFullYear() : "Present")}
                             </span>
                           </div>
@@ -1054,7 +1079,7 @@ export default function ApplyJobPage() {
 
                 {hasQuestions && Object.values(questionAnswers).some(a => a.trim()) && (
                   <div className="pt-6 border-t border-border/50">
-                    <span className="block text-[10px] uppercase font-bold text-muted-foreground/60 mb-3 flex items-center gap-2">
+                    <span className="block text-[10px] font-medium text-slate-400 mb-3 flex items-center gap-2">
                       Recruiter Questions Review
                     </span>
                     <div className="space-y-4">
@@ -1065,7 +1090,7 @@ export default function ApplyJobPage() {
                         if (!ans.trim()) return null;
                         return (
                           <div key={qid} className="bg-background/40 rounded-xl p-3 border border-border/20">
-                            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tight mb-1">{label}</p>
+                            <p className="text-[10px] font-medium text-primary/60 tracking-tight mb-1">{label}</p>
                             <p className="text-sm text-foreground whitespace-pre-wrap">{ans === "yes" ? "Yes" : (ans === "no" ? "No" : ans)}</p>
                           </div>
                         );

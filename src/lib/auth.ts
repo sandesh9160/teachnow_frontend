@@ -476,12 +476,28 @@ export const signOut = async () => {
     //console.error("Logout API call failed:", error);
   }
 
-  // IMPORTANT: For production, we MUST provide the same domain/path/options used during creation.
-  // Simple cookieStore.delete(name) often fails on deployed sites.
-  ["userData", "laravel_session", "laravel-session", "XSRF-TOKEN"].forEach(name => {
+  // IMPORTANT: Clear cookies aggressively.
+  // We try deleting both with and without the domain to handle host-only duplicates.
+  const cookiesToClear = ["userData", "laravel_session", "laravel-session", "fmg-session", "XSRF-TOKEN", "authSession", "authToken"];
+  
+  cookiesToClear.forEach(name => {
+    // 1. Try with options (includes domain)
     cookieStore.delete({
       name,
       ...cookieOptions
+    });
+    // 2. Try without domain (for host-only cookies)
+    cookieStore.delete({
+      name,
+      path: "/",
+      httpOnly: false,
+    });
+    // 3. Try specifically with httpOnly: true
+    cookieStore.delete({
+      name,
+      path: "/",
+      domain: cookieOptions.domain,
+      httpOnly: true,
     });
   });
 };

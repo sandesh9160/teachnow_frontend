@@ -59,7 +59,7 @@ const MegaMenu = ({
           <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
             {sidebars.map((sb: any) => (
               <div key={sb.title} className="pt-2">
-                <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{sb.title}</p>
+                <p className="px-3 text-[10px] font-medium text-slate-400 tracking-wide mb-1">Categories</p>
                 {sb.links.map((link: any) => (
                   <Link key={link.label} href={link.href} onClick={onClose} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
                     {link.label}
@@ -69,7 +69,7 @@ const MegaMenu = ({
             ))}
             {panels.map((panel: any) => (
               <div key={panel.title} className="pt-2">
-                <p className="px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{panel.title}</p>
+                <p className="px-3 text-[10px] font-medium text-slate-400 tracking-wide mb-1">{panel.title}</p>
                 {panel.links.map((link: any) => (
                   <Link key={link.label} href={link.href} onClick={onClose} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
                     {link.label}
@@ -97,7 +97,7 @@ const MegaMenu = ({
           <div className="flex gap-10">
             {sidebars.map((sb: any) => (
               <div key={sb.title} className="w-56 border-r border-border pr-8">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{sb.title}</p>
+                <p className="text-[10px] font-medium text-slate-400 tracking-wide mb-3">{sb.title}</p>
                 <div className="space-y-0.5">
                   {sb.links.map((link: any) => (
                     <Link key={link.label} href={link.href} onClick={onClose} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors group">
@@ -111,7 +111,7 @@ const MegaMenu = ({
             <div className="flex-1 grid grid-cols-2 gap-x-10 gap-y-8">
               {panels.map((panel: any) => (
                 <div key={panel.title} className="min-w-0">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{panel.title}</p>
+                  <p className="text-[10px] font-medium text-slate-400 tracking-wide mb-3">{panel.title}</p>
                   <div className="space-y-1">
                     {panel.links.map((link: any) => (
                       <Link key={link.label} href={link.href} onClick={onClose} className="block rounded-lg px-2 py-1 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors truncate">
@@ -369,9 +369,9 @@ const DesktopAuth = ({
     <div className="relative" ref={userDropdownRef}>
       <button
         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-        className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-gray-50 transition-all group"
+        className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-slate-50 transition-all group"
       >
-        <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/10 group-hover:scale-105 transition-transform overflow-hidden">
+        <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display">
           {avatarSrc && !avatarError ? (
             <img 
               src={avatarSrc} 
@@ -384,29 +384,29 @@ const DesktopAuth = ({
           )}
         </div>
         <div className="hidden xl:block text-left">
-          <p className="text-[13px] font-bold text-gray-900 leading-tight">{user?.name}</p>
-          <p className="text-[10px] font-bold text-primary uppercase tracking-wider opacity-70">
+          <p className="text-[13px] font-bold text-slate-900 leading-tight">{user?.name}</p>
+          <p className="text-[10px] font-medium text-indigo-500 tracking-wide">
             {user?.role === "employer" ? "Institution" : "Job Seeker"}
           </p>
         </div>
-        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-300 ${userDropdownOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-4 w-4 text-slate-300 transition-transform duration-300 ${userDropdownOpen ? "rotate-180" : ""}`} />
       </button>
 
       {userDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-gray-200/80 border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 py-1 z-50">
-          <div className="px-4 py-3 border-b border-gray-50 mb-1">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Account Info</p>
-            <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-indigo-100/50 border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 py-1 z-50">
+          <div className="px-4 py-3 border-b border-slate-50 mb-1 bg-slate-50/50">
+            <p className="text-[10px] font-medium text-slate-400 mb-0.5">Account Info</p>
+            <p className="text-[13px] font-semibold text-slate-700 truncate">{user?.email}</p>
           </div>
           
-          <Link href={user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-primary/5 hover:text-primary transition-all">
-            <LayoutDashboard className="h-4 w-4" /> My Dashboard
+          <Link href={user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all">
+            <LayoutDashboard className="h-4 w-4 opacity-70" /> My Dashboard
           </Link>
 
-          <div className="h-px bg-gray-50 my-1 mx-4"></div>
+          <div className="h-px bg-slate-50 my-1 mx-4"></div>
 
-          <LogoutSubmitButton className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-all text-left">
-            <LogOut className="h-4 w-4 " /> Sign Out
+          <LogoutSubmitButton className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-rose-500 hover:bg-rose-50 transition-all text-left">
+            <LogOut className="h-4 w-4 opacity-70" /> Sign Out
           </LogoutSubmitButton>
         </div>
       )}
