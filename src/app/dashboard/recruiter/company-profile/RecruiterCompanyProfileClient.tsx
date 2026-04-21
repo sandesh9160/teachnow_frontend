@@ -550,14 +550,38 @@ export default function RecruiterCompanyProfileClient({
                     </p>
                   </div>
 
-                  <div className="rounded-[20px] overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative group h-64">
-                    <LocationPicker 
-                      lat={profile.latitude} 
-                      lng={profile.longitude} 
-                      onChange={() => {}} 
-                      hideControls={true}
-                      className="w-full grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" 
-                    />
+                  <div className="rounded-[20px] overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative group h-80">
+                    {profile.latitude && profile.longitude ? (
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${profile.latitude},${profile.longitude}&zoom=15`}
+                        className="grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
+                      />
+                    ) : (
+                      <LocationPicker 
+                        lat={profile.latitude} 
+                        lng={profile.longitude} 
+                        onChange={() => {}} 
+                        hideControls={true}
+                        className="w-full grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" 
+                      />
+                    )}
+                    
+                    <div className="absolute top-4 right-4 z-10">
+                       <a 
+                         href={profile.map_link || `https://www.google.com/maps?q=${profile.latitude},${profile.longitude}`}
+                         target="_blank"
+                         className="px-4 py-2 bg-white text-indigo-600 rounded-xl text-[11px] font-bold shadow-xl flex items-center gap-2 hover:-translate-y-1 transition-all active:scale-95 border border-indigo-100"
+                       >
+                         <ExternalLink className="w-3.5 h-3.5" />
+                         Open in Google Maps
+                       </a>
+                    </div>
                   </div>
                </div>
             </div>

@@ -46,7 +46,7 @@ export default function PricingPage() {
       <section className="bg-white border-b border-slate-100 py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 md:text-4xl tracking-tight">Pricing Plans</h1>
+            <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">Pricing Plans</h1>
             <p className="mt-3 text-base text-slate-500 font-medium">Choose the right plan for your hiring needs</p>
           </div>
         </div>
