@@ -148,7 +148,9 @@ export default function PostJobClient({
       questions 
     };
     try {
-      const endpoint = isEdit ? `${userRole}/jobs/update/${job?.id}` : `${userRole}/jobs/create`;
+      const endpoint = userRole === "recruiter"
+        ? (isEdit ? `recruiter/jobs/${job?.id}` : `recruiter/jobs`)
+        : (isEdit ? `${userRole}/jobs/update/${job?.id}` : `${userRole}/jobs/create`);
       const result = await dashboardServerFetch(endpoint, { method: isEdit ? "PUT" : "POST", data });
       if (result.status) {
         toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"));

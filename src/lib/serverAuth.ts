@@ -74,12 +74,7 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
   const role = normalizeDashboardRole(data.user_type ?? data.role ?? (data.user as any)?.user_type);
   const pic = data.profile_pic ?? data.profile_photo ?? data.company_logo ?? (data.user as any)?.profile_pic;
 
-  const avatar =
-    typeof pic === "string" && pic
-      ? pic
-      : name
-        ? name.charAt(0).toUpperCase()
-        : undefined;
+  const avatar = typeof pic === "string" && pic ? pic : undefined;
   return {
     id,
     email,
@@ -110,7 +105,20 @@ export async function getSessionProfile(): Promise<ServerSessionUser | null> {
       const data = pickProfilePayload(res);
       if (!data) continue;
       const user = toSessionUser(data);
-      if (user) return user;
+      if (user) {
+        // High-Fidelity: If recruiter, also try to get company logo for the header avatar
+        if (user.role === "recruiter") {
+          try {
+            const compRes = await dashboardServerFetch<any>("recruiter/company-profile", { method: "GET" });
+            if (compRes?.status && compRes?.data?.company_logo) {
+              user.avatar = compRes.data.company_logo;
+            }
+          } catch (e) {
+            // Silently ignore company profile fetch errors
+          }
+        }
+        return user;
+      }
     } catch {
       /* next endpoint */
     }
@@ -120,7 +128,17 @@ export async function getSessionProfile(): Promise<ServerSessionUser | null> {
   const cookieUser = await tryUserDataCookie();
   if (cookieUser) {
     const user = toSessionUser(cookieUser);
-    if (user) return user;
+    if (user) {
+      if (user.role === "recruiter") {
+        try {
+          const compRes = await dashboardServerFetch<any>("recruiter/company-profile", { method: "GET" });
+          if (compRes?.status && compRes?.data?.company_logo) {
+            user.avatar = compRes.data.company_logo;
+          }
+        } catch (e) { /* ignore */ }
+      }
+      return user;
+    }
   }
 
   return null;

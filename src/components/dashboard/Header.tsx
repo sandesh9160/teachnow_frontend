@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LogOut,  Menu, GraduationCap } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import { normalizeMediaUrl } from "@/services/api/client";
 
@@ -18,6 +18,23 @@ export function DashboardHeader({
   onMenuToggle?: () => void
 }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
 
   return (
     <header className="h-16 border-b border-slate-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 bg-white">
@@ -58,7 +75,7 @@ export function DashboardHeader({
         {["job_seeker", "employer", "recruiter"].includes(user?.role) && <NotificationBell role={user.role} />}
         
         {/* User Profile - Circle with Photo */}
-        <div className="relative">
+        <div className="relative" ref={menuRef}>
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="w-9 h-9 rounded-full overflow-hidden bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center font-bold text-[14px] border border-blue-50 hover:ring-2 hover:ring-blue-100 transition-all shadow-sm"
