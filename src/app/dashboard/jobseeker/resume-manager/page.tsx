@@ -276,7 +276,7 @@ export default function ResumeManagerPage() {
             <div className="flex-1 overflow-hidden bg-slate-50 relative p-4">
               <div className="w-full h-full rounded-2xl overflow-hidden border border-slate-200 shadow-xl bg-white">
                 <iframe
-                  src={`${normalizeMediaUrl(previewingResume.url || previewingResume.file || previewingResume.file_url || previewingResume.resume_file)}#toolbar=0`}
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(normalizeMediaUrl(previewingResume.url || previewingResume.file || previewingResume.file_url || previewingResume.resume_file))}&embedded=true`}
                   className="w-full h-full border-none"
                   title="Resume Preview"
                 />

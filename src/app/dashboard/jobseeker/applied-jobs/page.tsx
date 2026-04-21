@@ -10,10 +10,10 @@ import { normalizeMediaUrl } from "@/services/api/client";
 
 function formatDate(iso: string | undefined) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString(undefined, { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
   });
 }
 
@@ -27,7 +27,7 @@ export default function AppliedJobsPage() {
     try {
       setLoading(true);
       const res: any = await getApplications(page);
-      
+
       let dataArray: any[] = [];
       let paginationObj: any = null;
 
@@ -38,7 +38,7 @@ export default function AppliedJobsPage() {
         // Find the applications array
         const possibleArray = res.data?.data || res.data || res.applications || res.items || [];
         dataArray = Array.isArray(possibleArray) ? possibleArray : [];
-        
+
         // Find pagination info (look for links or current_page)
         if (res.links || res.current_page) {
           paginationObj = res;
@@ -51,7 +51,7 @@ export default function AppliedJobsPage() {
 
       setApplications(dataArray);
       setPagination(paginationObj);
-      
+
       console.log("AppliedJobs Page Data Load:", { arrayLength: dataArray.length, hasPagination: !!paginationObj });
     } catch (error) {
       toast.error("Failed to load applications.");
@@ -76,13 +76,13 @@ export default function AppliedJobsPage() {
   // ... rest of logic stays same (getStatusStyles, stats, etc)
   const getStatusStyles = (status: string) => {
     const s = status?.toLowerCase();
-    if (s === 'interview scheduled' || s === 'interviews' || s === 'shortlisted' || s === 'hired') 
+    if (s === 'interview scheduled' || s === 'interviews' || s === 'shortlisted' || s === 'hired')
       return "bg-[#E8FBF2] text-[#059669]";
-    if (s === 'under review' || s === 'reviewing' || s === 'accepted') 
+    if (s === 'under review' || s === 'reviewing' || s === 'accepted')
       return "bg-[#EEF2FF] text-[#4F46E5]";
-    if (s === 'applied' || s === 'pending') 
+    if (s === 'applied' || s === 'pending')
       return "bg-[#F1F5F9] text-[#1E293B]";
-    if (s === 'rejected' || s === 'declined') 
+    if (s === 'rejected' || s === 'declined')
       return "bg-[#FEF2F2] text-[#DC2626]";
     return "bg-[#F1F5F9] text-[#1E293B]";
   };
@@ -132,9 +132,9 @@ export default function AppliedJobsPage() {
                     <div className="flex gap-4 items-center">
                       <div className="w-10 h-10 rounded-lg bg-[#E8F1FF] flex items-center justify-center shrink-0 border border-[#BFDBFE] overflow-hidden">
                         {app.job?.employer?.company_logo ? (
-                          <img 
-                            src={normalizeMediaUrl(app.job.employer.company_logo)} 
-                            alt="" 
+                          <img
+                            src={normalizeMediaUrl(app.job.employer.company_logo)}
+                            alt=""
                             className="w-full h-full object-contain p-1.5"
                           />
                         ) : (
@@ -167,9 +167,9 @@ export default function AppliedJobsPage() {
                       <span className={`px-3 py-0.5 rounded-full text-[10.5px] font-bold whitespace-nowrap shadow-sm/5 ${getStatusStyles(app.status)}`}>
                         {app.status || "Applied"}
                       </span>
-                      <Link 
-                         href={`/dashboard/jobseeker/applied-jobs/${app.id}`}
-                         className="flex items-center gap-1 text-[12px] font-bold text-black hover:text-[#0046B5] transition-colors"
+                      <Link
+                        href={`/dashboard/jobseeker/applied-jobs/${app.id}`}
+                        className="flex items-center gap-1 text-[12px] font-bold text-black hover:text-[#0046B5] transition-colors"
                       >
                         View <ExternalLink className="w-3 h-3 opacity-40" />
                       </Link>
@@ -195,13 +195,12 @@ export default function AppliedJobsPage() {
                       handlePageChange(pageNum);
                     }
                   }}
-                  className={`min-w-[32px] h-8 px-2 rounded-lg text-[11px] font-bold transition-all ${
-                    link.active 
-                    ? "bg-[#0046B5] text-white shadow-md shadow-blue-900/10" 
-                    : !link.url 
-                    ? "text-slate-300 cursor-not-allowed" 
-                    : "bg-white border border-slate-100 text-slate-900 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
+                  className={`min-w-[32px] h-8 px-2 rounded-lg text-[11px] font-bold transition-all ${link.active
+                      ? "bg-[#0046B5] text-white shadow-md shadow-blue-900/10"
+                      : !link.url
+                        ? "text-slate-300 cursor-not-allowed"
+                        : "bg-white border border-slate-100 text-slate-900 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
                 >
                   {decodeLabel(link.label)}
                 </button>

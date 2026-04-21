@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, User, Building2, Eye, EyeOff, Briefcase } from "lucide-react";
+import { GraduationCap, User, Building2, Eye, EyeOff } from "lucide-react";
 import { EmailSignInAction } from "@/lib/sign-in";
 import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
 import { toast } from "sonner";

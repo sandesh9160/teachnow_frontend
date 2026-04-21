@@ -7,11 +7,11 @@ import { useEducation } from "@/hooks/useEducation";
 import { useExperience } from "@/hooks/useExperience";
 import type { EducationPayload, EducationRecord } from "@/types/education";
 import type { ExperiencePayload, ExperienceRecord } from "@/types/experience";
-import { 
-  Loader2, Mail, MapPin, Briefcase, GraduationCap, 
-   Camera, Trash2, Edit2, CheckSquare, Square, 
-  X, BookOpen, Award, UserCircle, 
-  Globe, Languages, Search, PlusCircle
+import {
+  Loader2, Mail, MapPin, Briefcase, GraduationCap,
+  Camera, Trash2, Edit2, CheckSquare, Square,
+  X, BookOpen, Award, UserCircle,
+  Globe, Search, PlusCircle
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -61,7 +61,7 @@ function mapServerProfile(initial: Record<string, any>) {
     title: String(data.title || data.job_title || data.headline || ""),
     bio: String(data.bio || data.about || data.summary || ""),
     experience_years: Number(data.experience_years || 0),
-    availability: String(data.availability || "open"), 
+    availability: String(data.availability || "open"),
     dob: data.dob ? String(data.dob).split("T")[0] : "",
     portfolio_website: String(data.portfolio_website || ""),
     profile_photo: String(data.profile_photo || ""),
@@ -72,9 +72,7 @@ function mapServerProfile(initial: Record<string, any>) {
     // preferred_location: String(data.preferred_location || ""),
     // teaching_mode: String(data.teaching_mode || ""),
     skills: Array.isArray(data.skills) ? data.skills : [],
-    // subjects: Array.isArray(data.subjects) ? data.subjects : [],
     certifications: Array.isArray(data.certifications) ? data.certifications : [],
-    // languages: Array.isArray(data.languages) ? data.languages : [],
   };
 }
 
@@ -135,7 +133,7 @@ export default function ProfileFormClient({
   const [localExpList, setLocalExpList] = useState<ExperienceRecord[]>([]);
 
   const [skillInput, setSkillInput] = useState("");
-  const [langInput, setLangInput] = useState("");
+  // const [langInput, setLangInput] = useState("");
   const [certInput, setCertInput] = useState("");
 
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
@@ -229,15 +227,6 @@ export default function ProfileFormClient({
       setProfileData(prev => ({ ...prev, skills: [...prev.skills, val] }));
     }
     setSkillInput("");
-  };
-
-  const handleAddLanguage = () => {
-    const val = langInput.trim();
-    if (!val) return;
-    if (!profileData.languages.includes(val)) {
-      setProfileData(prev => ({ ...prev, languages: [...prev.languages, val] }));
-    }
-    setLangInput("");
   };
 
   const handleAddCertification = () => {
@@ -407,9 +396,9 @@ export default function ProfileFormClient({
         const { uploadFile } = await import("@/actions/FileUpload");
         const formData = new FormData();
         if (!isNew) formData.append("_method", "PUT");
-        
+
         Object.entries(profileData).forEach(([key, value]) => {
-          if (key === 'skills' || key === 'subjects' || key === 'certifications' || key === 'languages') {
+          if (key === 'skills' || key === 'certifications') {
             const list = (value as any[] || []);
             console.log(`[ProfileDebug] Appending list ${key}:`, list);
             list.forEach(v => formData.append(`${key}[]`, typeof v === 'string' ? v : v.name));
@@ -422,17 +411,16 @@ export default function ProfileFormClient({
         profileResult = await uploadFile("jobseeker/profile", { method: "POST", data: formData });
       } else {
         const { email, profile_photo, ...safeData } = profileData;
-        const payload = { 
-          ...safeData, 
+        const payload = {
+          ...safeData,
           job_title: safeData.title,
           skills: profileData.skills.map((s: any) => typeof s === 'string' ? s : s.name),
           certifications: profileData.certifications.map((c: any) => ({
             name: typeof c === 'string' ? c : c.name,
             issuer: c.issuer || "",
-            issued_at: c.issued_at || ""
+            issued_at: c.issued_at || "",
+            expires_at: c.expires_at || ""
           })),
-          languages: profileData.languages.map((l: any) => typeof l === 'string' ? l : l.name),
-          subjects: profileData.subjects.map((s: any) => typeof s === 'string' ? s : s.name)
         };
         console.log("[ProfileDebug] Submitting JSON payload:", payload);
         profileResult = isNew ? await createProfile(payload) : await updateProfile(payload);
@@ -486,15 +474,15 @@ export default function ProfileFormClient({
       router.refresh();
     } catch (err: any) {
       console.error("[ProfileDebug] CRITICAL ERROR:", err);
-      
+
       // Extract detailed validation errors from Laravel response if available
       let errorMessage = err.response?.data?.message || err.message || "An unexpected error occurred.";
-      
+
       if (err.response?.data?.errors) {
         const validationErrors = Object.values(err.response.data.errors).flat().join(" ");
         if (validationErrors) errorMessage = `${errorMessage} ${validationErrors}`;
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setSaving(false);
@@ -506,29 +494,29 @@ export default function ProfileFormClient({
       <div className="h-20 bg-indigo-500 bg-linear-to-r from-indigo-500 to-blue-400" />
       <div className="px-5 pb-5 relative">
         <div className="flex items-end gap-3.5 -mt-8 mb-4">
-          <div 
+          <div
             className={`w-18 h-18 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative ${isEdit ? 'cursor-pointer group' : ''}`}
             onClick={() => isEdit && document.getElementById("photo-upload")?.click()}
           >
-             {photoPreview || profileData.profile_photo ? (
-                <img src={photoPreview || getFullImageUrl(profileData.profile_photo)!} alt="" className="w-full h-full object-cover rounded-xl" />
-             ) : (
-                <div className="w-full h-full bg-slate-50 flex items-center justify-center text-xl font-bold text-indigo-900">
-                  {profileData.name?.[0]}
-                </div>
-             )}
-             {isEdit && (
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Camera className="w-5 h-5 text-white" />
-                </div>
-             )}
+            {photoPreview || profileData.profile_photo ? (
+              <img src={photoPreview || getFullImageUrl(profileData.profile_photo)!} alt="" className="w-full h-full object-cover rounded-xl" />
+            ) : (
+              <div className="w-full h-full bg-slate-50 flex items-center justify-center text-xl font-bold text-indigo-900">
+                {profileData.name?.[0]}
+              </div>
+            )}
+            {isEdit && (
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="w-5 h-5 text-white" />
+              </div>
+            )}
           </div>
           <div className="flex-1 pb-0.5 min-w-0">
             <h2 className="text-lg font-bold text-black tracking-tight truncate">{profileData.name || "Name not set"}</h2>
             <p className="text-black/70 text-[13px] font-medium truncate">{profileData.title || "No title set"}</p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-50 mt-1">
           <div className="flex items-center gap-2.5 text-black/70">
             <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
@@ -576,14 +564,6 @@ export default function ProfileFormClient({
             <p className="text-[13px] font-semibold text-slate-700">{profileData.notice_period || "Not specified"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Expected Salary</p>
-            <p className="text-[13px] font-semibold text-black">{profileData.expected_salary || "Not specified"}</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-semibold text-black/60 mb-0.5">Preferred Location</p>
-            <p className="text-[13px] font-semibold text-black">{profileData.preferred_location || "Not specified"}</p>
-          </div>
-          <div>
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Total Experience</p>
             <p className="text-[13px] font-semibold text-black">{profileData.experience_years || 0} Years</p>
           </div>
@@ -617,9 +597,9 @@ export default function ProfileFormClient({
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[13px] font-bold text-black flex items-center gap-2">
-               <Briefcase className="w-4 h-4 text-black/30" /> Experience
+              <Briefcase className="w-4 h-4 text-black/30" /> Experience
             </h3>
-            <button 
+            <button
               onClick={() => { setMode("edit"); setShowExpForm(true); }}
               className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
@@ -647,9 +627,9 @@ export default function ProfileFormClient({
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[13px] font-bold text-black flex items-center gap-2">
-               <GraduationCap className="w-4 h-4 text-black/30" /> Education
+              <GraduationCap className="w-4 h-4 text-black/30" /> Education
             </h3>
-            <button 
+            <button
               onClick={() => { setMode("edit"); setShowEduForm(true); }}
               className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
@@ -675,20 +655,20 @@ export default function ProfileFormClient({
             ) : (
               <p className="text-black/40 italic text-[12px]">Academic details missing.</p>
             )}
+          </div>
         </div>
       </div>
-    </div>
 
       <div className="bg-white p-7 rounded-xl border border-slate-100 shadow-xs space-y-8 mt-6">
         <div>
           <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
-             <BookOpen className="w-4 h-4 text-black/30" /> Subjects & Skills
+            <BookOpen className="w-4 h-4 text-black/30" /> Skills
           </h3>
           <div className="flex flex-wrap gap-x-10 gap-y-3">
             {(profileData.skills || []).map((item: any, i: number) => (
-               <span key={i} className="text-indigo-600 font-semibold text-[13px]">
-                 {typeof item === 'string' ? item : item.name}
-               </span>
+              <span key={i} className="text-indigo-600 font-semibold text-[13px]">
+                {typeof item === 'string' ? item : item.name}
+              </span>
             ))}
           </div>
         </div>
@@ -696,33 +676,18 @@ export default function ProfileFormClient({
         {profileData.certifications?.length > 0 && (
           <div>
             <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
-               <Award className="w-4 h-4 text-black/30" /> Certifications
+              <Award className="w-4 h-4 text-black/30" /> Certifications
             </h3>
             <div className="space-y-4">
               {profileData.certifications.map((cert: any, i: number) => (
-                 <div key={i} className="flex flex-col">
-                   <p className="text-black font-semibold text-[13px]">{typeof cert === 'string' ? cert : cert.name}</p>
-                   {cert.issuer && (
-                     <p className="text-black/60 text-[11px] font-medium mt-0.5">
-                       {cert.issuer} {cert.issued_at ? ` · ${cert.issued_at.split("-")[0]}` : ''}
-                     </p>
-                   )}
-                 </div>
-              ))}
-            </div>
-          </div>
-        )}
- 
-        {profileData.languages?.length > 0 && (
-          <div>
-            <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
-               <Languages className="w-4 h-4 text-black/30" /> Languages
-            </h3>
-            <div className="flex flex-wrap gap-x-10 gap-y-3">
-              {profileData.languages.map((lang: any, i: number) => (
-                 <span key={i} className="text-black/80 font-semibold text-[13px]">
-                   {typeof lang === 'string' ? lang : lang.name}
-                 </span>
+                <div key={i} className="flex flex-col">
+                  <p className="text-black font-semibold text-[13px]">{typeof cert === 'string' ? cert : cert.name}</p>
+                  {cert.issuer && (
+                    <p className="text-black/60 text-[11px] font-medium mt-0.5">
+                      {cert.issuer} {cert.issued_at ? ` · Issued: ${cert.issued_at.split("-")[0]}` : ''} {cert.expires_at ? ` · Expires: ${cert.expires_at.split("-")[0]}` : ''}
+                    </p>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -739,10 +704,10 @@ export default function ProfileFormClient({
           <p className="text-black/40 text-[12px] font-medium mt-0.5">Edit your recruitment-ready profile</p>
         </div>
         <div className="flex items-center gap-2">
-           <Button variant="outline" onClick={() => setMode("view")} className="h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
-           <Button onClick={handleSubmit} disabled={saving} className="h-8 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[12px]">
-             {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : null} Save Final
-           </Button>
+          <Button variant="outline" onClick={() => setMode("view")} className="h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
+          <Button onClick={handleSubmit} disabled={saving} className="h-8 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[12px]">
+            {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : null} Save Final
+          </Button>
         </div>
       </div>
 
@@ -753,67 +718,66 @@ export default function ProfileFormClient({
           <section className="space-y-6">
             <h3 className="text-[13px] font-semibold text-black border-b border-slate-50 pb-2">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-               <div className="space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Full Name <span className="text-red-500">*</span></Label>
-                 <Input name="name" value={profileData.name} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
-               </div>
-               <div className="space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Professional Title <span className="text-red-500">*</span></Label>
-                 <Input name="title" value={profileData.title} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
-               </div>
-               <div className="space-y-1.5 relative">
-                 <Label className="text-[13px] font-semibold text-slate-700">Location <span className="text-red-500">*</span></Label>
-                 <Input 
-                   name="location" 
-                   value={profileData.location} 
-                   onChange={(e) => handleLocationChange(e, "location")} 
-                   onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
-                   className="h-10 rounded-lg text-[13px] border-slate-200" 
-                 />
-                 {showLocationSug && searchType === "location" && locationSuggestions.length > 0 && (
-                   <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-                     {locationSuggestions.map((loc, i) => (
-                       <li 
-                         key={i} 
-                         className="px-4 py-2 text-[13px] hover:bg-slate-50 cursor-pointer"
-                         onClick={() => { setProfileData(prev => ({ ...prev, location: loc })); setShowLocationSug(false); }}
-                       >
-                         {loc}
-                       </li>
-                     ))}
-                   </ul>
-                 )}
-               </div>
-               <div className="space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Gender</Label>
-                 <select name="gender" value={profileData.gender} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                 </select>
-               </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[13px] font-semibold text-slate-700">LinkedIn or Social Platform</Label>
-                  <Input name="portfolio_website" value={profileData.portfolio_website} onChange={handleChange} placeholder="https://linkedin.com/in/..." className="h-10 rounded-lg text-[13px] border-slate-200" />
-                </div>
-               <div className="space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Total Experience (Years) <span className="text-red-500">*</span></Label>
-                 <Input name="experience_years" type="number" min="0" value={profileData.experience_years} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
-               </div>
-               <div className="space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Date of Birth</Label>
-                 <DatePicker 
-                    date={profileData.dob ? parseISO(profileData.dob) : undefined}
-                    setDate={(d) => setProfileData({...profileData, dob: d ? format(d, 'yyyy-MM-dd') : ""})}
-                    className="h-10 rounded-lg text-[13px] bg-white border border-slate-200"
-                 />
-               </div>
-               <div className="md:col-span-2 space-y-1.5">
-                 <Label className="text-[13px] font-semibold text-slate-700">Professional Bio <span className="text-red-500">*</span></Label>
-                 <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className="w-full rounded-lg border border-slate-200 bg-white p-3 text-[13px] outline-none" placeholder="Share your teaching philosophy and experience..." />
-               </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Full Name <span className="text-red-500">*</span></Label>
+                <Input name="name" value={profileData.name} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Professional Title <span className="text-red-500">*</span></Label>
+                <Input name="title" value={profileData.title} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5 relative">
+                <Label className="text-[13px] font-semibold text-slate-700">Location <span className="text-red-500">*</span></Label>
+                <Input
+                  name="location"
+                  value={profileData.location}
+                  onChange={(e) => handleLocationChange(e, "location")}
+                  onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
+                  className="h-10 rounded-lg text-[13px] border-slate-200"
+                />
+                {showLocationSug && searchType === "location" && locationSuggestions.length > 0 && (
+                  <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
+                    {locationSuggestions.map((loc, i) => (
+                      <li
+                        key={i}
+                        className="px-4 py-2 text-[13px] hover:bg-slate-50 cursor-pointer"
+                        onClick={() => { setProfileData(prev => ({ ...prev, location: loc })); setShowLocationSug(false); }}
+                      >
+                        {loc}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Gender</Label>
+                <select name="gender" value={profileData.gender} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">LinkedIn or Social Platform</Label>
+                <Input name="portfolio_website" value={profileData.portfolio_website} onChange={handleChange} placeholder="https://linkedin.com/in/..." className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Total Experience (Years) <span className="text-red-500">*</span></Label>
+                <Input name="experience_years" type="number" min="0" value={profileData.experience_years} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Date of Birth</Label>
+                <DatePicker
+                  date={profileData.dob ? parseISO(profileData.dob) : undefined}
+                  setDate={(d) => setProfileData({ ...profileData, dob: d ? format(d, 'yyyy-MM-dd') : "" })}
+                  className="h-10 rounded-lg text-[13px] bg-white border border-slate-200"
+                />
+              </div>
+              <div className="md:col-span-2 space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Professional Bio <span className="text-red-500">*</span></Label>
+                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className="w-full rounded-lg border border-slate-200 bg-white p-3 text-[13px] outline-none" placeholder="Share your teaching philosophy and experience..." />
+              </div>
             </div>
           </section>
 
@@ -821,69 +785,22 @@ export default function ProfileFormClient({
             <h3 className="text-[13px] font-semibold text-slate-900 border-b border-slate-50 pb-2">Job Preferences</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Open to Work Status</Label>
-                <select name="open_to_work" value={profileData.open_to_work} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
-                   <option value="Actively Looking">Actively Looking</option>
-                   <option value="Open to Opportunities">Open to Opportunities</option>
-                   <option value="Not Looking">Not Looking</option>
-                </select>
-              </div>
-               <div className="space-y-1.5">
                 <Label className="text-[13px] font-semibold text-slate-700">Notice Period</Label>
                 <select name="notice_period" value={profileData.notice_period} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
-                   <option value="">Select Notice Period</option>
-                   <option value="Immediate">Immediate</option>
-                   <option value="15">15 Days</option>
-                   <option value="30">30 Days</option>
-                   <option value="45">45 Days</option>
-                   <option value="60">60 Days</option>
-                   <option value="90">90 Days</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Expected Salary</Label>
-                <Input name="expected_salary" value={profileData.expected_salary} onChange={handleChange} placeholder="e.g. 5,00,000" className="h-10 rounded-lg text-[13px] border-slate-200" />
-              </div>
-              <div className="space-y-1.5 relative">
-                <Label className="text-[13px] font-semibold text-slate-700">Preferred Location</Label>
-                <Input 
-                  name="preferred_location" 
-                  value={profileData.preferred_location} 
-                  onChange={(e) => handleLocationChange(e, "preferred_location")} 
-                  onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
-                  placeholder="City name" 
-                  className="h-10 rounded-lg text-[13px] border-slate-200" 
-                />
-                {showLocationSug && searchType === "preferred_location" && locationSuggestions.length > 0 && (
-                   <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-                     {locationSuggestions.map((loc, i) => (
-                       <li 
-                         key={i} 
-                         className="px-4 py-2 text-[13px] hover:bg-slate-50 cursor-pointer"
-                         onClick={() => { setProfileData(prev => ({ ...prev, preferred_location: loc })); setShowLocationSug(false); }}
-                       >
-                         {loc}
-                       </li>
-                     ))}
-                   </ul>
-                 )}
-               </div>
-               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Preferred Teaching Mode</Label>
-                <select name="teaching_mode" value={profileData.teaching_mode} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
-                   <option value="">Select Mode</option>
-                   <option value="Offline">Offline (In-person)</option>
-                   <option value="Online">Online (Remote)</option>
-                   <option value="Hybrid">Hybrid</option>
+                  <option value="">Select Notice Period</option>
+                  <option value="Immediate">Immediate</option>
+                  <option value="15">15 Days</option>
+                  <option value="30">30 Days</option>
+                  <option value="45">45 Days</option>
+                  <option value="60">60 Days</option>
+                  <option value="90">90 Days</option>
                 </select>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[13px] font-semibold text-slate-700">Availability</Label>
                 <select name="availability" value={profileData.availability} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
-                   <option value="open">Open (Immediate Start)</option>
-                   <option value="part_time">Part Time</option>
-                   <option value="full_time">Full Time Only</option>
-                   <option value="consultant">Consultant</option>
+                  <option value="open">Open</option>
+                  <option value="not_looking">Not Looking</option>
                 </select>
               </div>
             </div>
@@ -891,10 +808,10 @@ export default function ProfileFormClient({
 
           <section className="space-y-5">
             <div className="flex items-center justify-between gap-4 border-b border-slate-50 pb-2">
-               <h3 className="text-[13px] font-semibold text-slate-900">Work History</h3>
-               <button type="button" onClick={() => {setShowExpForm(!showExpForm); setEditingExpId(null);}} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700">
-                 {showExpForm ? "Cancel" : "Add Experience"}
-               </button>
+              <h3 className="text-[13px] font-semibold text-slate-900">Work History</h3>
+              <button type="button" onClick={() => { setShowExpForm(!showExpForm); setEditingExpId(null); }} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700">
+                {showExpForm ? "Cancel" : "Add Experience"}
+              </button>
             </div>
 
             {showExpForm && (
@@ -902,25 +819,25 @@ export default function ProfileFormClient({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2 space-y-1.5">
                     <Label className="text-[12px] font-medium text-slate-600">Job Title <span className="text-red-500">*</span></Label>
-                    <Input value={expFormData.job_title} onChange={(e) => setExpFormData({...expFormData, job_title: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                    <Input value={expFormData.job_title} onChange={(e) => setExpFormData({ ...expFormData, job_title: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[12px] font-medium text-slate-600">Institution Name <span className="text-red-500">*</span></Label>
-                    <Input value={expFormData.company_name} onChange={(e) => setExpFormData({...expFormData, company_name: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
+                    <Input value={expFormData.company_name} onChange={(e) => setExpFormData({ ...expFormData, company_name: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
                   </div>
                   <div className="space-y-1.5 relative">
                     <Label className="text-[12px] font-medium text-slate-600">Location</Label>
-                    <Input 
-                      value={expFormData.location} 
-                      onChange={(e) => handleLocationChange(e, "exp_location")} 
+                    <Input
+                      value={expFormData.location}
+                      onChange={(e) => handleLocationChange(e, "exp_location")}
                       onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
-                      className="h-10 rounded-lg text-sm bg-white" 
+                      className="h-10 rounded-lg text-sm bg-white"
                     />
                     {showLocationSug && searchType === "exp_location" && locationSuggestions.length > 0 && (
                       <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
                         {locationSuggestions.map((loc, i) => (
-                          <li 
-                            key={i} 
+                          <li
+                            key={i}
                             className="px-4 py-2 text-[13px] hover:bg-slate-50 cursor-pointer"
                             onClick={() => { setExpFormData(prev => ({ ...prev, location: loc })); setShowLocationSug(false); }}
                           >
@@ -933,19 +850,19 @@ export default function ProfileFormClient({
                   <div className="space-y-1.5">
                     <Label className="text-[12px] font-medium text-slate-600">Timeline <span className="text-red-500">*</span></Label>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
-                       <div className="flex-1 space-y-1">
-                          <p className="text-[10px] font-semibold text-black/60">Start Date</p>
-                          <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
-                       </div>
-                       <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
-                       <div className="flex-1 space-y-1">
-                          <p className="text-[11px] font-semibold text-black/60">End Date</p>
-                          <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
-                       </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-[10px] font-semibold text-black/60">Start Date</p>
+                        <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                      </div>
+                      <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-[11px] font-semibold text-black/60">End Date</p>
+                        <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                      </div>
                     </div>
                   </div>
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <button type="button" onClick={() => setExpFormData(p => ({...p, is_current: !p.is_current}))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-200"}`}>
+                    <button type="button" onClick={() => setExpFormData(p => ({ ...p, is_current: !p.is_current }))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-200"}`}>
                       {expFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Working
                     </button>
                   </div>
@@ -980,65 +897,65 @@ export default function ProfileFormClient({
 
           <section className="space-y-5">
             <div className="flex items-center gap-3 border-b border-slate-50 pb-2">
-               <h3 className="text-[13px] font-semibold text-slate-900 flex-1">Education</h3>
-               <button type="button" onClick={() => {setShowEduForm(!showEduForm); setEditingEduId(null);}} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700">
-                 {showEduForm ? "Cancel" : "Add Education"}
-               </button>
+              <h3 className="text-[13px] font-semibold text-slate-900 flex-1">Education</h3>
+              <button type="button" onClick={() => { setShowEduForm(!showEduForm); setEditingEduId(null); }} className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700">
+                {showEduForm ? "Cancel" : "Add Education"}
+              </button>
             </div>
-            
+
             {showEduForm && (
-               <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100/50 space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-[13px] font-semibold text-slate-700">Degree <span className="text-red-500">*</span></Label>
-                      <Input value={eduFormData.degree} onChange={(e) => setEduFormData({...eduFormData, degree: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[13px] font-semibold text-slate-700">Institution <span className="text-red-500">*</span></Label>
-                      <Input value={eduFormData.institution} onChange={(e) => setEduFormData({...eduFormData, institution: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[13px] font-semibold text-slate-700">Field of Study</Label>
-                      <Input value={eduFormData.field_of_study} onChange={(e) => setEduFormData({...eduFormData, field_of_study: e.target.value})} className="h-10 rounded-lg text-sm bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[13px] font-semibold text-slate-700">Grade (CGPA / %)</Label>
-                      <div className="flex gap-2">
-                        <select 
-                          value={eduFormData.grade_type} 
-                          onChange={(e) => setEduFormData({...eduFormData, grade_type: e.target.value as any})}
-                          className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[12px] outline-none shrink-0"
-                        >
-                          <option value="Percentage">Percentage</option>
-                          <option value="CGPA">CGPA</option>
-                        </select>
-                        <Input value={eduFormData.grade} onChange={(e) => setEduFormData({...eduFormData, grade: e.target.value})} placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85%" : "e.g. 9.2"} className="h-10 rounded-lg text-sm bg-white" />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5 md:col-span-2">
-                      <Label className="text-[13px] font-semibold text-slate-700">Joined Timeline <span className="text-red-500">*</span></Label>
-                      <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
-                         <div className="flex-1 space-y-1">
-                            <p className="text-[12px] font-semibold text-slate-500">Start Date</p>
-                            <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
-                         </div>
-                         <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
-                         <div className="flex-1 space-y-1">
-                            <p className="text-[11px] font-semibold text-black/60">End Date</p>
-                            <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : ""})} className="h-10 text-[13px] bg-white border-slate-200" />
-                         </div>
-                      </div>
-                    </div>
-                    <div className="md:col-span-2 flex items-center gap-3">
-                      <button type="button" onClick={() => setEduFormData(p => ({...p, is_current: !p.is_current}))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${eduFormData.is_current ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white text-slate-500 border-slate-200"}`}>
-                        {eduFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Pursuing
-                      </button>
+              <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100/50 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-semibold text-slate-700">Degree <span className="text-red-500">*</span></Label>
+                    <Input value={eduFormData.degree} onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-semibold text-slate-700">Institution <span className="text-red-500">*</span></Label>
+                    <Input value={eduFormData.institution} onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-semibold text-slate-700">Field of Study</Label>
+                    <Input value={eduFormData.field_of_study} onChange={(e) => setEduFormData({ ...eduFormData, field_of_study: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-semibold text-slate-700">Grade (CGPA / %)</Label>
+                    <div className="flex gap-2">
+                      <select
+                        value={eduFormData.grade_type}
+                        onChange={(e) => setEduFormData({ ...eduFormData, grade_type: e.target.value as any })}
+                        className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[12px] outline-none shrink-0"
+                      >
+                        <option value="Percentage">Percentage</option>
+                        <option value="CGPA">CGPA</option>
+                      </select>
+                      <Input value={eduFormData.grade} onChange={(e) => setEduFormData({ ...eduFormData, grade: e.target.value })} placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85%" : "e.g. 9.2"} className="h-10 rounded-lg text-sm bg-white" />
                     </div>
                   </div>
-                  <div className="flex justify-end pt-1">
-                    <Button type="button" onClick={handleEduSubmit} className="h-8 px-6 rounded-lg bg-emerald-600 text-white font-semibold text-[11px]">Save Education</Button>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <Label className="text-[13px] font-semibold text-slate-700">Joined Timeline <span className="text-red-500">*</span></Label>
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
+                      <div className="flex-1 space-y-1">
+                        <p className="text-[12px] font-semibold text-slate-500">Start Date</p>
+                        <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                      </div>
+                      <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-[11px] font-semibold text-black/60">End Date</p>
+                        <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                      </div>
+                    </div>
                   </div>
-               </div>
+                  <div className="md:col-span-2 flex items-center gap-3">
+                    <button type="button" onClick={() => setEduFormData(p => ({ ...p, is_current: !p.is_current }))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${eduFormData.is_current ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white text-slate-500 border-slate-200"}`}>
+                      {eduFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Pursuing
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-end pt-1">
+                  <Button type="button" onClick={handleEduSubmit} className="h-8 px-6 rounded-lg bg-emerald-600 text-white font-semibold text-[11px]">Save Education</Button>
+                </div>
+              </div>
             )}
 
             <div className="divide-y divide-slate-50 mb-6">
@@ -1061,177 +978,176 @@ export default function ProfileFormClient({
                 <p className="text-[12px] text-slate-400 italic p-4 text-center">Academic background empty.</p>
               )}
             </div>
-               <div className="space-y-8 pt-1">
-                  <div className="space-y-4 relative">
-                    <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
-                       <Award className="w-3.5 h-3.5 text-slate-400" /> Skills & Subjects
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <Input 
-                        placeholder="Add a skill or subject..." value={skillInput} 
-                        onChange={(e) => setSkillInput(e.target.value)}
-                        onFocus={() => setSkillInput(skillInput)}
-                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomSkill())}
-                        className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
-                      />
-                      <Button type="button" onClick={handleAddCustomSkill} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
-                    </div>
-                    {skillInput.length > 0 && (
-                      <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-300">
-                        {availableSkills
-                          .filter(s => {
-                            const name = s.name.toLowerCase();
-                            const query = skillInput.toLowerCase();
-                            const isAlreadySelected = profileData.skills.some((ps: any) => (typeof ps === 'string' ? ps : ps.name).toLowerCase() === name);
-                            return name.includes(query) && !isAlreadySelected;
-                          })
-                          .sort((a, b) => {
-                             const query = skillInput.toLowerCase();
-                             const aStarts = a.name.toLowerCase().startsWith(query);
-                             const bStarts = b.name.toLowerCase().startsWith(query);
-                             if (aStarts && !bStarts) return -1;
-                             if (!aStarts && bStarts) return 1;
-                             return a.name.localeCompare(b.name);
-                          })
-                          .slice(0, 8)
-                          .map((skill, i) => (
-                            <li 
-                              key={i} 
-                              className="px-5 py-3 text-[13.5px] font-bold text-[#1E1B4B] hover:bg-indigo-50/80 cursor-pointer flex justify-between items-center transition-colors border-b border-slate-50 last:border-0"
-                              onClick={() => {
-                                setProfileData(prev => ({ ...prev, skills: [...prev.skills, skill.name] }));
-                                setSkillInput("");
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-200 group-hover:bg-indigo-500 transition-colors" />
-                                <span>{skill.name}</span>
-                              </div>
-                              <PlusCircle className="w-4 h-4 text-indigo-400 opacity-40 group-hover:opacity-100 transition-opacity" />
-                            </li>
-                          ))}
-                         {availableSkills.filter(s => s.name.toLowerCase().includes(skillInput.toLowerCase())).length === 0 && (
-                           <li 
-                             className="px-5 py-4 text-[12px] font-bold text-indigo-600 hover:bg-indigo-50 cursor-pointer flex items-center gap-2"
-                             onClick={handleAddCustomSkill}
-                           >
-                             <PlusCircle className="w-4 h-4" />
-                             Add " {skillInput} " as custom skill?
-                           </li>
-                         )}
-                      </ul>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                    {profileData.skills.map((s: any, idx: number) => (
-                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-50 text-black/80 font-semibold text-[11px] rounded-lg border border-slate-100">
-                        {typeof s === 'string' ? s : s.name}
-                        <button type="button" onClick={() => setProfileData(p => ({...p, skills: p.skills.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-black/20 hover:text-red-500"><X className="w-3 h-3" /></button>
-                      </span>
-                    ))}
-                  </div>
-               </div>
-
-               <div className="space-y-4">
-                  <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
-                     <BookOpen className="w-3.5 h-3.5 text-slate-400" /> Certifications
-                  </h3>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                     <div className="flex-1 relative">
-                        <Input 
-                          placeholder="Certification Name (e.g. PHD)..." value={certInput} 
-                          onChange={(e) => {
-                            setCertInput(e.target.value);
-                            fetchCertifications(e.target.value);
-                            setShowCertSug(true);
+            <div className="space-y-8 pt-1">
+              <div className="space-y-4 relative">
+                <h3 className="text-[13px] font-bold text-slate-700 flex items-center gap-2">
+                  <Award className="w-3.5 h-3.5 text-slate-400" /> Skills
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Add a skill or subject..." value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onFocus={() => setSkillInput(skillInput)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomSkill())}
+                    className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                  />
+                  <Button type="button" onClick={handleAddCustomSkill} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                </div>
+                {skillInput.length > 0 && (
+                  <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-300">
+                    {availableSkills
+                      .filter(s => {
+                        const name = s.name.toLowerCase();
+                        const query = skillInput.toLowerCase();
+                        const isAlreadySelected = profileData.skills.some((ps: any) => (typeof ps === 'string' ? ps : ps.name).toLowerCase() === name);
+                        return name.includes(query) && !isAlreadySelected;
+                      })
+                      .sort((a, b) => {
+                        const query = skillInput.toLowerCase();
+                        const aStarts = a.name.toLowerCase().startsWith(query);
+                        const bStarts = b.name.toLowerCase().startsWith(query);
+                        if (aStarts && !bStarts) return -1;
+                        if (!aStarts && bStarts) return 1;
+                        return a.name.localeCompare(b.name);
+                      })
+                      .slice(0, 8)
+                      .map((skill, i) => (
+                        <li
+                          key={i}
+                          className="px-5 py-3 text-[13.5px] font-bold text-[#1E1B4B] hover:bg-indigo-50/80 cursor-pointer flex justify-between items-center transition-colors border-b border-slate-50 last:border-0"
+                          onClick={() => {
+                            setProfileData(prev => ({ ...prev, skills: [...prev.skills, skill.name] }));
+                            setSkillInput("");
                           }}
-                          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCertification())}
-                          onBlur={() => setTimeout(() => setShowCertSug(false), 200)}
-                          className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
-                        />
-                        {showCertSug && certSuggestions.length > 0 && (
-                          <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-48 overflow-y-auto custom-scrollbar active:z-50">
-                             {certSuggestions.map((cert, i) => (
-                               <li key={i} className="px-5 py-3 text-[12px] font-bold hover:bg-emerald-50 cursor-pointer border-b border-slate-50 last:border-0" onClick={() => { setCertInput(cert); setShowCertSug(false); }}>{cert}</li>
-                             ))}
-                          </ul>
-                        )}
-                     </div>
-                     <Input 
-                       placeholder="Issuer (e.g. IIT)" 
-                       id="cert_issuer"
-                       className="h-10 w-full sm:w-48 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
-                     />
-                     <Input 
-                       type="date"
-                       id="cert_date"
-                       className="h-10 w-full sm:w-40 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
-                     />
-                     <Button type="button" onClick={() => {
-                        const name = certInput.trim();
-                        const issuer = (document.getElementById('cert_issuer') as HTMLInputElement)?.value;
-                        const date = (document.getElementById('cert_date') as HTMLInputElement)?.value;
-                        if (name) {
-                          setProfileData(prev => ({
-                            ...prev,
-                            certifications: [...prev.certifications, { name, issuer, issued_at: date }]
-                          }));
-                          setCertInput("");
-                          (document.getElementById('cert_issuer') as HTMLInputElement).value = "";
-                          (document.getElementById('cert_date') as HTMLInputElement).value = "";
-                        }
-                     }} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
-                  </div>
-                  <div className="flex flex-wrap gap-3 mt-4">
-                    {profileData.certifications.map((c: any, idx: number) => (
-                      <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl min-w-[220px] relative group pointer-events-auto">
-                        <div className="flex items-center justify-between gap-4">
-                          <p className="font-semibold text-emerald-900 text-[13px]">{typeof c === 'string' ? c : c.name}</p>
-                          <button type="button" onClick={() => setProfileData(p => ({...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx)}))} className="p-1 text-emerald-300 hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
-                        </div>
-                        {(c.issuer || c.issued_at) && (
-                          <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
-                             {c.issuer} {c.issued_at ? ` · ${c.issued_at.split("-")[0]}` : ''}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-               </div>
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-200 group-hover:bg-indigo-500 transition-colors" />
+                            <span>{skill.name}</span>
+                          </div>
+                          <PlusCircle className="w-4 h-4 text-indigo-400 opacity-40 group-hover:opacity-100 transition-opacity" />
+                        </li>
+                      ))}
+                    {availableSkills.filter(s => s.name.toLowerCase().includes(skillInput.toLowerCase())).length === 0 && (
+                      <li
+                        className="px-5 py-4 text-[12px] font-bold text-indigo-600 hover:bg-indigo-50 cursor-pointer flex items-center gap-2"
+                        onClick={handleAddCustomSkill}
+                      >
+                        <PlusCircle className="w-4 h-4" />
+                        Add " {skillInput} " as custom skill?
+                      </li>
+                    )}
+                  </ul>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {profileData.skills.map((s: any, idx: number) => (
+                    <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-50 text-black/80 font-semibold text-[11px] rounded-lg border border-slate-100">
+                      {typeof s === 'string' ? s : s.name}
+                      <button type="button" onClick={() => setProfileData(p => ({ ...p, skills: p.skills.filter((_: any, i: number) => i !== idx) }))} className="p-0.5 text-black/20 hover:text-red-500"><X className="w-3 h-3" /></button>
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-               <div className="space-y-4">
-                  <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
-                     <Languages className="w-3.5 h-3.5 text-slate-400" /> Languages Known
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      placeholder="English, Hindi, Telugu... (Enter to add)" value={langInput} onChange={(e) => setLangInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddLanguage())}
-                      className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]" 
+              <div className="space-y-4">
+                <h3 className="text-[13px] font-semibold text-slate-700 flex items-center gap-2">
+                  <BookOpen className="w-3.5 h-3.5 text-slate-400" /> Certifications
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-500">Certification Name</Label>
+                    <div className="relative">
+                      <Input
+                        placeholder="e.g. PMP, AWS" value={certInput}
+                        onChange={(e) => {
+                          setCertInput(e.target.value);
+                          fetchCertifications(e.target.value);
+                          setShowCertSug(true);
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCertification())}
+                        onBlur={() => setTimeout(() => setShowCertSug(false), 200)}
+                        className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                      />
+                      {showCertSug && certSuggestions.length > 0 && (
+                        <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-48 overflow-y-auto custom-scrollbar active:z-50">
+                          {certSuggestions.map((cert, i) => (
+                            <li key={i} className="px-5 py-3 text-[12px] font-bold hover:bg-emerald-50 cursor-pointer border-b border-slate-50 last:border-0" onClick={() => { setCertInput(cert); setShowCertSug(false); }}>{cert}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-500">Issuer</Label>
+                    <Input
+                      placeholder="e.g. Google, PMI"
+                      id="cert_issuer"
+                      className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
                     />
-                    <Button type="button" onClick={handleAddLanguage} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {profileData.languages.map((l: any, idx: number) => (
-                      <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-indigo-50 text-indigo-700 font-semibold text-[11px] rounded-lg border border-indigo-100">
-                        {typeof l === 'string' ? l : l.name}
-                        <button type="button" onClick={() => setProfileData(p => ({...p, languages: p.languages.filter((_: any, i: number) => i !== idx)}))} className="p-0.5 text-indigo-300 hover:text-red-500"><X className="w-3 h-3" /></button>
-                      </span>
-                    ))}
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-500">Issued Date</Label>
+                    <Input
+                      type="date"
+                      id="cert_issued_at"
+                      className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                    />
                   </div>
-               </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-500">Expiry Date</Label>
+                    <Input
+                      type="date"
+                      id="cert_expires_at"
+                      className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                    />
+                  </div>
+                  <Button type="button" onClick={() => {
+                    const name = certInput.trim();
+                    const issuer = (document.getElementById('cert_issuer') as HTMLInputElement)?.value;
+                    const issued_at = (document.getElementById('cert_issued_at') as HTMLInputElement)?.value;
+                    const expires_at = (document.getElementById('cert_expires_at') as HTMLInputElement)?.value;
+                    if (name) {
+                      setProfileData(prev => ({
+                        ...prev,
+                        certifications: [...prev.certifications, { name, issuer, issued_at, expires_at }]
+                      }));
+                      setCertInput("");
+                      (document.getElementById('cert_issuer') as HTMLInputElement).value = "";
+                      (document.getElementById('cert_issued_at') as HTMLInputElement).value = "";
+                      (document.getElementById('cert_expires_at') as HTMLInputElement).value = "";
+                    }
+                  }} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                </div>
+
+            <div className="flex flex-wrap gap-3 mt-4">
+              {profileData.certifications.map((c: any, idx: number) => (
+                <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl min-w-[220px] relative group pointer-events-auto">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="font-semibold text-emerald-900 text-[13px]">{typeof c === 'string' ? c : c.name}</p>
+                    <button type="button" onClick={() => setProfileData(p => ({ ...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx) }))} className="p-1 text-emerald-300 hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+                  {(c.issuer || c.issued_at || c.expires_at) && (
+                    <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
+                      {c.issuer} {c.issued_at ? ` · Issued: ${c.issued_at.split("-")[0]}` : ''} {c.expires_at ? ` · Expires: ${c.expires_at.split("-")[0]}` : ''}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
-          </section>
+          </div>
         </div>
-      </div>
-
-      <div className="flex justify-end gap-3 px-4 sm:px-0">
-         <Button variant="outline" onClick={() => setMode("view")} className="px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
-         <Button onClick={handleSubmit} disabled={saving} className="px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
-           Save Final Profile
-         </Button>
-      </div>
+      </section>
     </div>
-  );
+  </div>
 
-  return mode === "view" ? renderProfileView() : renderProfileEdit();
+  <div className="flex justify-end gap-3 px-4 sm:px-0">
+    <Button variant="outline" onClick={() => setMode("view")} className="px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
+    <Button onClick={handleSubmit} disabled={saving} className="px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
+      Save Final Profile
+    </Button>
+  </div>
+</div>
+);
+
+return mode === "view" ? renderProfileView() : renderProfileEdit();
 }
+

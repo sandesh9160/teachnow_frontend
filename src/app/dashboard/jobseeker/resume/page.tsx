@@ -212,7 +212,7 @@ export default function ResumeManagementPage() {
               </div>
               <div className="aspect-[4/6] w-full max-w-2xl mx-auto rounded-2xl overflow-hidden border border-white/5 bg-white relative z-10 shadow-2xl">
                 <iframe
-                  src={`${lastGeneratedCV}#toolbar=0&navpanes=0&scrollbar=0`}
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(lastGeneratedCV)}&embedded=true`}
                   className="w-full h-full"
                   style={{ border: 'none' }}
                   title="CV Preview"
@@ -260,8 +260,10 @@ export default function ResumeManagementPage() {
                     <div className="p-3 flex flex-col gap-2 bg-white">
                       <div className="flex items-start justify-between gap-1.5">
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-semibold text-black text-[11px] truncate tracking-tight">Resume ID</h4>
-                          <span className="text-[9px] font-bold text-slate-400 block tracking-tight">#{cv.id}</span>
+                          <h4 className="font-semibold text-black text-[11px]  tracking-tight">{cv.title || "Untitled Resume"}</h4>
+                          <span className="text-[9px] font-bold text-slate-400 block tracking-tight">
+                            {cv.created_at ? new Date(cv.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : "Recently Generated"}
+                          </span>
                         </div>
                         <button
                           onClick={() => handleDeleteGenerated(cv.id)}
