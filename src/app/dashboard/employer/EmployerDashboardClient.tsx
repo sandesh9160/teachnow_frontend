@@ -229,8 +229,8 @@ export default function EmployerDashboardClient({
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-0.5">
                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-semibold text-black tracking-tight">Employer Dashboard</h1>
-                  {(dashboardData as any)?.employer?.is_verified === 1 && (
+                  <h1 className="text-xl sm:text-2xl font-semibold text-black tracking-tight">Institute Dashboard</h1>
+                  {((dashboardData as any)?.employer?.is_verified === 1 || dashboardData?.employer_profile?.is_profile_verified === 1) && (
                      <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
                         <Check className="w-2.5 h-2.5" /> Verified
                      </div>
@@ -319,7 +319,7 @@ export default function EmployerDashboardClient({
                {[
                   { label: "Manage Jobs", icon: Briefcase, href: `${basePath}/jobs`, color: "bg-blue-600 text-white", border: "border-blue-100", bg: "bg-blue-50/30" },
                   { label: "Hiring Team", icon: ShieldCheck, href: `${basePath}/recruiters`, color: "bg-indigo-600 text-white", border: "border-indigo-100", bg: "bg-indigo-50/30" },
-                  { label: "Institution Profile", icon: Building2, href: `${basePath}/company-profile`, color: "bg-amber-600 text-white", border: "border-amber-100", bg: "bg-amber-50/30" },
+                  { label: "Institute Dashboard", icon: Building2, href: `${basePath}/company-profile`, color: "bg-amber-600 text-white", border: "border-amber-100", bg: "bg-amber-50/30" },
                ].map((item, idx) => (
                   <Link key={idx} href={item.href} className="group">
                      <div className={cn(

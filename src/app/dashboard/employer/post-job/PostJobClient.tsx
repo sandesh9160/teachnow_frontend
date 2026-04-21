@@ -7,16 +7,14 @@ import {
   Loader2,
   Save,
   Trash2,
-  ToggleLeft,
-  Hash,
   DollarSign,
   FileText,
-  GraduationCap,
   Eye,
-  X,
   Plus,
   Zap,
-  Check
+  Check,
+  Target,
+  HelpCircle
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -67,7 +65,6 @@ export default function PostJobClient({
     location: job?.location || "",
     experience_type: job?.experience_type || "experienced",
     experience_required: job?.experience_required || "",
-    school_name: job?.school_name || profile?.company_name || profile?.name || "",
     vacancies: job?.vacancies || 1,
     gender: job?.gender || "both",
     salary_min: job?.salary_min?.split('.')[0] || "",
@@ -83,7 +80,6 @@ export default function PostJobClient({
     job?.deadline || job?.application_deadline ? new Date(job.deadline || job.application_deadline) : undefined
   );
   const [featured, setFeatured] = useState(job?.featured === 1);
-  const [newSkill, setNewSkill] = useState("");
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -92,8 +88,8 @@ export default function PostJobClient({
   const steps = [
     { id: 1, name: "Job Details", icon: Briefcase },
     { id: 2, name: "Job Description", icon: FileText },
-    { id: 3, name: "Requirements", icon: GraduationCap },
-    { id: 4, name: "Salary & Benefits", icon: DollarSign },
+    { id: 3, name: "Questions", icon: Target },
+    { id: 4, name: "Salary", icon: DollarSign },
     { id: 5, name: "Promotion", icon: Zap },
     { id: 6, name: "Preview & Publish", icon: Eye },
   ];
@@ -102,24 +98,22 @@ export default function PostJobClient({
     switch (step) {
       case 1:
         if (!formData.title.trim()) return { title: "Missing Title", desc: "Please provide a catchy title for your job listing." };
-        if (!formData.category_id) return { title: "Subject Required", desc: "Select a subject category to help candidates find your job." };
-        if (!formData.job_type) return { title: "Job Type", desc: "Is this a full-time or part-time position? Please select one." };
-        if (!formData.school_name.trim()) return { title: "Institution Name", desc: "Please enter the name of your school or institute." };
-        if (!formData.location) return { title: "Location Missing", desc: "Tell candidates where this job is located." };
+        if (!formData.category_id) return { title: "Subject", desc: "Pick a subject category for your job." };
+        if (!formData.job_type) return { title: "Job Type", desc: "Select if this is full or part-time." };
+        if (!formData.location) return { title: "Location", desc: "Tell us which city this job is in." };
         break;
       case 2:
         if (!description || description.replace(/<[^>]*>/g, '').trim().length < 20)
-          return { title: "Details Needed", desc: "A brief description (min 20 chars) helps candidates understand the role better." };
+          return { title: "Description", desc: "Write at least 20 characters to help candidates." };
         break;
       case 3:
-        if (!formData.education_qualification.trim()) return { title: "Qualification", desc: "Please specify the required education for this role." };
         break;
       case 4:
-        if (!deadline) return { title: "Deadline Missing", desc: "When should applications close? Please pick a date." };
-        if (!formData.salary_min) return { title: "Min Salary", desc: "Please provide a minimum monthly salary range." };
-        if (!formData.salary_max) return { title: "Max Salary", desc: "Please provide a maximum monthly salary range." };
+        if (!deadline) return { title: "Deadline", desc: "Pick a date when applications close." };
+        if (!formData.salary_min) return { title: "Salary", desc: "What's the minimum monthly salary?" };
+        if (!formData.salary_max) return { title: "Salary", desc: "What's the maximum monthly salary?" };
         if (Number(formData.salary_min) > Number(formData.salary_max))
-          return { title: "Salary Order", desc: "The minimum salary shouldn't be higher than the maximum." };
+          return { title: "Salary Range", desc: "Max salary should be more than min salary." };
         break;
     }
     return null;
@@ -136,24 +130,6 @@ export default function PostJobClient({
 
   const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
 
-  const addSkill = () => {
-    if (newSkill && !formData.skills.includes(newSkill)) {
-      updateField("skills", [...formData.skills, newSkill]);
-      setNewSkill("");
-    }
-  };
-
-  const removeSkill = (skill: string) => {
-    updateField("skills", formData.skills.filter((s: string) => s !== skill));
-  };
-
-  const toggleBenefit = (benefit: string) => {
-    const newBenefits = formData.benefits.includes(benefit)
-      ? formData.benefits.filter((b: string) => b !== benefit)
-      : [...formData.benefits, benefit];
-    updateField("benefits", newBenefits);
-  };
-
   const handleSubmit = async () => {
     const error = validateStep(4); // Re-validate step 4 before submitting
     if (error) {
@@ -163,7 +139,14 @@ export default function PostJobClient({
     }
 
     setLoading(true);
-    const data = { ...formData, description, deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", featured: featured ? 1 : 0, questions };
+    const data = { 
+      ...formData, 
+      school_name: job?.school_name || profile?.company_name || profile?.name || "",
+      description, 
+      deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
+      featured: featured ? 1 : 0, 
+      questions 
+    };
     try {
       const endpoint = isEdit ? `${userRole}/jobs/update/${job?.id}` : `${userRole}/jobs/create`;
       const result = await dashboardServerFetch(endpoint, { method: isEdit ? "PUT" : "POST", data });
@@ -208,7 +191,6 @@ export default function PostJobClient({
     }
   };
 
-  const benefitOptions = ["Health Insurance", "Accommodation", "Transport Allowance", "Flexible Schedule", "Annual Bonus", "Paid Leaves"];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-4 font-sans text-slate-900 pb-20">
@@ -223,8 +205,28 @@ export default function PostJobClient({
           {steps.map((step, idx) => (
             <div key={step.id} className="flex items-center">
               <button
-                onClick={() => setCurrentStep(step.id)}
-                className="flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                onClick={() => {
+                  if (step.id > 1) {
+                    const step1Error = validateStep(1);
+                    if (step1Error) {
+                      toast.error(step1Error.title, { description: step1Error.desc });
+                      setCurrentStep(1);
+                      return;
+                    }
+                  }
+                  if (step.id > currentStep) {
+                    const currentError = validateStep(currentStep);
+                    if (currentError) {
+                      toast.error(currentError.title, { description: currentError.desc });
+                      return;
+                    }
+                  }
+                  setCurrentStep(step.id);
+                }}
+                className={cn(
+                  "flex items-center gap-1.5 transition-all active:scale-95",
+                  step.id > 1 && validateStep(1) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                )}
               >
                 <div className={cn(
                   "w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all bg-[#F8FAFC] border border-slate-50",
@@ -274,10 +276,6 @@ export default function PostJobClient({
                   <option value="part_time">Part-time</option>
                 </select>
               </div>
-              <div className="md:col-span-2 space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">School / Institute Name *</Label>
-                <Input value={formData.school_name} onChange={(e) => updateField("school_name", e.target.value)} placeholder="e.g. Delhi Public School" className="h-10 rounded-xl bg-slate-50 border-slate-50 text-xs" />
-              </div>
               <div className="space-y-1.5">
                 <Label className="text-[11px] font-semibold text-slate-700">City *</Label>
                 <select value={formData.location} onChange={(e) => updateField("location", e.target.value)} className="w-full h-10 rounded-xl bg-slate-50 border-slate-50 px-4 text-xs outline-none">
@@ -304,49 +302,83 @@ export default function PostJobClient({
 
         {currentStep === 3 && (
           <div className="space-y-5 animate-in fade-in duration-300">
-            <h2 className="text-sm font-bold text-[#1E1B4B]">Requirements</h2>
             <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">Education Qualification *</Label>
-                <Input value={formData.education_qualification} onChange={(e) => updateField("education_qualification", e.target.value)} placeholder="e.g. B.Ed / M.Sc Mathematics" className="h-10 rounded-xl bg-slate-50 border-slate-50 text-xs" />
-              </div>
-              <div className="space-y-2 text-xs">
-                <Label className="font-semibold text-slate-700">Skills Required</Label>
-                <div className="flex gap-2">
-                  <Input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} placeholder="Skills..." className="h-10 bg-slate-50 border-slate-50 text-xs" />
-                  <Button onClick={addSkill} variant="outline" className="h-10 px-4 rounded-xl text-slate-600 text-[11px]">Add</Button>
+              <div className="pt-0 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-50 pb-3">
+                  <h2 className="text-sm font-bold text-[#1E1B4B]">Candidate Questions</h2>
+                  <Button 
+                    type="button" 
+                    onClick={() => addQuestion("boolean")}
+                    variant="outline"
+                    className="h-8 px-3 rounded-lg text-[10px] font-bold border-slate-100 hover:bg-slate-50 flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add Question
+                  </Button>
                 </div>
-                <div className="flex flex-wrap gap-1.5 py-0.5">
-                  {formData.skills.map((s: string) => (
-                    <span key={s} className="px-2.5 py-0.5 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-semibold text-[#1E1B4B] flex items-center gap-1.5">
-                      {s} <X className="w-3 h-3 cursor-pointer opacity-40 shrink-0" onClick={() => removeSkill(s)} />
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="pt-4 space-y-3 border-t border-slate-50">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold text-[#1E1B4B]">Candidate Questions</h3>
-                  <div className="flex gap-0.5 text-slate-300">
-                    <button type="button" onClick={() => addQuestion("boolean")} className="p-1"><ToggleLeft className="w-3.5 h-3.5" /></button>
-                    <button type="button" onClick={() => addQuestion("numeric")} className="p-1"><Hash className="w-3.5 h-3.5" /></button>
-                    <button type="button" onClick={() => addQuestion("text")} className="p-1"><Plus className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  {questions.length === 0 && (
+                    <div className="py-10 text-center space-y-3 bg-slate-50/20 rounded-2xl border border-dashed border-slate-100">
+                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto">
+                        <HelpCircle className="w-5 h-5 text-slate-300" />
+                      </div>
+                      <p className="text-[11px] font-medium text-slate-400">Add screening questions to filter better candidates.</p>
+                    </div>
+                  )}
                   {questions.map((q, i) => (
-                    <div key={i} className="bg-slate-50/40 p-3 rounded-xl border border-slate-50 flex flex-col md:flex-row items-end gap-3">
-                      <div className="w-full md:flex-1 space-y-1 min-w-0 text-left">
-                        <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Question {i + 1}</label>
-                        <Input value={q.question} onChange={(e) => updateQuestion(i, "question", e.target.value)} className="h-9 bg-white border-slate-100 text-xs" />
+                    <div key={i} className="bg-slate-50/40 p-3.5 rounded-xl border border-slate-50 space-y-3 relative group">
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <div className="flex-1 space-y-1.5 min-w-0">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Question {i + 1}</label>
+                          <Input 
+                            value={q.question} 
+                            onChange={(e) => updateQuestion(i, "question", e.target.value)} 
+                            placeholder="e.g. Do you have a valid teaching license?"
+                            className="h-9 bg-white border-slate-100 text-xs focus:ring-1 focus:ring-indigo-100" 
+                          />
+                        </div>
+                        <div className="w-full md:w-32 shrink-0 space-y-1.5">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Type</label>
+                          <select 
+                            value={q.question_type} 
+                            onChange={(e) => updateQuestion(i, "question_type", e.target.value as any)}
+                            className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
+                          >
+                            <option value="boolean">Yes / No</option>
+                            <option value="numeric">Number</option>
+                            <option value="text">Text Response</option>
+                          </select>
+                        </div>
+                        <div className="w-full md:w-32 shrink-0 space-y-1.5">
+                          <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Expected Answer</label>
+                          {q.question_type === 'boolean' ? (
+                            <select 
+                              value={q.recruiter_answer} 
+                              onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
+                              className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
+                            >
+                              <option value="yes">Yes</option>
+                              <option value="no">No</option>
+                            </select>
+                          ) : (
+                            <Input 
+                              value={q.recruiter_answer} 
+                              onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
+                              placeholder={q.question_type === 'numeric' ? "e.g. 5" : "Expected keywords..."}
+                              className="h-9 bg-white border-slate-100 text-[10px] font-semibold"
+                            />
+                          )}
+                        </div>
+                        <div className="flex items-end pb-0.5">
+                          <button 
+                            onClick={() => removeQuestion(i)} 
+                            className="p-2 text-slate-300 hover:text-rose-400 transition-colors bg-white md:bg-transparent rounded-lg border border-slate-50 md:border-none shadow-sm md:shadow-none"
+                            title="Remove Question"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="w-full md:w-28 shrink-0 space-y-1 text-left">
-                        <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Expected Answer</label>
-                        <select value={q.recruiter_answer} onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)} className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold">
-                          {q.question_type === 'boolean' ? <><option value="yes">Yes</option><option value="no">No</option></> : <option value="">...</option>}
-                        </select>
-                      </div>
-                      <button onClick={() => removeQuestion(i)} className="p-1.5 text-rose-300 hover:text-rose-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   ))}
                 </div>
@@ -357,24 +389,13 @@ export default function PostJobClient({
 
         {currentStep === 4 && (
           <div className="space-y-5 animate-in fade-in duration-300">
-            <h2 className="text-sm font-bold text-[#1E1B4B]">Salary & Benefits</h2>
+            <h2 className="text-sm font-bold text-[#1E1B4B]">Salary Details</h2>
             <div className="space-y-5">
               <div className="space-y-1.5">
                 <Label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Salary Range (Monthly)</Label>
                 <div className="grid grid-cols-2 gap-3 items-center">
                   <Input value={formData.salary_min} onChange={(e) => updateField("salary_min", e.target.value)} placeholder="Min ₹" className="h-10 bg-slate-50 border-slate-100 text-xs" />
                   <Input value={formData.salary_max} onChange={(e) => updateField("salary_max", e.target.value)} placeholder="Max ₹" className="h-10 bg-slate-50 border-slate-100 text-xs" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Benefits</Label>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                  {benefitOptions.map(b => (
-                    <label key={b} className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-50 bg-slate-50/20 text-left transition-all hover:bg-slate-50">
-                      <input type="checkbox" checked={formData.benefits.includes(b)} onChange={() => toggleBenefit(b)} className="w-3.5 h-3.5 rounded border-slate-300" />
-                      <span className="text-[10px] font-semibold text-slate-600 truncate">{b}</span>
-                    </label>
-                  ))}
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
@@ -478,7 +499,7 @@ export default function PostJobClient({
                     {formData.title || <span className="text-slate-200">Job Title</span>}
                   </h3>
                   <p className="text-slate-400 text-sm md:text-base font-medium">
-                    {formData.school_name || <span className="text-slate-200">Institution</span>} • {formData.location || <span className="text-slate-200">Location</span>}
+                    {formData.location || <span className="text-slate-200">Location</span>}
                   </p>
                 </div>
                 <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[11px] md:text-xs font-semibold capitalize tracking-wide shrink-0">
@@ -486,7 +507,7 @@ export default function PostJobClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
                   <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Salary Estimate</p>
                   <p className={cn("text-sm md:text-base font-bold", formData.salary_min ? "text-[#1E1B4B]" : "text-slate-300")}>
@@ -501,12 +522,6 @@ export default function PostJobClient({
                     {formData.experience_required ? `${formData.experience_required} years` : "Not Specified"}
                   </p>
                 </div>
-                <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Required Qualification</p>
-                  <p className={cn("text-sm md:text-base font-bold truncate", formData.education_qualification ? "text-[#1E1B4B]" : "text-slate-300")}>
-                    {formData.education_qualification || "Not Specified"}
-                  </p>
-                </div>
               </div>
 
               <div className="space-y-5">
@@ -518,33 +533,6 @@ export default function PostJobClient({
                     <span className="text-slate-200 italic font-medium">Description will appear here...</span>
                   )}
                 </div>
-              </div>
-
-              <div className="space-y-8 pt-4">
-                {formData.skills.length > 0 && (
-                  <div className="space-y-4 animate-in slide-in-from-bottom-1">
-                    <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Skills</h4>
-                    <div className="flex flex-wrap gap-2.5 md:gap-3">
-                      {formData.skills.map((s: string) => (
-                        <span key={s} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[11px] md:text-xs font-semibold transition-all hover:bg-indigo-100/50">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {formData.benefits.length > 0 && (
-                  <div className="space-y-4 animate-in slide-in-from-bottom-1">
-                    <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Benefits</h4>
-                    <div className="flex flex-wrap gap-2.5 md:gap-3">
-                      {formData.benefits.map((b: string) => (
-                        <span key={b} className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[11px] md:text-xs font-semibold transition-all hover:bg-emerald-100/50">
-                          {b}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

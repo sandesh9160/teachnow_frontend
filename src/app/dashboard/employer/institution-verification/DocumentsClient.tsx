@@ -221,7 +221,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
       {/* Header with Right-Side Upload Button */}
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-6">
          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-[#1E1B4B]">Institution Verification</h1>
+            <h1 className="text-2xl font-semibold text-[#1E1B4B]">Institute Dashboard</h1>
             <p className="text-sm text-slate-400">Manage and track your institutional credentials</p>
          </div>
          
