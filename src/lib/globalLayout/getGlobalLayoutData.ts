@@ -45,9 +45,9 @@ const REVALIDATE_SECONDS = 60;
 function normalizeHeroCTA(raw: any): HeroCTAData {
   const hero = raw?.hero
     ? {
-        ...raw.hero,
-        background_image: normalizeMediaUrl(raw.hero.background_image),
-      }
+      ...raw.hero,
+      background_image: normalizeMediaUrl(raw.hero.background_image),
+    }
     : null;
 
   // API is expected to return `cta: [{ ... }]`
@@ -76,11 +76,11 @@ async function fetchNavigation(): Promise<NavigationData | null> {
     });
     const rawResponse = res as any;
     const data = res.data ?? rawResponse;
-    
+
     // If data is an array, it's the list of menus
     // If data is an object, it might contain a menus property
     const menus = Array.isArray(data) ? data : (data?.menus || []);
-    
+
     return {
       ...(typeof data === 'object' && !Array.isArray(data) ? data : {}),
       menus,
@@ -110,9 +110,9 @@ async function fetchFooter(): Promise<FooterData | null> {
       ...s,
       links: Array.isArray(s.links)
         ? s.links.map((l) => ({
-            ...l,
-            icon: l?.icon ? normalizeMediaUrl(l.icon) : l?.icon ?? null,
-          }))
+          ...l,
+          icon: l?.icon ? normalizeMediaUrl(l.icon) : l?.icon ?? null,
+        }))
         : [],
     }));
 

@@ -262,8 +262,8 @@ function mapNavigationData(navData: NavigationData | null): any[] {
 
   // Filter for top-level menus only (parent_id is null or 0)
   return allMenus
-    .filter((m: NavMenu) => 
-      m.is_active === 1 && 
+    .filter((m: NavMenu) =>
+      m.is_active === 1 &&
       (!m.parent_id || m.parent_id === null) &&
       (m.show_in_nav === 1 || m.slug === "jobs" || m.title?.toLowerCase().includes("job"))
     )
@@ -373,10 +373,10 @@ const DesktopAuth = ({
       >
         <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display">
           {avatarSrc && !avatarError ? (
-            <img 
-              src={avatarSrc} 
-              alt={user.name} 
-              className="h-full w-full object-cover" 
+            <img
+              src={avatarSrc}
+              alt={user.name}
+              className="h-full w-full object-cover"
               onError={() => setAvatarError(true)}
             />
           ) : (
@@ -398,7 +398,7 @@ const DesktopAuth = ({
             <p className="text-[10px] font-medium text-slate-400 mb-0.5">Account Info</p>
             <p className="text-[13px] font-semibold text-slate-700 truncate">{user?.email}</p>
           </div>
-          
+
           <Link href={user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all">
             <LayoutDashboard className="h-4 w-4 opacity-70" /> My Dashboard
           </Link>

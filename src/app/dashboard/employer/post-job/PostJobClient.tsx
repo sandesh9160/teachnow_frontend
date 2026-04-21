@@ -41,13 +41,15 @@ interface PostJobClientProps {
     questions?: Question[];
   };
   isEdit?: boolean;
+  profile?: any;
 }
 
 export default function PostJobClient({ 
   metadata, 
   initialData, 
   isEdit = false,
-  userRole = "employer"
+  userRole = "employer",
+  profile
 }: PostJobClientProps & { userRole?: string }) {
   const basePath = `/dashboard/${userRole}`;
   const job = isEdit ? initialData?.job : initialData;
@@ -63,7 +65,7 @@ export default function PostJobClient({
     location: job?.location || "",
     experience_type: job?.experience_type || "experienced",
     experience_required: job?.experience_required || "",
-    school_name: job?.school_name || "",
+    school_name: job?.school_name || profile?.company_name || profile?.name || "",
     vacancies: job?.vacancies || 1,
     gender: job?.gender || "both",
     salary_min: job?.salary_min?.split('.')[0] || "",
@@ -317,11 +319,11 @@ export default function PostJobClient({
                      {questions.map((q, i) => (
                         <div key={i} className="bg-slate-50/40 p-3 md:p-4 rounded-xl border border-slate-50 flex flex-col md:flex-row items-end gap-3 md:gap-5">
                            <div className="w-full md:flex-1 space-y-1.5 min-w-0 text-left">
-                              <label className="text-[10px] text-slate-400 font-medium uppercase block">Question {i+1}</label>
+                              <label className="text-[10px] text-slate-400 font-medium tracking-wide block">Question {i+1}</label>
                               <Input value={q.question} onChange={(e) => updateQuestion(i, "question", e.target.value)} className="h-10 bg-white border-slate-100 text-sm" />
                            </div>
                            <div className="w-full md:w-32 shrink-0 space-y-1.5 text-left">
-                              <label className="text-[10px] text-slate-400 font-medium uppercase block">Value</label>
+                              <label className="text-[10px] text-slate-400 font-medium tracking-wide block">Expected Answer</label>
                               <select value={q.recruiter_answer} onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)} className="w-full h-10 rounded-xl bg-white border-slate-100 px-3 text-xs outline-none">
                                  {q.question_type === 'boolean' ? <><option value="yes">Yes</option><option value="no">No</option></> : <option value="">...</option>}
                               </select>
@@ -396,14 +398,14 @@ export default function PostJobClient({
                         {formData.school_name || <span className="text-slate-200">Institution</span>} • {formData.location || <span className="text-slate-200">Location</span>}
                      </p>
                   </div>
-                  <div className="px-4 py-1.5 bg-[#ECFDF5] text-[#059669] rounded-full text-[11px] md:text-xs font-bold uppercase tracking-wider shrink-0">
+                  <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[11px] md:text-xs font-semibold capitalize tracking-wide shrink-0">
                      {formData.job_type.replace('_', ' ') || "Type"}
                   </div>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
                   <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                     <p className="text-[10px] md:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Salary</p>
+                     <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Salary Estimate</p>
                      <p className={cn("text-sm md:text-base font-bold", formData.salary_min ? "text-[#1E1B4B]" : "text-slate-300")}>
                         {formData.salary_min && formData.salary_max 
                           ? `₹${Number(formData.salary_min).toLocaleString()} – ₹${Number(formData.salary_max).toLocaleString()}` 
@@ -411,13 +413,13 @@ export default function PostJobClient({
                      </p>
                   </div>
                   <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                     <p className="text-[10px] md:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Experience</p>
+                     <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Experience Required</p>
                      <p className={cn("text-sm md:text-base font-bold", formData.experience_required ? "text-[#1E1B4B]" : "text-slate-300")}>
                         {formData.experience_required ? `${formData.experience_required} years` : "Not Specified"}
                      </p>
                   </div>
                   <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                     <p className="text-[10px] md:text-[11px] text-slate-400 font-bold uppercase tracking-widest mb-2">Qualification</p>
+                     <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Required Qualification</p>
                      <p className={cn("text-sm md:text-base font-bold truncate", formData.education_qualification ? "text-[#1E1B4B]" : "text-slate-300")}>
                         {formData.education_qualification || "Not Specified"}
                      </p>
@@ -441,7 +443,7 @@ export default function PostJobClient({
                         <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Skills</h4>
                         <div className="flex flex-wrap gap-2.5 md:gap-3">
                            {formData.skills.map((s: string) => (
-                              <span key={s} className="px-4 py-2 bg-[#EEF2FF] text-[#4F46E5] rounded-full text-[11px] md:text-xs font-bold transition-all hover:bg-indigo-100">
+                              <span key={s} className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[11px] md:text-xs font-semibold transition-all hover:bg-indigo-100/50">
                                  {s}
                               </span>
                            ))}
@@ -453,7 +455,7 @@ export default function PostJobClient({
                         <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Benefits</h4>
                         <div className="flex flex-wrap gap-2.5 md:gap-3">
                            {formData.benefits.map((b: string) => (
-                              <span key={b} className="px-4 py-2 bg-[#F0FDF4] text-[#059669] rounded-full text-[11px] md:text-xs font-bold transition-all hover:bg-emerald-100">
+                              <span key={b} className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[11px] md:text-xs font-semibold transition-all hover:bg-emerald-100/50">
                                  {b}
                               </span>
                            ))}

@@ -3,9 +3,10 @@ import PostJobClient from "@/app/dashboard/employer/post-job/PostJobClient";
 
 export default async function PostJobPage() {
   // Fetch metadata from multiple open endpoints
-  const [categoriesData, locationsData] = await Promise.all([
-    dashboardServerFetch("open/categories"),
-    dashboardServerFetch("open/locations")
+  const [categoriesData, locationsData, profileData] = await Promise.all([
+    dashboardServerFetch("open/all-categories"),
+    dashboardServerFetch("open/locations"),
+    dashboardServerFetch("employer/profile")
   ]);
   
   return (
@@ -14,6 +15,7 @@ export default async function PostJobPage() {
         categories: categoriesData?.data || [],
         locations: locationsData?.data || []
       }} 
+      profile={profileData?.data}
     />
   );
 }

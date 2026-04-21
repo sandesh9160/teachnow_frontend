@@ -3,9 +3,10 @@ import PostJobClient from "../../employer/post-job/PostJobClient";
 
 export default async function RecruiterPostJobPage() {
   // Fetch metadata from multiple open endpoints
-  const [categoriesData, locationsData] = await Promise.all([
-    dashboardServerFetch("open/categories"),
-    dashboardServerFetch("open/locations")
+  const [categoriesData, locationsData, profileData] = await Promise.all([
+    dashboardServerFetch("open/all-categories"),
+    dashboardServerFetch("open/locations"),
+    dashboardServerFetch("recruiter/profile")
   ]);
   
   return (
@@ -15,6 +16,7 @@ export default async function RecruiterPostJobPage() {
         categories: categoriesData?.data || [],
         locations: locationsData?.data || []
       }} 
+      profile={profileData?.data}
     />
   );
 }

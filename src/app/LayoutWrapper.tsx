@@ -17,7 +17,7 @@ export function LayoutWrapper({
   authUser: any;
 }) {
   const pathname = usePathname();
-  
+
   // Define routes where global header/footer should be hidden
   const isDashboard = useMemo(() => pathname?.startsWith("/dashboard"), [pathname]);
 
