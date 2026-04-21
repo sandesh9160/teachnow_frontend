@@ -19,7 +19,8 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
-  Verified
+  Verified,
+  Users
 } from "lucide-react";
 import { useState } from "react";
 
@@ -50,6 +51,7 @@ export function DashboardSidebar({
     { label: "Institution Verification", href: "/dashboard/employer/institution-verification", icon: Verified },
     { label: "Post a Job", href: "/dashboard/employer/post-job", icon: PlusCircle },
     { label: "Manage Jobs", href: "/dashboard/employer/jobs", icon: Briefcase },
+    { label: "Recruiter Management", href: "/dashboard/employer/recruiters", icon: Users },
     { label: "Company Profile", href: "/dashboard/employer/company-profile", icon: Building2 },
     { label: "Billing", href: "/dashboard/employer/purchase-history", icon: CreditCard },
   ];

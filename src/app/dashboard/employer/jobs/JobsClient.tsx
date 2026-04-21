@@ -1,22 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Briefcase, 
-  MapPin, 
-  Calendar, 
-  Edit3, 
-  Search, 
-  PlusCircle, 
+import {
+  Briefcase,
+  MapPin,
+  Calendar,
+  Edit3,
+  Search,
+  PlusCircle,
   Clock,
   TrendingUp,
   Eye,
-  Pause,
-  Play,
-  XCircle,
-
   CheckCircle2,
-
+  RefreshCw,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -68,7 +65,7 @@ interface JobsClientProps {
   };
 }
 
-export default function JobsClient({ 
+export default function JobsClient({
   initialData,
   userRole = "employer"
 }: JobsClientProps & { userRole?: string }) {
@@ -77,14 +74,14 @@ export default function JobsClient({
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'paused' | 'closed' | 'drafts' | 'expired' | 'featured'>('all');
   const [loadingId, setLoadingId] = useState<number | null>(null);
-  
+
   const activeJobs: Job[] = initialData?.active_jobs?.data || [];
   const expiredJobs: Job[] = initialData?.expired_jobs?.data || [];
   const closedJobs: Job[] = initialData?.closed_jobs?.data || [];
   const pausedJobs: Job[] = initialData?.paused_jobs?.data || [];
   const draftsJobs: Job[] = initialData?.drafts_jobs?.data || [];
-  
-  const allJobs = [...activeJobs, ...pausedJobs, ...closedJobs, ...expiredJobs, ...draftsJobs].sort((a, b) => 
+
+  const allJobs = [...activeJobs, ...pausedJobs, ...closedJobs, ...expiredJobs, ...draftsJobs].sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
@@ -96,7 +93,7 @@ export default function JobsClient({
     else if (activeTab === 'expired') source = expiredJobs;
     else if (activeTab === 'featured') source = featuredJobs;
 
-    return source.filter((job) => 
+    return source.filter((job) =>
       job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
     );
@@ -105,10 +102,17 @@ export default function JobsClient({
   const filteredJobs = getFilteredJobs();
 
   const handleAction = async (id: number, action: string) => {
+    if (action === 'filled' && !confirm("Mark this job as filled? This will close the listing.")) return;
     setLoadingId(id);
     try {
-      const endpoint = `employer/jobs/${action === 'delete' ? 'delete' : action}/${id}`;
-      const res = await dashboardServerFetch<any>(endpoint, { method: action === 'delete' ? "DELETE" : "POST" });
+      let endpoint = `employer/jobs/${action === 'delete' ? 'delete' : action}/${id}`;
+      if (action === 'filled') {
+        endpoint = `employer/jobs/${id}/filled`;
+      } else if (action === 'republish') {
+        endpoint = `employer/jobs/${id}/republish`;
+      }
+      const method = action === 'delete' ? "DELETE" : action === 'republish' ? "PUT" : "POST";
+      const res = await dashboardServerFetch<any>(endpoint, { method });
       if (res?.status) {
         toast.success(res.message || `Job ${action} successful`);
         router.refresh();
@@ -136,12 +140,12 @@ export default function JobsClient({
           <h1 className="text-xl font-semibold text-slate-900 ">Manage Job Posts</h1>
           <p className="text-[13px] font-medium text-slate-900">View and manage all your teaching job postings.</p>
         </div>
-        
+
         <Link href={`${basePath}/post-job`}>
-           <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm transition-all flex items-center gap-2">
-             <PlusCircle className="w-4 h-4" />
-             Post New Job
-           </Button>
+          <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm transition-all flex items-center gap-2">
+            <PlusCircle className="w-4 h-4" />
+            Post New Job
+          </Button>
         </Link>
       </div>
 
@@ -169,14 +173,14 @@ export default function JobsClient({
             { id: 'expired', label: 'Expired', count: expiredJobs.length },
             { id: 'featured', label: 'Featured', count: featuredJobs.length },
           ].map((tab) => (
-            <button 
+            <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={cn(
                 "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap",
-                activeTab === tab.id 
-                ? "bg-[#312E81] text-white shadow-sm" 
-                : "text-slate-900 hover:bg-white/50"
+                activeTab === tab.id
+                  ? "bg-[#312E81] text-white shadow-sm"
+                  : "text-slate-900 hover:bg-white/50"
               )}
             >
               {tab.label} ({tab.count})
@@ -186,11 +190,11 @@ export default function JobsClient({
 
         <div className="relative w-full lg:max-w-xs">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input 
+          <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search your jobs..." 
-            className="h-10 pl-10 bg-white border-slate-100 rounded-xl text-[12.5px] font-medium focus:ring-1 focus:ring-indigo-100 shadow-xs" 
+            placeholder="Search your jobs..."
+            className="h-10 pl-10 bg-white border-slate-100 rounded-xl text-[12.5px] font-medium focus:ring-1 focus:ring-indigo-100 shadow-xs"
           />
         </div>
       </div>
@@ -201,7 +205,7 @@ export default function JobsClient({
           filteredJobs.map((job) => (
             <div key={job.id} className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden p-4 group transition-all hover:shadow-md hover:border-indigo-100/50">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                
+
                 {/* Left: Job Info */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-0.5">
@@ -209,10 +213,11 @@ export default function JobsClient({
                       <h3 className="text-[15px] font-semibold text-slate-900 group-hover:text-[#312E81] transition-colors">{job.title}</h3>
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                        job.job_status === 'active' || job.status === 'approved' ? "bg-emerald-50 text-emerald-600" :
-                        job.job_status === 'closed' ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-600"
+                        (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-50 text-amber-600" :
+                        (job.job_status === 'active' || job.status === 'approved') ? "bg-emerald-50 text-emerald-600" :
+                          job.job_status === 'closed' ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-600"
                       )}>
-                        {job.status || job.job_status}
+                        {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : (job.status || job.job_status)}
                       </span>
                       {job.featured === 1 && (
                         <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-sm">
@@ -247,41 +252,49 @@ export default function JobsClient({
                       <Eye className="w-3.5 h-3.5 text-indigo-400" /> View
                     </Button>
                   </Link>
-                  
+
+                  {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                    <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                      <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100 transition-all flex items-center gap-1.5 shadow-xs">
+                        <Users className="w-3.5 h-3.5" /> 
+                        Applicants 
+                        {job.applicants_count !== undefined && (
+                          <span className="ml-1 bg-white text-indigo-600 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-xs">
+                            {job.applicants_count || 0}
+                          </span>
+                        )}
+                      </Button>
+                    </Link>
+                  )}
+
                   <Link href={`${basePath}/jobs/edit/${job.id}`}>
                     <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center gap-1.5">
                       <Edit3 className="w-3.5 h-3.5 text-indigo-400" /> Edit
                     </Button>
                   </Link>
 
-                  {(job.job_status === 'active' || job.status === 'approved') ? (
-                    <Button 
-                      onClick={() => handleAction(job.id, 'pause')}
+                  {job.job_status === 'active' && (
+                    <Button
+                      onClick={() => handleAction(job.id, 'filled')}
                       disabled={loadingId === job.id}
-                      variant="outline" 
-                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center gap-1.5"
+                      variant="outline"
+                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-emerald-500 bg-white border-emerald-50 hover:bg-emerald-50 hover:border-emerald-100 transition-all flex items-center gap-1.5"
                     >
-                      <Pause className="w-3.5 h-3.5 text-indigo-400" /> Pause
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={() => handleAction(job.id, 'resume')}
-                      disabled={loadingId === job.id}
-                      variant="outline" 
-                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center gap-1.5"
-                    >
-                      <Play className="w-3.5 h-3.5 text-indigo-400" /> Resume
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Mark as Filled
                     </Button>
                   )}
-
-                  <Button 
-                    onClick={() => handleAction(job.id, 'close')}
-                    disabled={loadingId === job.id}
-                    variant="outline" 
-                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-400 bg-white border-rose-50 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center gap-1.5"
-                  >
-                    <XCircle className="w-3.5 h-3.5" /> Close
-                  </Button>
+ 
+                  {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                    <Button
+                      onClick={() => handleAction(job.id, 'republish')}
+                      disabled={loadingId === job.id}
+                      variant="outline"
+                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-50 hover:bg-indigo-50 hover:border-indigo-100 transition-all flex items-center gap-1.5"
+                    >
+                      {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} 
+                      Republish Job
+                    </Button>
+                  )}
                 </div>
 
               </div>
@@ -308,40 +321,40 @@ export default function JobsClient({
       {/* Pagination Section */}
       {(initialData?.active_jobs?.last_page || 0) > 1 && (
         <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-50">
-           <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             disabled={initialData?.active_jobs?.current_page === 1}
             onClick={() => router.push(`${basePath}/jobs?active_page=${(initialData?.active_jobs?.current_page || 1) - 1}`)}
             className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
-           >
-              Previous
-           </Button>
-           
-           <div className="flex items-center gap-1">
-              {Array.from({ length: initialData?.active_jobs?.last_page || 0 }, (_, i) => i + 1).map((pg) => (
-                <Button 
-                  key={pg}
-                  onClick={() => router.push(`${basePath}/jobs?active_page=${pg}`)}
-                  className={cn(
-                    "w-9 h-9 rounded-xl text-xs font-bold transition-all",
-                    initialData?.active_jobs?.current_page === pg 
-                    ? "bg-[#312E81] text-white shadow-md" 
-                    : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
-                  )}
-                >
-                  {pg}
-                </Button>
-              ))}
-           </div>
+          >
+            Previous
+          </Button>
 
-           <Button 
-            variant="outline" 
+          <div className="flex items-center gap-1">
+            {Array.from({ length: initialData?.active_jobs?.last_page || 0 }, (_, i) => i + 1).map((pg) => (
+              <Button
+                key={pg}
+                onClick={() => router.push(`${basePath}/jobs?active_page=${pg}`)}
+                className={cn(
+                  "w-9 h-9 rounded-xl text-xs font-bold transition-all",
+                  initialData?.active_jobs?.current_page === pg
+                    ? "bg-[#312E81] text-white shadow-md"
+                    : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
+                )}
+              >
+                {pg}
+              </Button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
             disabled={initialData?.active_jobs?.current_page === initialData?.active_jobs?.last_page}
             onClick={() => router.push(`${basePath}/jobs?active_page=${(initialData?.active_jobs?.current_page || 0) + 1}`)}
             className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
-           >
-              Next
-           </Button>
+          >
+            Next
+          </Button>
         </div>
       )}
     </div>

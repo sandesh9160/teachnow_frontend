@@ -12,7 +12,7 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
 
   // Background context sync (Metadata)
   const [categoriesData, locationsData] = await Promise.all([
-    dashboardServerFetch("open/categories"),
+    dashboardServerFetch("open/all-categories/"),
     dashboardServerFetch("open/locations"),
   ]);
 

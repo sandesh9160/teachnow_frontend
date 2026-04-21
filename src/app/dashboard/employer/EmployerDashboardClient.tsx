@@ -11,18 +11,23 @@ import {
    Check,
    ShieldCheck,
    Building2,
+   Loader2,
+   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
+import { toast } from "sonner";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
 interface LatestJob {
    id: number;
    title: string;
    job_status: string;
    created_at: string;
+   expires_at: string;
    total_applications_count?: number;
    location?: string;
 }
@@ -106,6 +111,24 @@ const ApplicationAvatar = ({ src, alt, initials }: { src: string | null, alt: st
    );
 };
 
+const getStatusStyles = (status: string) => {
+   const s = String(status || "").toLowerCase();
+   if (s === "applied") return "text-blue-600 border-blue-100 bg-blue-50 hover:bg-blue-100";
+   if (s === "shortlisted" || s === "shortlist") return "text-emerald-600 border-emerald-100 bg-emerald-50 hover:bg-emerald-100";
+   if (s === "interview" || s === "interviewing") return "text-amber-600 border-amber-100 bg-amber-50 hover:bg-amber-100";
+   if (s === "hired") return "text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-100";
+   if (s === "rejected") return "text-rose-600 border-rose-100 bg-rose-50 hover:bg-rose-100";
+   return "text-slate-600 border-slate-100 bg-slate-50 hover:bg-slate-100";
+};
+
+const getJobStatusStyles = (status: string) => {
+   const s = String(status || "").toLowerCase();
+   if (s === "open" || s === "active") return "bg-emerald-100 text-emerald-700";
+   if (s === "closed" || s === "expired") return "bg-rose-100 text-rose-700";
+   if (s === "draft" || s === "pending") return "bg-amber-100 text-amber-700";
+   return "bg-slate-100 text-slate-700";
+};
+
 export default function EmployerDashboardClient({
    welcomeName,
    dashboardData,
@@ -115,6 +138,53 @@ export default function EmployerDashboardClient({
    dashboardData?: DashboardStats,
    userRole?: string
 }) {
+   const [isFeatured, setIsFeatured] = useState(dashboardData?.company_featured || false);
+   const [loadingFeature, setLoadingFeature] = useState(false);
+   const employerId = (dashboardData as any)?.employer?.id;
+
+   const handleToggleFeatured = async () => {
+      if (!employerId) {
+         toast.error("Employer ID not found");
+         return;
+      }
+      setLoadingFeature(true);
+      try {
+         const res = await dashboardServerFetch(`employer/${employerId}/toggle-feature`, {
+            method: "POST"
+         });
+         if (res.status === true) {
+            setIsFeatured(!isFeatured);
+            toast.success(res.message || "Featured status updated");
+         } else {
+            toast.error(res.message || "Failed to update featured status");
+         }
+      } catch (err) {
+         toast.error("Error updating featured status");
+      } finally {
+         setLoadingFeature(false);
+      }
+   };
+
+   const [loadingJobId, setLoadingJobId] = useState<number | null>(null);
+
+   const handleJobAction = async (id: number, action: string) => {
+      setLoadingJobId(id);
+      try {
+         const endpoint = action === 'republish' ? `employer/jobs/${id}/republish` : `employer/jobs/${id}/filled`;
+         const res = await dashboardServerFetch(endpoint, { method: "PUT" });
+         if (res.status === true) {
+            toast.success(res.message || `Job ${action} success`);
+            window.location.reload();
+         } else {
+            toast.error(res.message || "Action failed");
+         }
+      } catch (err) {
+         toast.error("Error processing request");
+      } finally {
+         setLoadingJobId(null);
+      }
+   };
+
    const basePath = `/dashboard/${userRole}`;
    const sub = dashboardData?.subscription;
 
@@ -242,32 +312,89 @@ export default function EmployerDashboardClient({
             ))}
          </div>
 
-         {/* Quick Management Hub */}
-         <div className="space-y-4">
-            <h2 className="text-[14px] font-bold text-black uppercase tracking-wider ml-1">Workspace focus</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+         {/* Quick Management Hub - Sentenced-case & Color-enriched */}
+         <div className="space-y-3">
+            <h2 className="text-[14px] font-semibold text-slate-500 tracking-tight ml-1">Workspace Focus</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                {[
-                  { label: "Manage jobs", icon: Briefcase, href: `${basePath}/jobs`, color: "bg-blue-50 text-blue-600", border: "border-blue-100" },
-                  { label: "Applicants", icon: Users, href: `${basePath}/applicants`, color: "bg-emerald-50 text-emerald-600", border: "border-emerald-100" },
-                  { label: "Hiring team", icon: ShieldCheck, href: `${basePath}/recruiters`, color: "bg-indigo-50 text-indigo-600", border: "border-indigo-100" },
-                  { label: "Profile", icon: Building2, href: `${basePath}/company-profile`, color: "bg-amber-50 text-amber-600", border: "border-amber-100" },
+                  { label: "Manage Jobs", icon: Briefcase, href: `${basePath}/jobs`, color: "bg-blue-600 text-white", border: "border-blue-100", bg: "bg-blue-50/30" },
+                  { label: "Hiring Team", icon: ShieldCheck, href: `${basePath}/recruiters`, color: "bg-indigo-600 text-white", border: "border-indigo-100", bg: "bg-indigo-50/30" },
+                  { label: "Institution Profile", icon: Building2, href: `${basePath}/company-profile`, color: "bg-amber-600 text-white", border: "border-amber-100", bg: "bg-amber-50/30" },
                ].map((item, idx) => (
                   <Link key={idx} href={item.href} className="group">
                      <div className={cn(
-                        "h-24 rounded-2xl border bg-white p-4 flex flex-col justify-between transition-all hover:shadow-md hover:-translate-y-1 active:scale-95",
-                        item.border
+                        "h-16 rounded-xl border bg-white p-3 flex items-center gap-4 transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95",
+                        item.border, item.bg
                      )}>
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors group-hover:scale-110", item.color)}>
-                           <item.icon className="w-5 h-5" />
+                        <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-all group-hover:scale-110 shadow-sm", item.color)}>
+                           <item.icon className="w-4.5 h-4.5" />
                         </div>
-                        <span className="text-xs font-bold text-slate-900">{item.label}</span>
+                        <span className="text-[13px] font-semibold text-slate-800 tracking-tight">{item.label}</span>
                      </div>
                   </Link>
                ))}
             </div>
          </div>
 
-         {/* Main Content Grid: Live Lists Only */}
+         {/* Promotion Hub - Full Width Sophisticated Design */}
+         <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group p-6">
+            <div className="flex items-center justify-between mb-5">
+               <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                     <h2 className="text-[14px] font-semibold text-slate-500 tracking-tight">Promotion Hub</h2>
+                     {isFeatured && (
+                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-[10px] font-bold animate-in zoom-in duration-500">Live Status</span>
+                     )}
+                  </div>
+                  <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+                     Feature your institution on the homepage to reach a wider audience of top-tier education professionals.
+                  </p>
+               </div>
+               <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-inner shrink-0",
+                  isFeatured ? "bg-indigo-600 text-white shadow-indigo-100 scale-105" : "bg-slate-50 text-slate-300"
+               )}>
+                  <Zap className={cn("w-5 h-5", isFeatured && "animate-pulse")} />
+               </div>
+            </div>
+
+            <div className={cn(
+               "p-4 rounded-xl border transition-all duration-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4",
+               isFeatured ? "bg-indigo-50/30 border-indigo-100" : "bg-slate-50/50 border-slate-100"
+            )}>
+               <div className="flex items-center gap-3.5">
+                  <div className={cn(
+                     "w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-300",
+                     isFeatured ? "bg-indigo-600 border-indigo-500 text-white shadow-sm" : "bg-white border-slate-100 text-slate-200"
+                  )}>
+                     {isFeatured ? <Check className="w-3.5 h-3.5" /> : <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />}
+                  </div>
+                  <div className="space-y-0.5">
+                     <span className="text-[13px] font-bold text-slate-900 block leading-none">Home Page Visibility</span>
+                     {dashboardData?.company_featured_until && isFeatured ? (
+                        <p className="text-[11px] text-indigo-600 font-semibold">Active until {new Date(dashboardData.company_featured_until).toLocaleDateString('en-GB')}</p>
+                     ) : (
+                        <p className="text-[11px] text-slate-400 font-medium tracking-tight">Status: Standard Placement</p>
+                     )}
+                  </div>
+               </div>
+
+               <Button 
+                  onClick={handleToggleFeatured}
+                  disabled={loadingFeature}
+                  className={cn(
+                     "h-9 px-6 rounded-xl text-[11px] font-bold transition-all active:scale-95 shadow-sm",
+                     isFeatured 
+                        ? "bg-slate-800 text-white hover:bg-slate-900" 
+                        : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100"
+                  )}
+               >
+                  {loadingFeature ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isFeatured ? "Stop Featuring" : "Go Featured Now"}
+               </Button>
+            </div>
+         </div>
+
+         {/* Tables Grid: Recent Data */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Recent Applicants Column */}
             <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
@@ -332,9 +459,9 @@ export default function EmployerDashboardClient({
                                  </h4>
                                  <span className={cn(
                                     "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
-                                    getJobStatusStyles(job.job_status)
+                                    (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
                                  )}>
-                                    {job.job_status}
+                                    {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
                                  </span>
                               </div>
                               <div className="flex items-center gap-3 text-[10px] text-[#1E1B4B]">
@@ -342,9 +469,37 @@ export default function EmployerDashboardClient({
                               </div>
                            </div>
 
-                           <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px] shrink-0">
-                              Applicants
-                           </Button>
+                              <div className="flex items-center gap-2">
+                                 {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                    <Button 
+                                       onClick={() => handleJobAction(job.id, 'republish')}
+                                       disabled={loadingJobId === job.id}
+                                       size="sm" 
+                                       className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] shrink-0 flex items-center gap-1.5"
+                                    >
+                                       {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                                       Republish
+                                    </Button>
+                                 )}
+                                 {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                    <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                                       <Button size="sm" className="h-7 px-3 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-semibold text-[10px] shrink-0 flex items-center gap-1.5">
+                                          <Users className="w-3.5 h-3.5" />
+                                          Applicants
+                                          {job.total_applications_count !== undefined && (
+                                             <span className="ml-0.5 bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
+                                                {job.total_applications_count || 0}
+                                             </span>
+                                          )}
+                                       </Button>
+                                    </Link>
+                                 )}
+                                 <Link href={`${basePath}/jobs/view/${job.id}`}>
+                                    <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px] shrink-0">
+                                       View
+                                    </Button>
+                                 </Link>
+                              </div>
                         </div>
                      ))
                   ) : (

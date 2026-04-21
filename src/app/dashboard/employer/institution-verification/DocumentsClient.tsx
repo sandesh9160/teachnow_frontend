@@ -139,7 +139,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
     { value: "other", label: "Other Supporting Document" }
   ];
 
-  const verifiedCount = documents.filter(d => d.is_verified === 1 || d.status === 'verified').length;
+//   const verifiedCount = documents.filter(d => d.is_verified === 1 || d.status === 'verified').length;
   const rejectedDoc = documents.find(d => d.status === 'rejected');
   
   // Status determination based on dashboard isVerified prop
