@@ -11,7 +11,7 @@ import {
   BadgeCheck,
   MapPin,
   Clock,
-  Edit3,
+
   ExternalLink,
   Flag,
   Layers,
