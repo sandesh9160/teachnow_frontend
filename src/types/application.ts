@@ -5,4 +5,5 @@ export type ApplicationAnswer = {
 
 export type ApplicationPayload = {
   answers: ApplicationAnswer[];
+  resume_id?: number | string;
 };

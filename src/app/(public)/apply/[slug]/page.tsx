@@ -331,7 +331,7 @@ export default function ApplyJobPage() {
         }
       });
 
-      const response = await apply(jobDetails.id, answers);
+      const response = await apply(jobDetails.id, answers, selectedResumeId);
       console.log("DEBUG: Application successful response:", response);
 
       setSubmitted(true);
@@ -1174,7 +1174,7 @@ export default function ApplyJobPage() {
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-300">
                             <FileText className="w-10 h-10" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">No Preview</span>
+                            <span className="text-[10px] font-medium uppercase tracking-widest ">No Preview</span>
                           </div>
                         )}
                       </div>

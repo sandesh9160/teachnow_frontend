@@ -54,11 +54,11 @@ export function useApplications() {
     }
   }, []);
 
-  const apply = useCallback(async (jobId: string | number, answers: ApplicationAnswer[]) => {
+  const apply = useCallback(async (jobId: string | number, answers: ApplicationAnswer[], resumeId?: number | string) => {
     try {
       setLoading(true);
       setError(null);
-      const payload: ApplicationPayload = { answers };
+      const payload: ApplicationPayload = { answers, resume_id: resumeId };
       return await dashboardServerFetch<unknown>(`jobseeker/jobs/${jobId}/apply`, {
         method: "POST",
         data: payload,
