@@ -37,34 +37,34 @@ export function DashboardHeader({
   }, [showProfileMenu]);
 
   return (
-    <header className="h-16 border-b border-slate-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 bg-white">
+    <header className="h-[60px] border-b border-slate-100 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 bg-white/80 backdrop-blur-md">
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuToggle}
-          className="p-2 text-slate-600 hover:bg-slate-50 rounded-lg md:hidden transition-colors"
+          className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg md:hidden transition-colors"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-5 h-5" />
         </button>
  
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-2.5 group">
           {branding?.logo ? (
             <img 
               src={normalizeMediaUrl(branding.logo)} 
               alt={branding?.name || "Brand Logo"} 
-              className="h-10 w-auto object-contain transition-transform group-hover:scale-105" 
+              className="h-8 w-auto object-contain transition-transform group-hover:scale-105" 
             />
           ) : (
-            <div className="w-10 h-10 bg-[#312E81] rounded-2xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
-              <GraduationCap className="w-6 h-6" />
+            <div className="w-8 h-8 bg-indigo-900 rounded-xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+              <GraduationCap className="w-5 h-5" />
             </div>
           )}
-          <span className="text-[19px] font-bold text-[#1E1B4B] tracking-tight hidden md:inline">
+          <span className="text-[17px] font-bold text-indigo-950 tracking-tight hidden md:inline">
             {branding?.secondary || branding?.name || "Teach"}
             {branding?.primary && (
-               <span className="text-[#4F46E5]">{branding?.primary}</span>
+               <span className="text-indigo-600">{branding?.primary}</span>
             )}
             {!branding?.primary && !branding?.name && (
-               <span className="text-[#4F46E5]">Now</span>
+               <span className="text-indigo-600">Now</span>
             )}
           </span>
         </Link>

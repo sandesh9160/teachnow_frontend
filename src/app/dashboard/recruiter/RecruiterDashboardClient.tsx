@@ -167,12 +167,6 @@ export default function RecruiterDashboardClient({
                      </div>
                   </div>
                </div>
-               
-               <Link href={`${basePath}/membership`} className="relative z-10">
-                  <Button variant="outline" className="h-11 px-8 rounded-2xl border-indigo-100 bg-white hover:bg-indigo-50/30 text-indigo-700 text-xs font-medium shadow-sm shadow-indigo-100/20 transition-all flex items-center justify-center">
-                     Update Management
-                  </Button>
-               </Link>
             </div>
          )}
 

@@ -106,8 +106,8 @@ export function DashboardSidebar({
         </div>
 
         {/* NAVIGATION */}
-        <div className={`mt-6 px-3 flex-1 overflow-y-auto custom-scrollbar transition-all duration-500`}>
-          <div className="space-y-1">
+        <div className={`mt-4 px-3 flex-1 overflow-y-auto custom-scrollbar transition-all duration-500`}>
+          <div className="space-y-0.5">
             {links.map((link) => {
               const isActive = pathname === link.href;
               const Icon = link.icon;
@@ -117,13 +117,18 @@ export function DashboardSidebar({
                   key={link.href}
                   href={link.href}
                   onClick={onClose}
-                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 group relative ${isActive
-                      ? "bg-[#E8F1FF] text-[#0046B5]"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] font-semibold transition-all duration-300 group relative ${isActive
+                    ? "bg-indigo-50 text-indigo-700 shadow-sm shadow-indigo-100/50"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
                     }`}
                 >
+                  {isActive && (
+                    <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-indigo-600 rounded-r-full" />
+                  )}
                   <Icon
-                    className={`h-[18px] w-[18px] shrink-0 transition-transform duration-300 ${isActive ? "text-[#0046B5] stroke-[2.5]" : "opacity-50 group-hover:opacity-100"
+                    className={`h-[17px] w-[17px] shrink-0 transition-all duration-300 ${isActive
+                      ? "text-indigo-600 stroke-[2.5] scale-110"
+                      : "opacity-50 group-hover:opacity-100 group-hover:text-indigo-500"
                       }`}
                   />
                   {!collapsed && (
@@ -135,7 +140,6 @@ export function DashboardSidebar({
               );
             })}
           </div>
-
         </div>
 
         {/* BACK TO HOME */}
@@ -152,8 +156,8 @@ export function DashboardSidebar({
         <div className={`p-4 border-t border-slate-50 transition-all duration-500 ${collapsed ? 'px-2' : 'px-4'}`}>
           <LogoutSubmitButton
             className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[12px] font-medium transition-all duration-300 group active:scale-[0.98] ${collapsed
-                ? "justify-center text-rose-600"
-                : "text-rose-600 hover:bg-rose-50"
+              ? "justify-center text-rose-600"
+              : "text-rose-600 hover:bg-rose-50"
               }`}
           >
             <LogOut className={`h-[16px] w-[16px] transition-transform duration-300 ${collapsed ? 'scale-110' : 'group-hover:-translate-x-1'}`} />

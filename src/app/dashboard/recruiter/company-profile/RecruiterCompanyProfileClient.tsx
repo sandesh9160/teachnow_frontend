@@ -399,12 +399,6 @@ export default function RecruiterCompanyProfileClient({
           <h1 className="text-lg font-medium text-black tracking-tight">Institution Profile</h1>
           <p className="text-[12px] text-black opacity-60">General identity and public presence of the institution.</p>
         </div>
-        <Button 
-          onClick={() => setIsEditing(true)}
-          className="h-10 px-5 rounded-xl font-medium text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95 shrink-0 text-white"
-        >
-          <Edit3 className="w-3.5 h-3.5" /> Edit Profile
-        </Button>
       </div>
 
       {/* Hero Banner Section */}

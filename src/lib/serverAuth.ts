@@ -40,18 +40,18 @@ function pickProfilePayload(res: unknown): Record<string, unknown> | null {
   if (!res || typeof res !== "object") return null;
   const r = res as Record<string, unknown>;
   if (r.status === false) return null;
-  
+
   // Exhaustive check for the actual user/profile data in the response
   // Responses can be { data: { employer: {...} } } or { data: {...} } or { user: {...} } or {...}
   const inner = (
-    (r.data as any)?.employer ?? 
-    (r.data as any)?.job_seeker ?? 
-    (r.data as any)?.recruiter ?? 
-    r.data ?? 
-    r.user ?? 
+    (r.data as any)?.employer ??
+    (r.data as any)?.job_seeker ??
+    (r.data as any)?.recruiter ??
+    r.data ??
+    r.user ??
     r
   ) as unknown;
-  
+
   if (!inner || typeof inner !== "object") return null;
   return inner as Record<string, unknown>;
 }
@@ -91,7 +91,7 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
 export async function getSessionProfile(): Promise<ServerSessionUser | null> {
   const role = await getRole();
   const endpoints = ["auth/profile"];
-  
+
   if (role === "job_seeker") endpoints.unshift("jobseeker/profile");
   else if (role === "employer") endpoints.unshift("employer/profile");
   else if (role === "recruiter") endpoints.unshift("recruiter/profile");
