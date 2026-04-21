@@ -92,6 +92,7 @@ export default function RegisterPage() {
       email: formData.email,
       password,
       role,
+      captcha_token: captchaToken
     };
 
     try {

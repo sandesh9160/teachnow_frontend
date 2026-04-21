@@ -57,6 +57,7 @@ const RegisterForm = () => {
         email,
         password,
         role: role,
+        captcha_token: captchaToken
       };
 
       const res = await fetchAPI<any>(endpoint, {

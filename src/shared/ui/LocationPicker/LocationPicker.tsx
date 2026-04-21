@@ -1,184 +1,16 @@
-// "use client";
-
-// import { useState, useCallback } from "react";
-// import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from "@react-google-maps/api";
-// import { MapPin, Search } from "lucide-react";
-
-// const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ["places"];
-
-// interface LocationPickerProps {
-//   value?: string; // e.g. "17.4922, 78.3935"
-//   onChange: (value: string) => void;
-//   className?: string;
-//   defaultCenter?: { lat: number, lng: number };
-// }
-
-// // Default to Hyderabad if no center is provided
-// const DEFAULT_MAP_CENTER = {
-//   lat: 17.3850,
-//   lng: 78.4867
-// };
-
-// export function LocationPicker({ 
-//   value, 
-//   onChange, 
-//   className = "",
-//   defaultCenter = DEFAULT_MAP_CENTER 
-// }: LocationPickerProps) {
-
-//   const { isLoaded, loadError } = useJsApiLoader({
-//     id: "google-map-script",
-//     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-//     libraries,
-//   });
-
-//   const [map, setMap] = useState<google.maps.Map | null>(null);
-
-//   // Track the pin location
-//   const [markerPosition, setMarkerPosition] = useState<google.maps.LatLngLiteral>(() => {
-//     if (value) {
-//       const parts = value.split(',').map(s => parseFloat(s.trim()));
-//       if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-//         return { lat: parts[0], lng: parts[1] };
-//       }
-//     }
-//     return defaultCenter;
-//   });
-
-//   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
-
-//   const onLoad = useCallback(function callback(map: google.maps.Map) {
-//     setMap(map);
-//   }, []);
-
-//   const onUnmount = useCallback(function callback() {
-//     setMap(null);
-//   }, []);
-
-//   // Update pin and emit value on map click
-//   const onMapClick = (e: google.maps.MapMouseEvent) => {
-//     if (e.latLng) {
-//       const lat = e.latLng.lat();
-//       const lng = e.latLng.lng();
-//       setMarkerPosition({ lat, lng });
-//       onChange(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-//     }
-//   };
-
-//   // Called when the autocomplete instance has loaded
-//   const onLoadAutocomplete = (autocompleteInstance: google.maps.places.Autocomplete) => {
-//     setAutocomplete(autocompleteInstance);
-//   };
-
-//   // Called when user selects a place from Autocomplete
-//   const onPlaceChanged = () => {
-//     if (autocomplete !== null) {
-//       const place = autocomplete.getPlace();
-//       if (place.geometry && place.geometry.location) {
-//         const lat = place.geometry.location.lat();
-//         const lng = place.geometry.location.lng();
-
-//         setMarkerPosition({ lat, lng });
-//         onChange(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-
-//         // Pan the map to the selected place
-//         map?.panTo({ lat, lng });
-//         map?.setZoom(16);
-//       }
-//     }
-//   };
-
-//   if (loadError) {
-//     return (
-//       <div className="p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/20 text-sm">
-//         Failed to load Google Maps. Please check your API key in .env.local
-//       </div>
-//     );
-//   }
-
-//   if (!isLoaded) {
-//     return (
-//       <div className="h-[300px] w-full animate-pulse bg-muted rounded-xl flex items-center justify-center text-sm text-muted-foreground">
-//         Loading Map...
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className={`space-y-3 ${className}`}>
-//       {/* Search Input */}
-//       <div className="relative">
-//         <Autocomplete onLoad={onLoadAutocomplete} onPlaceChanged={onPlaceChanged}>
-//           <div className="relative">
-//             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-//             <input
-//               type="text"
-//               placeholder="Search for a location..."
-//               className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
-//               onKeyDown={(e) => {
-//                 // Prevent form submission when pressing enter inside autocomplete
-//                 if (e.key === 'Enter') {
-//                   e.preventDefault();
-//                 }
-//               }}
-//             />
-//           </div>
-//         </Autocomplete>
-//       </div>
-
-//       {/* Map Interactive Area */}
-//       <div className="relative h-[250px] w-full overflow-hidden rounded-xl border border-border shadow-sm">
-//         <GoogleMap
-//           mapContainerStyle={{ width: "100%", height: "100%" }}
-//           center={markerPosition}
-//           zoom={13}
-//           onLoad={onLoad}
-//           onUnmount={onUnmount}
-//           onClick={onMapClick}
-//           options={{
-//             streetViewControl: false,
-//             mapTypeControl: false,
-//             fullscreenControl: false,
-//             zoomControl: true,
-//             gestureHandling: "greedy", // Allow scrolling over map without two fingers on mobile
-//           }}
-//         >
-//           <Marker 
-//             position={markerPosition} 
-//             animation={window.google?.maps?.Animation?.DROP} 
-//           />
-//         </GoogleMap>
-
-//         {/* Selected Coordinates Overlay */}
-//         <div className="absolute bottom-4 left-4 right-4 bg-background/95 backdrop-blur-sm border border-border p-3 rounded-lg shadow-sm flex items-center justify-between pointer-events-none">
-//           <div className="flex items-center gap-3">
-//             <div className="h-9 w-9 flex items-center justify-center bg-primary/10 rounded-md">
-//               <MapPin className="h-4.5 w-4.5 text-primary" />
-//             </div>
-//             <div className="flex flex-col">
-//               <span className="text-xs font-semibold text-foreground uppercase tracking-wider mb-0.5">Selected Location</span>
-//               <span className="text-xs text-muted-foreground">{markerPosition.lat.toFixed(5)}, {markerPosition.lng.toFixed(5)}</span>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
-  Autocomplete,
 } from "@react-google-maps/api";
-import { MapPin, Search, LocateFixed } from "lucide-react";
+import { MapPin, Search, LocateFixed, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type Library = "places" | "drawing" | "geometry" | "visualization";
-const libraries: Library[] = ["places"];
+// Use the recommended "places" and "marker" libraries
+const libraries: ("places" | "marker")[] = ["places", "marker"];
 
 interface LocationPickerProps {
   lat?: number | string | null;
@@ -193,57 +25,52 @@ const DEFAULT_CENTER = {
   lng: 78.4867,
 };
 
-// Helper component to manage AdvancedMarkerElement without deprecation warnings
-function MarkerManager({ 
-  map, 
-  position, 
-  onDragEnd, 
-  isLoaded 
-}: { 
-  map: google.maps.Map | null, 
-  position: google.maps.LatLngLiteral, 
-  onDragEnd: (lat: number, lng: number) => void,
-  isLoaded: boolean
-}) {
-  const [marker, setMarker] = useState<any>(null);
+// Modern Marker implementation using AdvancedMarkerElement
+function AdvancedMarker({ map, position, onDragEnd }: { map: google.maps.Map | null, position: google.maps.LatLngLiteral, onDragEnd: (lat: number, lng: number) => void }) {
+  const markerRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!isLoaded || !map || marker) return;
+    if (!map || markerRef.current) return;
 
-    const createMarker = async () => {
-      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
-      
-      const newMarker = new AdvancedMarkerElement({
-        map,
-        position,
-        gmpDraggable: true,
-      });
+    const initMarker = async () => {
+      try {
+        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
+        
+        const marker = new AdvancedMarkerElement({
+          map,
+          position,
+          gmpDraggable: true,
+          title: "Drag to set location",
+        });
 
-      newMarker.addListener("dragend", () => {
-        const pos = newMarker.position as google.maps.LatLngLiteral;
-        if (pos) {
-          onDragEnd(pos.lat, pos.lng);
-        }
-      });
+        marker.addListener("dragend", () => {
+          const newPos = marker.position as google.maps.LatLngLiteral;
+          if (newPos) {
+            onDragEnd(newPos.lat, newPos.lng);
+          }
+        });
 
-      setMarker(newMarker);
-    };
-
-    createMarker();
-
-    return () => {
-      if (marker) {
-        marker.map = null;
+        markerRef.current = marker;
+      } catch (err) {
+        console.error("Advanced Marker failed:", err);
       }
     };
-  }, [isLoaded, map]);
 
-  // Update position if it changes elsewhere
+    initMarker();
+
+    return () => {
+      if (markerRef.current) {
+        markerRef.current.map = null;
+        markerRef.current = null;
+      }
+    };
+  }, [map]);
+
   useEffect(() => {
-    if (marker && position) {
-      marker.position = position;
+    if (markerRef.current) {
+      markerRef.current.position = position;
     }
-  }, [marker, position]);
+  }, [position]);
 
   return null;
 }
@@ -256,17 +83,14 @@ export function LocationPicker({
   hideControls = false,
 }: LocationPickerProps) {
   const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey:
-      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries,
+    version: "weekly",
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [autocomplete, setAutocomplete] =
-    useState<google.maps.places.Autocomplete | null>(null);
-
-  const [position, setPosition] =
-    useState<google.maps.LatLngLiteral>(DEFAULT_CENTER);
+  const [position, setPosition] = useState<google.maps.LatLngLiteral>(DEFAULT_CENTER);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Sync external value
   useEffect(() => {
@@ -278,136 +102,158 @@ export function LocationPicker({
     }
   }, [lat, lng]);
 
-  const updateLocation = (lat: number, lng: number) => {
-    setPosition({ lat, lng });
-    onChange(lat, lng);
-    map?.panTo({ lat, lng });
-  };
+  const updateLocation = useCallback((newLat: number, newLng: number) => {
+    setPosition({ lat: newLat, lng: newLng });
+    onChange(newLat, newLng);
+    map?.panTo({ lat: newLat, lng: newLng });
+  }, [map, onChange]);
+
+  // Modern Place Autocomplete Implementation
+  useEffect(() => {
+    if (!isLoaded || !map || !searchInputRef.current || hideControls) return;
+
+    let autocomplete: google.maps.places.Autocomplete | null = null;
+
+    const initAutocomplete = async () => {
+      try {
+        const { Autocomplete } = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
+        
+        autocomplete = new Autocomplete(searchInputRef.current!, {
+          fields: ["geometry", "name", "formatted_address"],
+          types: ["geocode", "establishment"]
+        });
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete?.getPlace();
+          if (place?.geometry?.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            updateLocation(lat, lng);
+            map.setZoom(16);
+          }
+        });
+      } catch (err) {
+        console.error("Autocomplete failed to initialize:", err);
+      }
+    };
+
+    initAutocomplete();
+
+    return () => {
+      if (autocomplete) {
+        google.maps.event.clearInstanceListeners(autocomplete);
+      }
+    };
+  }, [isLoaded, map, hideControls, updateLocation]);
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
+    if (e.latLng && !hideControls) {
       updateLocation(e.latLng.lat(), e.latLng.lng());
     }
   };
 
   const handleCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        updateLocation(
-          pos.coords.latitude,
-          pos.coords.longitude
-        );
+        updateLocation(pos.coords.latitude, pos.coords.longitude);
         map?.setZoom(16);
       },
-      () => toast.error("Please enable location access in your browser settings.")
+      (error) => {
+        console.error("Geolocation error:", error);
+        toast.error("Could not determine your location. Please check browser permissions.");
+      },
+      { enableHighAccuracy: true }
     );
-  };
-
-  const onPlaceChanged = () => {
-    if (autocomplete) {
-      const place = autocomplete.getPlace();
-      if (place.geometry?.location) {
-        updateLocation(
-          place.geometry.location.lat(),
-          place.geometry.location.lng()
-        );
-        map?.setZoom(16);
-      }
-    }
   };
 
   if (loadError) {
     return (
-      <div className="p-4 text-red-500 bg-red-50 border rounded-lg text-sm">
-        Failed to load map. Check API key.
+      <div className="flex flex-col items-center justify-center h-64 w-full bg-rose-50 border border-rose-100 rounded-xl p-6 text-center">
+        <MapPin className="w-8 h-8 text-rose-400 mb-2" />
+        <p className="text-sm font-semibold text-rose-800">Map Engine Error</p>
+        <p className="text-[11px] text-rose-600 mt-1 max-w-[200px]">Failed to load Map. Check your Google Maps API Key.</p>
       </div>
     );
   }
 
   if (!isLoaded) {
     return (
-      <div className="h-64 w-full bg-gray-100 animate-pulse rounded-xl flex items-center justify-center text-sm">
-        Loading Map...
+      <div className="h-64 w-full bg-slate-50 animate-pulse rounded-xl flex flex-col items-center justify-center gap-3 border border-slate-100 shadow-inner">
+        <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Loading Satellite Data...</p>
       </div>
     );
   }
 
-  const safePosition = (Number.isFinite(position.lat) && Number.isFinite(position.lng)) 
-    ? position 
-    : DEFAULT_CENTER;
-
   return (
-    <div className={cn("space-y-2", className)}>
-
+    <div className={cn("space-y-3 flex flex-col h-full min-h-[300px]", className)}>
       {!hideControls && (
-        <div className="flex flex-col sm:flex-row gap-1.5">
-          {/* Search */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          {/* Search Input */}
           <div className="relative flex-1">
-            <Autocomplete
-              onLoad={(a) => setAutocomplete(a)}
-              onPlaceChanged={onPlaceChanged}
-            >
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search location..."
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-            </Autocomplete>
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Enter institution address or city..."
+              className="w-full pl-10 pr-4 py-2.5 text-[13px] font-medium rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all shadow-xs"
+              onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+            />
           </div>
 
-          {/* My Location Button */}
+          {/* Current Location Button */}
           <button
             type="button"
             onClick={handleCurrentLocation}
-            className="flex items-center justify-center gap-1 px-3 py-2 text-xs rounded-xl border bg-white hover:bg-gray-100 transition"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 text-[11px] font-bold rounded-xl border border-indigo-100 bg-white text-indigo-600 hover:bg-slate-50 transition-all shadow-xs shrink-0 active:scale-95"
           >
-            <LocateFixed className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">My Location</span>
+            <LocateFixed className="h-4 w-4" />
+            <span>My Location</span>
           </button>
         </div>
       )}
 
-      {/* Map */}
-      <div className="relative w-full h-full min-h-[300px] border shadow-inner">
+      {/* Map Interactive Area */}
+      <div className="relative flex-1 w-full min-h-[250px] overflow-hidden rounded-2xl border border-slate-200 shadow-inner bg-slate-50">
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%" }}
-          center={safePosition}
+          center={position}
           zoom={13}
-          onClick={handleMapClick}
           onLoad={(map) => setMap(map)}
+          onClick={handleMapClick}
           options={{
             streetViewControl: false,
             mapTypeControl: false,
             fullscreenControl: false,
             zoomControl: true,
             mapId: "DEMO_MAP_ID", // Required for AdvancedMarkerElement
+            gestureHandling: hideControls ? "none" : "greedy",
           }}
         >
-          {/* Advanced Marker Implementation logic handled via useEffect */}
+          <AdvancedMarker 
+            map={map} 
+            position={position} 
+            onDragEnd={(lat, lng) => !hideControls && updateLocation(lat, lng)} 
+          />
         </GoogleMap>
-        
-        {/* Effect-based Marker Management to avoid deprecation warnings */}
-        <MarkerManager 
-          map={map} 
-          position={safePosition} 
-          onDragEnd={(lat, lng) => updateLocation(lat, lng)}
-          isLoaded={isLoaded}
-        />
 
-        {/* Overlay */}
-        <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-md border rounded-lg px-3 py-2 flex items-center gap-3 shadow text-xs">
-          <MapPin className="h-4 w-4 text-blue-500" />
-          <div>
-            <p className="font-medium text-gray-700">
-              Selected Location
-            </p>
-            <p className="text-gray-500">
-              {(position?.lat || 0).toFixed(5)},{" "}
-              {(position?.lng || 0).toFixed(5)}
-            </p>
+        {/* Selected Coordinates Overlay */}
+        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm border border-slate-200/60 p-2.5 rounded-xl shadow-lg flex items-center justify-between pointer-events-none animate-in slide-in-from-bottom-2 duration-500">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 flex items-center justify-center bg-indigo-50 rounded-lg border border-indigo-100">
+              <MapPin className="h-4 w-4 text-indigo-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-indigo-900 uppercase tracking-wider leading-none mb-1">Target Coordinates</span>
+              <span className="text-[11px] font-bold text-slate-600 tabular-nums">
+                {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
