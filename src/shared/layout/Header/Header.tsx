@@ -217,19 +217,6 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
   if (!menu) return "#";
 
   let rawUrl = String(menu.url || "").trim();
-
-  // If it's an external absolute URL, return as is
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
-
-  // Clean /open/ prefixes and ensure leading slash
-  if (rawUrl.startsWith("open/")) {
-    rawUrl = "/" + rawUrl.replace(/^open\//, "");
-  } else if (rawUrl.startsWith("/open/")) {
-    rawUrl = rawUrl.replace(/^\/open\//, "/");
-  }
-
-  if (rawUrl.startsWith("/") && rawUrl.length > 1) return rawUrl;
-
   const slug = String(menu.slug || "").trim().replace(/^\/+|\/+$/g, "");
   const parentSlug = String(parent?.slug || "").trim().toLowerCase();
 
@@ -245,12 +232,28 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
 
   const finalSlug = staticLinkMap[slug.toLowerCase()] || staticLinkMap[rawUrl] || slug;
 
-  if (parentSlug === "jobs" && slug) return `/jobs/${slug}`;
-  if ((parentSlug === "institutes" || parentSlug === "institutions") && slug) return `/institutions/${slug}`;
+  // PRIORITY 1: Meaningful Slugs (except root generic ones)
+  // This turns messy search URLs into clean slug routes handled by app/(public)/[slug]/page.tsx
+  if (finalSlug && !["jobs", "categories", "institutes", "institutions", "company", "employer"].includes(finalSlug.toLowerCase())) {
+     return `/${finalSlug}`;
+  }
 
-  if (finalSlug === "jobs") return "/jobs";
-  if (finalSlug === "institutes" || finalSlug === "institutions") return "/institutions";
-  if (finalSlug) return `/${finalSlug}`;
+  // PRIORITY 2: External URLs
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+
+  // PRIORITY 3: Clean /open/ prefixes
+  if (rawUrl.startsWith("open/")) {
+    rawUrl = "/" + rawUrl.replace(/^open\//, "");
+  } else if (rawUrl.startsWith("/open/")) {
+    rawUrl = rawUrl.replace(/^\/open\//, "/");
+  }
+
+  // PRIORITY 4: Specialized mapping
+  if (parentSlug === "jobs" && finalSlug) return `/jobs/${finalSlug}`;
+  if ((parentSlug === "institutes" || parentSlug === "institutions") && finalSlug) return `/institutions/${finalSlug}`;
+
+  if (finalSlug.toLowerCase() === "jobs") return "/jobs";
+  if (finalSlug.toLowerCase() === "institutes" || finalSlug.toLowerCase() === "institutions") return "/institutions";
 
   return rawUrl || "/";
 }

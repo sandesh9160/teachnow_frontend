@@ -414,9 +414,9 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
   };
 
   cookieStore.set("userData", JSON.stringify(userData), cookieOptions);
-  
-  console.log("Cookie options used:", { 
-    domain: cookieOptions.domain, 
+
+  console.log("Cookie options used:", {
+    domain: cookieOptions.domain,
     secure: cookieOptions.secure,
     nodeEnv: process.env.NODE_ENV,
     hasDomainInEnv: !!process.env.COOKIE_DOMAIN
@@ -479,7 +479,7 @@ export const signOut = async () => {
   // IMPORTANT: Clear cookies aggressively.
   // We try deleting both with and without the domain to handle host-only duplicates.
   const cookiesToClear = ["userData", "laravel_session", "laravel-session", "fmg-session", "XSRF-TOKEN", "authSession", "authToken"];
-  
+
   cookiesToClear.forEach(name => {
     // 1. Try with options (includes domain)
     cookieStore.delete({

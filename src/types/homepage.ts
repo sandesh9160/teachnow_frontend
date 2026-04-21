@@ -156,6 +156,7 @@ export type Category = {
   slug?: string;
   icon?: string | null;
   jobs_count?: number;
+  active_jobs_count?: number;
 };
 
 export type ResourceData = {

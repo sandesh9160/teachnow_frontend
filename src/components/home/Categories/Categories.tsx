@@ -93,7 +93,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
                     {cat.name}
                   </h3>
                   <p className="text-[12px] font-medium text-[#64748b]">
-                    {cat.jobs_count || 0} {cat.jobs_count === 1 ? "Job" : "Jobs"} Available
+                    {cat.active_jobs_count ?? cat.jobs_count ?? 0} {(cat.active_jobs_count ?? cat.jobs_count) === 1 ? "Job" : "Jobs"} Available
                   </p>
                 </div>
               </Link>

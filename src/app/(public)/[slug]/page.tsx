@@ -253,11 +253,11 @@ export default async function PublicSlugPage({ params }: { readonly params: Prom
 
   if (resolved.type === 'search') {
     return (
-      <JobListingView 
-        jobs={resolved.data.jobs} 
-        pageName={resolved.data.name} 
-        initialKeyword={resolved.data.keyword} 
-        initialLocation={resolved.data.location} 
+      <JobListingView
+        jobs={resolved.data.jobs}
+        pageName={resolved.data.name}
+        initialKeyword={resolved.data.keyword}
+        initialLocation={resolved.data.location}
       />
     );
   }

@@ -17,7 +17,8 @@ import {
   AlertCircle,
   GraduationCap,
   Clock,
-  Eye
+  Eye,
+  X
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { toast } from "sonner";
@@ -33,6 +34,8 @@ export default function ApplicationDetailPage() {
   const [application, setApplication] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showResumePreview, setShowResumePreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const fetchDetail = async () => {
     try {
@@ -133,11 +136,17 @@ export default function ApplicationDetailPage() {
           </button>
           <div>
             <h1 className="text-xl font-bold text-slate-800 tracking-tight">Application Review</h1>
-            <p className="text-[11px] font-medium text-indigo-500">Tracking Reference: #{application.id}</p>
           </div>
         </div>
-        <div className={`px-4 py-1.5 rounded-full border text-[11px] font-semibold shadow-sm ${getStatusBadge(application.status)}`}>
-          {application.status || "Applied"}
+        <div className="flex items-center gap-2">
+          {application.contact_status && (
+            <div className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold uppercase tracking-wider">
+              {application.contact_status.replace('_', ' ')}
+            </div>
+          )}
+          <div className={`px-4 py-1.5 rounded-full border text-[11px] font-semibold shadow-sm ${getStatusBadge(application.status)}`}>
+            {application.status || "Applied"}
+          </div>
         </div>
       </div>
 
@@ -208,9 +217,9 @@ export default function ApplicationDetailPage() {
                 { label: "Phone Contact", value: application.phone || profileData?.phone || "8978397465" },
                 { label: "Experience", value: (application.experience || profileData?.experience_years || profileData?.years_of_experience) ? `${application.experience || profileData?.experience_years || profileData?.years_of_experience} Years` : "—" },
                 { label: "Current Location", value: application.location || profileData?.location || "Hyderabad" },
-                { label: "Date of Birth", value: profileData?.dob || profileData?.date_of_birth || "2003-11-19" },
+                { label: "Date of Birth", value: profileData?.dob || profileData?.date_of_birth || "—" },
                 { label: "Portfolio Website", value: profileData?.portfolio_website || profileData?.portfolio_url || "—", isLink: true, colSpan: 2 },
-                { label: "Selected Resume", value: application.resume?.file_name || "Official_Resume.pdf", isResume: true },
+                { label: "Selected Resume", value: application.resume_details?.title || application.resume?.file_name || "Official_Resume.pdf", isResume: true },
               ].map((item) => (
                 <div key={item.label} className={`flex flex-col gap-1 ${item.colSpan === 2 ? 'md:col-span-2' : ''}`}>
                   <span className="text-[10px] text-slate-400 font-medium">{item.label}</span>
@@ -390,15 +399,16 @@ export default function ApplicationDetailPage() {
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-medium text-indigo-100">Submitted Resume</p>
-                      <p className="text-xs font-semibold text-white truncate">
-                        {application.resume?.file_name || application.resume_name || (typeof application.resume === 'string' ? application.resume.split('/').pop() : null) || "Official_Document.pdf"}
+                      <p className="text-[10px] font-medium text-indigo-100 italic">Submitted Resume</p>
+                      <p className="text-xs font-bold text-white truncate">
+                        {application.resume_details?.title || application.resume?.file_name || application.resume_name || "Official_Document.pdf"}
                       </p>
                     </div>
                   </div>
 
                   {(() => {
-                    const rUrl = application.resume?.url ||
+                    const rUrl = application.resume_details?.url ||
+                      application.resume?.url ||
                       application.resume?.pdf_path ||
                       (typeof application.resume === 'string' ? application.resume : null) ||
                       application.resume_url ||
@@ -411,15 +421,16 @@ export default function ApplicationDetailPage() {
                     if (!rUrl) return null;
 
                     return (
-                      <a
-                        href={normalizeMediaUrl(rUrl)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => {
+                          setPreviewUrl(normalizeMediaUrl(rUrl));
+                          setShowResumePreview(true);
+                        }}
                         className="flex items-center justify-center gap-2 w-full h-9 bg-white rounded-lg text-xs font-semibold text-indigo-700 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        Access Document
-                      </a>
+                        Preview Resume
+                      </button>
                     );
                   })()}
                 </div>
@@ -434,11 +445,49 @@ export default function ApplicationDetailPage() {
                 Explore Similar Roles
               </button>
             </Link>
-
-
           </div>
         </div>
       </div>
+
+      {/* Resume Preview Overlay */}
+      {showResumePreview && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] animate-in zoom-in-95 duration-300">
+            <div className="px-8 py-4 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-indigo-600" />
+                  Resume Preview
+                </h2>
+              </div>
+              <button onClick={() => setShowResumePreview(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                <X className="w-6 h-6 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-hidden bg-slate-100 relative">
+              {previewUrl ? (
+                <iframe
+                  src={`/api/files/preview?url=${encodeURIComponent(previewUrl)}#toolbar=0`}
+                  className="w-full h-full border-none"
+                  title="Resume Content"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <p className="font-bold text-sm">Loading document...</p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-8 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+              <Button className="rounded-xl px-8" onClick={() => setShowResumePreview(false)}>
+                Close Preview
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
