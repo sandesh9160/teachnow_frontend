@@ -721,10 +721,10 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                                   <div className="flex items-center justify-between mt-1 pt-2 border-t border-slate-50">
                                      <div className="space-y-0.5">
                                         <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tight opacity-80">Ideal Answer</span>
-                                        <p className="text-[10px] font-bold text-primary uppercase tracking-tight">{String(rAnswer)}</p>
+                                        <p className="text-[10px] font-bold text-primary ">{String(rAnswer)}</p>
                                      </div>
                                      <div className="space-y-0.5 text-right">
-                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tight opacity-80">Candidate Answer</span>
+                                        <span className="text-[8px] font-bold text-slate-400 opacity-80">Candidate Answer</span>
                                         <p className={cn(
                                           "text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded border text-right shadow-sm mt-0.5 inline-block",
                                           String(rAnswer).toLowerCase() === String(cAnswer).toLowerCase()

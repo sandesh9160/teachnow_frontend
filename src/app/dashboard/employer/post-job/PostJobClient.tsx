@@ -143,7 +143,7 @@ export default function PostJobClient({
       ...formData, 
       school_name: job?.school_name || profile?.company_name || profile?.name || "",
       description, 
-      deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
+      application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
       featured: featured ? 1 : 0, 
       questions 
     };

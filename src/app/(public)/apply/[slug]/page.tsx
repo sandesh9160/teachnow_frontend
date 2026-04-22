@@ -329,15 +329,19 @@ export default function ApplyJobPage() {
         }
       });
 
+      const finalResumeId = typeof selectedResumeId === 'number' 
+        ? selectedResumeId 
+        : parseInt(String(selectedResumeId).replace('cv-', ''));
+
       console.log("DEBUG: Submitting application...", {
         jobId: jobDetails.id,
         answers,
-        resumeId: selectedResumeId
+        resumeId: finalResumeId
       });
 
       setIsSubmitting(true);
 
-      const response = await apply(jobDetails.id, answers, selectedResumeId);
+      const response = await apply(jobDetails.id, answers, finalResumeId);
       console.log("DEBUG: Application successful response:", response);
 
       setSubmitted(true);
