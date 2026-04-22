@@ -329,20 +329,29 @@ export default function ApplyJobPage() {
         }
       });
 
-      const finalResumeId = typeof selectedResumeId === 'number' 
-        ? selectedResumeId 
-        : parseInt(String(selectedResumeId).replace('cv-', ''));
+      const finalResumeId = selectedResumeId 
+        ? (typeof selectedResumeId === 'number' 
+            ? selectedResumeId 
+            : parseInt(String(selectedResumeId).replace('cv-', '')))
+        : undefined;
 
       console.log("DEBUG: Submitting application...", {
-        jobId: jobDetails.id,
+        job_id: jobDetails.id,
         answers,
-        resumeId: finalResumeId
+        resume_id: finalResumeId
       });
+
+      const resumeType = String(selectedResumeId).startsWith('cv-') ? 'cv' : (selectedResumeId ? 'resume' : undefined);
 
       setIsSubmitting(true);
 
-      const response = await apply(jobDetails.id, answers, finalResumeId);
+      const response = await apply(jobDetails.id, answers, finalResumeId, resumeType);
       console.log("DEBUG: Application successful response:", response);
+
+      if (response?.status === false) {
+        toast.error(response.message || "Failed to submit application.");
+        return;
+      }
 
       setSubmitted(true);
       toast.success("Application Submitted Successfully");

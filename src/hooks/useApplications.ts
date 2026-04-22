@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-import type { ApplicationAnswer, ApplicationPayload } from "@/types/application";
+import type { ApplicationAnswer, ApplicationPayload, ApplicationResponse } from "@/types/application";
 
 function extractErrorMessage(e: unknown): string {
   if (e && typeof e === "object" && "response" in e) {
@@ -54,12 +54,17 @@ export function useApplications() {
     }
   }, []);
 
-  const apply = useCallback(async (jobId: string | number, answers: ApplicationAnswer[], resumeId?: number | string) => {
+  const apply = useCallback(async (jobId: string | number, answers: ApplicationAnswer[], resumeId?: number | string, resumeType?: string): Promise<ApplicationResponse> => {
     try {
       setLoading(true);
       setError(null);
-      const payload: ApplicationPayload = { answers, resume_id: resumeId };
-      return await dashboardServerFetch<unknown>(`jobseeker/jobs/${jobId}/apply`, {
+      const payload: ApplicationPayload = { 
+        job_id: jobId,
+        answers, 
+        resume_id: resumeId,
+        resume_type: resumeType
+      };
+      return await dashboardServerFetch<ApplicationResponse>(`jobseeker/jobs/${jobId}/apply`, {
         method: "POST",
         data: payload,
       });
