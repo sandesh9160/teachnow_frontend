@@ -27,7 +27,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
     const t1 = setTimeout(checkScroll, 100);
     const t2 = setTimeout(checkScroll, 500);
     const t3 = setTimeout(checkScroll, 1000);
-    
+
     window.addEventListener('resize', checkScroll);
     return () => {
       window.removeEventListener('resize', checkScroll);
@@ -48,32 +48,32 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
             <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
               Featured <span className="text-blue-600">Jobs</span>
             </h2>
-            <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+            <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
               Hand-picked opportunities from top institutions
             </p>
           </div>
           <div className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 hidden md:block z-10">
-            <Link 
-              href="/jobs" 
-              className="group flex items-center gap-2 text-blue-600 font-bold hover:underline bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-blue-50 shadow-sm"
+            <Link
+              href="/jobs"
+              className="group flex items-center gap-2 text-blue-600 font-semibold"
             >
-              View All <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              View All Jobs <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
           {/* Mobile View All */}
-          <div className="text-center mt-4 md:hidden">
-            <Link 
-              href="/jobs" 
-              className="text-blue-600 font-bold hover:underline"
+          <div className="text-right mt-4 md:hidden">
+            <Link
+              href="/jobs"
+              className="text-blue-600 font-semibold"
             >
               View All Jobs
             </Link>
           </div>
         </div>
-        
+
         <div className="relative group/carousel">
           {/* Side Navigation Buttons */}
-          <button 
+          <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -81,16 +81,15 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={jobs.length <= 1}
-            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
-              canScrollLeft 
-                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+            className={`absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
-            }`}
+              }`}
           >
             <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
           </button>
-          
-          <button 
+
+          <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -98,27 +97,28 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={jobs.length <= 1}
-            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
-              canScrollRight 
-                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+            className={`absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
-            }`}
+              }`}
           >
             <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
           </button>
 
-          <div 
-            ref={jobsRef} 
+          <div
+            ref={jobsRef}
             onScroll={checkScroll}
-            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8 px-4 md:px-12 snap-x snap-mandatory" 
+            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8 px-[calc(50%-150px)] md:px-12 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
+            {/* Start Spacer */}
+            <div className="shrink-0 w-px md:hidden" />
             {jobs.map((job) => {
               const companyName = job.employer?.company_name || "Confidential School";
               const companyLogo = job.employer?.company_logo || "";
 
               return (
-                <div key={job.id} className="w-[280px] md:w-[380px] shrink-0 snap-start">
+                <div key={job.id} className="w-[300px] md:w-[320px] shrink-0 snap-center md:snap-start">
                   <JobCard
                     id={job.id}
                     title={job.title}
@@ -134,6 +134,8 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
                 </div>
               );
             })}
+            {/* End Spacer */}
+            <div className="shrink-0 w-px md:hidden" />
           </div>
         </div>
       </div>

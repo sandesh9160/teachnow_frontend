@@ -55,16 +55,16 @@ export const StatsCard = ({
   }, []);
 
   return (
-    <div ref={ref} className="group flex flex-col items-center text-center p-6 transition-all duration-300">
-      <div className="mb-5 p-3 rounded-2xl bg-slate-50 transition-colors group-hover:bg-blue-50" style={{ color }}>
-        <Icon className="h-8 w-8 stroke-[1.5] transition-transform duration-500 group-hover:scale-110" />
+    <div ref={ref} className="group flex flex-col items-center text-center p-4 transition-all duration-300">
+      <div className="mb-3 p-2.5 rounded-2xl bg-slate-50 transition-colors group-hover:bg-blue-50" style={{ color }}>
+        <Icon className="h-7 w-7 stroke-[1.5] transition-transform duration-500 group-hover:scale-110" />
       </div>
       
       <div className="font-display text-4xl font-bold tracking-tight text-slate-900">
         {count.toLocaleString()}
         <span className="text-primary">{suffix}</span>
       </div>
-      <p className="mt-3 text-[11px] font-medium text-slate-400 leading-none">{label}</p>
+      <p className="mt-3 text-[13px] font-normal text-slate-400 leading-none">{label}</p>
     </div>
   );
 };

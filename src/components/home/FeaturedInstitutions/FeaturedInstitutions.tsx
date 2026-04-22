@@ -43,7 +43,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Top Institutions Hiring
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Leading institutions actively looking for educators
           </p>
         </div>
@@ -58,7 +58,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={institutions.length <= 1}
-            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
+            className={`absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
               canScrollLeft 
                 ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
@@ -75,7 +75,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={institutions.length <= 1}
-            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
+            className={`absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
               canScrollRight 
                 ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
@@ -87,16 +87,18 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
           <div 
             ref={companiesRef} 
             onScroll={checkScroll}
-            className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-4 md:px-12 snap-x snap-mandatory" 
+            className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-[calc(50%-120px)] md:px-12 snap-x snap-mandatory" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
+            {/* Start Spacer */}
+            <div className="shrink-0 w-px md:hidden" />
             {institutions.map((institution) => {
               const imageUrl = normalizeMediaUrl(institution.company_logo);
 
               return (
                 <div 
                   key={institution.id} 
-                  className="shrink-0 w-[240px] md:w-[280px] snap-start"
+                  className="shrink-0 w-[240px] md:w-[240px] snap-center md:snap-start"
                 >
                   <CompanyCard
                     name={institution.company_name}
@@ -110,6 +112,8 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
                 </div>
               );
             })}
+            {/* End Spacer */}
+            <div className="shrink-0 w-px md:hidden" />
           </div>
         </div>
       </div>

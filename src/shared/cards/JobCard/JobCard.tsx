@@ -97,7 +97,7 @@ const JobCard = ({
 
   return (
     <>
-      <div className={`group relative flex flex-col h-full rounded-[16px] border bg-white p-3 transition-all duration-300 ${
+      <div className={`group relative flex flex-col h-full rounded-xl border bg-white p-3 transition-all duration-300 ${
         isExpired 
         ? "border-slate-100 opacity-75 grayscale-[0.5]" 
         : "border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200"
@@ -105,7 +105,7 @@ const JobCard = ({
         <div className="relative z-10 flex flex-col h-full">
           {/* Top Row: Logo, Title/Company, Bookmark */}
           <div className="flex items-start gap-3 mb-3">
-            <div className={`w-14 h-14 shrink-0 rounded-[16px] flex items-center justify-center overflow-hidden border border-slate-50 ${isExpired ? "bg-slate-100" : "bg-[#ecf2ff]"}`}>
+            <div className={`w-12 h-12 shrink-0 rounded-lg flex items-center justify-center overflow-hidden border border-slate-50 ${isExpired ? "bg-slate-100" : "bg-[#ecf2ff]"}`}>
               {logoUrl && !logoError ? (
                 <img 
                   src={logoUrl} 
@@ -119,13 +119,13 @@ const JobCard = ({
             </div>
             
             <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className={`text-[19px] font-semibold transition-colors mb-1.5 tracking-tight ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
+              <h3 className={`text-[17px] font-medium transition-colors mb-1 tracking-tight ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
                 {title}
               </h3>
               <div className="flex flex-col gap-1 text-[#0F172A]/60">
                 <div className="flex items-start gap-1.5 ">
-                  <Building className="w-4 h-4 mt-0.5 shrink-0" />
-                  <p className="text-[15px] font-medium text-[#0F172A]/70 line-clamp-2">{company}</p>
+                  <Building className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  <p className="text-[14px] font-normal text-[#0F172A]/70 line-clamp-2">{company}</p>
                 </div>
                 {isExpired ? (
                   <div className="flex items-center gap-1.5 ml-0.5">
@@ -156,7 +156,7 @@ const JobCard = ({
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px] font-medium text-[#0F172A]/70 mb-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-normal text-[#0F172A]/70 mb-1.5">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-slate-400" />
               <span>{location}</span>
@@ -179,29 +179,31 @@ const JobCard = ({
             </div>
           </div>
 
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end mb-1.5">
             {salary && salary !== "Not disclosed" && (
-              <div className={`text-[17px] font-bold ${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} tracking-tight`}>
+              <div className={`text-[15px] font-bold ${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} tracking-tight`}>
                 ₹{salary.replace(/\.00/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </div>
             )}
           </div>
 
           {/* Tags Section - Capsule Shape */}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            {(tags && tags.length > 0 ? tags : []).slice(0, 3).map((tag, idx) => (
-              <span key={idx} className="bg-[#f0f4f8] text-[#1e293b] px-3 py-0.5 rounded-full text-[12px] font-semibold">
-                {tag}
-              </span>
-            ))}
-          </div>
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {tags.slice(0, 3).map((tag, idx) => (
+                <span key={idx} className="bg-[#f0f4f8] text-[#1e293b] px-3 py-0.5 rounded-full text-[11px] font-semibold">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Buttons Row */}
-          <div className="mt-auto flex items-center gap-3">
+          <div className="mt-auto flex items-center gap-2">
             {isExpired ? (
               <button 
                 disabled
-                className="flex-1 h-[44px] rounded-xl bg-slate-50 text-slate-400 font-bold text-[13px] cursor-not-allowed border border-slate-100 uppercase tracking-widest"
+                className="w-full h-[40px] rounded-lg bg-slate-50 text-slate-400 font-bold text-[12px] cursor-not-allowed border border-slate-100 uppercase tracking-widest"
               >
                 Vacancy Closed
               </button>
@@ -209,12 +211,12 @@ const JobCard = ({
               <>
                 <button 
                   onClick={handleApply}
-                  className="flex-[2] h-[44px] rounded-xl bg-[#1e3a8a] text-white font-semibold text-[15px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
+                  className="px-6 h-[40px] rounded-lg bg-[#1e3a8a] text-white font-semibold text-[14px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
                 >
                   Apply Now
                 </button>
-                <Link href={jobHref} className="flex-1">
-                  <button className="w-full h-[44px] rounded-xl border border-slate-200 bg-white text-slate-900 font-semibold text-[14px] hover:bg-slate-50 transition-all active:scale-95">
+                <Link href={jobHref}>
+                  <button className="px-8 h-[40px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95">
                     Details
                   </button>
                 </Link>

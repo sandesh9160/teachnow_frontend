@@ -59,6 +59,8 @@ export default function ApplyJobPage() {
   }, [isLoggedIn, fetchGeneratedCVs]);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [profileFlag, setProfileFlag] = useState<boolean | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -155,11 +157,13 @@ export default function ApplyJobPage() {
       if (!isLoggedIn || user?.role !== "job_seeker") return;
       try {
         const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
+        setProfileLoading(true);
         const res = await dashboardServerFetch<any>("jobseeker/profile", { method: "GET" });
 
         console.log("DEBUG: Profile response fetched:", res);
 
         if (res) {
+          setProfileFlag(res.profile_flag === true || String(res.profile_flag) === "true");
           // Extract data using exact same logic as useClientSession for consistency
           const profile = (
             (res?.data as any)?.job_seeker ??
@@ -187,6 +191,8 @@ export default function ApplyJobPage() {
         }
       } catch (err) {
         console.error("CRITICAL: Failed to load profile for application auto-fill", err);
+      } finally {
+        setProfileLoading(false);
       }
     };
     fetchFullProfile();
@@ -316,6 +322,11 @@ export default function ApplyJobPage() {
 
   const handleSubmit = async () => {
     if (!jobDetails?.id) return;
+    if (profileFlag === false) {
+      toast.error("Please complete your profile to apply.");
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       // Collect all answers
       const answers: { question_id: number; candidate_answer: string }[] = [];
@@ -349,7 +360,29 @@ export default function ApplyJobPage() {
       console.log("DEBUG: Application successful response:", response);
 
       if (response?.status === false) {
-        toast.error(response.message || "Failed to submit application.");
+        const isAlreadyApplied = response.message?.toLowerCase().includes("already applied");
+        
+        if (isAlreadyApplied) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          toast.warning("You've already applied!", {
+            description: "No need to worry, your application for this position is already under review.",
+            style: {
+              background: '#FFFBEB',
+              border: '1px solid #FCD34D',
+              color: '#92400E',
+            },
+            duration: 5000,
+          });
+        } else {
+          toast.error("Application Update", {
+            description: response.message || "We encountered an issue submitting your application. Please try again.",
+            style: {
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+            },
+          });
+        }
         return;
       }
 
@@ -565,10 +598,37 @@ export default function ApplyJobPage() {
 
               <div className="flex gap-3 pt-6">
                 <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => router.back()}>Cancel</Button>
-                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => setStep(1)}>
+                <Button 
+                  className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" 
+                  disabled={profileFlag === false}
+                  onClick={() => {
+                    if (profileFlag === false) {
+                      toast.error("Please complete your profile to apply for this job.");
+                      return;
+                    }
+                    setStep(1);
+                  }}
+                >
                   Continue Application <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
+
+              {profileFlag === false && (
+                <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                    <User size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-amber-900">Incomplete Profile</p>
+                    <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                      You need to complete your profile details before you can apply for this position.
+                    </p>
+                    <Link href="/dashboard/jobseeker/profile" className="inline-flex items-center gap-1.5 text-xs font-black text-amber-600 uppercase tracking-widest mt-2 hover:text-amber-700 transition-colors">
+                      Complete Profile <ArrowRight size={12} />
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

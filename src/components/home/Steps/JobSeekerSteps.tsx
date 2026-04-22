@@ -39,7 +39,7 @@ export const JobSeekerSteps = () => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Get Your Job in 4 Simple Steps
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Follow these steps to land your dream job on TeachNow
           </p>
         </div>
@@ -62,10 +62,10 @@ export const JobSeekerSteps = () => {
                 {s.step}
               </div>
 
-              <h3 className="text-[22px] font-bold text-[#111827] mb-3 leading-tight">
+              <h3 className="text-xl font-semibold text-[#111827] mb-3 leading-tight">
                 {s.title}
               </h3>
-              <p className="text-[15px] text-slate-500 font-medium leading-relaxed max-w-[240px] mx-auto">
+              <p className="text-[15px] text-slate-500 font-normal leading-relaxed max-w-[240px] mx-auto">
                 {s.desc}
               </p>
             </div>

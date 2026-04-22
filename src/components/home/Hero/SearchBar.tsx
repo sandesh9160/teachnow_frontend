@@ -104,8 +104,8 @@ export function SearchBar({ }: SearchBarProps) {
         
         {/* Subject/Role Search */}
         <div className="relative flex-[1.4] w-full" ref={queryRef}>
-          <div className="flex items-center gap-3 px-5 py-3.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
-            <Search className="h-5 w-5 text-indigo-400 shrink-0" />
+          <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+            <Search className="h-4 w-4 text-indigo-400 shrink-0" />
             <input
               type="text"
               id="query-search-input"
@@ -141,7 +141,7 @@ export function SearchBar({ }: SearchBarProps) {
               }}
               placeholder="Job title, subject..."
               autoComplete="off"
-              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-base md:text-lg"
+              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
             />
           </div>
 
@@ -167,8 +167,8 @@ export function SearchBar({ }: SearchBarProps) {
 
         {/* City/Location Search */}
         <div className="relative flex-1 w-full" ref={cityRef}>
-          <div className="flex items-center gap-3 px-6 py-3.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
-            <MapPin className="h-5 w-5 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+            <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
             <input
               type="text"
               id="city-search-input"
@@ -204,7 +204,7 @@ export function SearchBar({ }: SearchBarProps) {
               }}
               placeholder="City or remote"
               autoComplete="off"
-              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-base md:text-lg"
+              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
             />
           </div>
 
@@ -229,7 +229,7 @@ export function SearchBar({ }: SearchBarProps) {
         </div>
 
         <Button
-          className="bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-3.5 h-auto rounded-xl font-bold text-lg transition-all shrink-0 w-full md:w-auto shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
+          className="bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
           onClick={() => handleSearch()}
           disabled={isLoading}
         >

@@ -12,10 +12,10 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
   return (
     <Link
       href={`/institutions/${cleanSlug}`}
-      className="group relative flex flex-col items-center text-center h-[220px] rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-500"
+      className="group relative flex flex-col items-center text-center h-[190px] rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-500"
     >
       {/* Box Logo Section */}
-      <div className="h-16 w-16 mb-4 rounded-[18px] bg-slate-50 flex items-center justify-center p-2.5 relative z-10 border border-slate-100/50 transition-transform duration-500 group-hover:scale-105">
+      <div className="h-14 w-14 mb-3 rounded-lg bg-slate-50 flex items-center justify-center p-2 relative z-10 border border-slate-100/50 transition-transform duration-500 group-hover:scale-105">
         {logo ? (
           <img src={logo} alt={name} className="h-full w-full object-contain overflow-hidden" />
         ) : (

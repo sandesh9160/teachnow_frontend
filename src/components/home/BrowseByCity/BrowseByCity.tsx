@@ -30,7 +30,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Explore teaching jobs in major <span className="text-blue-600">Indian cities</span>
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Find opportunities {totalJobs ? `among ${totalJobs}+ ` : "in your "}preferred location
           </p>
         </div>

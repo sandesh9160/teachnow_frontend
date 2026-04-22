@@ -35,7 +35,7 @@ export const EmployerSteps = () => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Steps to Post a Job
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Hire qualified teachers quickly with TeachNow.
           </p>
         </div>
@@ -58,10 +58,10 @@ export const EmployerSteps = () => {
                 {s.step}
               </div>
 
-              <h3 className="text-base font-bold text-black leading-tight mb-3">
+              <h3 className="text-xl font-semibold text-black leading-tight mb-3">
                 {s.title}
               </h3>
-              <p className="text-[13px] text-black/70 font-medium leading-relaxed">
+              <p className="text-[14px] text-black/70 font-normal leading-relaxed">
                 {s.desc}
               </p>
             </div>
