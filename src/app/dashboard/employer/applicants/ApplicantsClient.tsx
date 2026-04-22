@@ -712,7 +712,7 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                       <div className="space-y-2.5">
                          {selectedApplicantFullData.answers.map((ans: any, idx: number) => {
                             const questionText = typeof ans === 'string' ? ans : (typeof ans.question === 'object' ? ans.question.question : ans.question);
-                            const rAnswer = typeof ans.recruiter_answer === 'object' ? JSON.stringify(ans.recruiter_answer) : (ans.recruiter_answer || ans.question?.recruiter_answer || "N/A");
+                            const rAnswer = ans.expected_answer || ans.question?.expected_answer || (typeof ans.recruiter_answer === 'object' ? JSON.stringify(ans.recruiter_answer) : (ans.recruiter_answer || ans.question?.recruiter_answer || "N/A"));
                             const cAnswer = typeof ans.candidate_answer === 'object' ? JSON.stringify(ans.candidate_answer) : (ans.candidate_answer || ans.answer || "No response");
                             
                             return (
