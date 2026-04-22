@@ -15,7 +15,7 @@ export const Features = () => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Why TeachNow?
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Empowering educators and enabling schools to thrive together
           </p>
         </div>
@@ -23,7 +23,7 @@ export const Features = () => {
         <div className="grid gap-8 lg:gap-10 md:grid-cols-2">
           {/* For Job Seekers */}
           <div className="group relative rounded-[16px] border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full">
-            <div className="h-64 sm:h-72 overflow-hidden relative">
+            <div className="h-48 sm:h-56 overflow-hidden relative">
               <img
                 src={teacherClassroomImg}
                 alt="Teacher in classroom"
@@ -31,21 +31,21 @@ export const Features = () => {
               />
             </div>
             
-            <div className="p-8 md:p-10 flex flex-col flex-1">
-              <h3 className="text-xl font-bold text-[#111827]">For Job Seekers</h3>
-              <p className="mt-3 text-[14px] text-slate-500 font-medium leading-relaxed">
+            <div className="p-6 md:p-8 flex flex-col flex-1">
+              <h3 className="text-xl font-semibold text-[#111827]">For Job Seekers</h3>
+              <p className="mt-3 text-[14px] text-slate-500 font-normal leading-relaxed">
                 TeachNow helps teachers discover verified job opportunities across schools, colleges, and online
                 teaching platforms.
               </p>
               
-              <ul className="mt-6 space-y-3 flex-1">
+              <ul className="mt-4 space-y-2.5 flex-1">
                 {[
                   "Find teaching jobs across India",
                   "AI Resume Builder for teachers",
                   "Quick job applications",
                   "Verified schools and institutions",
                 ].map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
+                  <li key={f} className="flex items-center gap-3 text-[13px] text-slate-600 font-normal">
                     <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
                       <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                     </div>
@@ -54,7 +54,7 @@ export const Features = () => {
                 ))}
               </ul>
               
-              <div className="mt-8">
+              <div className="mt-6">
                 <Button asChild className="bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
                   <Link href="/jobs">
                     Explore Jobs <ArrowRight className="h-4 w-4" />
@@ -66,7 +66,7 @@ export const Features = () => {
 
           {/* For Employers */}
           <div className="group relative rounded-[16px] border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full">
-            <div className="h-64 sm:h-72 overflow-hidden relative">
+            <div className="h-48 sm:h-56 overflow-hidden relative">
               <img
                 src={employerHiringImg}
                 alt="Employer hiring"
@@ -74,20 +74,20 @@ export const Features = () => {
               />
             </div>
             
-            <div className="p-8 md:p-10 flex flex-col flex-1">
-              <h3 className="text-xl font-bold text-[#111827]">For Employers</h3>
-              <p className="mt-3 text-[14px] text-slate-500 font-medium leading-relaxed">
+            <div className="p-6 md:p-8 flex flex-col flex-1">
+              <h3 className="text-xl font-semibold text-[#111827]">For Employers</h3>
+              <p className="mt-3 text-[14px] text-slate-500 font-normal leading-relaxed">
                 TeachNow enables institutions to quickly hire qualified teachers through advanced discovery tools.
               </p>
               
-              <ul className="mt-6 space-y-3 flex-1">
+              <ul className="mt-4 space-y-2.5 flex-1">
                 {[
                   "Post teaching jobs instantly",
                   "Access qualified educator profiles",
                   "Simplified recruitment workflow",
                   "Affordable hiring plans",
                 ].map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-[13px] text-slate-600 font-medium">
+                  <li key={f} className="flex items-center gap-3 text-[13px] text-slate-600 font-normal">
                     <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
                       <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                     </div>
@@ -96,9 +96,9 @@ export const Features = () => {
                 ))}
               </ul>
               
-              <div className="mt-8">
+              <div className="mt-6">
                 <Button asChild className="bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
-                  <Link href="/auth/login?role=employer_recruiter">
+                  <Link href="/auth/login">
                     Hire Teachers <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

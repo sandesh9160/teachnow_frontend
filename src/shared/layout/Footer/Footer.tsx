@@ -61,10 +61,10 @@ export const Footer = ({
   const gridSections = brandSection ? sections.filter((s) => s !== brandSection) : sections;
 
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
+    <footer className="border-t border-slate-200 bg-white">
+      <div className="mx-auto max-w-[1440px] px-6 py-12 md:py-16 lg:px-12">
+        <div className="flex flex-wrap gap-x-16 md:gap-x-24 lg:gap-x-32 gap-y-12 justify-start">
+          <div className="max-w-[280px] space-y-4">
             <Link href="/" className="mb-4 flex items-center gap-2">
               {brandIcon ? (
                 <img
@@ -90,55 +90,55 @@ export const Footer = ({
           </div>
 
           {gridSections.map((section) => (
-              <div key={section.title}>
-                <h4 className="mb-4 text-sm font-semibold text-foreground">{section.title}</h4>
-                <ul className="space-y-2.5">
-                  {(Array.isArray(section.links) ? section.links : []).map((link) => {
-                    const href = toAbsoluteUrl(link.url);
-                    const isExternal = /^https?:\/\//i.test(href) || href === "#";
+            <div key={section.title} className="min-w-[160px]">
+              <h4 className="mb-4 text-sm font-semibold text-foreground">{section.title}</h4>
+              <ul className="space-y-2.5">
+                {(Array.isArray(section.links) ? section.links : []).map((link) => {
+                  const href = toAbsoluteUrl(link.url);
+                  const isExternal = /^https?:\/\//i.test(href) || href === "#";
 
-                    return (
-                      <li key={link.id || link.title}>
-                        {isExternal ? (
-                          <a
-                            href={href}
-                            className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
-                            target={href === "#" ? undefined : "_blank"}
-                            rel={href === "#" ? undefined : "noreferrer"}
-                          >
-                            {link.icon ? (
-                              <img
-                                src={normalizeMediaUrl(link.icon)}
-                                alt={link.title || "link icon"}
-                                className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
-                              />
-                            ) : null}
-                            <span>{link.title}</span>
-                          </a>
-                        ) : (
-                          <Link
-                            href={href}
-                            className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
-                          >
-                            {link.icon ? (
-                              <img
-                                src={normalizeMediaUrl(link.icon)}
-                                alt={link.title || "link icon"}
-                                className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
-                              />
-                            ) : null}
-                            <span>{link.title}</span>
-                          </Link>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+                  return (
+                    <li key={link.id || link.title}>
+                      {isExternal ? (
+                        <a
+                          href={href}
+                          className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                          target={href === "#" ? undefined : "_blank"}
+                          rel={href === "#" ? undefined : "noreferrer"}
+                        >
+                          {link.icon ? (
+                            <img
+                              src={normalizeMediaUrl(link.icon)}
+                              alt={link.title || "link icon"}
+                              className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
+                            />
+                          ) : null}
+                          <span>{link.title}</span>
+                        </a>
+                      ) : (
+                        <Link
+                          href={href}
+                          className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                        >
+                          {link.icon ? (
+                            <img
+                              src={normalizeMediaUrl(link.icon)}
+                              alt={link.title || "link icon"}
+                              className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
+                            />
+                          ) : null}
+                          <span>{link.title}</span>
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
 
           {/* Top Searches */}
-          <div>
+          <div className="min-w-[200px]">
             <h4 className="mb-4 text-sm font-semibold text-foreground">Top Searches</h4>
             <ul className="space-y-2.5">
               {topSearches.map((link: any, index: number) => (

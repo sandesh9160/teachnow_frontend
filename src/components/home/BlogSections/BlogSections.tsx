@@ -47,14 +47,14 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
 
   return (
     <section className="py-16 bg-white overflow-hidden relative">
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <div className="max-w-7xl mx-auto md:px-8">
         {/* Header with All Posts Link */}
         <div className="relative mb-14 px-4">
           <div className="text-center">
             <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
               Career Resources
             </h2>
-            <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+            <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
               Tips, insights, and career advice for educators
             </p>
           </div>
@@ -62,7 +62,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
           <div className="absolute right-4 md:right-0 bottom-0 sm:top-1/2 sm:-translate-y-1/2 hidden md:block">
             <Link 
               href="/blogs" 
-              className="flex items-center gap-2 text-[14px] font-bold text-blue-600 hover:text-blue-700 transition-all group px-4 py-2 rounded-full bg-white shadow-sm border border-slate-100"
+              className="group flex items-center gap-2 text-blue-600 font-semibold"
             >
               All Posts <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
@@ -108,11 +108,13 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
           <div 
             ref={scrollRef}
             onScroll={checkScroll}
-            className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 pt-1 px-1 scroll-smooth snap-x snap-mandatory"
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-8 pt-1 px-[calc(50%-135px)] md:px-0 scroll-smooth snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
+            {/* Start Spacer */}
+            <div className="shrink-0 w-px md:hidden" />
             {blogPreview.map((post) => (
-              <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px] snap-start">
+              <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px] snap-center md:snap-start">
                 <BlogCard 
                   title={post.title}
                   slug={post.slug}
@@ -124,6 +126,8 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
                 />
               </div>
             ))}
+            {/* End Spacer */}
+            <div className="shrink-0 w-px md:hidden" />
           </div>
         </div>
       </div>

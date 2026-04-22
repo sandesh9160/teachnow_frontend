@@ -18,7 +18,7 @@ export const FAQ = ({ faqs }: FAQProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Frequently Asked Questions
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Find answers to common questions from our community
           </p>
         </div>
@@ -28,12 +28,12 @@ export const FAQ = ({ faqs }: FAQProps) => {
             <AccordionItem 
               key={i} 
               value={`item-${i}`}
-              className="group rounded-lg border border-slate-300 bg-white px-4 md:px-5 overflow-hidden transition-all duration-300 shadow-xs"
+              className="group rounded-lg border border-slate-200 bg-white px-4 md:px-5 overflow-hidden transition-all duration-300 shadow-xs"
             >
               <AccordionTrigger className="text-left py-3 text-[15px] md:text-[16px] font-semibold text-[#111827] hover:no-underline transition-all gap-4">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="pb-4 text-[14px] text-slate-500 font-medium leading-relaxed">
+              <AccordionContent className="pb-4 text-[14px] text-slate-500 font-normal leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

@@ -45,7 +45,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             What Teachers and Schools Say
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-medium">
+          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
             Real experiences from our community
           </p>
         </div>
@@ -78,7 +78,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
                     <Quote className="h-6 w-6 text-[#dbeafe] fill-white" strokeWidth={1.5} />
                   </div>
 
-                  <p className="text-[14px] text-black  min-h-[70px] font">
+                  <p className="text-[14px] text-slate-600 min-h-[70px] font-normal leading-relaxed">
                     {t.message}
                   </p>
 
@@ -88,8 +88,8 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
                       <TestimonialAvatar src={t.photo} name={t.name} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[14px] font text-black">{t.name}</p>
-                      <p className="text-[11px] font- text-black/60">
+                      <p className="text-[14px] font-semibold text-[#111827]">{t.name}</p>
+                      <p className="text-[11px] font-normal text-slate-500">
                         {t.designation}
                       </p>
                     </div>

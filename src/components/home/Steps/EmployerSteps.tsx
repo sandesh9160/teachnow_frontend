@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { Button } from "@/shared/ui/Buttons/Buttons";
+import { ArrowRight } from "lucide-react";
+
 const steps = [
   {
     step: 1,
@@ -29,7 +33,7 @@ const steps = [
 
 export const EmployerSteps = () => {
   return (
-    <section className="py-16 bg-white overflow-hidden text-black">
+    <section className="pt-16 pb-24 bg-white text-black">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
@@ -39,7 +43,6 @@ export const EmployerSteps = () => {
             Hire qualified teachers quickly with TeachNow.
           </p>
         </div>
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-0">
           {steps.map((s) => (
             <div
@@ -66,6 +69,13 @@ export const EmployerSteps = () => {
               </p>
             </div>
           ))}
+        </div>
+        <div className="mt-16 flex justify-center">
+          <Button variant="hero" size="xl" asChild className="rounded-2xl px-12 transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+            <Link href="/auth/login" className="flex items-center gap-3">
+              Start Hiring Now <ArrowRight className="h-5 w-5" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

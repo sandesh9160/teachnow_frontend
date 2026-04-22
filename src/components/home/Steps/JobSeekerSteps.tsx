@@ -1,8 +1,8 @@
 "use client";
 
-// import Link from "next/link";
-// import { Button } from "@/shared/ui/Buttons/Buttons";
-// import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/shared/ui/Buttons/Buttons";
+import { ArrowRight } from "lucide-react";
 
 const steps = [
   {
@@ -70,6 +70,13 @@ export const JobSeekerSteps = () => {
               </p>
             </div>
           ))}
+        </div>
+        <div className="mt-16 flex justify-center">
+          <Button variant="hero" size="xl" asChild className="rounded-2xl px-12 transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+            <Link href="/auth/login" className="flex items-center gap-3">
+              Start Your Job Search <ArrowRight className="h-5 w-5" />
+          </Link>
+          </Button>
         </div>
       </div>
     </section>

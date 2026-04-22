@@ -235,7 +235,7 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
   // PRIORITY 1: Meaningful Slugs (except root generic ones)
   // This turns messy search URLs into clean slug routes handled by app/(public)/[slug]/page.tsx
   if (finalSlug && !["jobs", "categories", "institutes", "institutions", "company", "employer"].includes(finalSlug.toLowerCase())) {
-     return `/${finalSlug}`;
+    return `/${finalSlug}`;
   }
 
   // PRIORITY 2: External URLs
@@ -435,7 +435,7 @@ const MobileAuth = ({
   if (!isLoggedIn) {
     return (
       <div className="mt-4 flex flex-col gap-3 p-2">
-        <Button asChild variant="outline" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login" onClick={closeAll}>Login</Link></Button>
+        <Button asChild variant="outline" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login" onClick={closeAll}>Register / Login</Link></Button>
         <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-primary"><Link href="/auth/login?role=employer_recruiter" onClick={closeAll}>Post a Job</Link></Button>
       </div>
     );
@@ -485,7 +485,7 @@ const Header = ({
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const isLoggedIn = !!authUser;
   const user = authUser;
@@ -499,12 +499,16 @@ const Header = ({
         setUserDropdownOpen(false);
       }
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setActiveDropdown(null);
+        closeAll();
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    closeAll();
+  }, [pathname]);
 
   const toggleDropdown = (name: string) => setActiveDropdown(activeDropdown === name ? null : name);
   const closeAll = () => {
@@ -551,8 +555,8 @@ const Header = ({
   const brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300">
-      <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-12" ref={navRef}>
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" ref={navRef}>
+      <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-12">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
@@ -573,7 +577,7 @@ const Header = ({
         </Link>
 
         {/* Navigation Links (Centered) */}
-        <nav className="hidden items-center gap-1 xl:flex ">
+        <nav className="hidden items-center gap-1 lg:flex ">
           {mappedMenus.map((menu) => {
             if (menu.isMega && menu.structure) {
               return (
@@ -629,7 +633,7 @@ const Header = ({
         {/* Mobile Toggle */}
         <div className="flex lg:hidden items-center gap-2">
           {!isLoggedIn && (
-            <Link href="/auth/login" className="text-xs font-bold text-primary px-3 py-1.5 bg-primary/5 rounded-lg">Login</Link>
+            <Link href="/auth/login" className="text-xs font-bold text-primary px-3 py-1.5 bg-primary/5 rounded-lg">Register / Login</Link>
           )}
           <button className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
