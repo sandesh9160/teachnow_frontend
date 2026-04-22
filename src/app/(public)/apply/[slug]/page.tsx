@@ -60,7 +60,7 @@ export default function ApplyJobPage() {
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [profileFlag, setProfileFlag] = useState<boolean | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
+
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -157,7 +157,7 @@ export default function ApplyJobPage() {
       if (!isLoggedIn || user?.role !== "job_seeker") return;
       try {
         const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
-        setProfileLoading(true);
+
         const res = await dashboardServerFetch<any>("jobseeker/profile", { method: "GET" });
 
         console.log("DEBUG: Profile response fetched:", res);
@@ -192,7 +192,7 @@ export default function ApplyJobPage() {
       } catch (err) {
         console.error("CRITICAL: Failed to load profile for application auto-fill", err);
       } finally {
-        setProfileLoading(false);
+
       }
     };
     fetchFullProfile();
