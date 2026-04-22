@@ -65,6 +65,8 @@ interface Application {
     profile_photo: string;
     name?: string;
     email?: string;
+    availability?: string;
+    skills?: string[];
     user?: {
       id: number;
       name: string;

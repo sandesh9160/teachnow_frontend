@@ -69,6 +69,7 @@ interface DashboardStats {
    };
    subscription_expiring_soon?: boolean;
    company_verification?: number;
+   is_featured?: number;
    company_featured?: boolean;
    company_featured_until?: string;
    featured_until?: string;
@@ -77,6 +78,7 @@ interface DashboardStats {
       company_name?: string;
       featured_until?: string;
       is_featured?: number;
+      is_verified?: number;
    };
    latest_jobs?: LatestJob[];
    latest_applications?: LatestApplication[];
@@ -148,11 +150,11 @@ export default function EmployerDashboardClient({
    const [isFeatured, setIsFeatured] = useState(
       dashboardData?.company_featured === true || 
       dashboardData?.is_featured === 1 || 
-      (dashboardData as any)?.employer?.is_featured === 1 ||
+      dashboardData?.employer?.is_featured === 1 ||
       false
    );
    const [loadingFeature, setLoadingFeature] = useState(false);
-   const employerId = (dashboardData as any)?.employer?.id;
+   const employerId = dashboardData?.employer?.id;
 
    const handleToggleFeatured = async () => {
       if (!employerId) {
@@ -243,13 +245,13 @@ export default function EmployerDashboardClient({
             <div className="space-y-0.5">
                <div className="flex items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-semibold text-black tracking-tight">Institute Dashboard</h1>
-                  {((dashboardData as any)?.employer?.is_verified === 1 || dashboardData?.employer_profile?.is_profile_verified === 1) && (
+                  {(dashboardData?.employer?.is_verified === 1 || dashboardData?.employer_profile?.is_profile_verified === 1) && (
                      <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
                         <Check className="w-2.5 h-2.5" /> Verified
                      </div>
                   )}
                </div>
-               <p className="text-xs text-[#1E1B4B]">Welcome back, {(dashboardData as any)?.employer?.company_name || dashboardData?.employer_profile?.company_name || welcomeName}</p>
+               <p className="text-xs text-[#1E1B4B]">Welcome back, {dashboardData?.employer?.company_name || dashboardData?.employer_profile?.company_name || welcomeName}</p>
             </div>
 
             <Link href={`${basePath}/post-job`}>
@@ -385,7 +387,7 @@ export default function EmployerDashboardClient({
                   <div className="space-y-0.5">
                      <span className="text-[13px] font-bold text-slate-900 block leading-none">Home Page Visibility</span>
                      {(() => {
-                        const date = dashboardData?.company_featured_until || dashboardData?.featured_until || (dashboardData as any)?.employer?.featured_until;
+                        const date = dashboardData?.company_featured_until || dashboardData?.featured_until || dashboardData?.employer?.featured_until;
                         if (!date) return <p className="text-[11px] text-slate-400 font-medium tracking-tight">Status: Standard Placement</p>;
                         
                         const isExpired = new Date(date) < new Date();
