@@ -11,7 +11,7 @@ import {
   Loader2, Mail, MapPin, Briefcase, GraduationCap,
   Camera, Trash2, Edit2, CheckSquare, Square,
   X, BookOpen, Award, UserCircle,
-  Globe, Search, PlusCircle
+  Globe, Search, PlusCircle, Phone
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -365,6 +365,10 @@ export default function ProfileFormClient({
       toast.error("Professional title is required");
       return;
     }
+    if (!profileData.phone.trim()) {
+      toast.error("Phone number is required");
+      return;
+    }
     if (!profileData.location.trim()) {
       toast.error("Location is required");
       return;
@@ -517,10 +521,14 @@ export default function ProfileFormClient({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-50 mt-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-50 mt-1">
           <div className="flex items-center gap-2.5 text-black/70">
             <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold truncate">{profileData.email}</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-black/70">
+            <Phone className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <span className="text-[12px] font-semibold truncate">{profileData.phone || "Not specified"}</span>
           </div>
           <div className="flex items-center gap-2.5 text-black/70">
             <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
@@ -721,6 +729,10 @@ export default function ProfileFormClient({
               <div className="space-y-1.5">
                 <Label className="text-[13px] font-semibold text-slate-700">Full Name <span className="text-red-500">*</span></Label>
                 <Input name="name" value={profileData.name} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Phone Number <span className="text-red-500">*</span></Label>
+                <Input name="phone" value={profileData.phone} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[13px] font-semibold text-slate-700">Professional Title <span className="text-red-500">*</span></Label>
