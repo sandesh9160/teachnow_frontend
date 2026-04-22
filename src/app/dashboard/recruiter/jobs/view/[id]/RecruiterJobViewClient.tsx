@@ -18,7 +18,8 @@ import {
    Target,
    Loader2,
    TrendingUp,
-   RefreshCw
+   RefreshCw,
+   Star
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -41,6 +42,26 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
    const formatTerm = (term: string) => {
       if (!term) return "";
       return term.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+   };
+
+   const handleToggleFeatured = async () => {
+      setLoadingAction('toggle-feature');
+      try {
+         const res = await dashboardServerFetch(`recruiter/job/${job.id}/toggle-feature`, {
+            method: "POST",
+            data: {}
+         });
+         if (res.status === true) {
+            toast.success(res.message || "Featured status updated successfully.");
+            window.location.reload();
+         } else {
+            toast.error(res.message || "Something went wrong.");
+         }
+      } catch (error) {
+         toast.error("An unexpected error occurred.");
+      } finally {
+         setLoadingAction(null);
+      }
    };
 
    const handleAction = async (type: 'filled' | 'delete' | 'republish') => {
@@ -172,6 +193,24 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      Live Preview <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
                </Link>
+               <Button
+                  variant="outline"
+                  onClick={handleToggleFeatured}
+                  disabled={!!loadingAction}
+                  className={cn(
+                     "h-10 px-5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
+                     job.featured === 1
+                        ? "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                  )}
+               >
+                  {loadingAction === 'toggle-feature' ? (
+                     <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                     <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                  )}
+                  {job.featured === 1 ? "Featured" : "Feature on Home"}
+               </Button>
             </div>
          </div>
 
@@ -337,6 +376,24 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      >
                         {loadingAction === 'delete' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                         Delete
+                     </Button>
+                     <Button
+                        onClick={handleToggleFeatured}
+                        disabled={!!loadingAction}
+                        variant="outline"
+                        className={cn(
+                           "w-full h-10 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
+                           job.featured === 1
+                              ? "text-amber-600 border-amber-100 bg-amber-50/10 hover:bg-amber-50"
+                              : "text-slate-600 border-slate-100 bg-slate-50/10 hover:bg-slate-50"
+                        )}
+                     >
+                        {loadingAction === 'toggle-feature' ? (
+                           <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                           <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                        )}
+                        {job.featured === 1 ? "Featured" : "Mark as Featured"}
                      </Button>
                   </div>
                </div>

@@ -71,6 +71,13 @@ interface DashboardStats {
    company_verification?: number;
    company_featured?: boolean;
    company_featured_until?: string;
+   featured_until?: string;
+   employer?: {
+      id: number;
+      company_name?: string;
+      featured_until?: string;
+      is_featured?: number;
+   };
    latest_jobs?: LatestJob[];
    latest_applications?: LatestApplication[];
    employer_profile?: {
@@ -138,7 +145,12 @@ export default function EmployerDashboardClient({
    dashboardData?: DashboardStats,
    userRole?: string
 }) {
-   const [isFeatured, setIsFeatured] = useState(dashboardData?.company_featured || false);
+   const [isFeatured, setIsFeatured] = useState(
+      dashboardData?.company_featured === true || 
+      dashboardData?.is_featured === 1 || 
+      (dashboardData as any)?.employer?.is_featured === 1 ||
+      false
+   );
    const [loadingFeature, setLoadingFeature] = useState(false);
    const employerId = (dashboardData as any)?.employer?.id;
 
@@ -152,6 +164,7 @@ export default function EmployerDashboardClient({
          const res = await dashboardServerFetch(`employer/${employerId}/toggle-feature`, {
             method: "POST"
          });
+         console.log("Toggle Feature Response:", res);
          if (res.status === true) {
             setIsFeatured(!isFeatured);
             toast.success(res.message || "Featured status updated");
@@ -336,7 +349,7 @@ export default function EmployerDashboardClient({
             </div>
          </div>
 
-         {/* Promotion Hub - Full Width Sophisticated Design */}
+         {/* Promotion Hub - Full Width Sophisticated Design with Toggle */}
          <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group p-6">
             <div className="flex items-center justify-between mb-5">
                <div className="space-y-1">
@@ -371,26 +384,47 @@ export default function EmployerDashboardClient({
                   </div>
                   <div className="space-y-0.5">
                      <span className="text-[13px] font-bold text-slate-900 block leading-none">Home Page Visibility</span>
-                     {dashboardData?.company_featured_until && isFeatured ? (
-                        <p className="text-[11px] text-indigo-600 font-semibold">Active until {new Date(dashboardData.company_featured_until).toLocaleDateString('en-GB')}</p>
-                     ) : (
-                        <p className="text-[11px] text-slate-400 font-medium tracking-tight">Status: Standard Placement</p>
-                     )}
+                     {(() => {
+                        const date = dashboardData?.company_featured_until || dashboardData?.featured_until || (dashboardData as any)?.employer?.featured_until;
+                        if (!date) return <p className="text-[11px] text-slate-400 font-medium tracking-tight">Status: Standard Placement</p>;
+                        
+                        const isExpired = new Date(date) < new Date();
+                        const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                        
+                        if (isFeatured && !isExpired) {
+                           return <p className="text-[11px] text-indigo-600 font-bold flex items-center gap-1"><Zap className="w-2.5 h-2.5" /> Active until {formattedDate}</p>;
+                        }
+                        return <p className="text-[11px] text-slate-400 font-medium tracking-tight">Featured status ended on {formattedDate}</p>;
+                     })()}
                   </div>
                </div>
 
-               <Button 
-                  onClick={handleToggleFeatured}
-                  disabled={loadingFeature}
-                  className={cn(
-                     "h-9 px-6 rounded-xl text-[11px] font-bold transition-all active:scale-95 shadow-sm",
-                     isFeatured 
-                        ? "bg-slate-800 text-white hover:bg-slate-900" 
-                        : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100"
-                  )}
-               >
-                  {loadingFeature ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isFeatured ? "Stop Featuring" : "Go Featured Now"}
-               </Button>
+               <div className="flex items-center gap-3">
+                  <span className={cn("text-[11px] font-bold uppercase tracking-wider transition-colors", isFeatured ? "text-indigo-600" : "text-slate-400")}>
+                     {isFeatured ? "Featured" : "Standard"}
+                  </span>
+                  <button 
+                     onClick={handleToggleFeatured}
+                     disabled={loadingFeature}
+                     className={cn(
+                        "relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none shadow-inner",
+                        isFeatured ? "bg-indigo-600" : "bg-slate-200",
+                        loadingFeature && "opacity-50 cursor-not-allowed"
+                     )}
+                  >
+                     <span
+                        className={cn(
+                           "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-sm",
+                           isFeatured ? "translate-x-6" : "translate-x-1"
+                        )}
+                     />
+                     {loadingFeature && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                           <Loader2 className="w-3 h-3 animate-spin text-white/40" />
+                        </div>
+                     )}
+                  </button>
+               </div>
             </div>
          </div>
 

@@ -176,7 +176,8 @@ export default function PostJobClient({
     if (isEdit && job?.id) {
       setLoading(true);
       try {
-        const res = await dashboardServerFetch<any>(`employer/job/${job.id}/toggle-feature`, { method: "POST" });
+        const endpoint = `${userRole}/job/${job.id}/toggle-feature`;
+        const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
         if (res.status) {
           setFeatured(newState);
           toast.success(res.message || "Featured status updated!");

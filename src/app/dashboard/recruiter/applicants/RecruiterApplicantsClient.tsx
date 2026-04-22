@@ -144,6 +144,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
   const [activeTab, setActiveTab] = useState<'all' | 'shortlisted' | 'called' | 'messaged' | 'not_picked' | 'not_reached' | 'rejected'>('all');
   const [selectedApplicant, setSelectedApplicant] = useState<Application | null>(null);
   const [showPhone, setShowPhone] = useState(false);
+  const [showResumePreview, setShowResumePreview] = useState(false);
 
   const getInitialApps = () => {
     if (!initialData) return [];
@@ -358,43 +359,22 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                     </div>
                  </div>
 
-                 {/* Grouped Actions */}
-                 <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 shrink-0 pt-4 lg:pt-0 border-t lg:border-none border-slate-50">
-                    <Button 
-                       variant="outline" 
-                       className="h-9 px-4 rounded-xl text-[11px] font-medium text-black/70 border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-1.5"
-                       onClick={() => window.open(getFullUrl(app.resume?.file_url), '_blank')}
-                    >
-                      <FileText className="w-3.5 h-3.5 text-indigo-400" /> Resume
-                    </Button>
-                    
-                    <Button 
-                       onClick={() => {
-                          setSelectedApplicant(app);
-                          setLoadingProfile(true);
-                          dashboardServerFetch(`recruiter/applications/${app.id}`).then(res => {
-                             if (res.status) setSelectedApplicantFullData(res.data);
-                             setLoadingProfile(false);
-                          });
-                       }}
-                       className="h-9 px-5 rounded-xl text-[11px] font-medium bg-slate-50 text-black border border-slate-100 hover:bg-slate-100 transition-all flex items-center gap-1.5"
-                    >
-                      <Eye className="w-3.5 h-3.5" /> Full Detail
-                    </Button>
-
-                    <div className="h-6 w-px bg-slate-100 hidden lg:block mx-1" />
-
-                     {app.status?.toLowerCase() !== 'shortlisted' && (
-                       <Button 
-                         onClick={() => shortlistApplicant(app.id)}
-                         disabled={loading === app.id}
-                         className="h-9 px-5 rounded-xl text-[11px] font-medium bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center gap-1.5"
-                       >
-                         {loading === app.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
-                         Shortlist
-                       </Button>
-                     )}
-                 </div>
+                  {/* Grouped Actions - Simplified to Full Detail only with original styling */}
+                  <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 shrink-0 pt-4 lg:pt-0 border-t lg:border-none border-slate-50">
+                     <Button 
+                        onClick={() => {
+                           setSelectedApplicant(app);
+                           setLoadingProfile(true);
+                           dashboardServerFetch(`recruiter/applications/${app.id}`).then(res => {
+                              if (res.status) setSelectedApplicantFullData(res.data);
+                              setLoadingProfile(false);
+                           });
+                        }}
+                        className="h-9 px-5 rounded-xl text-[11px] font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2 active:scale-95"
+                     >
+                       <Eye className="w-3.5 h-3.5" /> View Full Profile
+                     </Button>
+                  </div>
 
                </div>
             </div>
@@ -438,110 +418,134 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-32 no-scrollbar bg-slate-50/30">
                 
-                {/* Header Profile Section */}
-                <div className="flex items-start gap-5">
-                   <div className="w-20 h-20 rounded-2xl border border-slate-100 bg-slate-50 overflow-hidden shrink-0 shadow-inner">
+                {/* Header Profile Section - More Compact */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-4">
+                   <div className="w-16 h-16 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden shrink-0 shadow-inner">
                       {selectedApplicant.job_seeker?.profile_photo ? (
                         <img src={getFullUrl(selectedApplicant.job_seeker.profile_photo)} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="flex items-center justify-center w-full h-full bg-indigo-50 text-indigo-600 text-2xl font-bold">{getCandidateInitial(selectedApplicant)}</div>
+                        <div className="flex items-center justify-center w-full h-full bg-indigo-50 text-indigo-600 text-xl font-bold">{getCandidateInitial(selectedApplicant)}</div>
                       )}
                    </div>
-                   <div className="space-y-4 flex-1">
-                      <div className="space-y-1">
-                         <h1 className="text-2xl font-medium text-black">{getCandidateName(selectedApplicant)}</h1>
-                         <p className="text-[13px] font-medium text-indigo-600 bg-indigo-50 w-fit px-3 py-1 rounded-lg border border-indigo-100 capitalize">{selectedApplicant.job_seeker?.title?.toLowerCase() || "qualified candidate"}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
+                   <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center justify-between">
+                         <h1 className="text-lg font-semibold text-black">{getCandidateName(selectedApplicant)}</h1>
                          <StatusBadge status={selectedApplicant.status} />
-                         <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 bg-slate-50/50 px-3 py-1 rounded-lg border border-slate-100"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Verified Candidate</span>
+                      </div>
+                      <p className="text-[12px] font-medium text-indigo-600 capitalize">{selectedApplicant.job_seeker?.title?.toLowerCase() || "qualified candidate"}</p>
+                      <div className="flex items-center gap-2">
+                         <span className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400"><ShieldCheck className="w-3 h-3 text-emerald-500" /> Verified Candidate</span>
+                         <span className={cn(
+                           "px-2 py-0.5 rounded-md text-[9px] font-bold border whitespace-nowrap uppercase",
+                           (selectedApplicantFullData?.job_seeker?.availability || selectedApplicant.job_seeker?.availability) === 'open' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                         )}>
+                           {selectedApplicantFullData?.job_seeker?.availability || selectedApplicant.job_seeker?.availability || 'Standard'}
+                         </span>
                       </div>
                    </div>
                 </div>
 
-                {/* Candidate Stats Grid */}
+                {/* Candidate Info Grid - More Compact */}
                 <div className="grid grid-cols-2 gap-3">
                    {[
                       { label: "Contact Phone", value: showPhone ? (selectedApplicantFullData?.job_seeker?.phone || selectedApplicant.job_seeker?.phone) : "••••••••••", icon: Phone, action: () => setShowPhone(true), color: "text-blue-600", bg: "bg-blue-50/50" },
                       { label: "Email Address", value: selectedApplicantFullData?.job_seeker?.email || selectedApplicantFullData?.job_seeker?.user?.email || selectedApplicant.job_seeker?.user?.email || selectedApplicant.job_seeker?.email, icon: Mail, color: "text-purple-600", bg: "bg-purple-50/50" },
-                      { label: "Total Experience", value: `${selectedApplicantFullData?.job_seeker?.experience_years ?? selectedApplicant.job_seeker?.experience_years ?? 0} Years`, icon: Briefcase, color: "text-orange-600", bg: "bg-orange-50/50" },
-                      { label: "Current Location", value: selectedApplicantFullData?.job_seeker?.location || selectedApplicant.job_seeker?.location || "India", icon: MapPin, color: "text-rose-600", bg: "bg-rose-50/50" },
+                      { label: "Experience", value: `${selectedApplicantFullData?.job_seeker?.experience_years ?? selectedApplicant.job_seeker?.experience_years ?? 0} Years`, icon: Briefcase, color: "text-orange-600", bg: "bg-orange-50/50" },
+                      { label: "Location", value: selectedApplicantFullData?.job_seeker?.location || selectedApplicant.job_seeker?.location || "India", icon: MapPin, color: "text-rose-600", bg: "bg-rose-50/50" },
                    ].map((item, i) => (
-                      <div key={i} className="p-3.5 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-2.5 transition-all hover:border-indigo-100/30">
-                         <div className="flex items-center justify-between">
-                            <div className={cn("w-7.5 h-7.5 rounded-lg flex items-center justify-center", item.bg, item.color)}>
-                               <item.icon className="w-4 h-4" />
+                      <div key={i} className="p-3 rounded-xl bg-white border border-slate-100 shadow-xs space-y-1 transition-all hover:border-indigo-100/30">
+                         <div className="flex items-center gap-2">
+                            <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center shrink-0", item.bg, item.color)}>
+                               <item.icon className="w-3.5 h-3.5" />
                             </div>
-                            <p className="text-[10px] font-medium text-black opacity-40 whitespace-nowrap">{item.label}</p>
+                            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">{item.label}</p>
                          </div>
-                         <div className="space-y-1">
-                            <p className="text-[14px] font-medium text-black break-all">{item.value}</p>
+                         <div className="pl-8">
+                            <p className="text-[12px] font-semibold text-slate-900 break-all leading-tight">{item.value}</p>
                             {item.action && !showPhone && (
-                              <button onClick={item.action} className="text-[10px] font-bold text-indigo-600 hover:underline">REVEAL NUMBER</button>
+                              <button onClick={item.action} className="text-[9px] font-bold text-indigo-600 hover:underline mt-0.5">REVEAL NUMBER</button>
                             )}
                          </div>
                       </div>
                    ))}
                 </div>
 
-                {/* Resume Access Module */}
-                <div className="space-y-4">
-                   <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100"><FileText className="w-4 h-4" /></div>
-                      <h3 className="text-sm font-medium text-black">Candidate Resume</h3>
+                <div className="space-y-3">
+                   <div className="flex items-center gap-2 px-1">
+                      <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                      <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Candidate Resume</h3>
                    </div>
-                   <a 
-                     href={getFullUrl(selectedApplicant.resume?.file_url)} 
-                     target="_blank" 
-                     rel="noopener noreferrer"
-                     className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center justify-between group hover:border-indigo-100 hover:bg-indigo-50/10 transition-all cursor-pointer"
-                   >
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                         <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center border border-orange-100 shrink-0 shadow-sm transition-transform group-hover:scale-110">
-                            <FileText className="w-6 h-6" />
+                   <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-xs flex items-center justify-between group hover:border-indigo-100 hover:bg-indigo-50/10 transition-all">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                         <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center border border-orange-100 shrink-0 shadow-sm transition-transform group-hover:scale-105">
+                            <FileText className="w-5 h-5" />
                          </div>
                          <div className="min-w-0">
-                            <p className="text-[14px] font-medium text-black truncate group-hover:text-indigo-600 transition-colors">{selectedApplicant.resume?.file_name || "Resume_Document.pdf"}</p>
-                            <p className="text-[11px] font-medium text-black/40">PDF Document • {safeFormatDistanceToNow(selectedApplicant.created_at)} ago</p>
+                            <p className="text-[13px] font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{selectedApplicantFullData?.resume?.file_name || selectedApplicant.resume?.file_name || "Resume_Document.pdf"}</p>
+                            <p className="text-[10px] font-medium text-slate-400">PDF Document • Ready to view</p>
                          </div>
                       </div>
-                      <div className="h-10 px-4 rounded-xl border border-slate-200 bg-white group-hover:border-indigo-200 group-hover:bg-white text-[12px] font-medium text-indigo-600 flex items-center gap-2 shadow-sm transition-all">
-                         <Download className="w-4 h-4" /> 
-                         <span className="hidden sm:inline">View Resume</span>
+                      <div className="flex items-center gap-2">
+                         <a 
+                           href={getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant.resume?.file_url)} 
+                           target="_blank"
+                           download
+                           className="h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-600 flex items-center gap-1.5 shadow-xs transition-all"
+                         >
+                            <Download className="w-3.5 h-3.5" /> 
+                            <span className="hidden sm:inline">Download</span>
+                         </a>
+                         <button 
+                           onClick={() => setShowResumePreview(true)}
+                           className="h-8 px-3 rounded-lg bg-[#312E81] text-white hover:bg-[#1E1B4B] text-[11px] font-bold flex items-center gap-1.5 shadow-md shadow-indigo-100 transition-all"
+                         >
+                            <Eye className="w-3.5 h-3.5" /> 
+                            <span className="hidden sm:inline">Full Preview</span>
+                         </button>
                       </div>
-                   </a>
+                   </div>
                 </div>
 
-                {/* Screening Questions Section */}
+                {/* Skills Section - NEW */}
+                {(selectedApplicantFullData?.job_seeker?.skills || selectedApplicant.job_seeker?.skills) && (
+                   <div className="space-y-3">
+                      <div className="flex items-center gap-2 px-1">
+                         <CheckCircle2 className="w-3.5 h-3.5 text-indigo-500" />
+                         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Core Competencies</h3>
+                      </div>
+                      <div className="bg-white border border-slate-100 rounded-xl p-3 shadow-xs flex flex-wrap gap-1.5">
+                         {(selectedApplicantFullData?.job_seeker?.skills || selectedApplicant.job_seeker?.skills).map((skill: string, idx: number) => (
+                            <span key={idx} className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-indigo-100/50 capitalize">
+                               {skill}
+                            </span>
+                         ))}
+                      </div>
+                   </div>
+                )}
+
+                {/* Screening Questions Section - Compact */}
                 {(() => {
                    const answers = selectedApplicantFullData?.application_answers || selectedApplicant.application_answers || [];
                    if (answers.length === 0) return null;
                    
                    return (
-                      <div className="space-y-4">
-                         <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100"><ShieldCheck className="w-4 h-4" /></div>
-                            <h3 className="text-sm font-medium text-black">Screening Responses</h3>
+                      <div className="space-y-3">
+                         <div className="flex items-center gap-2 px-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Screening Responses</h3>
                          </div>
-                         <div className="space-y-4">
+                         <div className="space-y-2">
                             {answers.map((ans: any, idx: number) => (
-                               <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm space-y-3 group transition-all hover:border-indigo-100/30">
-                                  <div className="space-y-1">
-                                     <p className="text-[10px] font-medium text-black/30">Question {idx + 1}</p>
-                                     <p className="text-[12.5px] font-medium text-black leading-relaxed">{ans.question?.question || "Requirement Question"}</p>
-                                  </div>
-                                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-50">
-                                     <p className="text-[9px] font-medium text-indigo-600 mb-1">Candidate Answer</p>
-                                     <p className="text-[12px] font-medium text-black opacity-60 leading-relaxed italic">"{ans.candidate_answer || "No response provided."}"</p>
-                                  </div>
-                                  {ans.question?.recruiter_answer && (
-                                     <div className="flex items-center gap-2 px-1">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                        <p className="text-[11px] font-medium text-emerald-600 italic">Expected match: {ans.question.recruiter_answer}</p>
+                               <div key={idx} className="p-3 rounded-xl bg-white border border-slate-100 shadow-xs space-y-2 group transition-all hover:border-indigo-100/30">
+                                  <p className="text-[12px] font-semibold text-slate-900 leading-tight">{ans.question?.question || "Requirement Question"}</p>
+                                  <div className="bg-slate-50/80 rounded-lg p-2.5 border border-slate-50 flex items-start gap-2">
+                                     <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
                                      </div>
-                                  )}
+                                     <p className="text-[11px] font-medium text-slate-600 leading-normal">"{ans.candidate_answer || "No response provided."}"</p>
+                                  </div>
                                </div>
                             ))}
                          </div>
@@ -549,45 +553,39 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                    );
                 })()}
 
-                {/* Bio / About */}
-                <div className="space-y-4">
-                   <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100"><User className="w-4 h-4" /></div>
-                      <h3 className="text-sm font-medium text-black">Professional Bio</h3>
+                {/* Bio / About - Compact */}
+                <div className="space-y-3">
+                   <div className="flex items-center gap-2 px-1">
+                      <User className="w-3.5 h-3.5 text-indigo-500" />
+                      <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Professional Bio</h3>
                    </div>
-                   <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
-                      <p className="text-[13px] font-medium text-black/70 leading-relaxed italic">{selectedApplicant.job_seeker?.bio || "No candidate biography provided."}</p>
+                   <div className="bg-white border border-slate-100 rounded-xl p-4 shadow-xs">
+                      <p className="text-[12px] font-medium text-slate-600 leading-relaxed italic">{selectedApplicantFullData?.job_seeker?.bio || selectedApplicant.job_seeker?.bio || "No candidate biography provided."}</p>
                    </div>
                 </div>
 
-                {/* Additional Dynamic Data (Experiences/Skills) */}
+                {/* Experiences & Education - Compact */}
                 {loadingProfile ? (
                    <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-indigo-600" /></div>
                 ) : selectedApplicantFullData && (
-                   <div className="space-y-8">
+                   <div className="space-y-6">
                       {selectedApplicantFullData.job_seeker?.experiences?.length > 0 && (
-                         <div className="space-y-5">
-                            <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
-                               <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100"><Briefcase className="w-4 h-4" /></div>
-                               <h3 className="text-sm font-medium text-black">Work Experience</h3>
+                         <div className="space-y-3">
+                            <div className="flex items-center gap-2 px-1">
+                               <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
+                               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Work History</h3>
                             </div>
-                            <div className="relative space-y-6 pl-4 border-l-2 border-slate-50 ml-4">
+                            <div className="space-y-2">
                                {selectedApplicantFullData.job_seeker.experiences.map((exp: any) => (
-                                  <div key={exp.id} className="relative group">
-                                     <div className="absolute -left-[25px] top-1 w-4.5 h-4.5 rounded-full bg-white border-2 border-orange-500 shadow-sm z-10 group-hover:scale-125 transition-transform" />
-                                     
-                                     <div className="space-y-1.5 transition-all group-hover:translate-x-1">
-                                        <div className="flex justify-between items-start gap-4">
-                                           <h4 className="text-[14px] font-medium text-black leading-tight">{exp.job_title}</h4>
-                                           <span className="text-[10px] font-medium text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100 whitespace-nowrap shadow-sm">
-                                              {exp.start_date ? new Date(exp.start_date).getFullYear() : 'N/A'} — {exp.is_current ? 'Present' : exp.end_date ? new Date(exp.end_date).getFullYear() : 'Present'}
-                                           </span>
-                                        </div>
-                                        <p className="text-[11px] font-medium text-indigo-600/80 tracking-tight italic flex items-center gap-1.5">
-                                           <MapPin className="w-3 h-3" /> {exp.company_name} {exp.location && `• ${exp.location}`}
-                                        </p>
-                                        <p className="text-[12.5px] font-medium text-black/50 leading-relaxed max-w-[95%]">{exp.description}</p>
+                                  <div key={exp.id} className="p-3 bg-white border border-slate-100 rounded-xl shadow-xs space-y-1.5">
+                                     <div className="flex justify-between items-start">
+                                        <h4 className="text-[13px] font-bold text-slate-900">{exp.job_title}</h4>
+                                        <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                                           {exp.start_date ? new Date(exp.start_date).getFullYear() : 'N/A'} - {exp.is_current ? 'Present' : exp.end_date ? new Date(exp.end_date).getFullYear() : 'N/A'}
+                                        </span>
                                      </div>
+                                     <p className="text-[11px] font-semibold text-indigo-600/70">{exp.company_name} {exp.location && `• ${exp.location}`}</p>
+                                     {exp.description && <p className="text-[11px] font-medium text-slate-500 leading-normal">{exp.description}</p>}
                                   </div>
                                ))}
                             </div>
@@ -595,27 +593,21 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                       )}
 
                       {selectedApplicantFullData.job_seeker?.educations?.length > 0 && (
-                         <div className="space-y-5">
-                            <div className="flex items-center gap-3 border-b border-slate-50 pb-3">
-                               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><GraduationCap className="w-4 h-4" /></div>
-                               <h3 className="text-sm font-medium text-black">Education Detail</h3>
+                         <div className="space-y-3">
+                            <div className="flex items-center gap-2 px-1">
+                               <GraduationCap className="w-3.5 h-3.5 text-indigo-500" />
+                               <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Education</h3>
                             </div>
-                            <div className="relative space-y-6 pl-4 border-l-2 border-slate-50 ml-4">
+                            <div className="space-y-2">
                                {selectedApplicantFullData.job_seeker.educations.map((edu: any) => (
-                                  <div key={edu.id} className="relative group">
-                                     <div className="absolute -left-[25px] top-1 w-4.5 h-4.5 rounded-full bg-white border-2 border-emerald-500 shadow-sm z-10 group-hover:scale-125 transition-transform" />
-                                     
-                                     <div className="space-y-1 transition-all group-hover:translate-x-1">
-                                        <div className="flex justify-between items-start gap-4">
-                                           <h4 className="text-[14px] font-medium text-black leading-tight">{edu.degree}</h4>
-                                           <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100 whitespace-nowrap shadow-sm">
-                                              {edu.start_year} — {edu.is_current ? 'Present' : edu.end_year}
-                                           </span>
-                                        </div>
-                                        <p className="text-[12px] font-medium text-black/40 flex items-center gap-1.5">
-                                           <GraduationCap className="w-3.5 h-3.5" /> {edu.institution} {edu.field_of_study && `• ${edu.field_of_study}`}
-                                        </p>
+                                  <div key={edu.id} className="p-3 bg-white border border-slate-100 rounded-xl shadow-xs space-y-1">
+                                     <div className="flex justify-between items-start">
+                                        <h4 className="text-[13px] font-bold text-slate-900">{edu.degree}</h4>
+                                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                           {edu.start_year} - {edu.is_current ? 'Present' : edu.end_year}
+                                        </span>
                                      </div>
+                                     <p className="text-[11px] font-semibold text-slate-500">{edu.institution} {edu.field_of_study && `• ${edu.field_of_study}`}</p>
                                   </div>
                                ))}
                             </div>
@@ -660,6 +652,65 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                        <ThumbsDown className="w-4.5 h-4.5 group-hover:scale-110 transition-transform" />
                     </Button>
                   </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Full Page Resume Preview Modal - Refined for a premium feel */}
+      <AnimatePresence>
+        {showResumePreview && (
+          <>
+            <motion.div 
+               initial={{ opacity: 0 }} 
+               animate={{ opacity: 1 }} 
+               exit={{ opacity: 0 }} 
+               onClick={() => setShowResumePreview(false)}
+               className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[60] cursor-pointer"
+            />
+            <motion.div 
+              initial={{ y: 100, opacity: 0 }} 
+              animate={{ y: 0, opacity: 1 }} 
+              exit={{ y: 100, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-2 md:inset-6 bg-white rounded-3xl shadow-2xl z-[70] overflow-hidden flex flex-col border border-white/10"
+            >
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner">
+                       <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                       <h3 className="text-[15px] font-bold text-slate-900 leading-tight">Resume Intelligence Preview</h3>
+                       <p className="text-[11px] font-medium text-slate-400 truncate max-w-[200px] md:max-w-md">{selectedApplicantFullData?.resume?.file_name || selectedApplicant?.resume?.file_name}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-3">
+                    <a 
+                      href={getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant?.resume?.file_url)} 
+                      download
+                      className="h-10 px-5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 flex items-center gap-2 transition-all active:scale-95"
+                    >
+                       <Download className="w-4 h-4" /> Download PDF
+                    </a>
+                    <button 
+                      onClick={() => setShowResumePreview(false)} 
+                      className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                    >
+                      <X className="w-5.5 h-5.5" />
+                    </button>
+                 </div>
+              </div>
+              <div className="flex-1 bg-[#525659] relative flex items-center justify-center">
+                 <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 animate-spin text-white/20" />
+                 </div>
+                 <iframe 
+                   src={`https://docs.google.com/viewer?url=${encodeURIComponent(getFullUrl(selectedApplicantFullData?.resume?.file_url || selectedApplicant?.resume?.file_url))}&embedded=true`} 
+                   className="w-full h-full border-none relative z-10"
+                   title="Resume Preview"
+                 />
               </div>
             </motion.div>
           </>

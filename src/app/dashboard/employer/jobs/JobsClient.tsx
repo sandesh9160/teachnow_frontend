@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   RefreshCw,
   Users,
+  Star
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -115,6 +116,24 @@ export default function JobsClient({
       const res = await dashboardServerFetch<any>(endpoint, { method });
       if (res?.status) {
         toast.success(res.message || `Job ${action} successful`);
+        router.refresh();
+      } else {
+        toast.error(res?.message || "Action failed");
+      }
+    } catch (e) {
+      toast.error("An error occurred");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleToggleFeatured = async (id: number) => {
+    setLoadingId(id);
+    try {
+      const endpoint = `employer/job/${id}/toggle-feature`;
+      const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
+      if (res?.status) {
+        toast.success(res.message || "Featured status updated");
         router.refresh();
       } else {
         toast.error(res?.message || "Action failed");
@@ -283,6 +302,25 @@ export default function JobsClient({
                       <CheckCircle2 className="w-3.5 h-3.5" /> Mark as Filled
                     </Button>
                   )}
+
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleToggleFeatured(job.id)}
+                    disabled={loadingId === job.id}
+                    className={cn(
+                      "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5",
+                      job.featured === 1 
+                        ? "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100" 
+                        : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
+                    )}
+                  >
+                    {loadingId === job.id ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Star className={cn("w-3.5 h-3.5", job.featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                    )} 
+                    {job.featured === 1 ? "Featured" : "Feature"}
+                  </Button>
  
                   {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                     <Button
