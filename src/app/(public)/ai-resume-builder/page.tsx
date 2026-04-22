@@ -9,17 +9,45 @@ import {
   Palette, 
   ArrowRight, 
   Download,
-
+  Loader2,
 } from "lucide-react";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import Link from "next/link";
 
 import Image from "next/image";
 
+import { useEffect, useState } from "react";
+import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+
+interface CVTemplate {
+  id: number;
+  name: string;
+  preview_image: string;
+}
+
 export default function AIResumeBuilderPage() {
+  const [templates, setTemplates] = useState<CVTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const breadcrumbItems = [
     { label: "AI Resume Builder", isCurrent: true },
   ];
+
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        const response = await fetchAPI<{ status: boolean; data: CVTemplate[] }>("/open/cv-templates");
+        if (response.status) {
+          setTemplates(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch templates:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadTemplates();
+  }, []);
 
   const features = [
     { 
@@ -54,25 +82,6 @@ export default function AIResumeBuilderPage() {
     },
   ];
 
-  const templates = [
-    { 
-      name: "Modern Professional", 
-      image: "/artifacts/resume_template_modern_professional.png" 
-    },
-    { 
-      name: "Minimal Clean", 
-      image: "/artifacts/resume_template_minimal_clean.png" 
-    },
-    { 
-      name: "Creative Resume", 
-      image: "/artifacts/resume_template_creative_resume.png" 
-    },
-    { 
-      name: "Corporate Resume", 
-      image: "/artifacts/resume_template_corporate_resume.png" 
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header / Breadcrumb */}
@@ -97,12 +106,21 @@ export default function AIResumeBuilderPage() {
                 Create a professional resume in minutes using smart AI-powered templates. Perfect for any job seeker.
               </p>
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-4">
-                <Button suppressHydrationWarning variant="hero" size="lg" className="rounded-xl px-8 font-bold bg-[#3B49DF] hover:bg-[#2D38B1] shadow-lg shadow-blue-200">
-                  <Sparkles className="h-4 w-4 mr-2" /> Create My Resume
-                </Button>
-                <Button suppressHydrationWarning variant="outline" size="lg" className="rounded-xl px-8 font-bold text-slate-700 bg-white border-slate-200 hover:bg-slate-50">
-                  Browse Templates
-                </Button>
+                <div className="flex flex-col items-center lg:items-start gap-4 pt-4">
+                  <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                    <Link href="/auth/login">
+                      <Button suppressHydrationWarning variant="hero" size="lg" className="rounded-xl px-8 font-bold bg-[#3B49DF] hover:bg-[#2D38B1] shadow-lg shadow-blue-200">
+                        <Sparkles className="h-4 w-4 mr-2" /> Create My Resume
+                      </Button>
+                    </Link>
+                    <Button suppressHydrationWarning variant="outline" size="lg" className="rounded-xl px-8 font-bold text-slate-700 bg-white border-slate-200 hover:bg-slate-50" onClick={() => document.getElementById('templates-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                      Browse Templates
+                    </Button>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Don't have an account? <Link href="/auth/login" className="text-[#3B49DF] font-bold hover:underline">Create one free</Link>
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -128,31 +146,43 @@ export default function AIResumeBuilderPage() {
       </section>
 
       {/* Templates Section */}
-      <section className="py-20 bg-white border-y border-slate-100">
+      <section id="templates-section" className="py-20 bg-white border-y border-slate-100">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-3xl font-extrabold text-slate-900 mb-16">
             Choose a Resume Template
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {templates.map((t) => (
-              <div key={t.name} className="flex flex-col group">
-                <div className="aspect-[1.3/1] rounded-2xl border border-slate-100 bg-[#F1F5F9] shadow-sm overflow-hidden mb-4 group-hover:shadow-xl transition-all duration-300 relative">
-                   <Image 
-                    src={t.image} 
-                    alt={t.name} 
-                    fill
-                    unoptimized
-                    className="object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                </div>
-                <div className="flex items-center justify-between px-1">
-                  <h3 className="text-sm font-bold text-slate-700">{t.name}</h3>
-                  <Button suppressHydrationWarning variant="outline" size="sm" className="text-[10px] h-7 px-3 font-bold rounded-lg border-slate-200 bg-white hover:bg-slate-50">
-                    Use Template
-                  </Button>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 min-h-[300px]">
+            {loading ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-20">
+                <Loader2 className="h-10 w-10 animate-spin text-primary opacity-20" />
+                <p className="mt-4 text-sm text-slate-400 font-medium">Fetching professional templates...</p>
               </div>
-            ))}
+            ) : (
+              templates.map((t) => (
+                <Link key={t.id} href="/auth/login" className="flex flex-col group">
+                  <div className="aspect-[1/1.414] rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-4 group-hover:shadow-xl transition-all duration-300 relative">
+                    <Image 
+                      src={normalizeMediaUrl(t.preview_image)} 
+                      alt={t.name} 
+                      fill
+                      unoptimized
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500" 
+                    />
+                  </div>
+                  <div className="flex items-center justify-between px-1">
+                    <h3 className="text-sm font-bold text-slate-700 truncate mr-2" title={t.name}>{t.name}</h3>
+                    <Button suppressHydrationWarning variant="outline" size="sm" className="text-[10px] h-7 px-3 font-bold rounded-lg border-slate-200 bg-white hover:bg-slate-50 shrink-0">
+                      Use Template
+                    </Button>
+                  </div>
+                </Link>
+              ))
+            )}
+            {!loading && templates.length === 0 && (
+              <div className="col-span-full text-center py-20 border border-dashed border-slate-200 rounded-3xl">
+                <p className="text-slate-400">No templates available at the moment.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
