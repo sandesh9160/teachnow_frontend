@@ -105,9 +105,9 @@ export default function JobsClient({
   const filteredJobs = getFilteredJobs();
 
   const handleAction = async (id: number, action: string) => {
-    const actionLabel = action === 'filled' ? 'mark this job as filled' : 
-                       action === 'delete' ? 'permanently delete this job' : 
-                       'republish this job';
+    const actionLabel = action === 'filled' ? 'mark this job as filled' :
+      action === 'delete' ? 'permanently delete this job' :
+        'republish this job';
 
     toast(`Are you sure you want to ${actionLabel}?`, {
       style: { borderLeft: '4px solid #ef4444' },
@@ -142,7 +142,7 @@ export default function JobsClient({
       },
       cancel: {
         label: 'Keep it',
-        onClick: () => {}
+        onClick: () => { }
       }
     });
   };
@@ -256,8 +256,8 @@ export default function JobsClient({
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-[10px] font-semibold",
                         (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-50 text-amber-600" :
-                        (job.job_status === 'active' || job.status === 'approved') ? "bg-emerald-50 text-emerald-600" :
-                          job.job_status === 'closed' ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-600"
+                          (job.job_status === 'active' || job.status === 'approved') ? "bg-emerald-50 text-emerald-600" :
+                            job.job_status === 'closed' ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-600"
                       )}>
                         {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : (job.status || job.job_status)}
                       </span>
@@ -293,8 +293,8 @@ export default function JobsClient({
                   {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                     <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
                       <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100 transition-all flex items-center gap-1.5 shadow-xs">
-                        <Users className="w-3.5 h-3.5" /> 
-                        Applicants 
+                        <Users className="w-3.5 h-3.5" />
+                        Applicants
                         {job.applicants_count !== undefined && (
                           <span className="ml-1 bg-white text-indigo-600 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-xs">
                             {job.applicants_count || 0}
@@ -321,27 +321,27 @@ export default function JobsClient({
                     </Button>
                   )}
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => job.featured === 0 && handleToggleFeatured(job.id)}
                     disabled={loadingId === job.id || job.featured === 1}
                     className={cn(
                       "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5",
-                      job.featured === 1 
-                        ? (job.admin_featured === 1 
-                            ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default" 
-                            : "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default")
+                      job.featured === 1
+                        ? (job.admin_featured === 1
+                          ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default"
+                          : "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default")
                         : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
                     )}
                   >
                     {loadingId === job.id ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <RefreshCw className="w-2 h-2 animate-spin" />
                     ) : (
                       <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
-                    )} 
-                    {job.featured === 1 ? (job.admin_featured === 1 ? "Featured" : "Awaiting for admin") : "Feature"}
+                    )}
+                    {job.featured === 1 ? (job.admin_featured === 1 ? "Featured" : "Awaiting") : "Feature"}
                   </Button>
- 
+
                   {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                     <Button
                       onClick={() => handleAction(job.id, 'republish')}
@@ -349,7 +349,7 @@ export default function JobsClient({
                       variant="outline"
                       className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-50 hover:bg-indigo-50 hover:border-indigo-100 transition-all flex items-center gap-1.5"
                     >
-                      {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} 
+                      {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                       Republish Job
                     </Button>
                   )}
