@@ -11,8 +11,6 @@ import {
   FileText,
   Eye,
   Plus,
-  Zap,
-  Check,
   Target,
   HelpCircle
 } from "lucide-react";
@@ -80,7 +78,6 @@ export default function PostJobClient({
   const [deadline, setDeadline] = useState<Date | undefined>(
     job?.deadline || job?.application_deadline ? new Date(job.deadline || job.application_deadline) : undefined
   );
-  const [featured, setFeatured] = useState(job?.featured === 1);
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -160,7 +157,6 @@ export default function PostJobClient({
       school_name: job?.school_name || profile?.company_name || profile?.name || "",
       description, 
       application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
-      featured: featured ? 1 : 0, 
       questions 
     };
     try {
@@ -187,28 +183,6 @@ export default function PostJobClient({
     const n = [...questions]; n[idx] = { ...n[idx], [field]: val }; setQuestions(n);
   };
 
-  const handleToggleFeatured = async () => {
-    const newState = !featured;
-    if (isEdit && job?.id) {
-      setLoading(true);
-      try {
-        const endpoint = `${userRole}/job/${job.id}/toggle-feature`;
-        const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
-        if (res.status) {
-          setFeatured(newState);
-          toast.success(res.message || "Featured status updated!", { style: { borderLeft: '4px solid #10b981' } });
-        } else {
-          toast.error(res.message || "Failed to update featured status.");
-        }
-      } catch (e) {
-        toast.error("An error occurred.");
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setFeatured(newState);
-    }
-  };
 
 
   return (

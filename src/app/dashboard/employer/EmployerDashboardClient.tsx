@@ -9,8 +9,8 @@ import {
    Zap,
    CreditCard,
    Check,
-   ShieldCheck,
-   Building2,
+   // ShieldCheck,
+   // Building2,
    Loader2,
    RefreshCw,
 } from "lucide-react";
