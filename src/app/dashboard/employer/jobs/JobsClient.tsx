@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Briefcase,
   MapPin,
@@ -23,7 +24,6 @@ import { Input } from "@/shared/ui/Input/Input";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 // import { formatDistanceToNow } from "date-fns";
 
 interface Job {
@@ -73,8 +73,10 @@ export default function JobsClient({
   userRole = "employer"
 }: JobsClientProps & { userRole?: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const basePath = `/dashboard/${userRole}`;
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchParams?.get('search') || "");
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'paused' | 'closed' | 'drafts' | 'expired' | 'featured'>('all');
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
@@ -84,22 +86,65 @@ export default function JobsClient({
   const pausedJobs: Job[] = initialData?.paused_jobs?.data || [];
   const draftsJobs: Job[] = initialData?.drafts_jobs?.data || [];
 
-  const allJobs = [...activeJobs, ...pausedJobs, ...closedJobs, ...expiredJobs, ...draftsJobs].sort((a, b) =>
+  // Deduplicate jobs by ID to prevent key collision errors
+  const deduplicateJobs = (jobs: Job[]) => {
+    const seen = new Set<number>();
+    return jobs.filter(job => {
+      if (!job?.id || seen.has(job.id)) return false;
+      seen.add(job.id);
+      return true;
+    });
+  };
+
+  const allJobs = deduplicateJobs([
+    ...activeJobs,
+    ...pausedJobs,
+    ...closedJobs,
+    ...expiredJobs,
+    ...draftsJobs
+  ]).sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   const featuredJobs = allJobs.filter(j => j.featured === 1);
 
+  // Log whenever initialData changes (new server-side results)
+  useEffect(() => {
+    console.log("[JobsClient] Received new data from server:", {
+      total: allJobs.length,
+      active: activeJobs.length,
+      searchTerm: searchParams?.get('search')
+    });
+  }, [initialData, allJobs.length, activeJobs.length, searchParams]);
+
+  // Handle server-side search with debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      // Only update if the search term has actually changed from what's in the URL
+      if (searchTerm !== (searchParams?.get('search') || "")) {
+        console.log(`[JobsClient] Updating search URL: "${searchTerm}"`);
+        const params = new URLSearchParams(searchParams || "");
+        if (searchTerm) {
+          params.set('search', searchTerm);
+        } else {
+          params.delete('search');
+        }
+        params.set('active_page', '1'); // Reset to first page on new search
+        router.push(`${pathname}?${params.toString()}`);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, pathname, router, searchParams]);
+
   const getFilteredJobs = () => {
     let source = allJobs;
-    if (activeTab === 'active') source = activeJobs;
-    else if (activeTab === 'expired') source = expiredJobs;
-    else if (activeTab === 'featured') source = featuredJobs;
+    if (activeTab === 'active') source = deduplicateJobs(activeJobs);
+    else if (activeTab === 'expired') source = deduplicateJobs(expiredJobs);
+    else if (activeTab === 'featured') source = deduplicateJobs(featuredJobs);
 
-    return source.filter((job) =>
-      job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
-    );
+    // Note: Search filtering is now primarily handled on the server side
+    return source;
   };
 
   const filteredJobs = getFilteredJobs();

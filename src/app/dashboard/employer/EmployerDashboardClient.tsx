@@ -292,11 +292,11 @@ export default function EmployerDashboardClient({
                   </div>
                </div>
 
-               {/* <Link href="/pricing-plans" className="relative z-10 lg:pl-4">
+               <Link href="/dashboard/employer/purchase-history" className="relative z-10 lg:pl-4">
                   <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
-                     Upgrade plan
+                     Upgrade Plan
                   </Button>
-               </Link> */}
+               </Link>
             </div>
          )}
 

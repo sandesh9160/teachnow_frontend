@@ -11,8 +11,10 @@ import {
   ShieldCheck, 
   Search,
   X,
-  User
+  User,
+  Eye
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
@@ -75,9 +77,10 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
   };
 
   const handleDelete = async (id: number) => {
-    toast("Remove this team member?", {
+    toast("Remove this recruiter?", {
+      description: "This action cannot be undone.",
       action: {
-        label: "Remove",
+        label: "Delete",
         onClick: async () => {
           try {
             const res = await dashboardServerFetch(`employer/users/${id}`, {
@@ -95,6 +98,13 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
           }
         },
       },
+      cancel: {
+        label: "Keep It",
+        onClick: () => {}
+      },
+      // sonner specific classes for button colors
+      actionButtonStyle: { backgroundColor: '#ef4444', color: '#fff' },
+      cancelButtonStyle: { backgroundColor: '#3b82f6', color: '#fff' }
     });
   };
 
@@ -110,8 +120,8 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
       {/* Responsive Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div className="space-y-1">
-          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Hiring team</h1>
-          <p className="text-xs font-medium text-slate-400">Access & permission management</p>
+          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Recruiters</h1>
+          <p className="text-xs font-medium text-slate-400">Manage recruiter access and permissions</p>
         </div>
 
         <Button 
@@ -123,7 +133,7 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
           )}
         >
           {showAddForm ? <X className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
-          {showAddForm ? "Cancel" : "Add team member"}
+          {showAddForm ? "Cancel" : "Add recruiter"}
         </Button>
       </div>
 
@@ -179,21 +189,21 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
             <Input 
                value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
-               placeholder="Filter team members..." 
+               placeholder="Filter recruiters..." 
                className="h-10 pl-10 border-transparent bg-slate-50/50 focus:bg-white rounded-xl text-xs font-medium focus:ring-1 focus:ring-primary/10" 
             />
          </div>
          <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-indigo-50/50 rounded-xl border border-indigo-100">
             <Users className="w-4 h-4 text-indigo-500" />
-            <span className="text-xs font-medium text-indigo-700 whitespace-nowrap">{users.length} members</span>
+            <span className="text-xs font-medium text-indigo-700 whitespace-nowrap">{users.length} recruiters</span>
          </div>
       </div>
 
-      {/* Team Table / Mobile List */}
+      {/* Recruiter Table / Mobile List */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden min-w-0">
         {/* Desktop Header */}
         <div className="hidden sm:grid grid-cols-12 bg-slate-50/50 border-b border-slate-100 px-4 py-3">
-          <div className="col-span-12 sm:col-span-6 md:col-span-5 text-xs font-semibold text-slate-500">Member details</div>
+          <div className="col-span-12 sm:col-span-6 md:col-span-5 text-xs font-semibold text-slate-500">Recruiter details</div>
           <div className="hidden md:block col-span-5 text-xs font-semibold text-slate-500">Contact</div>
           <div className="col-span-12 sm:col-span-6 md:col-span-2 text-xs font-semibold text-slate-500 text-right">Action</div>
         </div>
@@ -224,12 +234,24 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
                </div>
 
                {/* Right Side: Action (On top in mobile) */}
-               <div className="col-span-2 sm:col-span-6 md:col-span-2 order-2 sm:order-last flex justify-end items-center">
+               <div className="col-span-2 sm:col-span-6 md:col-span-2 order-2 sm:order-last flex justify-end items-center gap-1.5">
+                  <Link href={`/dashboard/employer/recruiters/${u.id}`}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl text-indigo-500 hover:bg-indigo-50 transition-all p-0 border border-transparent hover:border-indigo-100 active:scale-95 inline-flex items-center justify-center shrink-0"
+                      title="View posted jobs"
+                    >
+                      <Eye className="w-4.5 h-4.5" />
+                    </Button>
+                  </Link>
+
                   <Button 
                     onClick={() => handleDelete(u.id)}
                     variant="ghost" 
                     size="sm"
                     className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl text-red-500 hover:bg-red-50 transition-all p-0 border border-transparent hover:border-red-100 active:scale-95 inline-flex items-center justify-center shrink-0"
+                    title="Remove recruiter"
                   >
                     <Trash2 className="w-4.5 h-4.5" />
                   </Button>
@@ -249,7 +271,7 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
                 <Users className="w-12 h-12 text-slate-100" />
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-slate-900">No recruiters found</p>
-                  <p className="text-xs text-slate-400 font-medium">Add team members to delegate work.</p>
+                  <p className="text-xs text-slate-400 font-medium">Add recruiters to delegate job postings.</p>
                 </div>
               </div>
             </div>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import { useRazorpay } from "@/hooks/useRazorpay";
 
 interface Plan {
     id: number;
@@ -99,6 +100,46 @@ export default function PurchaseHistoryClient() {
   const [data, setData] = useState<PurchaseHistoryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [upgradingPlanId, setUpgradingPlanId] = useState<number | null>(null);
+
+  const { isProcessing, purchasePlan } = useRazorpay({
+    onSuccess: () => {
+      setUpgradingPlanId(null);
+      // Refresh data after successful payment
+      fetchHistory();
+    },
+    onFailure: () => {
+      setUpgradingPlanId(null);
+    },
+  });
+
+  const handleUpgrade = async (plan: Plan) => {
+    const price = plan.offer_price === "0.00" || plan.offer_price === "0" ? 0 : Number(plan.offer_price);
+
+    if (price === 0) {
+      // Free plan — subscribe directly
+      setUpgradingPlanId(plan.id);
+      try {
+        const res = await fetch("/api/razorpay/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan_id: plan.id }),
+        });
+        const data = await res.json();
+        if (data.status) {
+          fetchHistory();
+        }
+      } catch {
+        // silently handle
+      } finally {
+        setUpgradingPlanId(null);
+      }
+      return;
+    }
+
+    setUpgradingPlanId(plan.id);
+    await purchasePlan(plan.id, plan.name);
+  };
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -264,8 +305,19 @@ export default function PurchaseHistoryClient() {
                     Active Plan
                   </div>
                 ) : (
-                  <button className="w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 bg-white text-[#1E3A8A] border border-blue-100 hover:bg-blue-50/50 flex items-center justify-center gap-2 group">
-                    Upgrade Now <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <button 
+                    onClick={() => handleUpgrade(plan)}
+                    disabled={upgradingPlanId === plan.id || isProcessing}
+                    className={cn(
+                      "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 bg-white text-[#1E3A8A] border border-blue-100 hover:bg-blue-50/50 flex items-center justify-center gap-2 group",
+                      (upgradingPlanId === plan.id || isProcessing) && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    {upgradingPlanId === plan.id ? (
+                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
+                    ) : (
+                      <>Upgrade Now <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></>
+                    )}
                   </button>
                 )}
               </div>
