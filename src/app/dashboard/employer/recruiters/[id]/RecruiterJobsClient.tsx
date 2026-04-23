@@ -48,7 +48,9 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
 
   console.log("[RecruiterJobsClient] Initializing with data:", initialData);
   const jobsData = initialData?.data?.jobs;
-  const jobs = jobsData?.data || [];
+  const jobs = Array.isArray(initialData?.data) 
+    ? initialData.data 
+    : (jobsData?.data || []);
   const recruiter = initialData?.data?.recruiter;
 
   const handlePageChange = (page: number) => {

@@ -26,23 +26,23 @@ export async function POST(request: NextRequest) {
     // Forward cookies for authenticated request
     const cookieStore = await cookies();
     const allCookies = cookieStore.getAll();
-    const uniqueNames = new Set<string>();
-    const cookieHeader = allCookies
-      .filter((c) => {
-        if (uniqueNames.has(c.name)) return false;
-        uniqueNames.add(c.name);
-        return true;
-      })
-      .map((c) => `${c.name}=${c.value}`)
+    const cookieMap = new Map<string, string>();
+    
+    allCookies.forEach(c => {
+      if (c.value) cookieMap.set(c.name, c.value);
+    });
+
+    const cookieHeader = Array.from(cookieMap.entries())
+      .map(([name, value]) => `${name}=${value}`)
       .join("; ");
 
     // Extract XSRF token for POST request
-    const xsrfToken = allCookies.find((c) => c.name === "XSRF-TOKEN");
+    const xsrfToken = cookieMap.get("XSRF-TOKEN");
     const headers: Record<string, string> = {
       Accept: "application/json",
       "Content-Type": "application/json",
       ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-      ...(xsrfToken ? { "X-XSRF-TOKEN": decodeURIComponent(xsrfToken.value) } : {}),
+      ...(xsrfToken ? { "X-XSRF-TOKEN": decodeURIComponent(xsrfToken) } : {}),
     };
 
     const response = await api.post(

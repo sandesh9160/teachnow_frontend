@@ -114,6 +114,7 @@ function clearAuthCookies(res: NextResponse) {
     sameSite: "lax" as const,
   };
   res.cookies.set("laravel-session", "", { ...common, httpOnly: true });
+  res.cookies.set("laravel_session", "", { ...common, httpOnly: true });
   res.cookies.set("XSRF-TOKEN", "", { ...common, httpOnly: false });
 }
 

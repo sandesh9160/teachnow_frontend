@@ -366,25 +366,32 @@ export default function JobsClient({
                     </Button>
                   )}
 
-                  <Button
-                    variant="outline"
-                    onClick={() => job.featured === 0 && handleToggleFeatured(job.id)}
-                    disabled={loadingId === job.id || job.featured === 1}
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      const isExpiredFeatured = job.featured === 1 && job.featured_until && new Date(job.featured_until) < new Date();
+                      if (job.featured === 0 || isExpiredFeatured) handleToggleFeatured(job.id);
+                    }}
+                    disabled={loadingId === job.id || (job.featured === 1 && job.admin_featured !== 1) || (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))}
                     className={cn(
                       "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5",
-                      job.featured === 1
-                        ? (job.admin_featured === 1
+                      (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))
+                        ? "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default"
+                        : (job.featured === 1 && job.admin_featured !== 1)
                           ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default"
-                          : "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default")
-                        : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
+                          : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
                     )}
                   >
                     {loadingId === job.id ? (
-                      <RefreshCw className="w-2 h-2 animate-spin" />
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
-                    )}
-                    {job.featured === 1 ? (job.admin_featured === 1 ? "Featured" : "Awaiting") : "Feature"}
+                      <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                    )} 
+                    {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) 
+                      ? "Featured" 
+                      : (job.featured === 1 && job.admin_featured !== 1) 
+                        ? "Awaiting" 
+                        : "Feature"}
                   </Button>
 
                   {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
@@ -431,44 +438,64 @@ export default function JobsClient({
       </div>
 
       {/* Pagination Section */}
-      {(initialData?.active_jobs?.last_page || 0) > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-50">
-          <Button
-            variant="outline"
-            disabled={initialData?.active_jobs?.current_page === 1}
-            onClick={() => router.push(`${basePath}/jobs?active_page=${(initialData?.active_jobs?.current_page || 1) - 1}`)}
-            className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
-          >
-            Previous
-          </Button>
+      {(() => {
+        const pagination = activeTab === 'expired' ? initialData?.expired_jobs : 
+                          activeTab === 'closed' ? initialData?.closed_jobs :
+                          activeTab === 'paused' ? initialData?.paused_jobs :
+                          activeTab === 'drafts' ? initialData?.drafts_jobs :
+                          initialData?.active_jobs;
+        
+        const currentPage = pagination?.current_page || 1;
+        const lastPage = pagination?.last_page || 0;
 
-          <div className="flex items-center gap-1">
-            {Array.from({ length: initialData?.active_jobs?.last_page || 0 }, (_, i) => i + 1).map((pg) => (
-              <Button
-                key={pg}
-                onClick={() => router.push(`${basePath}/jobs?active_page=${pg}`)}
-                className={cn(
-                  "w-9 h-9 rounded-xl text-xs font-bold transition-all",
-                  initialData?.active_jobs?.current_page === pg
-                    ? "bg-[#312E81] text-white shadow-md"
-                    : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
-                )}
-              >
-                {pg}
-              </Button>
-            ))}
+        if (lastPage <= 1) return null;
+
+        const handlePageChange = (pg: number) => {
+          const params = new URLSearchParams(searchParams || "");
+          params.set('active_page', pg.toString());
+          if (searchTerm) params.set('search', searchTerm);
+          router.push(`${pathname}?${params.toString()}`);
+        };
+
+        return (
+          <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-50">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: lastPage }, (_, i) => i + 1).map((pg) => (
+                <Button
+                  key={pg}
+                  onClick={() => handlePageChange(pg)}
+                  className={cn(
+                    "w-9 h-9 rounded-xl text-xs font-bold transition-all",
+                    currentPage === pg
+                      ? "bg-[#312E81] text-white shadow-md"
+                      : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
+                  )}
+                >
+                  {pg}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              disabled={currentPage === lastPage}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Next
+            </Button>
           </div>
-
-          <Button
-            variant="outline"
-            disabled={initialData?.active_jobs?.current_page === initialData?.active_jobs?.last_page}
-            onClick={() => router.push(`${basePath}/jobs?active_page=${(initialData?.active_jobs?.current_page || 0) + 1}`)}
-            className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
-          >
-            Next
-          </Button>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

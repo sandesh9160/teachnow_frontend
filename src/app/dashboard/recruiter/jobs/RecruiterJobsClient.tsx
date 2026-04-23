@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   Briefcase, 
   MapPin, 
@@ -15,14 +15,13 @@ import {
   Users,
   RefreshCw,
   Star,
-  Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 
 interface Job {
@@ -45,19 +44,65 @@ interface Job {
   applicants_count?: number;
 }
 
-export default function RecruiterJobsClient({ 
-  jobs,
-  totalJobs 
-}: { 
-  jobs: Job[];
-  totalJobs: number;
-}) {
+interface PaginatedJobs {
+  data: Job[];
+  total: number;
+  current_page: number;
+  last_page: number;
+}
+
+interface RecruiterJobsClientProps {
+  initialData?: {
+    status: boolean;
+    active_jobs?: PaginatedJobs;
+    expired_jobs?: PaginatedJobs;
+    total_jobs?: number;
+  };
+}
+
+export default function RecruiterJobsClient({ initialData }: RecruiterJobsClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
   const userRole = "recruiter";
   const basePath = `/dashboard/${userRole}`;
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState(searchParams?.get('search') || "");
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'expired' | 'featured'>('all');
   const [loadingId, setLoadingId] = useState<number | null>(null);
+
+  const activeJobs = initialData?.active_jobs?.data || [];
+  const expiredJobs = initialData?.expired_jobs?.data || [];
+  
+  const jobs = useMemo(() => {
+    const seen = new Set<number>();
+    return [...activeJobs, ...expiredJobs].filter(job => {
+      if (seen.has(job.id)) return false;
+      seen.add(job.id);
+      return true;
+    });
+  }, [activeJobs, expiredJobs]);
+
+  const totalJobs = initialData?.total_jobs || (initialData?.active_jobs?.total || 0) + (initialData?.expired_jobs?.total || 0);
+
+  // Handle server-side search with debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm !== (searchParams?.get('search') || "")) {
+        const params = new URLSearchParams(searchParams || "");
+        if (searchTerm) {
+          params.set('search', searchTerm);
+        } else {
+          params.delete('search');
+        }
+        params.set('active_page', '1'); // Reset to first page on new search
+        router.push(`${pathname}?${params.toString()}`);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, searchParams, router, pathname]);
 
   const now = new Date();
 
@@ -71,15 +116,9 @@ export default function RecruiterJobsClient({
     };
   }, [jobs, now]);
 
-  const getFilteredJobs = () => {
-    let source = partitionedJobs[activeTab];
-    return source.filter((job) => 
-      job?.title?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      job?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
-    );
-  };
-
-  const filteredJobs = getFilteredJobs();
+  // For recruiter dashboard, search is now handled on the server
+  // But we still filter locally if needed for the current page's tabs
+  const filteredJobs = partitionedJobs[activeTab];
 
   const handleAction = async (id: number, action: string) => {
     const actionLabel = action === 'filled' ? 'mark this job as filled' : 
@@ -296,23 +335,30 @@ export default function RecruiterJobsClient({
 
                   <Button 
                     variant="outline" 
-                    onClick={() => job.featured === 0 && handleToggleFeatured(job.id)}
-                    disabled={loadingId === job.id || job.featured === 1}
+                    onClick={() => {
+                      const isExpiredFeatured = job.featured === 1 && job.featured_until && new Date(job.featured_until) < now;
+                      if (job.featured === 0 || isExpiredFeatured) handleToggleFeatured(job.id);
+                    }}
+                    disabled={loadingId === job.id || (job.featured === 1 && job.admin_featured !== 1) || (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now))}
                     className={cn(
                       "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5",
-                      job.featured === 1 
-                        ? (job.admin_featured === 1 
-                            ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default" 
-                            : "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default")
-                        : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
+                      (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now))
+                        ? "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default"
+                        : (job.featured === 1 && job.admin_featured !== 1)
+                          ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default"
+                          : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
                     )}
                   >
                     {loadingId === job.id ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                      <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now)) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
                     )} 
-                    {job.featured === 1 ? (job.admin_featured === 1 ? "Featured" : "Awaiting for admin") : "Feature"}
+                    {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now)) 
+                      ? "Featured" 
+                      : (job.featured === 1 && job.admin_featured !== 1) 
+                        ? "Awaiting" 
+                        : "Feature"}
                   </Button>
 
                   {(job.expires_at && new Date(job.expires_at) < now) && (
@@ -327,14 +373,7 @@ export default function RecruiterJobsClient({
                     </Button>
                   )}
 
-                  <Button
-                    onClick={() => handleAction(job.id, 'delete')}
-                    disabled={loadingId === job.id}
-                    variant="outline"
-                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-500 bg-white border-rose-50 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center gap-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Delete
-                  </Button>
+                  {/* Delete button removed as per user request */}
                 </div>
 
               </div>
@@ -357,6 +396,61 @@ export default function RecruiterJobsClient({
           </div>
         )}
       </div>
+
+      {/* Pagination Section */}
+      {(() => {
+        const pagination = activeTab === 'expired' ? initialData?.expired_jobs : initialData?.active_jobs;
+        const currentPage = pagination?.current_page || 1;
+        const lastPage = pagination?.last_page || 0;
+
+        if (lastPage <= 1) return null;
+
+        const handlePageChange = (pg: number) => {
+          const params = new URLSearchParams(searchParams || "");
+          params.set('active_page', pg.toString());
+          if (searchTerm) params.set('search', searchTerm);
+          router.push(`${pathname}?${params.toString()}`);
+        };
+
+        return (
+          <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-50">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Previous
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: lastPage }, (_, i) => i + 1).map((pg) => (
+                <Button
+                  key={pg}
+                  onClick={() => handlePageChange(pg)}
+                  className={cn(
+                    "w-9 h-9 rounded-xl text-xs font-bold transition-all",
+                    currentPage === pg
+                      ? "bg-[#312E81] text-white shadow-md"
+                      : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
+                  )}
+                >
+                  {pg}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              disabled={currentPage === lastPage}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Next
+            </Button>
+          </div>
+        );
+      })()}
     </div>
   );
 }

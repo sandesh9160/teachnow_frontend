@@ -1,5 +1,5 @@
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-// import RecruiterJobsClient from "@/app/dashboard/employer/recruiters/[id]/RecruiterJobsClient";
+import RecruiterJobsClient from "./RecruiterJobsClient";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -32,7 +32,7 @@ export default async function RecruiterDetailsPage({
         </div>
       </div>
 
-      {/* <RecruiterJobsClient initialData={data} recruiterId={id} /> */}
+      <RecruiterJobsClient initialData={data} />
     </div>
   );
 }

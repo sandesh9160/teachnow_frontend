@@ -51,7 +51,17 @@ export default function PostJobClient({
 }: PostJobClientProps & { userRole?: string }) {
   const basePath = `/dashboard/${userRole}`;
   const job = isEdit ? initialData?.job : initialData;
-  const initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
+  let initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
+  
+  // If top-level questions is empty but job has questions, prefer job.questions
+  if (isEdit && initialQuestions.length === 0 && job?.questions?.length > 0) {
+    initialQuestions = job.questions;
+  }
+
+  if (isEdit) {
+    console.log("[PostJobClient] Full initialData for debug:", JSON.stringify(initialData, null, 2));
+  }
+  console.log(`[PostJobClient] isEdit: ${isEdit}, jobTitle: ${job?.title}, questionsCount: ${initialQuestions?.length || 0}`);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -66,11 +76,15 @@ export default function PostJobClient({
     experience_required: job?.experience_required || "",
     vacancies: job?.vacancies || 1,
     gender: job?.gender || "both",
-    salary_min: job?.salary_min?.split('.')[0] || "",
-    salary_max: job?.salary_max?.split('.')[0] || "",
+    salary_min: job?.salary_min?.toString().split('.')[0] || "",
+    salary_max: job?.salary_max?.toString().split('.')[0] || "",
     education_qualification: job?.education_qualification || "",
     skills: Array.isArray(job?.skills) ? job.skills : [],
     benefits: Array.isArray(job?.benefits) ? job.benefits : [],
+    meta_title: job?.meta_title || "",
+    meta_description: job?.meta_description || "",
+    meta_keywords: job?.meta_keywords || "",
+    keywords: job?.keywords || "",
   });
 
   const [description, setDescription] = useState(job?.description || "");
@@ -97,11 +111,11 @@ export default function PostJobClient({
     
     switch (step) {
       case 1:
-        if (!formData.title.trim()) newErrors.title = "Job Title is required";
+        if (!formData.title?.toString().trim()) newErrors.title = "Job Title is required";
         if (!formData.category_id) newErrors.category_id = "Subject / Category is required";
         if (!formData.job_type) newErrors.job_type = "Job Type is required";
         if (!formData.location) newErrors.location = "City is required";
-        if (!formData.experience_required.trim()) newErrors.experience_required = "Experience Required is required";
+        if (!formData.experience_required?.toString().trim()) newErrors.experience_required = "Experience Required is required";
         break;
       case 2:
         if (!description || description.replace(/<[^>]*>/g, '').trim().length < 50)
@@ -154,6 +168,7 @@ export default function PostJobClient({
       return;
     }
 
+    const jobId = job?.id || job?.job_id;
     setLoading(true);
     const data = { 
       ...formData, 
@@ -162,16 +177,25 @@ export default function PostJobClient({
       salary_min: salaryUndisclosed ? null : formData.salary_min,
       salary_max: salaryUndisclosed ? null : formData.salary_max,
       application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
-      questions 
+      questions,
+      screening_questions: questions,
+      screening_questions_json: JSON.stringify(questions),
+      ...(userRole === 'recruiter' && isEdit ? { _method: 'PUT' } : {})
     };
-    console.log("Submitting job form data:", data);
+    
+    console.log(`[PostJobClient] Submitting to ${userRole} for job ${jobId}. Full Data:`, data);
+    
     try {
       const endpoint = userRole === "recruiter"
-        ? (isEdit ? `recruiter/jobs/${job?.id}` : `recruiter/jobs`)
-        : (isEdit ? `${userRole}/jobs/update/${job?.id}` : `${userRole}/jobs/create`);
-      console.log(`Calling job submission endpoint: ${endpoint} with method: ${isEdit ? "PUT" : "POST"}`);
-      const result = await dashboardServerFetch(endpoint, { method: isEdit ? "PUT" : "POST", data });
-      console.log("Job submission response:", result);
+        ? (isEdit ? `recruiter/jobs/${jobId}` : `recruiter/jobs`)
+        : (isEdit ? `${userRole}/jobs/update/${jobId}` : `${userRole}/jobs/create`);
+      
+      const method = (userRole === 'recruiter' && isEdit) ? "POST" : (isEdit ? "PUT" : "POST");
+      console.log(`[PostJobClient] ${method} request to: ${endpoint} (with _method override if recruiter edit)`);
+      
+      const result = await dashboardServerFetch(endpoint, { method, data });
+      console.log("[PostJobClient] Submission Result:", result);
+      
       if (result.status) {
         toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"));
         setTimeout(() => { window.location.href = `${basePath}/jobs`; }, 1200);
@@ -179,7 +203,8 @@ export default function PostJobClient({
         toast.error(result.message || "Failed.");
       }
     } catch (e: any) {
-      toast.error("Error occurred.");
+      console.error("[PostJobClient] Submission error:", e);
+      toast.error("Error occurred during submission.");
     } finally {
       setLoading(false);
     }

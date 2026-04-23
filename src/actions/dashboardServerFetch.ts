@@ -22,16 +22,17 @@ export async function dashboardServerFetch<T = any>(
         const cookieStore = await cookies();
 
         // Format cookies from Next.js request for API call
-        // Deduplicate cookies by name to prevent multiple values for the same key (e.g. from different domains)
+        // Robust deduplication: prefer the most specific or non-empty version of important cookies
         const allCookies = cookieStore.getAll();
-        const uniqueCookies = new Set<string>();
-        const cookieHeader = allCookies
-            .filter((cookie) => {
-                if (uniqueCookies.has(cookie.name)) return false;
-                uniqueCookies.add(cookie.name);
-                return true;
-            })
-            .map((cookie) => `${cookie.name}=${cookie.value}`)
+        const cookieMap = new Map<string, string>();
+        
+        // Populate map, allowing subsequent (often more specific) cookies to overwrite earlier ones
+        allCookies.forEach(c => {
+            if (c.value) cookieMap.set(c.name, c.value);
+        });
+
+        const cookieHeader = Array.from(cookieMap.entries())
+            .map(([name, value]) => `${name}=${value}`)
             .join("; ");
 
         // Remove leading slash if present

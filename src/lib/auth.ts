@@ -274,14 +274,13 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
   try {
     // Format existing cookies for the request
     const allCookies = cookieStore.getAll();
-    const uniqueNames = new Set<string>();
-    const cookieHeader = allCookies
-      .filter(c => {
-        if (uniqueNames.has(c.name)) return false;
-        uniqueNames.add(c.name);
-        return true;
-      })
-      .map((cookie) => `${cookie.name}=${cookie.value}`)
+    const cookieMap = new Map<string, string>();
+    allCookies.forEach(c => {
+      if (c.value) cookieMap.set(c.name, c.value);
+    });
+
+    const cookieHeader = Array.from(cookieMap.entries())
+      .map(([name, value]) => `${name}=${value}`)
       .join("; ");
 
     const csrfResponse = await apiSanctum.get("/sanctum/csrf-cookie", {
@@ -334,14 +333,13 @@ export const signIn = async (data: { email: string; password: string; role?: "jo
 
   // Format cookies for login request
   const allCookies = cookieStore.getAll();
-  const uniqueNamesRes = new Set<string>();
-  const cookieHeader = allCookies
-    .filter(c => {
-      if (uniqueNamesRes.has(c.name)) return false;
-      uniqueNamesRes.add(c.name);
-      return true;
-    })
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
+  const cookieMapRes = new Map<string, string>();
+  allCookies.forEach(c => {
+    if (c.value) cookieMapRes.set(c.name, c.value);
+  });
+
+  const cookieHeader = Array.from(cookieMapRes.entries())
+    .map(([name, value]) => `${name}=${value}`)
     .join("; ");
 
   // Determine login endpoint
@@ -450,14 +448,13 @@ export const signOut = async () => {
     }
 
     const allCookies = cookieStore.getAll();
-    const uniqueNamesLogout = new Set<string>();
-    const cookieHeader = allCookies
-      .filter(c => {
-        if (uniqueNamesLogout.has(c.name)) return false;
-        uniqueNamesLogout.add(c.name);
-        return true;
-      })
-      .map((cookie) => `${cookie.name}=${cookie.value}`)
+    const cookieMapLogout = new Map<string, string>();
+    allCookies.forEach(c => {
+      if (c.value) cookieMapLogout.set(c.name, c.value);
+    });
+
+    const cookieHeader = Array.from(cookieMapLogout.entries())
+      .map(([name, value]) => `${name}=${value}`)
       .join("; ");
 
     const xsrfToken = cookieStore.get("XSRF-TOKEN")?.value;
