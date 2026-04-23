@@ -19,6 +19,7 @@ import { Label } from "@/shared/ui/Label/Label";
 import { toast } from "sonner";
 import { DatePicker } from "@/shared/ui/DatePicker/DatePicker";
 import { format, parseISO, isAfter } from "date-fns";
+import { cn } from "@/lib/utils";
 
 function toEducationPayload(form: any): EducationPayload {
   return {
@@ -138,6 +139,9 @@ export default function ProfileFormClient({
 
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [showLocationSug, setShowLocationSug] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [eduErrors, setEduErrors] = useState<Record<string, string>>({});
+  const [expErrors, setExpErrors] = useState<Record<string, string>>({});
   const [searchType, setSearchType] = useState<"location" | "preferred_location" | "exp_location">("location");
 
   const [certSuggestions, setCertSuggestions] = useState<string[]>([]);
@@ -205,7 +209,9 @@ export default function ProfileFormClient({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        toast.error("File is too large. Under 2MB required.");
+        toast.error("File is too large. Under 2MB required.", {
+          style: { borderLeft: '4px solid #ef4444' }
+        });
         return;
       }
       setPhotoFile(file);
@@ -240,20 +246,18 @@ export default function ProfileFormClient({
 
   const handleEduSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!eduFormData.institution.trim()) {
-      toast.error("Institution name is required");
-      return;
-    }
-    if (!eduFormData.degree.trim()) {
-      toast.error("Degree is required");
-      return;
-    }
-    if (!eduFormData.start_date) {
-      toast.error("Start date is required");
-      return;
-    }
+    const newErrs: Record<string, string> = {};
+    if (!eduFormData.institution.trim()) newErrs.institution = "Institution name is required";
+    if (!eduFormData.degree.trim()) newErrs.degree = "Degree is required";
+    if (!eduFormData.start_date) newErrs.start_date = "Start date is required";
     if (!eduFormData.is_current && eduFormData.end_date && isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
-      toast.error("End date cannot be before start date");
+      newErrs.dates = "End date cannot be before start date";
+    }
+
+    setEduErrors(newErrs);
+    const firstErr = Object.values(newErrs)[0];
+    if (firstErr) {
+      toast.error(firstErr, { style: { borderLeft: '4px solid #ef4444' } });
       return;
     }
 
@@ -271,6 +275,7 @@ export default function ProfileFormClient({
       setLocalEduList(prev => [...prev, { ...newRecord, is_new: true }]);
     }
     setEduFormData({ institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "", is_current: false, grade_type: "Percentage" });
+    setEduErrors({});
     setShowEduForm(false);
     setEditingEduId(null);
   };
@@ -295,25 +300,33 @@ export default function ProfileFormClient({
   };
 
   const handleEduDelete = (id: number | string) => {
-    setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
+    toast.error("Remove this education record?", {
+      action: {
+        label: "Remove",
+        onClick: () => {
+          setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
+          toast.success("Record marked for removal", { style: { borderLeft: '4px solid #10b981' } });
+        },
+      },
+      style: { borderLeft: '4px solid #ef4444' },
+      duration: 5000
+    });
   };
 
   const handleExpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!expFormData.job_title.trim()) {
-      toast.error("Job title is required");
-      return;
-    }
-    if (!expFormData.company_name.trim()) {
-      toast.error("Organization name is required");
-      return;
-    }
-    if (!expFormData.start_date) {
-      toast.error("Start date is required");
-      return;
-    }
+    const newErrs: Record<string, string> = {};
+    if (!expFormData.job_title.trim()) newErrs.job_title = "Job title is required";
+    if (!expFormData.company_name.trim()) newErrs.company_name = "Organization name is required";
+    if (!expFormData.start_date) newErrs.start_date = "Start date is required";
     if (!expFormData.is_current && expFormData.end_date && isAfter(parseISO(expFormData.start_date), parseISO(expFormData.end_date))) {
-      toast.error("End date cannot be before start date");
+      newErrs.dates = "End date cannot be before start date";
+    }
+
+    setExpErrors(newErrs);
+    const firstErr = Object.values(newErrs)[0];
+    if (firstErr) {
+      toast.error(firstErr, { style: { borderLeft: '4px solid #ef4444' } });
       return;
     }
 
@@ -330,6 +343,7 @@ export default function ProfileFormClient({
       setLocalExpList(prev => [...prev, { ...newRecord, is_new: true }]);
     }
     setExpFormData({ job_title: "", company_name: "", location: "", start_date: "", end_date: "", is_current: false, description: "" });
+    setExpErrors({});
     setShowExpForm(false);
     setEditingExpId(null);
   };
@@ -349,7 +363,17 @@ export default function ProfileFormClient({
   };
 
   const handleExpDelete = (id: number | string) => {
-    setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
+    toast.error("Remove this experience record?", {
+      action: {
+        label: "Remove",
+        onClick: () => {
+          setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
+          toast.success("Record marked for removal", { style: { borderLeft: '4px solid #10b981' } });
+        },
+      },
+      style: { borderLeft: '4px solid #ef4444' },
+      duration: 5000
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -357,28 +381,20 @@ export default function ProfileFormClient({
   };
 
   const handleSubmit = async () => {
-    if (!profileData.name.trim()) {
-      toast.error("Full name is required");
-      return;
-    }
-    if (!profileData.title.trim()) {
-      toast.error("Professional title is required");
-      return;
-    }
-    if (!profileData.phone.trim()) {
-      toast.error("Phone number is required");
-      return;
-    }
-    if (!profileData.location.trim()) {
-      toast.error("Location is required");
-      return;
-    }
-    if (!profileData.bio.trim()) {
-      toast.error("Bio is required");
-      return;
-    }
-    if (profileData.bio.trim().length < 50) {
-      toast.error("Bio should be at least 50 characters");
+    const newErrors: Record<string, string> = {};
+    
+    if (!profileData.name.trim()) newErrors.name = "Full name is required";
+    if (!profileData.title.trim()) newErrors.title = "Professional title is required";
+    if (!profileData.phone.trim()) newErrors.phone = "Phone number is required";
+    if (!profileData.location.trim()) newErrors.location = "Location is required";
+    if (!profileData.bio.trim()) newErrors.bio = "Bio is required";
+    else if (profileData.bio.trim().length < 50) newErrors.bio = "Bio should be at least 50 characters";
+    if (profileData.experience_years < 0) newErrors.experience_years = "Experience years cannot be negative";
+
+    setErrors(newErrors);
+    const firstError = Object.values(newErrors)[0];
+    if (firstError) {
+      toast.error(firstError, { style: { borderLeft: '4px solid #ef4444' } });
       return;
     }
 
@@ -386,6 +402,7 @@ export default function ProfileFormClient({
       setSaving(true);
       console.log("[ProfileDebug] Starting submission...");
       console.log("[ProfileDebug] Current Profile Data:", profileData);
+      console.log("[ProfileDebug] Target Location:", profileData.location);
       console.log("[ProfileDebug] Skills to map:", profileData.skills);
 
       const skillNames = (profileData.skills || []).map((skillIdOrName: any) => {
@@ -407,6 +424,7 @@ export default function ProfileFormClient({
             console.log(`[ProfileDebug] Appending list ${key}:`, list);
             list.forEach(v => formData.append(`${key}[]`, typeof v === 'string' ? v : v.name));
           } else if (key !== 'profile_photo' && key !== 'email') {
+            console.log(`[ProfileDebug] Appending ${key}:`, value);
             formData.append(key, value !== null && value !== undefined ? String(value) : "");
             if (key === 'title') formData.append('job_title', String(value));
           }
@@ -433,7 +451,7 @@ export default function ProfileFormClient({
       console.log("[ProfileDebug] Primary Profile Update Result:", profileResult);
 
       if (profileResult?.status === false) {
-        toast.error(profileResult.message || "Update failed");
+        toast.error(profileResult.message || "Update failed", { style: { borderLeft: '4px solid #ef4444' } });
         return;
       }
 
@@ -468,12 +486,12 @@ export default function ProfileFormClient({
         }
         if ((exp as any).is_dirty) {
           const payload = toExperiencePayload(exp as any);
-          console.log(`[ProfileDebug] Updating Experience ${exp.id}:`, payload);
+          console.log(`[ProfileDebug] Updating Experience ${exp.id} (Location: ${payload.location}):`, payload);
           return updateExperience(exp.id, payload);
         }
       }));
 
-      toast.success("Profile updated successfully!");
+      toast.success("Profile updated successfully!", { style: { borderLeft: '4px solid #10b981' } });
       setMode("view");
       router.refresh();
     } catch (err: any) {
@@ -487,7 +505,7 @@ export default function ProfileFormClient({
         if (validationErrors) errorMessage = `${errorMessage} ${validationErrors}`;
       }
 
-      toast.error(errorMessage);
+      toast.error(errorMessage, { style: { borderLeft: '4px solid #ef4444' } });
     } finally {
       setSaving(false);
     }
@@ -497,9 +515,9 @@ export default function ProfileFormClient({
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden relative">
       <div className="h-20 bg-indigo-500 bg-linear-to-r from-indigo-500 to-blue-400" />
       <div className="px-5 pb-5 relative">
-        <div className="flex items-end gap-3.5 -mt-8 mb-4">
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 -mt-10 mb-4">
           <div
-            className={`w-18 h-18 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative ${isEdit ? 'cursor-pointer group' : ''}`}
+            className={`w-20 h-20 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative ${isEdit ? 'cursor-pointer group' : ''}`}
             onClick={() => isEdit && document.getElementById("photo-upload")?.click()}
           >
             {photoPreview || profileData.profile_photo ? (
@@ -515,26 +533,26 @@ export default function ProfileFormClient({
               </div>
             )}
           </div>
-          <div className="flex-1 pb-0.5 min-w-0">
-            <h2 className="text-lg font-bold text-black tracking-tight truncate">{profileData.name || "Name not set"}</h2>
-            <p className="text-black/70 text-[13px] font-medium truncate">{profileData.title || "No title set"}</p>
+          <div className="min-w-0 pt-1 w-full">
+            <h2 className="text-xl font-bold text-black tracking-tight">{profileData.name || "Name not set"}</h2>
+            <p className="text-black/70 text-[13px] font-semibold">{profileData.title || "No title set"}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-50 mt-1">
-          <div className="flex items-center gap-2.5 text-black/70">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-50 mt-1">
+          <div className="flex items-center gap-2.5 text-black/70 px-2 sm:px-0">
             <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold truncate">{profileData.email}</span>
           </div>
-          <div className="flex items-center gap-2.5 text-black/70">
+          <div className="flex items-center gap-2.5 text-black/70 px-2 sm:px-0">
             <Phone className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold truncate">{profileData.phone || "Not specified"}</span>
           </div>
-          <div className="flex items-center gap-2.5 text-black/70">
+          <div className="flex items-center gap-2.5 text-black/70 px-2 sm:px-0">
             <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold truncate">{profileData.location || "Not specified"}</span>
           </div>
-          <div className="flex items-center gap-2.5 text-black/70">
+          <div className="flex items-center gap-2.5 text-black/70 px-2 sm:px-0">
             <Briefcase className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
             <span className="text-[12px] font-semibold">{profileData.experience_years || 0} Years Experience</span>
           </div>
@@ -545,7 +563,7 @@ export default function ProfileFormClient({
   );
 
   const renderProfileView = () => (
-    <div className="max-w-3xl mx-auto space-y-4 pb-8 animate-in fade-in duration-500">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 pb-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between gap-3 mb-1 px-4 sm:px-0">
         <div>
           <h1 className="text-lg font-bold text-black tracking-tight">My Profile</h1>
@@ -562,7 +580,7 @@ export default function ProfileFormClient({
         <h3 className="text-[12px] font-semibold text-slate-900 border-b border-slate-50 pb-2 flex items-center gap-2">
           <Search className="w-3.5 h-3.5 text-indigo-500" /> Job Preferences
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {/* <div>
             <p className="text-[10px] font-semibold text-black/60 mb-0.5">Status</p>
             <p className="text-[13px] font-semibold text-slate-700">{profileData.open_to_work}</p>
@@ -672,7 +690,7 @@ export default function ProfileFormClient({
           <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-black/30" /> Skills
           </h3>
-          <div className="flex flex-wrap gap-x-10 gap-y-3">
+          <div className="flex flex-wrap gap-x-6 sm:gap-x-10 gap-y-3">
             {(profileData.skills || []).map((item: any, i: number) => (
               <span key={i} className="text-indigo-600 font-semibold text-[13px]">
                 {typeof item === 'string' ? item : item.name}
@@ -705,15 +723,15 @@ export default function ProfileFormClient({
   );
 
   const renderProfileEdit = () => (
-    <div className="max-w-3xl mx-auto space-y-5 pb-10 animate-in slide-in-from-right-4 duration-500 px-4 sm:px-0">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5 pb-10 animate-in slide-in-from-right-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-black tracking-tight">Update Profile</h1>
           <p className="text-black/40 text-[12px] font-medium mt-0.5">Edit your recruitment-ready profile</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setMode("view")} className="h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
-          <Button onClick={handleSubmit} disabled={saving} className="h-8 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[12px]">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setMode("view")} className="flex-1 sm:flex-none h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
+          <Button onClick={handleSubmit} disabled={saving} className="flex-1 sm:flex-none h-8 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[12px]">
             {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : null} Save Final
           </Button>
         </div>
@@ -727,25 +745,25 @@ export default function ProfileFormClient({
             <h3 className="text-[13px] font-semibold text-black border-b border-slate-50 pb-2">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Full Name <span className="text-red-500">*</span></Label>
-                <Input name="name" value={profileData.name} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.name ? "text-red-500" : "text-slate-700")}>Full Name <span className="text-red-500">*</span></Label>
+                <Input name="name" value={profileData.name} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.name ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Phone Number <span className="text-red-500">*</span></Label>
-                <Input name="phone" value={profileData.phone} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.phone ? "text-red-500" : "text-slate-700")}>Phone Number <span className="text-red-500">*</span></Label>
+                <Input name="phone" value={profileData.phone} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.phone ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Professional Title <span className="text-red-500">*</span></Label>
-                <Input name="title" value={profileData.title} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.title ? "text-red-500" : "text-slate-700")}>Professional Title <span className="text-red-500">*</span></Label>
+                <Input name="title" value={profileData.title} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.title ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5 relative">
-                <Label className="text-[13px] font-semibold text-slate-700">Location <span className="text-red-500">*</span></Label>
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.location ? "text-red-500" : "text-slate-700")}>Location <span className="text-red-500">*</span></Label>
                 <Input
                   name="location"
                   value={profileData.location}
                   onChange={(e) => handleLocationChange(e, "location")}
                   onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
-                  className="h-10 rounded-lg text-[13px] border-slate-200"
+                  className={cn("h-10 rounded-lg text-[13px] transition-all", errors.location ? "border-red-500 bg-red-50/50" : "border-slate-200")}
                 />
                 {showLocationSug && searchType === "location" && locationSuggestions.length > 0 && (
                   <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
@@ -787,8 +805,8 @@ export default function ProfileFormClient({
                 />
               </div>
               <div className="md:col-span-2 space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Professional Bio <span className="text-red-500">*</span></Label>
-                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className="w-full rounded-lg border border-slate-200 bg-white p-3 text-[13px] outline-none" placeholder="Share your teaching philosophy and experience..." />
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.bio ? "text-red-500" : "text-slate-700")}>Professional Bio <span className="text-red-500">*</span></Label>
+                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className={cn("w-full rounded-lg border bg-white p-3 text-[13px] outline-none transition-all", errors.bio ? "border-red-500 bg-red-50/50" : "border-slate-200")} placeholder="Share your teaching philosophy and experience..." />
               </div>
             </div>
           </section>
@@ -830,46 +848,33 @@ export default function ProfileFormClient({
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-100 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2 space-y-1.5">
-                    <Label className="text-[12px] font-medium text-slate-600">Job Title <span className="text-red-500">*</span></Label>
-                    <Input value={expFormData.job_title} onChange={(e) => setExpFormData({ ...expFormData, job_title: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                    <Label className={cn("text-[12px] font-medium transition-colors", expErrors.job_title ? "text-red-500" : "text-slate-600")}>Job Title <span className="text-red-500">*</span></Label>
+                    <Input value={expFormData.job_title} onChange={(e) => setExpFormData({ ...expFormData, job_title: e.target.value })} className={cn("h-10 rounded-lg text-sm bg-white transition-all", expErrors.job_title ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[12px] font-medium text-slate-600">Institution Name <span className="text-red-500">*</span></Label>
-                    <Input value={expFormData.company_name} onChange={(e) => setExpFormData({ ...expFormData, company_name: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                    <Label className={cn("text-[12px] font-medium transition-colors", expErrors.company_name ? "text-red-500" : "text-slate-600")}>Institution Name <span className="text-red-500">*</span></Label>
+                    <Input value={expFormData.company_name} onChange={(e) => setExpFormData({ ...expFormData, company_name: e.target.value })} className={cn("h-10 rounded-lg text-sm bg-white transition-all", expErrors.company_name ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                   </div>
-                  <div className="space-y-1.5 relative">
+                  <div className="space-y-1.5">
                     <Label className="text-[12px] font-medium text-slate-600">Location</Label>
                     <Input
                       value={expFormData.location}
-                      onChange={(e) => handleLocationChange(e, "exp_location")}
-                      onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
+                      onChange={(e) => setExpFormData({ ...expFormData, location: e.target.value })}
                       className="h-10 rounded-lg text-sm bg-white"
+                      placeholder="e.g. Mumbai, India"
                     />
-                    {showLocationSug && searchType === "exp_location" && locationSuggestions.length > 0 && (
-                      <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-                        {locationSuggestions.map((loc, i) => (
-                          <li
-                            key={i}
-                            className="px-4 py-2 text-[13px] hover:bg-slate-50 cursor-pointer"
-                            onClick={() => { setExpFormData(prev => ({ ...prev, location: loc })); setShowLocationSug(false); }}
-                          >
-                            {loc}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[12px] font-medium text-slate-600">Timeline <span className="text-red-500">*</span></Label>
+                    <Label className={cn("text-[12px] font-medium transition-colors", expErrors.start_date ? "text-red-500" : "text-slate-600")}>Timeline <span className="text-red-500">*</span></Label>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
                       <div className="flex-1 space-y-1">
-                        <p className="text-[10px] font-semibold text-black/60">Start Date</p>
-                        <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                        <p className={cn("text-[10px] font-semibold transition-colors", expErrors.start_date ? "text-red-500" : "text-black/60")}>Start Date</p>
+                        <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", expErrors.start_date ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                       </div>
                       <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
                       <div className="flex-1 space-y-1">
-                        <p className="text-[11px] font-semibold text-black/60">End Date</p>
-                        <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                        <p className={cn("text-[11px] font-semibold transition-colors", expErrors.dates ? "text-red-500" : "text-black/60")}>End Date</p>
+                        <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", expErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                       </div>
                     </div>
                   </div>
@@ -919,12 +924,12 @@ export default function ProfileFormClient({
               <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100/50 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-semibold text-slate-700">Degree <span className="text-red-500">*</span></Label>
-                    <Input value={eduFormData.degree} onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                    <Label className={cn("text-[13px] font-semibold transition-colors", eduErrors.degree ? "text-red-500" : "text-slate-700")}>Degree <span className="text-red-500">*</span></Label>
+                    <Input value={eduFormData.degree} onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })} className={cn("h-10 rounded-lg text-sm bg-white transition-all", eduErrors.degree ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[13px] font-semibold text-slate-700">Institution <span className="text-red-500">*</span></Label>
-                    <Input value={eduFormData.institution} onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })} className="h-10 rounded-lg text-sm bg-white" />
+                    <Label className={cn("text-[13px] font-semibold transition-colors", eduErrors.institution ? "text-red-500" : "text-slate-700")}>Institution <span className="text-red-500">*</span></Label>
+                    <Input value={eduFormData.institution} onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })} className={cn("h-10 rounded-lg text-sm bg-white transition-all", eduErrors.institution ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[13px] font-semibold text-slate-700">Field of Study</Label>
@@ -945,16 +950,16 @@ export default function ProfileFormClient({
                     </div>
                   </div>
                   <div className="space-y-1.5 md:col-span-2">
-                    <Label className="text-[13px] font-semibold text-slate-700">Joined Timeline <span className="text-red-500">*</span></Label>
+                    <Label className={cn("text-[13px] font-semibold transition-colors", eduErrors.start_date ? "text-red-500" : "text-slate-700")}>Joined Timeline <span className="text-red-500">*</span></Label>
                     <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
                       <div className="flex-1 space-y-1">
-                        <p className="text-[12px] font-semibold text-slate-500">Start Date</p>
-                        <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                        <p className={cn("text-[12px] font-semibold transition-colors", eduErrors.start_date ? "text-red-500" : "text-slate-500")}>Start Date</p>
+                        <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", eduErrors.start_date ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                       </div>
                       <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
                       <div className="flex-1 space-y-1">
-                        <p className="text-[11px] font-semibold text-black/60">End Date</p>
-                        <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className="h-10 text-[13px] bg-white border-slate-200" />
+                        <p className={cn("text-[11px] font-semibold transition-colors", eduErrors.dates ? "text-red-500" : "text-black/60")}>End Date</p>
+                        <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", eduErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
                       </div>
                     </div>
                   </div>

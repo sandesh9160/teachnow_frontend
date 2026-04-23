@@ -139,17 +139,21 @@ export default function RecruiterCompanyProfileClient({
     formData.append("lattitude", profile.latitude || "");
     formData.append("longitude", profile.longitude || "");
     formData.append("mapLink", profile.map_link || "");
+    
+    console.log("Saving Recruiter Profile Data (Institution):", Object.fromEntries(formData.entries()));
 
     try {
       const { uploadFile } = await import("@/actions/FileUpload");
-      // Recruiters update the institutional profile they are linked to
-      const result = await uploadFile("employer/Update-Company", {
+      const endpoint = "employer/Update-Company";
+      console.log(`Calling recruiter profile update endpoint: ${endpoint}`);
+      const result = await uploadFile(endpoint, {
         method: "POST",
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
         }
       });
+      console.log("Recruiter profile update response:", result);
 
       if (result.status === true) {
         toast.success("Institution profile updated!", { style: { borderLeft: '4px solid #10b981' } });

@@ -355,11 +355,11 @@ const DesktopAuth = ({
 
   if (!isLoggedIn) {
     return (
-      <div className="flex items-center gap-2 xl:gap-8">
-        <Button asChild variant="ghost" size="sm" className="font-bold text-gray-600 hover:text-primary transition-colors whitespace-nowrap">
+      <div className="flex items-center gap-1.5 xl:gap-4">
+        <Button asChild variant="ghost" size="sm" className="font-bold text-gray-600 hover:text-primary transition-colors whitespace-nowrap px-2">
           <Link href="/auth/login">Register / Login</Link>
         </Button>
-        <Button asChild variant="hero" size="sm" className="rounded-lg px-5 h-10 font-bold bg-[#3b49df] shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20 whitespace-nowrap">
+        <Button asChild variant="hero" size="sm" className="rounded-lg px-4 h-9 font-bold bg-[#3b49df] shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20 whitespace-nowrap text-[13px]">
           <Link href="/auth/login?role=employer_recruiter">Post a Job</Link>
         </Button>
       </div>
@@ -556,7 +556,7 @@ const Header = ({
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" ref={navRef}>
-      <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-12">
+      <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
@@ -577,7 +577,7 @@ const Header = ({
         </Link>
 
         {/* Navigation Links (Centered) */}
-        <nav className="hidden items-center gap-1 lg:flex ">
+        <nav className="hidden items-center gap-0.5 xl:gap-1 lg:flex">
           {mappedMenus.map((menu) => {
             if (menu.isMega && menu.structure) {
               return (
@@ -631,9 +631,9 @@ const Header = ({
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex lg:hidden items-center gap-2">
+        <div className="flex lg:hidden items-center gap-1.5">
           {!isLoggedIn && (
-            <Link href="/auth/login" className="text-xs font-bold text-primary px-3 py-1.5 bg-primary/5 rounded-lg">Register / Login</Link>
+            <Link href="/auth/login" className="text-[10px] font-bold text-primary px-2 py-1.5 bg-primary/5 rounded-lg whitespace-nowrap">Register / Login</Link>
           )}
           <button className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

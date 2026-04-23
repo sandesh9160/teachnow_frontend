@@ -52,16 +52,16 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
         <div className="relative mb-14 px-4">
           <div className="text-center">
             <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
-              Career Resources
+              Career Blogs
             </h2>
             <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
               Tips, insights, and career advice for educators
             </p>
           </div>
-          
+
           <div className="absolute right-4 md:right-0 bottom-0 sm:top-1/2 sm:-translate-y-1/2 hidden md:block">
-            <Link 
-              href="/blogs" 
+            <Link
+              href="/blogs"
               className="group flex items-center gap-2 text-blue-600 font-semibold"
             >
               All Posts <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -79,15 +79,14 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
               scroll("left");
             }}
             disabled={blogPreview.length <= 1}
-            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
-              canScrollLeft 
-                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
-            }`}
+              }`}
           >
             <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
           </button>
-          
+
           <button
             type="button"
             onClick={(e) => {
@@ -95,17 +94,16 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
               scroll("right");
             }}
             disabled={blogPreview.length <= 1}
-            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
-              canScrollRight 
-                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
+            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
+                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
-            }`}
+              }`}
           >
             <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
           </button>
 
           {/* Horizontal Scroll Area */}
-          <div 
+          <div
             ref={scrollRef}
             onScroll={checkScroll}
             className="flex gap-5 overflow-x-auto scrollbar-hide pb-8 pt-1 px-[calc(50%-135px)] md:px-0 scroll-smooth snap-x snap-mandatory"
@@ -115,7 +113,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
             <div className="shrink-0 w-px md:hidden" />
             {blogPreview.map((post) => (
               <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px] snap-center md:snap-start">
-                <BlogCard 
+                <BlogCard
                   title={post.title}
                   slug={post.slug}
                   image={post.image}
@@ -133,6 +131,6 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
       </div>
     </section>
   );
-};  
+};
 
 export default BlogSections;

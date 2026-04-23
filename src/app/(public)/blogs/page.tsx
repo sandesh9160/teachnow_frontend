@@ -26,7 +26,7 @@ export default async function BlogPage() {
       <section className="border-b border-slate-50 bg-white py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center md:text-left">
           <div className="max-w-3xl">
-            <h1 className="text-[28px] md:text-[36px] font-semibold text-[#111827] tracking-tight">Career Resources</h1>
+            <h1 className="text-[28px] md:text-[36px] font-semibold text-[#111827] tracking-tight">Career blogs</h1>
             <p className="mt-2 text-[15px] md:text-[17px] text-slate-500 font-medium leading-relaxed">
               Career advice, interview tips, and insights for teachers, tutors, and academic professionals.
             </p>
@@ -54,11 +54,6 @@ export default async function BlogPage() {
                     />
                   </div>
                   <div className="p-4">
-                    <div className="mb-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold tracking-wide capitalize">
-                        {post.category}
-                      </span>
-                    </div>
                     <h3 className="text-base font-bold text-[#111827] leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
                       {post.title}
                     </h3>

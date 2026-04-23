@@ -14,7 +14,7 @@ interface BlogCardProps {
   excerpt?: string; // ✅ ADD THIS LINE
 }
 
-const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: BlogCardProps) => {
+const BlogCard = ({ title, excerpt, readTime, date, slug, image }: BlogCardProps) => {
   const imageUrl = normalizeMediaUrl(image);
   
   return (
@@ -38,12 +38,6 @@ const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: Blo
       </div>
       
       <div className="flex flex-1 flex-col p-5">
-        <div className="mb-4">
-          <span className="inline-flex items-center px-3 py-1 rounded-lg bg-blue-50 text-blue-600 text-[11px] font-semibold tracking-wide capitalize">
-            {category}
-          </span>
-        </div>
-        
         <h3 className="text-[17px] md:text-[18px] font-semibold text-[#111827] leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
           {title}
         </h3>
@@ -52,14 +46,14 @@ const BlogCard = ({ title, excerpt, category, readTime, date, slug, image }: Blo
           {excerpt}
         </p>
         
-        <div className="mt-6 pt-5 border-t border-slate-50 flex items-center justify-between text-[11px] md:text-[12px] text-slate-400 font-semibold">
+        <div className="mt-6 pt-5 border-t border-slate-50 flex items-center gap-4 text-[11px] md:text-[12px] text-slate-400 font-semibold">
           <div className="flex items-center gap-1.5 tracking-wide">
-            <Calendar className="h-3.5 w-3.5 text-slate-300" />
-            {date}
+            <Calendar className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+            <span className="whitespace-nowrap">{date}</span>
           </div>
           <div className="flex items-center gap-1.5 tracking-wide">
-            <Clock className="h-3.5 w-3.5 text-slate-300" />
-            {readTime}
+            <Clock className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+            <span className="whitespace-nowrap">{readTime}</span>
           </div>
         </div>
       </div>

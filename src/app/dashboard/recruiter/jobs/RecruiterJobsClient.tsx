@@ -41,6 +41,7 @@ interface Job {
   is_active: number;
   featured: number;
   featured_until?: string;
+  admin_featured?: number;
   applicants_count?: number;
 }
 
@@ -90,6 +91,7 @@ export default function RecruiterJobsClient({
       action: {
         label: action === 'filled' ? 'Mark Filled' : action === 'delete' ? 'Delete Job' : 'Republish',
         onClick: async () => {
+          console.log(`Executing recruiter job action: ${action} for ID: ${id}`);
           setLoadingId(id);
           try {
             let endpoint = `recruiter/jobs/${action === 'delete' ? 'delete' : action}/${id}`;
@@ -100,7 +102,9 @@ export default function RecruiterJobsClient({
             }
             
             const method = action === 'delete' ? "DELETE" : action === 'republish' ? "PUT" : "POST";
+            console.log(`Calling recruiter endpoint: ${endpoint} with method: ${method}`);
             const res = await dashboardServerFetch<any>(endpoint, { method });
+            console.log("Recruiter job action response:", res);
             
             if (res?.status) {
               toast.success(res.message || `Job ${action} successful`, { style: { borderLeft: '4px solid #10b981' } });
@@ -123,10 +127,13 @@ export default function RecruiterJobsClient({
   };
 
   const handleToggleFeatured = async (id: number) => {
+    console.log(`Toggling recruiter featured status for job ID: ${id}`);
     setLoadingId(id);
     try {
       const endpoint = `recruiter/job/${id}/toggle-feature`;
+      console.log(`Calling recruiter toggle-feature endpoint: ${endpoint}`);
       const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
+      console.log("Recruiter toggle feature response:", res);
       
       if (res?.status) {
         toast.success(res.message || "Featured status updated", { style: { borderLeft: '4px solid #10b981' } });
@@ -237,11 +244,6 @@ export default function RecruiterJobsClient({
                         )}>
                           {(job.expires_at && new Date(job.expires_at) < now) ? "Expired" : (job.status || job.job_status)}
                         </span>
-                        {job.featured === 1 && (
-                          <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-sm">
-                            <TrendingUp className="w-2.5 h-2.5" /> Featured
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -294,21 +296,23 @@ export default function RecruiterJobsClient({
 
                   <Button 
                     variant="outline" 
-                    onClick={() => handleToggleFeatured(job.id)}
-                    disabled={loadingId === job.id}
+                    onClick={() => job.featured === 0 && handleToggleFeatured(job.id)}
+                    disabled={loadingId === job.id || job.featured === 1}
                     className={cn(
                       "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5",
                       job.featured === 1 
-                        ? "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100" 
+                        ? (job.admin_featured === 1 
+                            ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default" 
+                            : "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default")
                         : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
                     )}
                   >
                     {loadingId === job.id ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <Star className={cn("w-3.5 h-3.5", job.featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                      <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
                     )} 
-                    {job.featured === 1 ? "Featured" : "Feature"}
+                    {job.featured === 1 ? (job.admin_featured === 1 ? "Featured" : "Awaiting for admin") : "Feature"}
                   </Button>
 
                   {(job.expires_at && new Date(job.expires_at) < now) && (

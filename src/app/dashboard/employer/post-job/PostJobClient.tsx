@@ -78,6 +78,7 @@ export default function PostJobClient({
   const [deadline, setDeadline] = useState<Date | undefined>(
     job?.deadline || job?.application_deadline ? new Date(job.deadline || job.application_deadline) : undefined
   );
+  const [salaryUndisclosed, setSalaryUndisclosed] = useState(!job?.salary_min && !job?.salary_max && isEdit);
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -107,11 +108,13 @@ export default function PostJobClient({
           newErrors.description = "Detailed Description (min 50 chars) is required";
         break;
       case 4:
+        if (!salaryUndisclosed) {
+          if (!formData.salary_min) newErrors.salary_min = "Minimum Salary is required";
+          if (!formData.salary_max) newErrors.salary_max = "Maximum Salary is required";
+          if (formData.salary_min && formData.salary_max && Number(formData.salary_min) > Number(formData.salary_max))
+            newErrors.salary_range = "Max salary should be more than min salary";
+        }
         if (!deadline) newErrors.deadline = "Application Deadline is required";
-        if (!formData.salary_min) newErrors.salary_min = "Minimum Salary is required";
-        if (!formData.salary_max) newErrors.salary_max = "Maximum Salary is required";
-        if (formData.salary_min && formData.salary_max && Number(formData.salary_min) > Number(formData.salary_max))
-          newErrors.salary_range = "Max salary should be more than min salary";
         if (!formData.vacancies || Number(formData.vacancies) <= 0) newErrors.vacancies = "Open Vacancies is required";
         break;
     }
@@ -156,14 +159,19 @@ export default function PostJobClient({
       ...formData, 
       school_name: job?.school_name || profile?.company_name || profile?.name || "",
       description, 
+      salary_min: salaryUndisclosed ? null : formData.salary_min,
+      salary_max: salaryUndisclosed ? null : formData.salary_max,
       application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
       questions 
     };
+    console.log("Submitting job form data:", data);
     try {
       const endpoint = userRole === "recruiter"
         ? (isEdit ? `recruiter/jobs/${job?.id}` : `recruiter/jobs`)
         : (isEdit ? `${userRole}/jobs/update/${job?.id}` : `${userRole}/jobs/create`);
+      console.log(`Calling job submission endpoint: ${endpoint} with method: ${isEdit ? "PUT" : "POST"}`);
       const result = await dashboardServerFetch(endpoint, { method: isEdit ? "PUT" : "POST", data });
+      console.log("Job submission response:", result);
       if (result.status) {
         toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"));
         setTimeout(() => { window.location.href = `${basePath}/jobs`; }, 1200);
@@ -423,30 +431,51 @@ export default function PostJobClient({
           <div className="space-y-5 animate-in fade-in duration-300">
             <h2 className="text-sm font-bold text-[#1E1B4B]">Salary Details</h2>
               <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", (errors.salary_min || errors.salary_max || errors.salary_range) ? "text-red-500" : "text-slate-700")}>
-                    Salary Range (Monthly) <span className="text-red-500 ml-0.5">*</span>
-                  </Label>
-                  <div className="grid grid-cols-2 gap-3 items-center">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.salary_min ? "text-red-500" : "text-slate-700")}>
+                      Min Salary (Monthly) <span className="text-red-500 ml-0.5">*</span>
+                    </Label>
                     <Input 
                       value={formData.salary_min} 
                       onChange={(e) => updateField("salary_min", e.target.value)} 
                       placeholder="Min ₹" 
+                      disabled={salaryUndisclosed}
                       className={cn(
                         "h-10 text-xs transition-all",
-                        errors.salary_min ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white"
+                        errors.salary_min ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white",
+                        salaryUndisclosed && "opacity-50 cursor-not-allowed"
                       )} 
                     />
+                  </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] font-bold px-1 capitalize text-slate-700 transition-colors">
+                        Max Salary (Monthly) <span className="text-red-500 ml-0.5">*</span>
+                      </Label>
                     <Input 
                       value={formData.salary_max} 
                       onChange={(e) => updateField("salary_max", e.target.value)} 
                       placeholder="Max ₹" 
+                      disabled={salaryUndisclosed}
                       className={cn(
                         "h-10 text-xs transition-all",
-                        errors.salary_max ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white"
+                        (errors.salary_max || errors.salary_range) ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white",
+                        salaryUndisclosed && "opacity-50 cursor-not-allowed"
                       )} 
                     />
                   </div>
+                </div>
+                <div className="flex items-center gap-2 mt-2 px-1">
+                  <input 
+                    type="checkbox" 
+                    id="salary_undisclosed"
+                    checked={salaryUndisclosed}
+                    onChange={(e) => setSalaryUndisclosed(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="salary_undisclosed" className="text-[11px] font-semibold text-slate-600 cursor-pointer select-none">
+                    Salary Undisclosed
+                  </label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
                   <div className="space-y-1.5">

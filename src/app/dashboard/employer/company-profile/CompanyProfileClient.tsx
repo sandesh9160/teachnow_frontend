@@ -152,13 +152,16 @@ export default function CompanyProfileClient({
 
     try {
       const { uploadFile } = await import("@/actions/FileUpload");
-      const result = await uploadFile("employer/Update-Company", {
+      const endpoint = "employer/Update-Company";
+      console.log(`Calling profile update endpoint: ${endpoint} via uploadFile`);
+      const result = await uploadFile(endpoint, {
         method: "POST",
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
         }
       });
+      console.log("Profile update response:", result);
 
       if (result.status === true) {
         toast.success("Profile Updated Successfully", {

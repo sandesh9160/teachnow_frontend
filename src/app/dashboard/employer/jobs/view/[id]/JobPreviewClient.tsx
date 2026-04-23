@@ -46,13 +46,16 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
    };
 
    const handleToggleFeatured = async () => {
+      console.log(`Toggling job featured status for ID: ${job.id}`);
       setLoadingAction('toggle-feature');
       try {
          const endpoint = `employer/job/${job.id}/toggle-feature`;
+         console.log(`Calling toggle endpoint: ${endpoint}`);
          const res = await dashboardServerFetch(endpoint, {
             method: "POST",
             data: {}
          });
+         console.log("Toggle feature response:", res);
 
          if (res.status === true) {
             toast.success(res.message || "Featured status updated successfully.", { style: { borderLeft: '4px solid #10b981' } });
@@ -79,6 +82,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
          action: {
             label: type === 'filled' ? 'Mark Filled' : type === 'republish' ? 'Republish' : 'Delete',
             onClick: async () => {
+               console.log(`Executing preview job action: ${type} for ID: ${job.id}`);
                const endpoint = type === 'filled'
                   ? `employer/jobs/${job.id}/filled`
                   : type === 'republish'
@@ -88,10 +92,12 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                setLoadingAction(type);
                try {
                   const method = type === 'delete' ? "DELETE" : "PUT";
+                  console.log(`Calling preview endpoint: ${endpoint} with method: ${method}`);
                   const res = await dashboardServerFetch(endpoint, {
                      method: method,
                      data: {}
                   });
+                  console.log("Preview action response:", res);
 
                   if (res.status === true) {
                      toast.success(res.message || `Job ${type === 'filled' ? 'closed' : type === 'republish' ? 'republished' : 'deleted'} successfully.`, { style: { borderLeft: '4px solid #10b981' } });
@@ -288,7 +294,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   />
                   <DetailItem
                      label="Monthly Salary"
-                     value={`₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`}
+                     value={(!job.salary_min && !job.salary_max) ? "Salary Undisclosed" : `₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`}
                      icon={DollarSign}
                      colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50"
                   />

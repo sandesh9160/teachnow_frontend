@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { AlertCircle, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { getResources } from "@/hooks/useHomepage";
-import { ResourceData, Pagination } from "@/types/homepage";
+import { ResourceData } from "@/types/homepage";
 import ResourceCard from "@/shared/cards/ResourceCard/ResourceCard";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
-import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 
 export default function ResourcesPage() {
 
@@ -14,24 +13,16 @@ export default function ResourcesPage() {
   const [error, setError] = useState<string | null>(null);
   const [allResources, setAllResources] = useState<ResourceData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [pagination, setPagination] = useState<Pagination | null>(null);
 
   useEffect(() => {
     const loadResources = async () => {
       try {
         setLoading(true);
         setError(null);
-        // We pass search term to the API if the backend supports it, 
-        // but for now we follow the user's provided structure which includes pagination.
-        const { data, pagination: apiPagination } = await getResources(currentPage, perPage);
+        // Fetch a large number of resources since pagination is removed
+        const { data } = await getResources(1, 100);
         const visible = data.filter((item) => item?.slug && item?.is_visible !== 0);
-        
         setAllResources(visible);
-        if (apiPagination) {
-          setPagination(apiPagination);
-        }
       } catch {
         setError("Failed to load resources");
       } finally {
@@ -39,7 +30,7 @@ export default function ResourcesPage() {
       }
     };
     void loadResources();
-  }, [currentPage, perPage]);
+  }, []);
 
 
   const displayResources = allResources.filter(res => 
@@ -72,39 +63,12 @@ export default function ResourcesPage() {
         </div>
       </section>
 
-      {/* Modern Filter Strip (Keep this design) */}
+      {/* Modern Filter Strip */}
       <section className="bg-white border-b border-slate-100 shadow-sm sticky top-[101px] z-30">
         <div className="w-full px-4 py-4 sm:px-6 lg:px-12">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                className="group flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
-              >
-                Category
-                <ChevronDown className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-all duration-300" />
-              </button>
-              <button
-                className="group flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary hover:bg-slate-50 transition-all duration-300 shadow-sm"
-              >
-                Language
-                <ChevronDown className="h-4 w-4 opacity-30 group-hover:opacity-100 transition-all duration-300" />
-              </button>
-              
-              <div className="relative group min-w-[140px]">
-                <select 
-                  value={perPage}
-                  onChange={(e) => {
-                    setPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="w-full appearance-none bg-white border border-slate-200 rounded-xl px-3 py-1.5 pr-10 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:border-primary/40 hover:text-primary transition-all duration-300 shadow-sm focus:outline-none cursor-pointer"
-                >
-                  <option value={10}>10 per page</option>
-                  <option value={20}>20 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-hover:text-primary transition-colors" />
-              </div>
+              {/* Filter buttons removed as requested */}
             </div>
 
             <div className="relative w-full max-w-sm">
@@ -209,22 +173,7 @@ export default function ResourcesPage() {
             </div>
           ))
         )}
-
-        {/* Pagination Section */}
-        {pagination && pagination.last_page > 1 && (
-          <div className="flex justify-center mt-12 pb-8">
-            <JobPagination
-              currentPage={currentPage}
-              totalPages={pagination.last_page}
-              onPageChange={(page) => {
-                setCurrentPage(page);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
-          </div>
-        )}
       </div>
-
     </div>
   );
 }
