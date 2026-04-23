@@ -83,31 +83,32 @@ export function DashboardSidebar({
       )}
 
       <aside
-        className={`fixed md:sticky inset-y-0 left-0 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-500 ease-in-out z-50 shadow-sm ${collapsed ? "w-[72px]" : "w-[260px]"
-          } ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`fixed md:sticky inset-y-0 left-0 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-500 ease-in-out z-50 shadow-sm ${collapsed ? "w-[78px]" : "w-[260px]"} ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-        {/* TOP COLLAPSE TOGGLE */}
-        <div className={`p-4 flex items-center justify-end border-b border-slate-50 min-h-[64px] transition-all duration-500`}>
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={`p-2 rounded-xl text-slate-400 hover:text-indigo-600 transition-all duration-300 hidden md:flex ${collapsed ? 'mx-auto' : ''}`}
-            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-          </button>
-
-          {/* Mobile close button */}
+        {/* Mobile close button */}
+        <div className="md:hidden p-4 flex items-center justify-end">
           <button
             onClick={onClose}
-            className="md:hidden p-2 rounded-xl text-slate-400 hover:text-rose-500"
+            className="p-2 rounded-xl text-slate-400 hover:text-rose-500 transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* NAVIGATION */}
-        <div className={`mt-4 px-3 flex-1 overflow-y-auto custom-scrollbar transition-all duration-500`}>
-          <div className="space-y-0.5">
+        <div className={`mt-4 px-3 flex-1 overflow-y-auto custom-scrollbar ${collapsed ? "px-2" : "px-3"}`}>
+          {/* Compact Toggle - Inside Sidebar, above first link */}
+          <div className={`mb-2 hidden md:flex ${collapsed ? "justify-center" : "justify-end"}`}>
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-300"
+              title={collapsed ? "Expand" : "Collapse"}
+            >
+              {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
+          </div>
+
+          <div className="space-y-1.5">
             {links.map((link) => {
               const isActive = pathname === link.href;
               const Icon = link.icon;
@@ -117,24 +118,30 @@ export function DashboardSidebar({
                   key={link.href}
                   href={link.href}
                   onClick={onClose}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[12.5px] font-semibold transition-all duration-300 group relative ${isActive
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all duration-300 group relative ${isActive
                     ? "bg-indigo-50 text-indigo-700 shadow-sm shadow-indigo-100/50"
                     : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
-                    }`}
+                    } ${collapsed ? "justify-center" : ""}`}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-indigo-600 rounded-r-full" />
+                    <div className={`absolute left-0 top-2 bottom-2 bg-indigo-600 rounded-r-full transition-all duration-300 ${collapsed ? "w-1" : "w-1.5"}`} />
                   )}
                   <Icon
-                    className={`h-[17px] w-[17px] shrink-0 transition-all duration-300 ${isActive
-                      ? "text-indigo-600 stroke-[2.5] scale-110"
-                      : "opacity-50 group-hover:opacity-100 group-hover:text-indigo-500"
+                    className={`h-[18px] w-[18px] shrink-0 transition-all duration-300 ${isActive
+                      ? "text-indigo-600 stroke-[2.5]"
+                      : "opacity-60 group-hover:opacity-100 group-hover:text-indigo-500"
                       }`}
                   />
                   {!collapsed && (
-                    <span className="tracking-tight truncate">
+                    <span className="tracking-tight truncate animate-in fade-in slide-in-from-left-2 duration-300">
                       {link.label}
                     </span>
+                  )}
+                  
+                  {collapsed && (
+                    <div className="absolute left-full ml-3 px-2 py-1 bg-indigo-900 text-white text-[10px] rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-[70] whitespace-nowrap translate-x-2 group-hover:translate-x-0">
+                      {link.label}
+                    </div>
                   )}
                 </Link>
               );
@@ -143,26 +150,21 @@ export function DashboardSidebar({
         </div>
 
         {/* BACK TO HOME */}
-        {!collapsed && (
-          <div className="px-6 py-4">
-            <Link href="/" className="flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors group">
-              <LogOut className="w-4 h-4 rotate-180" />
-              <span className="text-xs font-semibold">Back to Home</span>
-            </Link>
-          </div>
-        )}
+        <div className={`py-4 ${collapsed ? "px-0 flex justify-center" : "px-6"}`}>
+          <Link href="/" className={`flex items-center gap-3 text-slate-400 hover:text-indigo-600 transition-all group ${collapsed ? "justify-center" : ""}`}>
+            <LogOut className={`h-4 w-4 rotate-180 transition-transform ${!collapsed ? "group-hover:-translate-x-1" : ""}`} />
+            {!collapsed && <span className="text-[10px] font-bold tracking-wider uppercase">Back to Home</span>}
+          </Link>
+        </div>
 
         {/* LOGOUT AT BOTTOM */}
-        <div className={`p-4 border-t border-slate-50 transition-all duration-500 ${collapsed ? 'px-2' : 'px-4'}`}>
+        <div className={`p-3 border-t border-slate-50 ${collapsed ? "flex justify-center" : ""}`}>
           <LogoutSubmitButton
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[12px] font-medium transition-all duration-300 group active:scale-[0.98] ${collapsed
-              ? "justify-center text-rose-600"
-              : "text-rose-600 hover:bg-rose-50"
-              }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[13px] font-semibold transition-all duration-300 group active:scale-[0.98] text-rose-600 hover:bg-rose-50 ${collapsed ? "justify-center p-0 h-11 w-11 rounded-xl" : ""}`}
           >
-            <LogOut className={`h-[16px] w-[16px] transition-transform duration-300 ${collapsed ? 'scale-110' : 'group-hover:-translate-x-1'}`} />
+            <LogOut className={`h-[16px] w-[16px] shrink-0 transition-transform duration-300 ${!collapsed ? "group-hover:-translate-x-1" : ""}`} />
             {!collapsed && (
-              <span className="tracking-tight text-xs animate-in fade-in duration-300 whitespace-nowrap">
+              <span className="tracking-tight">
                 Sign Out
               </span>
             )}

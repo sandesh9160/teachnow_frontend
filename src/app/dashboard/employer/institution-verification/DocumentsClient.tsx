@@ -298,7 +298,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
 
       {/* Required Documents List - Backend Data only */}
       <div className="space-y-4">
-         <h2 className="text-lg font-semibold text-[#1E1B4B]">Stored Credentials</h2>
+         <h2 className="text-lg font-semibold text-[#1E1B4B]">Uploaded Documents</h2>
          <div className="space-y-3">
             {loading ? (
                <div className="py-20 flex flex-col items-center justify-center gap-3"><Loader2 className="w-8 h-8 animate-spin text-slate-200" /><p className="text-xs text-slate-300">Syncing with vault...</p></div>

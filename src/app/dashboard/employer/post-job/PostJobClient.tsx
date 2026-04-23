@@ -57,6 +57,7 @@ export default function PostJobClient({
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     title: job?.title || "",
@@ -90,51 +91,66 @@ export default function PostJobClient({
     { id: 2, name: "Job Description", icon: FileText },
     { id: 3, name: "Questions", icon: Target },
     { id: 4, name: "Salary", icon: DollarSign },
-    { id: 5, name: "Promotion", icon: Zap },
-    { id: 6, name: "Preview & Publish", icon: Eye },
+    { id: 5, name: "Preview & Publish", icon: Eye },
   ];
 
   const validateStep = (step: number) => {
+    const newErrors: Record<string, string> = {};
+    
     switch (step) {
       case 1:
-        if (!formData.title.trim()) return { title: "Missing Title", desc: "Please provide a catchy title for your job listing." };
-        if (!formData.category_id) return { title: "Subject", desc: "Pick a subject category for your job." };
-        if (!formData.job_type) return { title: "Job Type", desc: "Select if this is full or part-time." };
-        if (!formData.location) return { title: "Location", desc: "Tell us which city this job is in." };
+        if (!formData.title.trim()) newErrors.title = "Job Title is required";
+        if (!formData.category_id) newErrors.category_id = "Subject / Category is required";
+        if (!formData.job_type) newErrors.job_type = "Job Type is required";
+        if (!formData.location) newErrors.location = "City is required";
+        if (!formData.experience_required.trim()) newErrors.experience_required = "Experience Required is required";
         break;
       case 2:
-        if (!description || description.replace(/<[^>]*>/g, '').trim().length < 20)
-          return { title: "Description", desc: "Write at least 20 characters to help candidates." };
-        break;
-      case 3:
+        if (!description || description.replace(/<[^>]*>/g, '').trim().length < 50)
+          newErrors.description = "Detailed Description (min 50 chars) is required";
         break;
       case 4:
-        if (!deadline) return { title: "Deadline", desc: "Pick a date when applications close." };
-        if (!formData.salary_min) return { title: "Salary", desc: "What's the minimum monthly salary?" };
-        if (!formData.salary_max) return { title: "Salary", desc: "What's the maximum monthly salary?" };
-        if (Number(formData.salary_min) > Number(formData.salary_max))
-          return { title: "Salary Range", desc: "Max salary should be more than min salary." };
+        if (!deadline) newErrors.deadline = "Application Deadline is required";
+        if (!formData.salary_min) newErrors.salary_min = "Minimum Salary is required";
+        if (!formData.salary_max) newErrors.salary_max = "Maximum Salary is required";
+        if (formData.salary_min && formData.salary_max && Number(formData.salary_min) > Number(formData.salary_max))
+          newErrors.salary_range = "Max salary should be more than min salary";
+        if (!formData.vacancies || Number(formData.vacancies) <= 0) newErrors.vacancies = "Open Vacancies is required";
         break;
     }
-    return null;
+    
+    const firstKey = Object.keys(newErrors)[0];
+    setErrors(firstKey ? { [firstKey]: newErrors[firstKey] } : {});
+    return newErrors;
   };
 
   const handleNext = () => {
-    const error = validateStep(currentStep);
-    if (error) {
-      toast.error(error.title, { description: error.desc });
+    const stepErrors = validateStep(currentStep);
+    const errorKeys = Object.keys(stepErrors);
+    
+    if (errorKeys.length > 0) {
+      toast.error(stepErrors[errorKeys[0]], {
+        style: { borderLeft: '4px solid #ef4444' },
+        duration: 3000
+      });
       return;
     }
-    if (currentStep < 6) setCurrentStep(currentStep + 1);
+    
+    setErrors({});
+    if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
 
   const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
 
   const handleSubmit = async () => {
-    const error = validateStep(4); // Re-validate step 4 before submitting
-    if (error) {
-      toast.error(error.title, { description: error.desc });
-      setCurrentStep(4);
+    const stepErrors = validateStep(4);
+    const errorKeys = Object.keys(stepErrors);
+    
+    if (errorKeys.length > 0) {
+      toast.error(stepErrors[errorKeys[0]], {
+        style: { borderLeft: '4px solid #ef4444' },
+        duration: 3000
+      });
       return;
     }
 
@@ -180,7 +196,7 @@ export default function PostJobClient({
         const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
         if (res.status) {
           setFeatured(newState);
-          toast.success(res.message || "Featured status updated!");
+          toast.success(res.message || "Featured status updated!", { style: { borderLeft: '4px solid #10b981' } });
         } else {
           toast.error(res.message || "Failed to update featured status.");
         }
@@ -199,7 +215,7 @@ export default function PostJobClient({
     <div className="max-w-3xl mx-auto px-4 py-4 font-sans text-slate-900 pb-20">
       <div className="space-y-0.5">
         <h1 className="text-xl font-bold text-[#1E1B4B]">{isEdit ? "Edit Job" : "Post a New Job"}</h1>
-        <p className="text-slate-400 text-xs">{isEdit ? "Update your job listing requirements" : "Create a job listing in 6 simple steps"}</p>
+        <p className="text-slate-400 text-xs">{isEdit ? "Update your job listing requirements" : "Create a job listing in 5 simple steps"}</p>
       </div>
 
       {/* Stepper Indicator - Desktop Compact Side-by-Side Style */}
@@ -209,26 +225,18 @@ export default function PostJobClient({
             <div key={step.id} className="flex items-center">
               <button
                 onClick={() => {
-                  if (step.id > 1) {
-                    const step1Error = validateStep(1);
-                    if (step1Error) {
-                      toast.error(step1Error.title, { description: step1Error.desc });
-                      setCurrentStep(1);
-                      return;
-                    }
-                  }
                   if (step.id > currentStep) {
                     const currentError = validateStep(currentStep);
-                    if (currentError) {
-                      toast.error(currentError.title, { description: currentError.desc });
+                    if (Object.keys(currentError).length > 0) {
+                      toast.error(Object.values(currentError)[0] as string, { style: { borderLeft: "4px solid #ef4444" } });
                       return;
                     }
                   }
+                  setErrors({});
                   setCurrentStep(step.id);
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 transition-all active:scale-95",
-                  step.id > 1 && validateStep(1) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  "flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                 )}
               >
                 <div className={cn(
@@ -261,34 +269,81 @@ export default function PostJobClient({
             <h2 className="text-sm font-bold text-[#1E1B4B]">Job Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
               <div className="md:col-span-2 space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">Job Title *</Label>
-                <Input value={formData.title} onChange={(e) => updateField("title", e.target.value)} placeholder="e.g. Mathematics Teacher" className="h-10 rounded-xl bg-slate-50 border-slate-50 focus:bg-white text-xs" />
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.title ? "text-red-500" : "text-slate-700")}>
+                  Job Title <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <Input 
+                  value={formData.title} 
+                  onChange={(e) => updateField("title", e.target.value)} 
+                  placeholder="e.g. Mathematics Teacher" 
+                  className={cn(
+                    "h-10 rounded-xl text-xs transition-all",
+                    errors.title ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )} 
+                />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">Subject / Category *</Label>
-                <select value={formData.category_id} onChange={(e) => updateField("category_id", e.target.value)} className="w-full h-10 rounded-xl bg-slate-50 border-slate-50 px-4 text-xs outline-none">
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.category_id ? "text-red-500" : "text-slate-700")}>
+                  Subject / Category <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <select 
+                  value={formData.category_id} 
+                  onChange={(e) => updateField("category_id", e.target.value)} 
+                  className={cn(
+                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
+                    errors.category_id ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )}
+                >
                   <option value="">Select subject</option>
                   {metadata.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">Job Type *</Label>
-                <select value={formData.job_type} onChange={(e) => updateField("job_type", e.target.value)} className="w-full h-10 rounded-xl bg-slate-50 border-slate-50 px-4 text-xs outline-none">
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.job_type ? "text-red-500" : "text-slate-700")}>
+                  Job Type <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <select 
+                  value={formData.job_type} 
+                  onChange={(e) => updateField("job_type", e.target.value)} 
+                  className={cn(
+                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
+                    errors.job_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )}
+                >
                   <option value="">Select type</option>
                   <option value="full_time">Full-time</option>
                   <option value="part_time">Part-time</option>
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">City *</Label>
-                <select value={formData.location} onChange={(e) => updateField("location", e.target.value)} className="w-full h-10 rounded-xl bg-slate-50 border-slate-50 px-4 text-xs outline-none">
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.location ? "text-red-500" : "text-slate-700")}>
+                  City <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <select 
+                  value={formData.location} 
+                  onChange={(e) => updateField("location", e.target.value)} 
+                  className={cn(
+                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
+                    errors.location ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )}
+                >
                   <option value="">Select city</option>
                   {metadata.locations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700">Experience Required</Label>
-                <Input value={formData.experience_required} onChange={(e) => updateField("experience_required", e.target.value)} placeholder="e.g. 3–5 years" className="h-10 rounded-xl bg-slate-50 border-slate-50 text-xs" />
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_required ? "text-red-500" : "text-slate-700")}>
+                  Experience Required <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <Input 
+                  value={formData.experience_required} 
+                  onChange={(e) => updateField("experience_required", e.target.value)} 
+                  placeholder="e.g. 3–5 years" 
+                  className={cn(
+                    "h-10 rounded-xl text-xs transition-all",
+                    errors.experience_required ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )} 
+                />
               </div>
             </div>
           </div>
@@ -393,105 +448,70 @@ export default function PostJobClient({
         {currentStep === 4 && (
           <div className="space-y-5 animate-in fade-in duration-300">
             <h2 className="text-sm font-bold text-[#1E1B4B]">Salary Details</h2>
-            <div className="space-y-5">
-              <div className="space-y-1.5">
-                <Label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Salary Range (Monthly)</Label>
-                <div className="grid grid-cols-2 gap-3 items-center">
-                  <Input value={formData.salary_min} onChange={(e) => updateField("salary_min", e.target.value)} placeholder="Min ₹" className="h-10 bg-slate-50 border-slate-100 text-xs" />
-                  <Input value={formData.salary_max} onChange={(e) => updateField("salary_max", e.target.value)} placeholder="Max ₹" className="h-10 bg-slate-50 border-slate-100 text-xs" />
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", (errors.salary_min || errors.salary_max || errors.salary_range) ? "text-red-500" : "text-slate-700")}>
+                    Salary Range (Monthly) <span className="text-red-500 ml-0.5">*</span>
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3 items-center">
+                    <Input 
+                      value={formData.salary_min} 
+                      onChange={(e) => updateField("salary_min", e.target.value)} 
+                      placeholder="Min ₹" 
+                      className={cn(
+                        "h-10 text-xs transition-all",
+                        errors.salary_min ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white"
+                      )} 
+                    />
+                    <Input 
+                      value={formData.salary_max} 
+                      onChange={(e) => updateField("salary_max", e.target.value)} 
+                      placeholder="Max ₹" 
+                      className={cn(
+                        "h-10 text-xs transition-all",
+                        errors.salary_max ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white"
+                      )} 
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                  <div className="space-y-1.5">
+                    <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.deadline ? "text-red-500" : "text-slate-700")}>
+                      Apply Before <span className="text-red-500 ml-0.5">*</span>
+                    </Label>
+                    <div className={cn(
+                      "rounded-xl transition-all",
+                      errors.deadline && "border border-red-500 bg-red-50/50"
+                    )}>
+                      <DatePicker
+                        date={deadline}
+                        setDate={setDeadline}
+                        className="h-10 bg-transparent border-none text-xs"
+                        placeholder="Select date"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.vacancies ? "text-red-500" : "text-slate-700")}>
+                      Open Vacancies <span className="text-red-500 ml-0.5">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      value={formData.vacancies}
+                      onChange={(e) => updateField("vacancies", e.target.value)}
+                      className={cn(
+                        "h-10 text-xs transition-all",
+                        errors.vacancies ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                      )}
+                      placeholder="e.g. 2"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-semibold text-slate-700">Apply Before *</Label>
-                  <DatePicker
-                    date={deadline}
-                    setDate={setDeadline}
-                    className="h-10 bg-slate-50 border-slate-50 text-xs"
-                    placeholder="Select date"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-[11px] font-semibold text-slate-700">Open Vacancies</Label>
-                  <Input
-                    type="number"
-                    value={formData.vacancies}
-                    onChange={(e) => updateField("vacancies", e.target.value)}
-                    className="h-10 bg-slate-50 border-slate-50 text-xs"
-                    placeholder="e.g. 2"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
         {currentStep === 5 && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="text-center space-y-1 mb-2">
-              <h2 className="text-lg font-bold text-[#1E1B4B]">Promote Your Job</h2>
-              <p className="text-slate-500 text-[11px] max-w-sm mx-auto">Boost recruitment! Featured jobs receive up to 5x more attention.</p>
-            </div>
-
-            <div className={cn(
-              "relative rounded-[20px] p-5 md:p-8 border transition-all duration-300",
-              featured ? "bg-indigo-50/20 border-indigo-100 shadow-sm" : "bg-slate-50/50 border-slate-100"
-            )}>
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className={cn(
-                  "w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center transition-all shrink-0",
-                  featured ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-300"
-                )}>
-                  <Zap className={cn("w-6 h-6 md:w-8 md:h-8", featured && "animate-pulse")} />
-                </div>
-
-                <div className="flex-1 text-center md:text-left space-y-1">
-                  <h3 className="text-base font-bold text-[#1E1B4B]">Featured Listing</h3>
-                  <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                    Highlighted with a premium badge and promoted on home page for maximum exposure.
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleToggleFeatured}
-                  disabled={loading}
-                  className={cn(
-                    "w-14 h-7 md:w-16 md:h-8 rounded-full flex items-center px-1 transition-all relative shrink-0",
-                    featured ? "bg-emerald-500" : "bg-slate-200",
-                    loading && "opacity-50"
-                  )}
-                >
-                  <div className={cn(
-                    "w-5 h-5 md:w-6 md:h-6 rounded-full bg-white shadow-sm flex items-center justify-center transition-all absolute",
-                    featured ? "left-8 md:left-9" : "left-1"
-                  )}>
-                    {featured && <Check className="w-3 h-3 text-emerald-600" />}
-                  </div>
-                </button>
-              </div>
-
-              {featured && (
-                <div className="mt-6 pt-6 border-t border-indigo-100/50 animate-in slide-in-from-top-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                    {[
-                      "Priority search placement",
-                      "Featured badge on public page",
-                      "Home page promotion",
-                      "Increased conversion rate"
-                    ].map(f => (
-                      <div key={f} className="flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-emerald-500" />
-                        <p className="text-[10px] font-semibold text-slate-600">{f}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {currentStep === 6 && (
           <div className="space-y-6 md:space-y-10 animate-in fade-in duration-500">
             <h2 className="text-base md:text-xl font-bold text-[#1E1B4B]">Preview Your Job Listing</h2>
 
@@ -557,7 +577,7 @@ export default function PostJobClient({
         </Button>
 
         <div className="flex-1 md:flex-none flex justify-end gap-3">
-          {currentStep < 6 ? (
+          {currentStep < 5 ? (
             <Button
               onClick={handleNext}
               className="h-10 w-full md:w-auto px-10 rounded-xl bg-[#312E81] hover:bg-[#1E1B4B] text-white text-[12.5px] font-bold transition-all shadow-sm"

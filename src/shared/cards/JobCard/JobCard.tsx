@@ -119,23 +119,23 @@ const JobCard = ({
             </div>
             
             <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className={`text-[17px] font-medium transition-colors mb-1 tracking-tight ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
+              <h3 className={`text-[17px] font-semibold transition-colors mb-1 tracking-tight line-clamp-2 min-h-[48px] leading-[1.4] ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
                 {title}
               </h3>
               <div className="flex flex-col gap-1 text-[#0F172A]/60">
                 <div className="flex items-start gap-1.5 ">
                   <Building className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <p className="text-[14px] font-normal text-[#0F172A]/70 line-clamp-2">{company}</p>
+                  <p className="text-[13.5px] font-medium text-[#0F172A]/70 line-clamp-1 h-[20px]">{company}</p>
                 </div>
                 {isExpired ? (
                   <div className="flex items-center gap-1.5 ml-0.5">
-                    <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md uppercase tracking-wider border border-red-100">
+                    <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
                       Job Expired
                     </span>
                   </div>
                 ) : institutionType && (
                    <div className="flex items-center gap-1.5 ml-0.5">
-                     <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-wider">
+                     <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                        {institutionType}
                      </span>
                    </div>
@@ -156,18 +156,18 @@ const JobCard = ({
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-normal text-[#0F172A]/70 mb-1.5">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-slate-400" />
-              <span>{location}</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-[#0F172A]/60 mb-2 min-h-[24px]">
+            <div className="flex items-center gap-1.5 max-w-[120px]">
+              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="truncate">{location}</span>
+            </div>
+            <div className="flex items-center gap-1.5 max-w-[100px]">
+              <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="truncate">{type}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Building className="w-4 h-4 text-slate-400" />
-              <span>{type}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock3 className="w-4 h-4 text-slate-400" />
-              <span>{(() => {
+              <Clock3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="whitespace-nowrap">{(() => {
                 if (isExpired) return "Closed";
                 if (savedAt) {
                   const savedAgo = formatTimeAgo(savedAt);

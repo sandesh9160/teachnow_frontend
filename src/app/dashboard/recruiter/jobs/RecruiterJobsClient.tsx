@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   Users,
   RefreshCw,
-  Star
+  Star,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -80,30 +81,45 @@ export default function RecruiterJobsClient({
   const filteredJobs = getFilteredJobs();
 
   const handleAction = async (id: number, action: string) => {
-    if (action === 'filled' && !confirm("Mark this job as filled? This will close the listing.")) return;
-    setLoadingId(id);
-    try {
-      let endpoint = `recruiter/jobs/${action === 'delete' ? 'delete' : action}/${id}`;
-      if (action === 'filled') {
-        endpoint = `recruiter/jobs/${id}/filled`;
-      } else if (action === 'republish') {
-        endpoint = `recruiter/jobs/${id}/republish`;
+    const actionLabel = action === 'filled' ? 'mark this job as filled' : 
+                       action === 'delete' ? 'permanently delete this job' : 
+                       'republish this job';
+
+    toast(`Are you sure you want to ${actionLabel}?`, {
+      style: { borderLeft: '4px solid #ef4444' },
+      action: {
+        label: action === 'filled' ? 'Mark Filled' : action === 'delete' ? 'Delete Job' : 'Republish',
+        onClick: async () => {
+          setLoadingId(id);
+          try {
+            let endpoint = `recruiter/jobs/${action === 'delete' ? 'delete' : action}/${id}`;
+            if (action === 'filled') {
+              endpoint = `recruiter/jobs/${id}/filled`;
+            } else if (action === 'republish') {
+              endpoint = `recruiter/jobs/${id}/republish`;
+            }
+            
+            const method = action === 'delete' ? "DELETE" : action === 'republish' ? "PUT" : "POST";
+            const res = await dashboardServerFetch<any>(endpoint, { method });
+            
+            if (res?.status) {
+              toast.success(res.message || `Job ${action} successful`, { style: { borderLeft: '4px solid #10b981' } });
+              router.refresh();
+            } else {
+              toast.error(res?.message || "Action failed");
+            }
+          } catch (e) {
+            toast.error("An error occurred");
+          } finally {
+            setLoadingId(null);
+          }
+        }
+      },
+      cancel: {
+        label: 'Keep it',
+        onClick: () => {}
       }
-      
-      const method = action === 'delete' ? "DELETE" : action === 'republish' ? "PUT" : "POST";
-      const res = await dashboardServerFetch<any>(endpoint, { method });
-      
-      if (res?.status) {
-        toast.success(res.message || `Job ${action} successful`);
-        router.refresh();
-      } else {
-        toast.error(res?.message || "Action failed");
-      }
-    } catch (e) {
-      toast.error("An error occurred");
-    } finally {
-      setLoadingId(null);
-    }
+    });
   };
 
   const handleToggleFeatured = async (id: number) => {
@@ -113,7 +129,7 @@ export default function RecruiterJobsClient({
       const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
       
       if (res?.status) {
-        toast.success(res.message || "Featured status updated");
+        toast.success(res.message || "Featured status updated", { style: { borderLeft: '4px solid #10b981' } });
         router.refresh();
       } else {
         toast.error(res?.message || "Action failed");
@@ -306,6 +322,15 @@ export default function RecruiterJobsClient({
                       Republish Job
                     </Button>
                   )}
+
+                  <Button
+                    onClick={() => handleAction(job.id, 'delete')}
+                    disabled={loadingId === job.id}
+                    variant="outline"
+                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-500 bg-white border-rose-50 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                  </Button>
                 </div>
 
               </div>

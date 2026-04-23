@@ -52,7 +52,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
             data: {}
          });
          if (res.status === true) {
-            toast.success(res.message || "Featured status updated successfully.");
+            toast.success(res.message || "Featured status updated successfully.", { style: { borderLeft: '4px solid #10b981' } });
             window.location.reload();
          } else {
             toast.error(res.message || "Something went wrong.");
@@ -82,14 +82,14 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
 
                setLoadingAction(type);
                try {
-                  const method = type === 'delete' ? "POST" : "PUT";
+                  const method = type === 'delete' ? "DELETE" : "PUT";
                   const res = await dashboardServerFetch(endpoint, {
                      method: method,
                      data: {}
                   });
 
                   if (res.status === true) {
-                     toast.success(res.message || `Job ${type === 'filled' ? 'closed' : type === 'republish' ? 'republished' : 'deleted'} successfully.`);
+                     toast.success(res.message || `Job ${type === 'filled' ? 'closed' : type === 'republish' ? 'republished' : 'deleted'} successfully.`, { style: { borderLeft: '4px solid #10b981' } });
                      setTimeout(() => {
                         window.location.href = `${basePath}/jobs`;
                      }, 1500);

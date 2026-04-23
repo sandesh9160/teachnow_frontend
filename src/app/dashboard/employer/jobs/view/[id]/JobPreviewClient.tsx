@@ -55,7 +55,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
          });
 
          if (res.status === true) {
-            toast.success(res.message || "Featured status updated successfully.");
+            toast.success(res.message || "Featured status updated successfully.", { style: { borderLeft: '4px solid #10b981' } });
             setTimeout(() => {
                window.location.reload();
             }, 1000);
@@ -87,14 +87,14 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
 
                setLoadingAction(type);
                try {
-                  const method = type === 'delete' ? "POST" : "PUT";
+                  const method = type === 'delete' ? "DELETE" : "PUT";
                   const res = await dashboardServerFetch(endpoint, {
                      method: method,
                      data: {}
                   });
 
                   if (res.status === true) {
-                     toast.success(res.message || `Job ${type === 'filled' ? 'closed' : type === 'republish' ? 'republished' : 'deleted'} successfully.`);
+                     toast.success(res.message || `Job ${type === 'filled' ? 'closed' : type === 'republish' ? 'republished' : 'deleted'} successfully.`, { style: { borderLeft: '4px solid #10b981' } });
                      setTimeout(() => {
                         window.location.href = "/dashboard/employer/jobs";
                      }, 1500);

@@ -11,18 +11,18 @@ export const Hero = ({
   cta,
   popularSearches,
 }: Readonly<{
-  hero: HeroSection;
+  hero?: HeroSection | null;
   cta?: CTASection[] | null;
   popularSearches?: { name: string; slug: string }[];
 }>) => {
-  const imageUrl = normalizeMediaUrl(hero.background_image);
+  const imageUrl = hero?.background_image ? normalizeMediaUrl(hero.background_image) : null;
   const ctaItems = (cta ?? []).filter((item) => item?.is_active === undefined || item.is_active === 1);
 
   const primaryCta = ctaItems[0] ?? null;
   const secondaryCtas = ctaItems.slice(1);
 
   return (
-    <section className="relative w-full bg-white overflow-visible">
+    <section className="relative w-full bg-[#F7F9FC] overflow-visible">
       {/* Background layer */}
       {imageUrl && (
         <div
@@ -41,7 +41,7 @@ export const Hero = ({
             <span className="text-indigo-600">Institutes</span>
           </h1>
           <p className="mt-5 text-slate-500 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto font-semibold leading-relaxed">
-            {hero.subtitle}
+            {hero?.subtitle ?? "Connect with top educational institutions and find your dream teaching role today. Explore thousands of opportunities across the globe."}
           </p>
         </div>
 

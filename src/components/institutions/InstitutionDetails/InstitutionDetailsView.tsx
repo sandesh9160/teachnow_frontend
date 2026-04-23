@@ -133,63 +133,8 @@ export default function InstitutionDetailsView({
               </section>
             )}
 
-            {/* Geographical Context / Map */}
-            {(company.address || company.city) && (
-              <section className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semisemibold text-[#1a202c]">Institution Location</h2>
-                </div>
-                <div className="relative aspect-video sm:aspect-[21/6] w-full rounded-xl border border-slate-100 overflow-hidden bg-slate-50">
-                  {mapLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50">
-                      <div className="h-10 w-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-3" />
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Loading Live Map...</p>
-                    </div>
-                  )}
-                  <iframe
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(company.address || company.company_name + " " + (company.city || ""))}&output=embed`}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    onLoad={() => setMapLoading(false)}
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <Button
-                    asChild
-                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-8 h-11 font-semibold transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-100"
-                  >
-                    <a 
-                      href={`https://www.google.com/maps?q=${encodeURIComponent(company.address || company.company_name + " " + (company.city || ""))}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <MapPin className="h-4 w-4" />
-                      Locate on Map
-                    </a>
-                  </Button>
-                </div>
-              </section>
-            )}
 
-            {/* Subjects Hiring For */}
-            {companyJobs.length > 0 && (
-              <section className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                <h2 className="text-xl font-semibold text-[#1a202c] mb-6">Subjects Hiring For</h2>
-                <div className="flex flex-wrap gap-3">
-                  {Array.from(new Set(companyJobs.map(j => (j.category as any)?.name || j.category || (j.title || "").split(' ')[0]))).slice(0, 10).map((cat, i) => (
-                    <span 
-                      key={i} 
-                      className="px-5 py-2 rounded-full text-sm font-semibold bg-[#EFF6FF] text-[#1e40af] border border-blue-50 hover:bg-[#DBEAFE] transition-colors cursor-default"
-                    >
-                      {cat}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
+
 
             {/* Open Jobs at Institution */}
             <section id="open-jobs" className="space-y-6">
@@ -230,7 +175,7 @@ export default function InstitutionDetailsView({
                         className="bg-indigo-900 hover:bg-indigo-950 text-white px-6 py-2 h-auto rounded-xl font-semibold text-sm transition-all flex items-center gap-2"
                       >
                         <Link href={`/${sanitizeSlug(job.slug || job.id.toString())}`}>
-                          Apply <ChevronRight className="h-4 w-4" />
+                          View Details <ChevronRight className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
@@ -301,6 +246,45 @@ export default function InstitutionDetailsView({
                 ))}
               </div>
             </div>
+
+            {/* Institution Location */}
+            {(company.address || company.city) && (
+              <div className="bg-white rounded-2xl p-7 border border-slate-100 shadow-sm">
+                <h3 className="text-base font-semibold text-[#1a202c] mb-6 tracking-tight">Institution Location</h3>
+                <div className="relative aspect-square w-full rounded-xl border border-slate-100 overflow-hidden bg-slate-50">
+                  {mapLoading && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50">
+                      <div className="h-10 w-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-3" />
+                    </div>
+                  )}
+                  <iframe
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(company.address || company.company_name + " " + (company.city || ""))}&output=embed`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    onLoad={() => setMapLoading(false)}
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+                <div className="mt-4">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl px-4 h-10 font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <a 
+                      href={`https://www.google.com/maps?q=${encodeURIComponent(company.address || company.company_name + " " + (company.city || ""))}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Open Google Maps
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            )}
           </aside>
         </div>
       </div>

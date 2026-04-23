@@ -56,6 +56,35 @@ export default function CompanyProfileClient({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = (formData: FormData) => {
+    const newErrors: Record<string, string> = {};
+    const requiredFields = [
+      { key: "company_name", label: "Institution Name" },
+      { key: "industry", label: "Industry / Sector" },
+      { key: "institution_type", label: "Institution Type" },
+      { key: "company_description", label: "Detailed introduction" },
+      { key: "email", label: "Official Email" },
+      { key: "phone", label: "Phone Number" },
+      { key: "address", label: "Physical Address" },
+      { key: "city", label: "Settlement / City" },
+      { key: "country", label: "Nation / Country" },
+    ];
+
+    requiredFields.forEach(field => {
+      const value = formData.get(field.key);
+      if (!value || String(value).trim() === "") {
+        newErrors[field.key] = `${field.label} is required`;
+      } else if (field.key === "company_description" && String(value).trim().length < 50) {
+        newErrors[field.key] = `${field.label} must be at least 50 characters`;
+      }
+    });
+
+    const firstKey = Object.keys(newErrors)[0];
+    setErrors(firstKey ? { [firstKey]: newErrors[firstKey] } : {});
+    return newErrors;
+  };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,6 +118,19 @@ export default function CompanyProfileClient({
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
+    
+    // Strict Validation Check
+    const validationErrors = validateForm(formData);
+    const errorKeys = Object.keys(validationErrors);
+    if (errorKeys.length > 0) {
+      toast.error(validationErrors[errorKeys[0]], {
+        style: { borderLeft: '4px solid #ef4444' },
+        duration: 3000
+      });
+      return;
+    }
+
+    setLoading(true);
     formData.append("_method", "PUT");
     if (logoFile) {
       formData.append("company_logo", logoFile);
@@ -119,10 +161,28 @@ export default function CompanyProfileClient({
       });
 
       if (result.status === true) {
-        toast.success("Profile updated successfully!");
+        toast.success("Profile Updated Successfully", {
+          style: {
+            background: '#F0FFF4',
+            color: '#22543D',
+            border: '1px solid #9AE6B4',
+            fontWeight: '600',
+            fontSize: '13px'
+          }
+        });
+        setErrors({});
+        setIsEditing(false);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to update profile.");
+        toast.warning(result.message || "Something went wrong during update.", {
+          style: {
+            background: '#FFFAF0',
+            color: '#744210',
+            border: '1px solid #FBD38D',
+            fontWeight: '600',
+            fontSize: '13px'
+          }
+        });
       }
     } catch (error) {
       toast.error("An unexpected error occurred.");
@@ -203,144 +263,214 @@ export default function CompanyProfileClient({
           
           <div className="p-3 sm:p-6">
               <form onSubmit={handleSubmit} className="space-y-5">
-                {activeTab === "identity" && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/30 p-4 border border-slate-100 rounded-xl">
-                      <div 
-                        className="relative w-16 h-16 rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden group shrink-0 cursor-pointer hover:border-indigo-300 transition-all active:scale-95"
-                        onClick={() => document.getElementById("logo-upload")?.click()}
-                      >
-                        {logoPreview || profile.company_logo ? (
-                          <Image 
-                            src={logoPreview || getLogoUrl(profile.company_logo)!} 
-                            alt="Logo" 
-                            fill 
-                            sizes="(max-width: 768px) 64px, 64px"
-                            className="object-cover" 
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
-                            <Building2 className="w-6 h-6" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
-                          <Upload className="text-white w-3.5 h-3.5" />
-                        </div>
-                      </div>
-                      <div className="space-y-0.5 text-center sm:text-left">
-                        <h4 className="text-[12.5px] font-semibold text-black">Institution Logo</h4>
-                        <p className="text-[11px] font-medium text-slate-500 max-w-sm leading-tight">Recommended: PNG/JPG, Square (1:1)</p>
-                        <input 
-                          id="logo-upload" 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={handleLogoChange}
+                <div className={cn("space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "identity" && "hidden")}>
+                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/30 p-4 border border-slate-100 rounded-xl">
+                    <div 
+                      className="relative w-16 h-16 rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden group shrink-0 cursor-pointer hover:border-indigo-300 transition-all active:scale-95"
+                      onClick={() => document.getElementById("logo-upload")?.click()}
+                    >
+                      {logoPreview || profile.company_logo ? (
+                        <Image 
+                          src={logoPreview || getLogoUrl(profile.company_logo)!} 
+                          alt="Logo" 
+                          fill 
+                          sizes="(max-width: 768px) 64px, 64px"
+                          className="object-cover" 
                         />
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          type="button" 
-                          onClick={() => document.getElementById("logo-upload")?.click()}
-                          className="h-7 mt-1.5 px-3 rounded-lg text-[10px] font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all"
-                        >
-                          Upload New Logo
-                        </Button>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
+                          <Building2 className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
+                        <Upload className="text-white w-3.5 h-3.5" />
                       </div>
                     </div>
+                    <div className="space-y-0.5 text-center sm:text-left">
+                      <h4 className="text-[12.5px] font-semibold text-black">Institution Logo</h4>
+                      <p className="text-[11px] font-medium text-slate-500 max-w-sm leading-tight">Recommended: PNG/JPG, Square (1:1)</p>
+                      <input 
+                        id="logo-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleLogoChange}
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        type="button" 
+                        onClick={() => document.getElementById("logo-upload")?.click()}
+                        className="h-7 mt-1.5 px-3 rounded-lg text-[10px] font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all"
+                      >
+                        Upload New Logo
+                      </Button>
+                    </div>
+                  </div>
 
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Institution Name</Label>
-                         <Input name="company_name" defaultValue={profile.company_name} className="h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft" />
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Industry / Sector</Label>
-                         <Input name="industry" defaultValue={profile.industry || ""} className="h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft" />
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Institution Type</Label>
-                         <div className="relative">
-                           <select 
-                             name="institution_type" 
-                             defaultValue={profile.institution_type || ""} 
-                             className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[13px] font-semibold text-black focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all appearance-none cursor-pointer shadow-xs-soft"
-                           >
-                             <option value="" disabled>Select Type</option>
-                             <option value="School">School</option>
-                             <option value="Intermediate">Intermediate</option>
-                             <option value="Diploma">Diploma</option>
-                             <option value="UG">UG</option>
-                             <option value="PG">PG</option>
-                           </select>
-                           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                             <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-                           </div>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_name ? "text-red-500" : "text-slate-500")}>
+                         Institution Name <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <Input 
+                         name="company_name" 
+                         defaultValue={profile.company_name} 
+                         className={cn(
+                           "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft transition-all",
+                           errors.company_name && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                         )} 
+                       />
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.industry ? "text-red-500" : "text-slate-500")}>
+                         Industry / Sector <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <Input 
+                         name="industry" 
+                         defaultValue={profile.industry || ""} 
+                         className={cn(
+                           "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft transition-all",
+                           errors.industry && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                         )} 
+                       />
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.institution_type ? "text-red-500" : "text-slate-500")}>
+                         Institution Type <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <div className="relative">
+                         <select 
+                           name="institution_type" 
+                           defaultValue={profile.institution_type || ""} 
+                           className={cn(
+                             "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[13px] font-semibold text-black focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all appearance-none cursor-pointer shadow-xs-soft",
+                             errors.institution_type && "border-red-500 bg-red-50/50 focus:border-red-600 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                           )}
+                         >
+                           <option value="" disabled>Select Type</option>
+                           <option value="School">School</option>
+                           <option value="Intermediate">Intermediate</option>
+                           <option value="Diploma">Diploma</option>
+                           <option value="UG">UG</option>
+                           <option value="PG">PG</option>
+                         </select>
+                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                           <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
                          </div>
                        </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Slug URL</Label>
-                         <Input name="slug" defaultValue={profile.slug} disabled className="h-10 rounded-xl bg-slate-50 border-slate-100 text-slate-400 text-[12px] font-medium cursor-not-allowed opacity-70" />
-                       </div>
-                       <div className="space-y-1.5 sm:col-span-2">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Detailed introduction</Label>
-                         <textarea 
-                           name="company_description" 
-                           rows={4} 
-                           placeholder="Describe your institution..."
-                           defaultValue={profile.company_description || ""} 
-                           className="w-full text-[13px] font-semibold p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black min-h-[120px] scrollbar-thin shadow-xs-soft"
+                     </div>
+                     <div className="space-y-1.5 sm:col-span-2">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_description ? "text-red-500" : "text-slate-500")}>
+                         Detailed introduction <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <textarea 
+                         name="company_description" 
+                         rows={4} 
+                         placeholder="Describe your institution..."
+                         defaultValue={profile.company_description || ""} 
+                         className={cn(
+                           "w-full text-[13px] font-semibold p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black min-h-[120px] scrollbar-thin shadow-xs-soft",
+                           errors.company_description && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                         )}
+                       />
+                     </div>
+                   </div>
+                </div>
+
+                <div className={cn("space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "contact" && "hidden")}>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                     <div className="space-y-1.5">
+                       <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Official Website</Label>
+                       <div className="relative group">
+                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 group-focus-within:scale-110 transition-all" />
+                         <Input 
+                           name="website" 
+                           defaultValue={profile.website || ""} 
+                           className="h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft"
                          />
                        </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "contact" && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Official Website</Label>
-                         <div className="relative group">
-                           <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 group-focus-within:scale-110 transition-all" />
-                           <Input name="website" defaultValue={profile.website || ""} className="h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft" />
-                         </div>
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Help desk Email</Label>
-                         <div className="relative">
-                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400" />
-                           <Input name="email" defaultValue={profile.email} disabled className="h-10 pl-9 rounded-xl bg-slate-50 border-slate-100 text-slate-400 text-[13px] font-medium opacity-70" />
-                         </div>
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Phone Number</Label>
-                         <div className="relative group">
-                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 group-focus-within:scale-110 transition-all" />
-                           <Input name="phone" defaultValue={profile.phone || ""} className="h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft" />
-                         </div>
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.email ? "text-red-500" : "text-slate-500")}>
+                         Official Email <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <div className="relative">
+                         <Mail className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5", errors.email ? "text-red-400" : "text-indigo-400")} />
+                         <Input 
+                           name="email" 
+                           defaultValue={profile.email} 
+                           className={cn(
+                             "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
+                             errors.email && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                           )} 
+                         />
                        </div>
                      </div>
-                  </div>
-                )}
-
-                {activeTab === "location" && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Physical Address</Label>
-                         <Input name="address" defaultValue={profile.address || ""} className="h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft" />
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Settlement / City</Label>
-                         <Input name="city" defaultValue={profile.city || ""} className="h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft" />
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Nation / Country</Label>
-                         <Input name="country" defaultValue={profile.country || "INDIA"} className="h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft" />
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.phone ? "text-red-500" : "text-slate-500")}>
+                         Phone Number <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <div className="relative group">
+                         <Phone className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-all", errors.phone ? "text-red-400" : "text-indigo-400")} />
+                         <Input 
+                           name="phone" 
+                           defaultValue={profile.phone || ""} 
+                           className={cn(
+                             "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
+                             errors.phone && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                           )} 
+                         />
                        </div>
                      </div>
-                     <div className="space-y-2.5">
+                   </div>
+                </div>
+
+                <div className={cn("space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "location" && "hidden")}>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.address ? "text-red-500" : "text-slate-500")}>
+                         Physical Address <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <Input 
+                         name="address" 
+                         defaultValue={profile.address || ""} 
+                         className={cn(
+                           "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
+                           errors.address && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                         )} 
+                       />
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.city ? "text-red-500" : "text-slate-500")}>
+                         Settlement / City <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <Input 
+                         name="city" 
+                         defaultValue={profile.city || ""} 
+                         className={cn(
+                           "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
+                           errors.city && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                         )} 
+                       />
+                     </div>
+                     <div className="space-y-1.5">
+                       <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.country ? "text-red-500" : "text-slate-500")}>
+                         Nation / Country <span className="text-red-500 ml-0.5">*</span>
+                       </Label>
+                       <Input 
+                         name="country" 
+                         defaultValue={profile.country || "INDIA"} 
+                         className={cn(
+                           "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
+                           errors.country && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                         )} 
+                       />
+                     </div>
+                   </div>
+
+                   {activeTab === "location" && (
+                     <div className="space-y-2.5 animate-in fade-in duration-500">
                        <div className="flex items-center justify-between">
                          <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Geospatial Intelligence</Label>
                          <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 whitespace-nowrap shadow-xs">Live Engine</span>
@@ -354,8 +484,8 @@ export default function CompanyProfileClient({
                         />
                       </div>
                     </div>
-                  </div>
-                )}
+                   )}
+                </div>
 
                  <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
@@ -565,7 +695,7 @@ export default function CompanyProfileClient({
                       lng={profile.longitude} 
                       onChange={() => {}} 
                       hideControls={true}
-                      className="w-full grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" 
+                      className="w-full h-64 grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" 
                     />
                     <div className="absolute inset-0 bg-transparent pointer-events-none" /> {/* Overlay to prevent accidental panning in view mode if needed, but keeping it interactive for user comfort */}
                   </div>

@@ -207,7 +207,6 @@ export default function EmployerDashboardClient({
       {
          label: "Total jobs",
          value: dashboardData?.total_jobs?.toString() || "0",
-         subtext: "Active listings",
          icon: Briefcase,
          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
          textColor: "text-white"
@@ -215,7 +214,6 @@ export default function EmployerDashboardClient({
       {
          label: "Total applicants",
          value: dashboardData?.total_applications?.toString() || "0",
-         subtext: "Career seekers",
          icon: Users,
          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
          textColor: "text-white"
@@ -223,7 +221,6 @@ export default function EmployerDashboardClient({
       {
          label: "Shortlisted",
          value: dashboardData?.shortlisted_candidates?.toString() || "0",
-         subtext: "Top talent",
          icon: CheckCircle2,
          gradient: "from-[#10B981] to-[#047857]", // Green
          textColor: "text-white"
@@ -231,7 +228,6 @@ export default function EmployerDashboardClient({
       {
          label: "Remaining credits",
          value: dashboardData?.total_remaining_credits?.toString() || "0",
-         subtext: "Account balance",
          icon: Zap,
          gradient: "from-[#F97316] to-[#C2410C]", // Orange
          textColor: "text-white"
@@ -320,15 +316,12 @@ export default function EmployerDashboardClient({
                      <h3 className="text-3xl font-semibold tracking-tight">{stat.value}</h3>
                   </div>
 
-                  <div className="relative z-10">
-                     <p className="text-[10px] opacity-70 italic">{stat.subtext}</p>
-                  </div>
                </div>
             ))}
          </div>
 
          {/* Quick Management Hub - Sentenced-case & Color-enriched */}
-         <div className="space-y-3">
+         {/* <div className="space-y-3">
             <h2 className="text-[14px] font-semibold text-slate-500 tracking-tight ml-1">Workspace Focus</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                {[
@@ -349,7 +342,8 @@ export default function EmployerDashboardClient({
                   </Link>
                ))}
             </div>
-         </div>
+         </div> */}
+         
 
          {/* Promotion Hub - Full Width Sophisticated Design with Toggle */}
          <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group p-6">

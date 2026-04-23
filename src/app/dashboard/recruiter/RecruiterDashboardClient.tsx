@@ -84,28 +84,24 @@ export default function RecruiterDashboardClient({
       {
          label: "Total jobs",
          value: dashboardData?.active_jobs?.toString() || "0",
-         subtext: "Active listings",
          icon: Briefcase,
          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
       },
       {
          label: "Total applicants",
          value: dashboardData?.total_applicants?.toString() || "0",
-         subtext: "Career seekers",
          icon: Users,
          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
       },
       {
          label: "Shortlisted",
          value: dashboardData?.shortlisted_count?.toString() || "0",
-         subtext: "Top talent",
          icon: CheckCircle2,
          gradient: "from-[#10B981] to-[#047857]", // Green
       },
       {
          label: "Remaining credits",
          value: dashboardData?.credits?.remaining_credits?.toString() || "0",
-         subtext: "Account balance",
          icon: Zap,
          gradient: "from-[#F97316] to-[#C2410C]", // Orange
       },
@@ -186,9 +182,6 @@ export default function RecruiterDashboardClient({
                      <h3 className="text-3xl font-medium tracking-tight">{stat.value}</h3>
                   </div>
                   
-                  <div className="relative z-10">
-                     <p className="text-[10px] opacity-70 font-medium italic">{stat.subtext}</p>
-                  </div>
                </div>
             ))}
          </div>

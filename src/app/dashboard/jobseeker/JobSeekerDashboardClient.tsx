@@ -65,7 +65,6 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                 <div>
                   <p className="text-indigo-100/70 font-medium text-[13px] mb-1">Jobs Applied</p>
                   <p className="text-3xl font-bold text-white mb-1.5">{data?.total_applied ?? 0}</p>
-                  <p className="text-[11px] font-medium text-indigo-200/50">Total applications sent</p>
                 </div>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-white/20 transition-all">
@@ -81,7 +80,6 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
               <div className="relative z-10">
                 <p className="text-indigo-100/70 font-medium text-[13px] mb-1">Saved Jobs</p>
                 <p className="text-3xl font-bold text-white mb-1.5">{data?.total_bookmarked ?? 0}</p>
-                <p className="text-[11px] font-medium text-indigo-200/50">Opportunities tracked</p>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 group-hover:bg-white/20 transition-all">
                 <Bookmark className="w-6 h-6 text-white opacity-80" />
@@ -93,7 +91,6 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
               <div className="relative z-10">
                 <p className="text-slate-100 font-medium text-[13px] mb-1">Shortlisted Jobs</p>
                 <p className="text-3xl font-bold text-white mb-1.5">{data?.total_shortlisted ?? 0}</p>
-                <p className="text-[11px] font-medium text-emerald-100/70">Proceeding to next steps</p>
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm group-hover:rotate-12 transition-all">
                 <Star className="w-6 h-6 text-white opacity-80" />

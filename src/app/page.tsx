@@ -79,7 +79,7 @@ export default async function HomePage() {
 
   return (
     <main className="flex flex-col min-h-screen">
-      {hero && <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />}
+      <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
       {categories && categories.length > 0 && <Categories categories={categories} />}
 
       {institutions && institutions.length > 0 && <FeaturedInstitutions institutions={institutions} />}
