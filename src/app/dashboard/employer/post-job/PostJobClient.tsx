@@ -76,8 +76,8 @@ export default function PostJobClient({
     experience_required: job?.experience_required || "",
     vacancies: job?.vacancies || 1,
     gender: job?.gender || "both",
-    salary_min: job?.salary_min?.toString().split('.')[0] || "",
-    salary_max: job?.salary_max?.toString().split('.')[0] || "",
+    salary_min: job?.salary_min != null ? job.salary_min.toString().split('.')[0] : "",
+    salary_max: job?.salary_max != null ? job.salary_max.toString().split('.')[0] : "",
     education_qualification: job?.education_qualification || "",
     skills: Array.isArray(job?.skills) ? job.skills : [],
     benefits: Array.isArray(job?.benefits) ? job.benefits : [],
@@ -88,7 +88,16 @@ export default function PostJobClient({
   });
 
   const [description, setDescription] = useState(job?.description || "");
-  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
+  const [questions, setQuestions] = useState<Question[]>(
+    (Array.isArray(initialQuestions) ? initialQuestions : [])
+      .filter((q: any) => q != null)
+      .map((q: any) => ({
+        ...q,
+        question: q.question || "",
+        recruiter_answer: q.recruiter_answer || "",
+        question_type: q.question_type || "boolean"
+      }))
+  );
   const [deadline, setDeadline] = useState<Date | undefined>(
     job?.deadline || job?.application_deadline ? new Date(job.deadline || job.application_deadline) : undefined
   );

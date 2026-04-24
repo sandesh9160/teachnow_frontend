@@ -256,6 +256,12 @@ export default function EmployerDashboardClient({
     const sub = dashboardData?.active_subscription || dashboardData?.subscription;
     const credits = dashboardData?.credits_summary;
 
+    // Pre-calculate credits for clean UI logic
+    const jobTotal = credits?.job_credits?.total ?? (sub && 'job_credits_total' in sub ? (sub as any).job_credits_total : (sub && 'total_credits' in sub ? (sub as any).total_credits : 0));
+    const jobRemaining = credits?.job_credits?.remaining ?? (sub && 'job_credits_remaining' in sub ? (sub as any).job_credits_remaining : (sub && 'remaining_credits' in sub ? (sub as any).remaining_credits : 0));
+    const featTotal = credits?.feature_credits?.total ?? (sub && 'feature_credits_total' in sub ? (sub as any).feature_credits_total : (sub && 'featured_jobs_total' in sub ? (sub as any).featured_jobs_total : 0));
+    const featRemaining = credits?.feature_credits?.remaining ?? (sub && 'feature_credits_remaining' in sub ? (sub as any).feature_credits_remaining : (sub && 'remaining_featured_jobs' in sub ? (sub as any).remaining_featured_jobs : 0));
+
     const stats = [
        {
           label: "Total jobs",
@@ -327,27 +333,48 @@ export default function EmployerDashboardClient({
                   </div>
                </div>
 
-                <div className="relative z-10 flex flex-1 flex-wrap items-center justify-center sm:justify-start gap-8 lg:gap-14 lg:border-l lg:border-slate-100 lg:pl-10">
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Job credits</span>
-                      <p className="text-xl font-semibold text-black">
-                        {credits?.job_credits?.remaining ?? ('job_credits_remaining' in sub ? sub.job_credits_remaining : ('remaining_credits' in sub ? sub.remaining_credits : 0))}
-                      </p>
-                   </div>
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Featured units</span>
-                      <p className="text-xl font-semibold text-indigo-600">
-                        {credits?.feature_credits?.remaining ?? ('feature_credits_remaining' in sub ? sub.feature_credits_remaining : ('remaining_featured_jobs' in sub ? sub.remaining_featured_jobs : 0))}
-                      </p>
-                   </div>
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Status</span>
-                      <div className="flex items-center gap-2">
-                         <p className="text-xl font-semibold text-emerald-600">Active</p>
-                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      </div>
-                   </div>
-                </div>
+                 <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-4 lg:gap-6 lg:border-l lg:border-slate-100 lg:pl-10">
+                    {/* Active Allocation Box */}
+                    <div className="flex-1 bg-slate-50/50 border border-slate-100/50 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
+                       <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Active Credits</span>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
+                             <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                             <span className="text-[8px] font-bold text-emerald-600 uppercase">Live</span>
+                          </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col">
+                             <span className="text-[10px] font-medium text-slate-500 capitalize">Job posts</span>
+                             <p className="text-xl font-bold text-slate-900">{jobTotal}</p>
+                          </div>
+                          <div className="flex flex-col">
+                             <span className="text-[10px] font-medium text-slate-500 capitalize">Featured</span>
+                             <p className="text-xl font-bold text-slate-900">{featTotal}</p>
+                          </div>
+                       </div>
+                    </div>
+
+                    {/* Remaining Balance Box */}
+                    <div className="flex-1 bg-indigo-50/30 border border-indigo-100/30 rounded-2xl p-4 transition-all hover:bg-indigo-50/50 group/remaining">
+                       <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
+                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100/50 rounded-full border border-indigo-200/50">
+                             <span className="text-[8px] font-bold text-indigo-600 uppercase tracking-tight">Available</span>
+                          </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col">
+                             <span className="text-[10px] font-medium text-indigo-400 capitalize">Job posts</span>
+                             <p className="text-xl font-bold text-indigo-600">{jobRemaining}</p>
+                          </div>
+                          <div className="flex flex-col">
+                             <span className="text-[10px] font-medium text-indigo-400 capitalize">Featured</span>
+                             <p className="text-xl font-bold text-indigo-600">{featRemaining}</p>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
 
                <Link href="/dashboard/employer/purchase-history" className="relative z-10 lg:pl-4">
                   <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
