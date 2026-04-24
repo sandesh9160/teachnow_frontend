@@ -113,9 +113,17 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
           >
             {/* Start Spacer */}
             <div className="shrink-0 w-px md:hidden" />
-            {jobs.map((job) => {
+             {jobs.map((job) => {
               const companyName = job.employer?.company_name || "Confidential School";
               const companyLogo = job.employer?.company_logo || "";
+              const salary = (() => {
+                const parseVal = (v: any) => (!v || v === "null" || v === "0") ? 0 : Number(v);
+                const min = parseVal(job.salary_min);
+                const max = parseVal(job.salary_max);
+                if (!min && !max) return "Not disclosed";
+                const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+                return `${fmt(min)} - ${fmt(max)}`;
+              })();
 
               return (
                 <div key={job.id} className="w-[300px] md:w-[320px] shrink-0 snap-center md:snap-start">
@@ -127,7 +135,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
                     location={job.location}
                     slug={job.slug}
                     type={job.job_type.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c) => c.toUpperCase())}
-                    salary={`${job.salary_min} - ${job.salary_max}`}
+                    salary={salary}
                     tags={[]}
                     posted={job.created_at ? `Posted on ${formatDate(job.created_at)}` : ""}
                   />

@@ -43,8 +43,12 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
     <div className="grid grid-cols-1 gap-6">
       {jobs.map((job) => {
         const salary = (() => {
-          const min = Number(job.salary_min || 0);
-          const max = Number(job.salary_max || 0);
+          const parseVal = (v: any) => {
+            if (!v || v === "null" || v === "0") return 0;
+            return Number(v);
+          };
+          const min = parseVal(job.salary_min);
+          const max = parseVal(job.salary_max);
           if (!min && !max) return "Not disclosed";
           const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
           return `${fmt(min)} - ${fmt(max)}`;

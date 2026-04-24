@@ -373,6 +373,7 @@ const DesktopAuth = ({
       <button
         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
         className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-slate-50 transition-all group"
+        suppressHydrationWarning
       >
         <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display">
           {avatarSrc && !avatarError ? (
@@ -635,7 +636,11 @@ const Header = ({
           {!isLoggedIn && (
             <Link href="/auth/login" className="text-[10px] font-bold text-primary px-2 py-1.5 bg-primary/5 rounded-lg whitespace-nowrap">Register / Login</Link>
           )}
-          <button className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50" onClick={() => setMobileOpen(!mobileOpen)}>
+          <button 
+            className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50" 
+            onClick={() => setMobileOpen(!mobileOpen)}
+            suppressHydrationWarning
+          >
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>

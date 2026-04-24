@@ -133,23 +133,34 @@ export default function SavedJobsPage() {
         </div>
       ) : filteredBookmarks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBookmarks.map((job: any) => (
+          {filteredBookmarks.map((job: any) => {
+            const salary = (() => {
+              const parseVal = (v: any) => (!v || v === "null" || v === "0") ? 0 : Number(v);
+              const min = parseVal(job.salary_min);
+              const max = parseVal(job.salary_max);
+              if (!min && !max) return "Not disclosed";
+              const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+              return `${fmt(min)} - ${fmt(max)}`;
+            })();
+
+            return (
               <JobCard
                 key={job.id}
                 id={job.id}
                 title={job.title}
-                company={job.employer?.company_name || "Institution"}
-                logo={job.employer?.company_logo}
+                company={job.employer?.company_name || "Confidential School"}
                 location={job.location}
-                slug={job.slug}
-                type={job.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time"}
-                salary={job.salary_range || `${job.salary_min} - ${job.salary_max}`}
+                type={job.job_type?.replaceAll('_', ' ').replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time"}
+                salary={salary}
                 tags={[]}
                 posted={job.created_at}
-                expiresAt={job.expires_at}
+                logo={job.employer?.company_logo}
+                slug={job.slug}
                 savedAt={job.bookmarkedAt}
+                expiresAt={job.expires_at}
               />
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white rounded-3xl py-24 px-6 text-center border border-slate-100 shadow-sm flex flex-col items-center">

@@ -295,7 +295,17 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                <div className="grid grid-cols-1 gap-2.5">
                   <DetailItem label="Subject" value={job.category?.name || "General"} icon={Layers} colorClass="bg-blue-50 text-blue-600 border-blue-100/50" />
                   <DetailItem label="Openings" value={`${job.vacancies} Positions`} icon={Users} colorClass="bg-indigo-50 text-indigo-600 border-indigo-100/50" />
-                  <DetailItem label="Monthly Salary" value={(!job.salary_min && !job.salary_max) ? "Salary Undisclosed" : `₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`} icon={DollarSign} colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50" />
+                  <DetailItem 
+                     label="Monthly Salary" 
+                     value={
+                        (!job.salary_min || job.salary_min === "null" || job.salary_min === "0") && 
+                        (!job.salary_max || job.salary_max === "null" || job.salary_max === "0")
+                        ? "Salary Undisclosed" 
+                        : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
+                     } 
+                     icon={DollarSign} 
+                     colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50" 
+                  />
                   <DetailItem label="Experience" value={`${job.experience_required}y (${formatTerm(job.experience_type)})`} icon={Briefcase} colorClass="bg-purple-50 text-purple-600 border-purple-100/50" />
                   <DetailItem
                      label="Home Featuring"

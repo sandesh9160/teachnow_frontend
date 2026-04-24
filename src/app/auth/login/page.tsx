@@ -202,12 +202,12 @@ function LoginContent() {
                 `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`
               )}
             </button>
-          </form>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/auth/register" className="font-semibold text-primary hover:underline">Create one free</Link>
-          </p>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link href="/auth/register" className="font-semibold text-primary hover:underline">Create an account</Link>
+            </p>
+          </form>
         </div>
       </div>
     </div>

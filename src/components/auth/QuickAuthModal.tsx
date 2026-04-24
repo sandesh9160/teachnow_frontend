@@ -261,10 +261,10 @@ export default function QuickAuthModal({
               )}
             </Button>
 
-            <div className="text-center pt-1.5">
+            <div className="text-center pt-2">
               {mode === "login" ? (
                 <button type="button" onClick={() => setMode("register")} className="text-[11px] font-bold text-slate-500 hover:text-primary transition-all">
-                  New here? <span className="text-primary underline-offset-2 hover:underline">Join TeachNow Free</span>
+                  Don&apos;t have an account? <span className="text-primary underline-offset-2 hover:underline">Create one free</span>
                 </button>
               ) : (
                 <button type="button" onClick={() => setMode("login")} className="text-[11px] font-bold text-slate-500 hover:text-primary transition-all flex items-center justify-center gap-1.5 mx-auto">

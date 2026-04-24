@@ -571,7 +571,14 @@ export default function ApplyJobPage() {
                 <div className="mt-5 grid grid-cols-1 min-[450px]:grid-cols-2 gap-y-3 gap-x-6">
                   {[
                     { icon: MapPin, label: "Location", value: jobDetails.location },
-                    { icon: IndianRupee, label: "Salary", value: `${jobDetails.salary_min} - ${jobDetails.salary_max}` },
+                    { 
+                      icon: IndianRupee, 
+                      label: "Salary", 
+                      value: (!jobDetails.salary_min || jobDetails.salary_min === "null" || jobDetails.salary_min === "0") && 
+                             (!jobDetails.salary_max || jobDetails.salary_max === "null" || jobDetails.salary_max === "0")
+                             ? "Salary Undisclosed"
+                             : `${jobDetails.salary_min && jobDetails.salary_min !== "null" ? jobDetails.salary_min : "0"} - ${jobDetails.salary_max && jobDetails.salary_max !== "null" ? jobDetails.salary_max : "0"}`
+                    },
                     { icon: GraduationCap, label: "Experience", value: `${jobDetails.experience_required}+ years` },
                     { icon: Briefcase, label: "Type", value: jobDetails.job_type },
                   ].map((item) => (

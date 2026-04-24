@@ -76,10 +76,12 @@ export default function FAQPage() {
                     {faq.question}
                   </AccordionTrigger>
                   <AccordionContent className="pb-5">
-                    <div className="text-slate-500 text-sm leading-relaxed">
-                      {faq.answer}
-                    </div>
+                    <div 
+                      className="text-slate-500 text-sm leading-relaxed prose prose-slate max-w-none"
+                      dangerouslySetInnerHTML={{ __html: faq.answer }}
+                    />
                   </AccordionContent>
+
                 </AccordionItem>
               ))}
             </Accordion>

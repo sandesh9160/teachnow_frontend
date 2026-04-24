@@ -255,6 +255,23 @@ export async function getFAQs(): Promise<any[]> {
 }
 
 /**
+ * Fetch About Us content.
+ * Endpoint: /open/about-us
+ */
+export async function getAboutUs(): Promise<any[]> {
+  try {
+    const res = await fetchAPI<ApiResponse<any>>("/open/about-us");
+    const data = res.data || res;
+    return toArray(data);
+  } catch (error) {
+    //console.error("Error in getAboutUs hook:", error);
+    return [];
+  }
+}
+
+
+
+/**
  * Fetch Navigation.
  * Endpoint: /open/home/navigation
  */

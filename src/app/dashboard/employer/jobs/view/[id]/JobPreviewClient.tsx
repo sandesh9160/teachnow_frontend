@@ -294,7 +294,12 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   />
                   <DetailItem
                      label="Monthly Salary"
-                     value={(!job.salary_min && !job.salary_max) ? "Salary Undisclosed" : `₹${(job.salary_min || '0').split('.')[0]} - ₹${(job.salary_max || '0').split('.')[0]}`}
+                     value={
+                        (!job.salary_min || job.salary_min === "null" || job.salary_min === "0") && 
+                        (!job.salary_max || job.salary_max === "null" || job.salary_max === "0")
+                        ? "Salary Undisclosed" 
+                        : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
+                     }
                      icon={DollarSign}
                      colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50"
                   />

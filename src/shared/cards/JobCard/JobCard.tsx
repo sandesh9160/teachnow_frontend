@@ -180,9 +180,9 @@ const JobCard = ({
           </div>
 
           <div className="flex justify-start mb-1.5">
-            {salary && salary !== "Not disclosed" && (
+            {salary && (
               <div className={`text-[15px] font-bold ${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} tracking-tight`}>
-                ₹{salary.replace(/\.00/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                {salary === "Not disclosed" ? "Not Disclosed" : `₹${salary.replace(/\.00/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}
               </div>
             )}
           </div>
