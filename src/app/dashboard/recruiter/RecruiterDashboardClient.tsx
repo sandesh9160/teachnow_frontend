@@ -9,7 +9,9 @@ import {
    CreditCard,
    Check,
    Zap,
-   CheckCircle2
+   CheckCircle2,
+   ChevronRight,
+   TrendingUp
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -22,17 +24,21 @@ interface RecruiterDashboardStats {
    total_applicants: number;
    shortlisted_count?: number;
    credits: {
-      total_credits: number;
-      used_credits: number;
-      remaining_credits: number;
+      jobs_total: number;
+      jobs_used: number;
+      jobs_remaining: number;
+      feature_total: number;
+      feature_used: number;
+      feature_jobs_remaining: number;
+      active_featured_jobs?: number;
+      your_usage?: {
+         jobs_used: number;
+         featured_jobs_used: number;
+      };
       current_plan?: {
          plan_name: string;
          expires_at: string;
       } | null;
-      featured_jobs_total?: number;
-      featured_jobs_used?: number;
-      remaining_featured_jobs?: number;
-      active_featured_jobs?: number;
    };
    recent_jobs: any[];
    recent_applications: any[];
@@ -52,7 +58,7 @@ const ApplicationAvatar = ({ src, alt, initials }: { src: string | null, alt: st
 
    if (!fullUrl || error) {
       return (
-         <div className="w-full h-full flex items-center justify-center bg-[#E0E7FF] text-[#4338CA] text-[10px] font-medium">
+         <div className="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-700 text-xs font-black">
             {initials || alt[0]}
          </div>
       );
@@ -77,40 +83,46 @@ export default function RecruiterDashboardClient({
    welcomeName: string,
    dashboardData?: RecruiterDashboardStats
 }) {
-   const sub = dashboardData?.credits;
+   const sub = dashboardData?.credits?.current_plan;
+   const credits = dashboardData?.credits;
    const basePath = "/dashboard/recruiter";
+
+   // Pre-calculate values for clean UI
+   const jobTotal = credits?.jobs_total ?? 0;
+   const jobRemaining = credits?.jobs_remaining ?? 0;
+   const featTotal = credits?.feature_total ?? 0;
+   const featRemaining = credits?.feature_jobs_remaining ?? 0;
+   const yourJobs = credits?.your_usage?.jobs_used ?? 0;
+   const yourFeat = credits?.your_usage?.featured_jobs_used ?? 0;
 
    const stats = [
       {
-         label: "Total jobs",
+         label: "Active jobs",
          value: dashboardData?.active_jobs?.toString() || "0",
          icon: Briefcase,
          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
+         textColor: "text-white"
       },
       {
          label: "Total applicants",
          value: dashboardData?.total_applicants?.toString() || "0",
          icon: Users,
          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
+         textColor: "text-white"
       },
       {
-         label: "Shortlisted",
-         value: dashboardData?.shortlisted_count?.toString() || "0",
-         icon: CheckCircle2,
-         gradient: "from-[#10B981] to-[#047857]", // Green
-      },
-      {
-         label: "Remaining credits",
-         value: dashboardData?.credits?.remaining_credits?.toString() || "0",
-         icon: Zap,
+         label: "Jobs Filled",
+         value: dashboardData?.jobs_filled?.toString() || "0",
+         icon: TrendingUp,
          gradient: "from-[#F97316] to-[#C2410C]", // Orange
+         textColor: "text-white"
       },
    ];
 
    return (
       <div className="max-w-7xl mx-auto px-4 py-4 space-y-6 font-sans text-black pb-12">
          
-         {/* Page Header */}
+         {/* Page Header - Clean & Balanced */}
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-0.5">
                <div className="flex items-center gap-2">
@@ -129,70 +141,109 @@ export default function RecruiterDashboardClient({
             </Link>
          </div>
 
-         {/* Credits Intelligence Card (Exactly as Employer Dashboard) */}
-         {sub && (
+         {/* Subscription & Credit Summary - Balanced Density */}
+         {credits && (
             <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-8 group">
                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
+               
                <div className="relative z-10 flex gap-4 md:items-center shrink-0">
                   <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
                      <CreditCard className="w-6 h-6" />
                   </div>
                   <div>
                      <p className="text-[10px] font-medium text-black/40 capitalize mb-0.5">Current membership</p>
-                     <h2 className="text-xl font-medium text-black tracking-tight">{sub.current_plan?.plan_name || "Basic Silver"}</h2>
+                     <h2 className="text-xl font-medium text-black tracking-tight">{sub?.plan_name || "Silver Plan"}</h2>
                      <p className="text-[11px] font-medium text-black/40 flex items-center gap-1.5 mt-0.5">
-                        <Clock className="w-2.5 h-2.5 text-amber-500" /> Renewal: {sub.current_plan?.expires_at ? new Date(sub.current_plan.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "1 July 2026"}
+                        <Clock className="w-2.5 h-2.5 text-amber-500" /> Renewal: {sub?.expires_at ? new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "---"}
                      </p>
                   </div>
                </div>
 
-               <div className="relative z-10 flex flex-1 flex-wrap items-center justify-center sm:justify-start gap-8 lg:gap-20 lg:border-l lg:border-slate-100 lg:pl-10">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[10px] font-medium text-black/40 whitespace-nowrap">Total Credits</span>
-                     <p className="text-2xl font-medium text-black">{sub.total_credits}</p>
+               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-4 lg:gap-8 lg:border-l lg:border-slate-100 lg:pl-10">
+                  {/* Allocation Info Box */}
+                  <div className="flex-1 bg-slate-50/30 border border-slate-200 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
+                     <div className="flex items-center gap-2 mb-2.5">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Total Credits</span>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-slate-500 capitalize">Job posts</span>
+                           <p className="text-xl font-medium text-black">{jobTotal}</p>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-slate-500 capitalize">Featured</span>
+                           <p className="text-xl font-medium text-black">{featTotal}</p>
+                        </div>
+                     </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[10px] font-medium text-black/40 whitespace-nowrap">Utilized Units</span>
-                     <p className="text-2xl font-medium text-rose-500">{sub.used_credits}</p>
+
+                  {/* Remaining Balance Box */}
+                  <div className="flex-1 bg-emerald-50/10 border border-emerald-200/60 rounded-2xl p-4 transition-all hover:bg-emerald-50/20 group/remaining">
+                     <div className="flex items-center gap-2 mb-2.5">
+                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
+                        <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-emerald-700/70 capitalize">Job posts</span>
+                           <p className="text-xl font-medium text-emerald-600">{jobRemaining}</p>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-emerald-700/70 capitalize">Featured</span>
+                           <p className="text-xl font-medium text-emerald-600">{featRemaining}</p>
+                        </div>
+                     </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[10px] font-medium text-black/40 whitespace-nowrap">Balance Remaining</span>
-                     <div className="flex items-center gap-2">
-                        <p className="text-2xl font-medium text-emerald-600">{sub.remaining_credits}</p>
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mt-0.5" />
+
+                  {/* Recruiter's Personal Usage Box */}
+                  <div className="flex-1 bg-amber-50/10 border border-amber-200/60 rounded-2xl p-4 transition-all hover:bg-amber-50/20 group/usage">
+                     <div className="flex items-center gap-2 mb-2.5">
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider whitespace-nowrap">Your Usage</span>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-amber-700/70 capitalize">Jobs used</span>
+                           <p className="text-xl font-medium text-black">{yourJobs}</p>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-amber-700/70 capitalize">Featured</span>
+                           <p className="text-xl font-medium text-black">{yourFeat}</p>
+                        </div>
                      </div>
                   </div>
                </div>
             </div>
          )}
 
-         {/* Stats Grid - Gradient Cards (Exactly as Employer Dashboard) */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+         {/* Stats Grid - Gradient Cards */}
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {stats.map((stat, i) => (
                <div key={i} className={cn(
-                  "relative h-28 rounded-[20px] p-4 flex flex-col justify-between overflow-hidden shadow-sm text-white bg-gradient-to-br",
+                  "relative h-30 rounded-[24px] p-6 flex flex-col justify-between overflow-hidden shadow-sm text-white bg-gradient-to-br",
                   stat.gradient
                )}>
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner">
-                     <stat.icon className="w-6 h-6 opacity-80" />
+                     <stat.icon className="w-7 h-7 opacity-80" />
                   </div>
                   
                   <div className="relative z-10 space-y-0.5">
-                     <p className="text-[11px] font-medium opacity-80">{stat.label}</p>
-                     <h3 className="text-3xl font-medium tracking-tight">{stat.value}</h3>
+                     <p className="text-[16px] font-medium opacity-80">{stat.label}</p>
+                     <h3 className="text-4xl font-semibold">{stat.value}</h3>
                   </div>
-                  
                </div>
             ))}
          </div>
 
-         {/* Main Content Areas */}
+         {/* Main Workspace Areas */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Recent Candidates List */}
+            {/* Recent Applicants */}
             <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm flex flex-col">
-               <div className="px-6 py-5 border-b border-slate-50">
+               <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
                   <h2 className="text-[15px] font-medium text-black">Recent candidates</h2>
+                  <Link href={`${basePath}/applicants`} className="text-[11px] font-medium text-indigo-600 hover:underline flex items-center gap-1">
+                     View All <ChevronRight className="w-3 h-3" />
+                  </Link>
                </div>
 
                <div className="divide-y divide-slate-50">
@@ -212,7 +263,7 @@ export default function RecruiterDashboardClient({
                                  {app.job_seeker?.user?.name || "Applicant"}
                               </h4>
                               <p className="text-[11px] font-medium text-black/40 truncate">
-                                 Applied for {app.job?.title}
+                                 {app.job?.title}
                               </p>
                            </div>
 
@@ -240,10 +291,13 @@ export default function RecruiterDashboardClient({
                </div>
             </div>
 
-            {/* Active Vacancies List */}
+            {/* Active Vacancies */}
             <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm flex flex-col">
-               <div className="px-6 py-5 border-b border-slate-50">
+               <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
                   <h2 className="text-[15px] font-medium text-black">Active vacancies</h2>
+                  <Link href={`${basePath}/jobs`} className="text-[11px] font-medium text-indigo-600 hover:underline flex items-center gap-1">
+                     Manage Jobs <ChevronRight className="w-3 h-3" />
+                  </Link>
                </div>
 
                <div className="divide-y divide-slate-50">
@@ -262,13 +316,18 @@ export default function RecruiterDashboardClient({
                                     {job.job_status}
                                  </span>
                               </div>
-                              <div className="flex items-center gap-1.5 text-[10px] font-medium text-black/40">
-                                 <Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString('en-GB')}
+                              <div className="flex items-center gap-3 text-[10px] font-medium text-black/40">
+                                 <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString('en-GB')}
+                                 </div>
+                                 <div className="flex items-center gap-1 text-indigo-600/60">
+                                    <Users className="w-3 h-3" /> {job.job_applications_count || 0}
+                                 </div>
                               </div>
                            </div>
 
                            <Link href={`${basePath}/jobs/view/${job.id}`}>
-                              <Button size="sm" className="h-8 px-4 rounded-xl bg-white border border-slate-200 text-black hover:bg-slate-50 font-medium text-[10px] shrink-0 shadow-sm">
+                              <Button size="sm" className="h-8 px-4 rounded-xl bg-white border border-slate-200 text-black hover:bg-slate-50 font-medium text-[10px] shrink-0 shadow-sm transition-all active:scale-95">
                                  Applicants
                               </Button>
                            </Link>
