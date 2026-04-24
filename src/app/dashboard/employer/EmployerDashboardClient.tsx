@@ -9,8 +9,9 @@ import {
    Zap,
    CreditCard,
    Check,
-   // ShieldCheck,
    // Building2,
+   // MapPin,
+   // Globe,
    Loader2,
    RefreshCw,
 } from "lucide-react";
@@ -51,44 +52,44 @@ interface LatestApplication {
 }
 
 interface ActiveSubscription {
-    plan_name: string;
-    job_credits_total: number;
-    job_credits_used: number;
-    job_credits_remaining: number;
-    feature_credits_total: number;
-    feature_credits_used: number;
-    feature_credits_remaining: number;
-    expires_at: string;
+   plan_name: string;
+   job_credits_total: number;
+   job_credits_used: number;
+   job_credits_remaining: number;
+   feature_credits_total: number;
+   feature_credits_used: number;
+   feature_credits_remaining: number;
+   expires_at: string;
 }
 
 interface CreditsSummary {
-    job_credits: {
-        total: number;
-        used: number;
-        remaining: number;
-    };
-    feature_credits: {
-        total: number;
-        used: number;
-        remaining: number;
-    };
-    active_subscriptions_count: number;
+   job_credits: {
+      total: number;
+      used: number;
+      remaining: number;
+   };
+   feature_credits: {
+      total: number;
+      used: number;
+      remaining: number;
+   };
+   active_subscriptions_count: number;
 }
 
 interface RecruiterInfo {
-    id: number;
-    name: string;
-    email: string;
-    jobs_used: number;
-    featured_jobs_used: number;
+   id: number;
+   name: string;
+   email: string;
+   jobs_used: number;
+   featured_jobs_used: number;
 }
 
 interface SubscriptionHistoryItem {
-    plan_name: string;
-    purchase_date: string;
-    starts_at: string;
-    expires_at: string;
-    status: string;
+   plan_name: string;
+   purchase_date: string;
+   starts_at: string;
+   expires_at: string;
+   status: string;
 }
 
 interface DashboardStats {
@@ -111,8 +112,8 @@ interface DashboardStats {
    active_subscription?: ActiveSubscription;
    credits_summary?: CreditsSummary;
    recruiters?: {
-       data: RecruiterInfo[];
-       total: number;
+      data: RecruiterInfo[];
+      total: number;
    };
    subscription_history?: SubscriptionHistoryItem[];
    subscription_expiring_soon?: boolean;
@@ -198,8 +199,8 @@ export default function EmployerDashboardClient({
    userRole?: string
 }) {
    const [isFeatured, setIsFeatured] = useState(
-      dashboardData?.company_featured === true || 
-      dashboardData?.is_featured === 1 || 
+      dashboardData?.company_featured === true ||
+      dashboardData?.is_featured === 1 ||
       dashboardData?.employer?.is_featured === 1 ||
       false
    );
@@ -213,7 +214,7 @@ export default function EmployerDashboardClient({
       }
       setLoadingFeature(true);
       try {
-         const res = await dashboardServerFetch<{status: boolean, message?: string}>(`employer/${employerId}/toggle-feature`, {
+         const res = await dashboardServerFetch<{ status: boolean, message?: string }>(`employer/${employerId}/toggle-feature`, {
             method: "POST"
          });
          console.log("Toggle Feature Response:", res);
@@ -250,48 +251,48 @@ export default function EmployerDashboardClient({
       }
    };
 
-    const basePath = `/dashboard/${userRole}`;
-    
-    // Support both old and new backend structure for compatibility
-    const sub = dashboardData?.active_subscription || dashboardData?.subscription;
-    const credits = dashboardData?.credits_summary;
+   const basePath = `/dashboard/${userRole}`;
 
-    // Pre-calculate credits for clean UI logic
-    const jobTotal = credits?.job_credits?.total ?? (sub && 'job_credits_total' in sub ? (sub as any).job_credits_total : (sub && 'total_credits' in sub ? (sub as any).total_credits : 0));
-    const jobRemaining = credits?.job_credits?.remaining ?? (sub && 'job_credits_remaining' in sub ? (sub as any).job_credits_remaining : (sub && 'remaining_credits' in sub ? (sub as any).remaining_credits : 0));
-    const featTotal = credits?.feature_credits?.total ?? (sub && 'feature_credits_total' in sub ? (sub as any).feature_credits_total : (sub && 'featured_jobs_total' in sub ? (sub as any).featured_jobs_total : 0));
-    const featRemaining = credits?.feature_credits?.remaining ?? (sub && 'feature_credits_remaining' in sub ? (sub as any).feature_credits_remaining : (sub && 'remaining_featured_jobs' in sub ? (sub as any).remaining_featured_jobs : 0));
+   // Support both old and new backend structure for compatibility
+   const sub = dashboardData?.active_subscription || dashboardData?.subscription;
+   const credits = dashboardData?.credits_summary;
 
-    const stats = [
-       {
-          label: "Total jobs",
-          value: dashboardData?.total_jobs?.toString() || "0",
-          icon: Briefcase,
-          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
-          textColor: "text-white"
-       },
-       {
-          label: "Total applicants",
-          value: dashboardData?.total_applications?.toString() || "0",
-          icon: Users,
-          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
-          textColor: "text-white"
-       },
-       {
-          label: "Shortlisted",
-          value: dashboardData?.shortlisted_candidates?.toString() || "0",
-          icon: CheckCircle2,
-          gradient: "from-[#10B981] to-[#047857]", // Green
-          textColor: "text-white"
-       },
-       {
-          label: "Team members",
-          value: dashboardData?.total_recruiters?.toString() || "0",
-          icon: Users,
-          gradient: "from-[#F97316] to-[#C2410C]", // Orange
-          textColor: "text-white"
-       },
-    ];
+   // Pre-calculate credits for clean UI logic
+   const jobTotal = credits?.job_credits?.total ?? (sub && 'job_credits_total' in sub ? (sub as any).job_credits_total : (sub && 'total_credits' in sub ? (sub as any).total_credits : 0));
+   const jobRemaining = credits?.job_credits?.remaining ?? (sub && 'job_credits_remaining' in sub ? (sub as any).job_credits_remaining : (sub && 'remaining_credits' in sub ? (sub as any).remaining_credits : 0));
+   const featTotal = credits?.feature_credits?.total ?? (sub && 'feature_credits_total' in sub ? (sub as any).feature_credits_total : (sub && 'featured_jobs_total' in sub ? (sub as any).featured_jobs_total : 0));
+   const featRemaining = credits?.feature_credits?.remaining ?? (sub && 'feature_credits_remaining' in sub ? (sub as any).feature_credits_remaining : (sub && 'remaining_featured_jobs' in sub ? (sub as any).remaining_featured_jobs : 0));
+
+   const stats = [
+      {
+         label: "Total jobs",
+         value: dashboardData?.total_jobs?.toString() || "0",
+         icon: Briefcase,
+         gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
+         textColor: "text-white"
+      },
+      {
+         label: "Total applicants",
+         value: dashboardData?.total_applications?.toString() || "0",
+         icon: Users,
+         gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
+         textColor: "text-white"
+      },
+      {
+         label: "Shortlisted",
+         value: dashboardData?.shortlisted_candidates?.toString() || "0",
+         icon: CheckCircle2,
+         gradient: "from-[#10B981] to-[#047857]", // Green
+         textColor: "text-white"
+      },
+      {
+         label: "Team members",
+         value: dashboardData?.total_recruiters?.toString() || "0",
+         icon: Users,
+         gradient: "from-[#F97316] to-[#C2410C]", // Orange
+         textColor: "text-white"
+      },
+   ];
 
    return (
       <div className="max-w-7xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-12">
@@ -301,12 +302,12 @@ export default function EmployerDashboardClient({
                <div className="flex items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-semibold text-black tracking-tight">Institute Dashboard</h1>
                   {(dashboardData?.employer?.is_verified === 1 || dashboardData?.employer_profile?.is_profile_verified === 1) && (
-                     <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] font-medium">
-                        <Check className="w-2.5 h-2.5" /> Verified
+                     <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium border border-emerald-100">
+                        <Check className="w-3.5 h-3.5" /> Verified
                      </div>
                   )}
                </div>
-               <p className="text-xs text-[#1E1B4B]">Welcome back, {dashboardData?.employer?.company_name || dashboardData?.employer_profile?.company_name || welcomeName}</p>
+               <p className="text-sm font-medium text-slate-700 mt-1">Welcome back, {dashboardData?.employer?.company_name || dashboardData?.employer_profile?.company_name || welcomeName}</p>
             </div>
 
             <Link href={`${basePath}/post-job`}>
@@ -326,55 +327,55 @@ export default function EmployerDashboardClient({
                   </div>
                   <div>
                      <p className="text-[10px] font-semibold text-slate-400 capitalize mb-0.5">Current membership</p>
-                     <h2 className="text-xl font-semibold text-black tracking-tight">{sub.plan_name}</h2>
+                     <h2 className="text-xl font-semibold text-black">{sub.plan_name}</h2>
                      <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
                         <Clock className="w-3 h-3 text-amber-500" /> Renewal: {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                      </p>
                   </div>
                </div>
 
-                 <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-4 lg:gap-6 lg:border-l lg:border-slate-100 lg:pl-10">
-                    {/* Active Allocation Box */}
-                    <div className="flex-1 bg-slate-50/50 border border-slate-100/50 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
-                       <div className="flex items-center gap-2 mb-3">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Active Credits</span>
-                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
-                             <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                             <span className="text-[8px] font-bold text-emerald-600 uppercase">Live</span>
-                          </div>
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col">
-                             <span className="text-[10px] font-medium text-slate-500 capitalize">Job posts</span>
-                             <p className="text-xl font-bold text-slate-900">{jobTotal}</p>
-                          </div>
-                          <div className="flex flex-col">
-                             <span className="text-[10px] font-medium text-slate-500 capitalize">Featured</span>
-                             <p className="text-xl font-bold text-slate-900">{featTotal}</p>
-                          </div>
-                       </div>
-                    </div>
+               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-4 lg:gap-6 lg:border-l lg:border-slate-100 lg:pl-10">
+                  {/* Active Allocation Box */}
+                  <div className="flex-1 bg-slate-50/50 border border-slate-100/50 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
+                     <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Active Credits</span>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
+                           <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                           <span className="text-[8px] font-bold text-emerald-600 uppercase">Live</span>
+                        </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-slate-500 capitalize">Job posts</span>
+                           <p className="text-xl font-bold text-slate-900">{jobTotal}</p>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-slate-500 capitalize">Featured</span>
+                           <p className="text-xl font-bold text-slate-900">{featTotal}</p>
+                        </div>
+                     </div>
+                  </div>
 
-                    {/* Remaining Balance Box */}
-                    <div className="flex-1 bg-indigo-50/30 border border-indigo-100/30 rounded-2xl p-4 transition-all hover:bg-indigo-50/50 group/remaining">
-                       <div className="flex items-center gap-2 mb-3">
-                          <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
-                          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100/50 rounded-full border border-indigo-200/50">
-                             <span className="text-[8px] font-bold text-indigo-600 uppercase tracking-tight">Available</span>
-                          </div>
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col">
-                             <span className="text-[10px] font-medium text-indigo-400 capitalize">Job posts</span>
-                             <p className="text-xl font-bold text-indigo-600">{jobRemaining}</p>
-                          </div>
-                          <div className="flex flex-col">
-                             <span className="text-[10px] font-medium text-indigo-400 capitalize">Featured</span>
-                             <p className="text-xl font-bold text-indigo-600">{featRemaining}</p>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
+                  {/* Remaining Balance Box */}
+                  <div className="flex-1 bg-indigo-50/30 border border-indigo-100/30 rounded-2xl p-4 transition-all hover:bg-indigo-50/50 group/remaining">
+                     <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100/50 rounded-full border border-indigo-200/50">
+                           <span className="text-[8px] font-bold text-indigo-600 uppercase tracking-tight">Available</span>
+                        </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-indigo-400 capitalize">Job posts</span>
+                           <p className="text-xl font-bold text-indigo-600">{jobRemaining}</p>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-medium text-indigo-400 capitalize">Featured</span>
+                           <p className="text-xl font-bold text-indigo-600">{featRemaining}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
 
                <Link href="/dashboard/employer/purchase-history" className="relative z-10 lg:pl-4">
                   <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
@@ -404,30 +405,7 @@ export default function EmployerDashboardClient({
             ))}
          </div>
 
-         {/* Quick Management Hub - Sentenced-case & Color-enriched */}
-         {/* <div className="space-y-3">
-            <h2 className="text-[14px] font-semibold text-slate-500 tracking-tight ml-1">Workspace Focus</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-               {[
-                  { label: "Manage Jobs", icon: Briefcase, href: `${basePath}/jobs`, color: "bg-blue-600 text-white", border: "border-blue-100", bg: "bg-blue-50/30" },
-                  { label: "Hiring Team", icon: ShieldCheck, href: `${basePath}/recruiters`, color: "bg-indigo-600 text-white", border: "border-indigo-100", bg: "bg-indigo-50/30" },
-                  { label: "Institute Dashboard", icon: Building2, href: `${basePath}/company-profile`, color: "bg-amber-600 text-white", border: "border-amber-100", bg: "bg-amber-50/30" },
-               ].map((item, idx) => (
-                  <Link key={idx} href={item.href} className="group">
-                     <div className={cn(
-                        "h-16 rounded-xl border bg-white p-3 flex items-center gap-4 transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95",
-                        item.border, item.bg
-                     )}>
-                        <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-all group-hover:scale-110 shadow-sm", item.color)}>
-                           <item.icon className="w-4.5 h-4.5" />
-                        </div>
-                        <span className="text-[13px] font-semibold text-slate-800 tracking-tight">{item.label}</span>
-                     </div>
-                  </Link>
-               ))}
-            </div>
-         </div> */}
-         
+
 
          {/* Promotion Hub - Full Width Sophisticated Design with Toggle */}
          <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group p-6">
@@ -467,10 +445,10 @@ export default function EmployerDashboardClient({
                      {(() => {
                         const date = dashboardData?.company_featured_until || dashboardData?.featured_until || dashboardData?.employer?.featured_until;
                         if (!date) return <p className="text-[11px] text-slate-400 font-medium tracking-tight">Status: Standard Placement</p>;
-                        
+
                         const isExpired = new Date(date) < new Date();
                         const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-                        
+
                         if (isFeatured && !isExpired) {
                            return <p className="text-[11px] text-indigo-600 font-bold flex items-center gap-1"><Zap className="w-2.5 h-2.5" /> Active until {formattedDate}</p>;
                         }
@@ -483,7 +461,7 @@ export default function EmployerDashboardClient({
                   <span className={cn("text-[11px] font-bold uppercase tracking-wider transition-colors", isFeatured ? "text-indigo-600" : "text-slate-400")}>
                      {isFeatured ? "Featured" : "Standard"}
                   </span>
-                  <button 
+                  <button
                      onClick={handleToggleFeatured}
                      disabled={loadingFeature}
                      className={cn(
@@ -583,37 +561,37 @@ export default function EmployerDashboardClient({
                               </div>
                            </div>
 
-                              <div className="flex items-center gap-2">
-                                 {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                    <Button 
-                                       onClick={() => handleJobAction(job.id, 'republish')}
-                                       disabled={loadingJobId === job.id}
-                                       size="sm" 
-                                       className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] shrink-0 flex items-center gap-1.5"
-                                    >
-                                       {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                                       Republish
-                                    </Button>
-                                 )}
-                                 {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                    <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                                       <Button size="sm" className="h-7 px-3 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-semibold text-[10px] shrink-0 flex items-center gap-1.5">
-                                          <Users className="w-3.5 h-3.5" />
-                                          Applicants
-                                          {job.total_applications_count !== undefined && (
-                                             <span className="ml-0.5 bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
-                                                {job.total_applications_count || 0}
-                                             </span>
-                                          )}
-                                       </Button>
-                                    </Link>
-                                 )}
-                                 <Link href={`${basePath}/jobs/view/${job.id}`}>
-                                    <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px] shrink-0">
-                                       View
+                           <div className="flex items-center gap-2">
+                              {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                 <Button
+                                    onClick={() => handleJobAction(job.id, 'republish')}
+                                    disabled={loadingJobId === job.id}
+                                    size="sm"
+                                    className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] shrink-0 flex items-center gap-1.5"
+                                 >
+                                    {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                                    Republish
+                                 </Button>
+                              )}
+                              {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                 <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                                    <Button size="sm" className="h-7 px-3 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-semibold text-[10px] shrink-0 flex items-center gap-1.5">
+                                       <Users className="w-3.5 h-3.5" />
+                                       Applicants
+                                       {job.total_applications_count !== undefined && (
+                                          <span className="ml-0.5 bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
+                                             {job.total_applications_count || 0}
+                                          </span>
+                                       )}
                                     </Button>
                                  </Link>
-                              </div>
+                              )}
+                              <Link href={`${basePath}/jobs/view/${job.id}`}>
+                                 <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px] shrink-0">
+                                    View
+                                 </Button>
+                              </Link>
+                           </div>
                         </div>
                      ))
                   ) : (
@@ -622,6 +600,126 @@ export default function EmployerDashboardClient({
                         <p className="text-xs font-semibold">No recent posts</p>
                      </div>
                   )}
+               </div>
+            </div>
+         </div>
+         {/* Management Intelligence: Team & Subscriptions Side-by-Side */}
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
+            {/* Hiring Team Table */}
+            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                  <div className="flex items-center gap-2">
+                     <Users className="w-4 h-4 text-indigo-600" />
+                     <h2 className="text-[14px] font-semibold text-black">Hiring Team</h2>
+                  </div>
+                  <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                     {dashboardData?.total_recruiters || 0} Members
+                  </span>
+               </div>
+               <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                     <thead>
+                        <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-800 uppercase tracking-wider">
+                           <th className="px-5 py-3">Name</th>
+                           <th className="px-5 py-3">Email</th>
+                           <th className="px-5 py-3 text-center">Jobs Posted</th>
+                           <th className="px-5 py-3 text-right">Featured Jobs</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-slate-50">
+                        {dashboardData?.recruiters?.data && dashboardData.recruiters.data.length > 0 ? (
+                           dashboardData.recruiters.data.map((recruiter) => (
+                              <tr key={recruiter.id} className="hover:bg-slate-50/50 transition-colors">
+                                 <td className="px-5 py-3">
+                                    <p className="text-[12px] font-bold text-slate-900">{recruiter.name}</p>
+                                 </td>
+                                 <td className="px-5 py-3">
+                                    <p className="text-[10px] text-slate-800 font-medium  max-w-[120px]">{recruiter.email}</p>
+                                 </td>
+                                 <td className="px-5 py-3 text-center">
+                                    <p className="text-[11px] font-bold text-slate-800">{recruiter.jobs_used}</p>
+                                 </td>
+                                 <td className="px-5 py-3 text-right">
+                                    <p className="text-[11px] font-bold text-indigo-600">{recruiter.featured_jobs_used}</p>
+                                 </td>
+                              </tr>
+                           ))
+                        ) : (
+                           <tr>
+                              <td colSpan={4} className="py-12 text-center opacity-30">
+                                 <p className="text-[11px] font-bold">No recruiters assigned</p>
+                              </td>
+                           </tr>
+                        )}
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+
+            {/* Subscription Lifecycle History */}
+            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                  <div className="flex items-center gap-2">
+                     <Clock className="w-4 h-4 text-amber-600" />
+                     <h2 className="text-[14px] font-semibold text-black">Subscription Timeline</h2>
+                  </div>
+                  {dashboardData?.credits_summary?.active_subscriptions_count && dashboardData.credits_summary.active_subscriptions_count > 1 && (
+                     <span className="text-[10px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full animate-pulse">
+                        {dashboardData.credits_summary.active_subscriptions_count} Active Packs
+                     </span>
+                  )}
+               </div>
+               <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                     <thead>
+                        <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-800 uppercase tracking-wider">
+                           <th className="px-5 py-3">Plan</th>
+                           <th className="px-5 py-3">Purchased</th>
+                           <th className="px-5 py-3">Validity</th>
+                           <th className="px-5 py-3 text-right">Status</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-slate-50">
+                        {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (
+                           dashboardData.subscription_history.map((item, idx) => (
+                              <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                 <td className="px-5 py-3">
+                                    <div className="flex items-center gap-2">
+                                       <p className="text-[12px] font-bold text-slate-900">{item.plan_name}</p>
+                                       {new Date(item.expires_at) < new Date() && (
+                                          <span className="text-[8px] text-rose-500 font-bold uppercase border border-rose-100 px-1 rounded">Exp</span>
+                                       )}
+                                    </div>
+                                 </td>
+                                 <td className="px-5 py-3">
+                                    <p className="text-[10px] text-slate-500 font-medium">
+                                       {new Date(item.purchase_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                    </p>
+                                 </td>
+                                 <td className="px-5 py-3">
+                                    <p className="text-[10px] text-slate-500 font-medium">
+                                       {new Date(item.starts_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – {new Date(item.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
+                                    </p>
+                                 </td>
+                                 <td className="px-5 py-3 text-right">
+                                    <span className={cn(
+                                       "px-2 py-0.5 rounded-full text-[10px] font-bold capitalize",
+                                       item.status === 'active' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                                    )}>
+                                       {item.status}
+                                    </span>
+                                 </td>
+                              </tr>
+                           ))
+                        ) : (
+                           <tr>
+                              <td colSpan={4} className="py-12 text-center opacity-30">
+                                 <p className="text-[11px] font-bold">No historical data available</p>
+                              </td>
+                           </tr>
+                        )}
+                     </tbody>
+                  </table>
                </div>
             </div>
          </div>
