@@ -50,6 +50,47 @@ interface LatestApplication {
    };
 }
 
+interface ActiveSubscription {
+    plan_name: string;
+    job_credits_total: number;
+    job_credits_used: number;
+    job_credits_remaining: number;
+    feature_credits_total: number;
+    feature_credits_used: number;
+    feature_credits_remaining: number;
+    expires_at: string;
+}
+
+interface CreditsSummary {
+    job_credits: {
+        total: number;
+        used: number;
+        remaining: number;
+    };
+    feature_credits: {
+        total: number;
+        used: number;
+        remaining: number;
+    };
+    active_subscriptions_count: number;
+}
+
+interface RecruiterInfo {
+    id: number;
+    name: string;
+    email: string;
+    jobs_used: number;
+    featured_jobs_used: number;
+}
+
+interface SubscriptionHistoryItem {
+    plan_name: string;
+    purchase_date: string;
+    starts_at: string;
+    expires_at: string;
+    status: string;
+}
+
 interface DashboardStats {
    total_jobs?: number;
    total_applications?: number;
@@ -67,6 +108,13 @@ interface DashboardStats {
       featured_jobs_used: number;
       remaining_featured_jobs: number;
    };
+   active_subscription?: ActiveSubscription;
+   credits_summary?: CreditsSummary;
+   recruiters?: {
+       data: RecruiterInfo[];
+       total: number;
+   };
+   subscription_history?: SubscriptionHistoryItem[];
    subscription_expiring_soon?: boolean;
    company_verification?: number;
    is_featured?: number;
@@ -76,9 +124,11 @@ interface DashboardStats {
    employer?: {
       id: number;
       company_name?: string;
+      company_logo?: string;
       featured_until?: string;
       is_featured?: number;
       is_verified?: number;
+      is_profile_verified?: number;
    };
    latest_jobs?: LatestJob[];
    latest_applications?: LatestApplication[];
@@ -163,7 +213,7 @@ export default function EmployerDashboardClient({
       }
       setLoadingFeature(true);
       try {
-         const res = await dashboardServerFetch(`employer/${employerId}/toggle-feature`, {
+         const res = await dashboardServerFetch<{status: boolean, message?: string}>(`employer/${employerId}/toggle-feature`, {
             method: "POST"
          });
          console.log("Toggle Feature Response:", res);
@@ -200,39 +250,42 @@ export default function EmployerDashboardClient({
       }
    };
 
-   const basePath = `/dashboard/${userRole}`;
-   const sub = dashboardData?.subscription;
+    const basePath = `/dashboard/${userRole}`;
+    
+    // Support both old and new backend structure for compatibility
+    const sub = dashboardData?.active_subscription || dashboardData?.subscription;
+    const credits = dashboardData?.credits_summary;
 
-   const stats = [
-      {
-         label: "Total jobs",
-         value: dashboardData?.total_jobs?.toString() || "0",
-         icon: Briefcase,
-         gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
-         textColor: "text-white"
-      },
-      {
-         label: "Total applicants",
-         value: dashboardData?.total_applications?.toString() || "0",
-         icon: Users,
-         gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
-         textColor: "text-white"
-      },
-      {
-         label: "Shortlisted",
-         value: dashboardData?.shortlisted_candidates?.toString() || "0",
-         icon: CheckCircle2,
-         gradient: "from-[#10B981] to-[#047857]", // Green
-         textColor: "text-white"
-      },
-      {
-         label: "Remaining credits",
-         value: dashboardData?.total_remaining_credits?.toString() || "0",
-         icon: Zap,
-         gradient: "from-[#F97316] to-[#C2410C]", // Orange
-         textColor: "text-white"
-      },
-   ];
+    const stats = [
+       {
+          label: "Total jobs",
+          value: dashboardData?.total_jobs?.toString() || "0",
+          icon: Briefcase,
+          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
+          textColor: "text-white"
+       },
+       {
+          label: "Total applicants",
+          value: dashboardData?.total_applications?.toString() || "0",
+          icon: Users,
+          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
+          textColor: "text-white"
+       },
+       {
+          label: "Shortlisted",
+          value: dashboardData?.shortlisted_candidates?.toString() || "0",
+          icon: CheckCircle2,
+          gradient: "from-[#10B981] to-[#047857]", // Green
+          textColor: "text-white"
+       },
+       {
+          label: "Team members",
+          value: dashboardData?.total_recruiters?.toString() || "0",
+          icon: Users,
+          gradient: "from-[#F97316] to-[#C2410C]", // Orange
+          textColor: "text-white"
+       },
+    ];
 
    return (
       <div className="max-w-7xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-12">
@@ -274,23 +327,27 @@ export default function EmployerDashboardClient({
                   </div>
                </div>
 
-               <div className="relative z-10 flex flex-1 flex-wrap items-center justify-center sm:justify-start gap-8 lg:gap-14 lg:border-l lg:border-slate-100 lg:pl-10">
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Total credits</span>
-                     <p className="text-xl font-semibold text-black">{sub.total_credits}</p>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Utilized units</span>
-                     <p className="text-xl font-semibold text-rose-500">{sub.used_credits}</p>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                     <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Balance remaining</span>
-                     <div className="flex items-center gap-2">
-                        <p className="text-xl font-semibold text-emerald-600">{sub.remaining_credits}</p>
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                     </div>
-                  </div>
-               </div>
+                <div className="relative z-10 flex flex-1 flex-wrap items-center justify-center sm:justify-start gap-8 lg:gap-14 lg:border-l lg:border-slate-100 lg:pl-10">
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Job credits</span>
+                      <p className="text-xl font-semibold text-black">
+                        {credits?.job_credits?.remaining ?? ('job_credits_remaining' in sub ? sub.job_credits_remaining : ('remaining_credits' in sub ? sub.remaining_credits : 0))}
+                      </p>
+                   </div>
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Featured units</span>
+                      <p className="text-xl font-semibold text-indigo-600">
+                        {credits?.feature_credits?.remaining ?? ('feature_credits_remaining' in sub ? sub.feature_credits_remaining : ('remaining_featured_jobs' in sub ? sub.remaining_featured_jobs : 0))}
+                      </p>
+                   </div>
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-semibold text-slate-400 capitalize whitespace-nowrap">Status</span>
+                      <div className="flex items-center gap-2">
+                         <p className="text-xl font-semibold text-emerald-600">Active</p>
+                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      </div>
+                   </div>
+                </div>
 
                <Link href="/dashboard/employer/purchase-history" className="relative z-10 lg:pl-4">
                   <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">

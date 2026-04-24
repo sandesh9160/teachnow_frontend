@@ -24,8 +24,23 @@ interface Plan {
     job_posts_limit: number;
     validity_days: number;
     job_live_days: number;
-    is_current: boolean;
+    featured_jobs_limit: number;
+    company_featured: number;
+    features: string[];
+    is_active: number;
+    is_highlighted: number;
+    display_order: number;
+    created_at: string;
+    updated_at: string;
+    is_current?: boolean;
 }
+
+const getFullUrl = (path: string | null) => {
+  if (!path) return "";
+  if (path.startsWith('http')) return path;
+  const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
+  return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
+};
 
 interface CurrentSubscription {
     id: number;
@@ -92,12 +107,13 @@ interface PurchaseHistoryData {
 
 interface ApiResponse {
     status: boolean;
-    data: PurchaseHistoryData;
+    data: Plan[] | PurchaseHistoryData;
     message?: string;
 }
 
 export default function PurchaseHistoryClient() {
   const [data, setData] = useState<PurchaseHistoryData | null>(null);
+  const [plansArray, setPlansArray] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [upgradingPlanId, setUpgradingPlanId] = useState<number | null>(null);
@@ -146,8 +162,17 @@ export default function PurchaseHistoryClient() {
       setLoading(true);
       setError(null);
       const res = await dashboardServerFetch<ApiResponse>("employer/payments-history");
+      console.log("Employer Payments History Response:", res);
       if (res.status) {
-        setData(res.data);
+        if (Array.isArray(res.data)) {
+          const sorted = [...res.data].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+          setPlansArray(sorted);
+          setData(null);
+        } else {
+          setData(res.data);
+          const sorted = [...(res.data.plans || [])].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+          setPlansArray(sorted);
+        }
       } else {
         setError(res.message || "Failed to load billing data");
       }
@@ -215,29 +240,29 @@ export default function PurchaseHistoryClient() {
         </div>
 
         {sub && (
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-blue-100 shadow-sm transition-all hover:shadow-md">
-            <div className="space-y-0.5 min-w-0">
+          <div>
+            {/* <div className="space-y-0.5 min-w-0">
               <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Credits</p>
               <p className="text-sm sm:text-lg font-semibold text-[#00359E] truncate">{sub.job_posts_total - sub.job_posts_used} <span className="text-[10px] sm:text-xs font-medium text-slate-400">/ {sub.job_posts_total}</span></p>
-            </div>
-            <div className="space-y-0.5 border-l border-slate-100 pl-3 sm:pl-4 min-w-0">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Status</p>
+            </div> */}
+            <div>
+              {/* <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Status</p>
               <div className="flex items-center gap-1 min-w-0">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                 <p className="text-[11px] sm:text-sm font-semibold text-emerald-600 capitalize truncate">{sub.status}</p>
-              </div>
+              </div> */}
             </div>
-            <div className="space-y-0.5 border-l border-slate-100 pl-3 sm:pl-4 min-w-0">
+            {/* <div className="space-y-0.5 border-l border-slate-100 pl-3 sm:pl-4 min-w-0">
               <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Expires</p>
               <p className="text-[11px] sm:text-sm font-semibold text-slate-800 truncate">{formatDate(sub.expires_at)}</p>
-            </div>
+            </div> */}
           </div>
         )}
       </div>
 
-      {/* Pricing Grid */}
+      {/* Pricing Grid / Purchase History Plans */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
-        {plans.map((plan) => {
+        {(plansArray.length > 0 ? plansArray : plans).map((plan) => {
           const isCurrent = plan.is_current;
           const price = plan.offer_price === "0.00" || plan.offer_price === "0" ? "Free" : `₹${Number(plan.offer_price).toLocaleString('en-IN')}`;
           
@@ -257,10 +282,20 @@ export default function PurchaseHistoryClient() {
                 </div>
               )}
 
-              <div className="space-y-6 flex-1">
+              <div className="space-y-4 flex-1">
                 <div>
-                  <h3 className="text-[14px] font-semibold text-slate-900 mb-3">{plan.name}</h3>
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-[14px] font-semibold text-slate-900">{plan.name}</h3>
+                    {/* <div className="flex gap-1.5">
+                      <span className={cn(
+                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
+                        plan.is_active == 1 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-200"
+                      )}>
+                        {plan.is_active == 1 ? "Active" : "Inactive"}
+                      </span>
+                    </div> */}
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-1">
                     <span className="text-3xl font-semibold text-slate-900 tracking-tight">{price}</span>
                     {price !== "Free" && (
                       <span className="text-[13px] text-slate-400 font-medium">/ package</span>
@@ -271,18 +306,31 @@ export default function PurchaseHistoryClient() {
                   )}
                 </div>
 
-                <div className="space-y-3.5 pt-1">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                      <FileText className="w-3 h-3 text-[#1E3A8A]" />
-                    </div>
-                    <span className="text-[13px] text-slate-600 font-medium">{plan.job_posts_limit} Job Postings</span>
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50">
+                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Job Postings</p>
+                    <p className="text-xl font-bold text-slate-900">{plan.job_posts_limit}</p>
                   </div>
+                  <div className="bg-indigo-50/50 rounded-xl p-3 border border-indigo-100/50">
+                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Featured Jobs</p>
+                    <p className="text-xl font-bold text-slate-900">{plan.featured_jobs_limit ?? 0}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  {plan.company_featured == 1 && (
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-3 h-3 text-blue-600" strokeWidth={3} />
+                      </div>
+                      <span className="text-[13px] text-slate-600 font-medium">Company Featured</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2.5">
                     <div className="w-5 h-5 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
                       <Clock className="w-3 h-3 text-emerald-600" />
                     </div>
-                    <span className="text-[13px] text-slate-600 font-medium">Package valid for {plan.validity_days} days</span>
+                    <span className="text-[13px] text-slate-600 font-medium">Valid for {plan.validity_days} days</span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <div className="w-5 h-5 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
@@ -290,36 +338,36 @@ export default function PurchaseHistoryClient() {
                     </div>
                     <span className="text-[13px] text-slate-600 font-medium">Jobs live for {plan.job_live_days} days</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="w-4.5 h-4.5 text-[#10B981]" strokeWidth={2.5} />
+                  
+                  {plan.features && plan.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-2 mt-0.5">
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 bg-emerald-50">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
+                      </div>
+                      <span className="text-[12px] text-slate-600 font-medium">{feature}</span>
                     </div>
-                    <span className="text-[13px] text-slate-600 font-medium">Email Support</span>
-                  </div>
+                  ))}
                 </div>
               </div>
 
               <div className="mt-8">
-                {isCurrent ? (
-                  <div className="w-full py-2.5 px-6 rounded-xl bg-[#1E3A8A] text-white flex items-center justify-center gap-2 font-semibold text-[13px] shadow-sm">
-                    Active Plan
-                  </div>
-                ) : (
-                  <button 
-                    onClick={() => handleUpgrade(plan)}
-                    disabled={upgradingPlanId === plan.id || isProcessing}
-                    className={cn(
-                      "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 bg-white text-[#1E3A8A] border border-blue-100 hover:bg-blue-50/50 flex items-center justify-center gap-2 group",
-                      (upgradingPlanId === plan.id || isProcessing) && "opacity-50 cursor-not-allowed"
-                    )}
-                  >
-                    {upgradingPlanId === plan.id ? (
-                      <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
-                    ) : (
-                      <>Upgrade Now <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></>
-                    )}
-                  </button>
-                )}
+                <button 
+                  onClick={() => handleUpgrade(plan)}
+                  disabled={upgradingPlanId === plan.id || isProcessing}
+                  className={cn(
+                    "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 group border shadow-sm",
+                    isCurrent 
+                      ? "bg-[#1E3A8A] text-white border-[#1E3A8A] hover:bg-[#1E3A8A]/90" 
+                      : "bg-white text-[#1E3A8A] border-blue-100 hover:bg-blue-50/50",
+                    (upgradingPlanId === plan.id || isProcessing) && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {upgradingPlanId === plan.id ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
+                  ) : (
+                    <>Purchase Plan <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></>
+                  )}
+                </button>
               </div>
             </div>
           );
@@ -342,7 +390,7 @@ export default function PurchaseHistoryClient() {
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Plan Details</th>
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Usage (Jobs/Featured)</th>
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Duration</th>
-                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th>
+                    {/* <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -374,19 +422,19 @@ export default function PurchaseHistoryClient() {
                           <p className="text-[11px] text-slate-400 font-medium tracking-tight">Period</p>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-center">
+                      {/* <td className="px-5 py-4 text-center">
                         <span className={cn(
                           "px-3 py-1 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5",
-                          item.status === 'active' && item.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                          (item.status === 'active' || item.is_active) ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
                         )}>
-                          <div className={cn("w-1.5 h-1.5 rounded-full", item.status === 'active' && item.is_active ? "bg-emerald-500" : "bg-slate-400")} />
-                          {item.status === 'active' && item.is_active ? "Active" : "Expired"}
+                          <div className={cn("w-1.5 h-1.5 rounded-full", (item.status === 'active' || item.is_active) ? "bg-emerald-500" : "bg-slate-400")} />
+                          {item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : (item.is_active ? "Active" : "Inactive")}
                         </span>
-                      </td>
+                      </td> */}
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={4} className="py-12 text-center opacity-40">
+                      <td colSpan={3} className="py-12 text-center opacity-40">
                         <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         <p className="text-sm font-semibold text-slate-400">No subscriptions found</p>
                       </td>
@@ -402,12 +450,12 @@ export default function PurchaseHistoryClient() {
                  <div key={item.id} className="p-4 space-y-4">
                     <div className="flex items-center justify-between">
                        <h4 className="text-[14px] font-semibold text-slate-900">{item.plan_name}</h4>
-                       <span className={cn(
+                       {/* <span className={cn(
                          "px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                         item.status === 'active' && item.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                         (item.status === 'active' || item.is_active) ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
                        )}>
-                         {item.status === 'active' && item.is_active ? "Active" : "Expired"}
-                       </span>
+                         {item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : (item.is_active ? "Active" : "Inactive")}
+                       </span> */}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                        <div className="space-y-1">
@@ -545,7 +593,7 @@ export default function PurchaseHistoryClient() {
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Date</th>
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-right">Amount</th>
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th>
-                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Actions</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Invoice</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -569,7 +617,11 @@ export default function PurchaseHistoryClient() {
                         <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[11px] font-semibold">Paid</span>
                       </td>
                       <td className="px-5 py-4 text-center">
-                        <button className="p-2 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all">
+                        <button 
+                          onClick={() => invoice.pdf_path && window.open(getFullUrl(invoice.pdf_path), '_blank')}
+                          className="p-2 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all"
+                          title="Download Invoice"
+                        >
                           <Download className="w-4 h-4" />
                         </button>
                       </td>
@@ -604,7 +656,11 @@ export default function PurchaseHistoryClient() {
                     <span className="bg-[#ECFDF5] text-[#059669] px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-100/50">
                       Paid
                     </span>
-                    <button className="p-1 text-slate-300 hover:text-slate-600 transition-colors">
+                    <button 
+                      onClick={() => invoice.pdf_path && window.open(getFullUrl(invoice.pdf_path), '_blank')}
+                      className="p-1 text-slate-300 hover:text-slate-600 transition-colors"
+                      title="Download Invoice"
+                    >
                       <Download className="w-4 h-4" />
                     </button>
                   </div>
