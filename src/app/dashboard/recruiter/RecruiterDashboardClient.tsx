@@ -8,8 +8,8 @@ import {
    Clock,
    CreditCard,
    Check,
-   Zap,
-   CheckCircle2,
+   // Zap,
+   // CheckCircle2,
    ChevronRight,
    TrendingUp
 } from "lucide-react";
