@@ -410,51 +410,6 @@ export default function ApplyJobPage() {
 
   if (!mounted) return null;
 
-  if (!isLoggedIn) {
-    return (
-      <div className="bg-[#F8FAFC] min-h-screen">
-        <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-          <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-            <Breadcrumb items={[{ label: "Jobs", href: "/jobs" }, { label: "Apply", isCurrent: true }]} />
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center py-20 px-4">
-          <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-xl max-w-md w-full text-center space-y-6">
-            <div className="mx-auto w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-              <User className="w-10 h-10" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Login Required</h2>
-              <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                You need to be logged in as a Job Seeker to apply for
-                <span className="text-primary font-bold"> {jobDetails.title}</span>.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 pt-2">
-              <Button variant="hero" size="lg" className="w-full h-12 rounded-xl font-bold text-base" onClick={() => setShowAuthModal(true)}>
-                Sign In to Apply
-              </Button>
-              <Button variant="outline" className="w-full h-11 border-slate-200 rounded-xl font-bold text-sm" onClick={() => router.back()}>
-                Go Back
-              </Button>
-            </div>
-          </div>
-
-          <QuickAuthModal
-            open={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            onSuccess={() => {
-              setShowAuthModal(false);
-              // Page will automatically re-render because isLoggedIn state changes
-            }}
-            title="Sign In to Apply"
-            subTitle="Submit your application for this position in seconds."
-          />
-        </div>
-      </div>
-    );
-  }
-
   if (user?.role === "employer") {
     return (
       <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center p-4">
@@ -607,8 +562,11 @@ export default function ApplyJobPage() {
                 <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => router.back()}>Cancel</Button>
                 <Button 
                   className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" 
-                  disabled={profileFlag === false}
                   onClick={() => {
+                    if (!isLoggedIn) {
+                      setShowAuthModal(true);
+                      return;
+                    }
                     if (profileFlag === false) {
                       toast.error("Please complete your profile to apply for this job.");
                       return;
@@ -1369,6 +1327,16 @@ export default function ApplyJobPage() {
           </div>
         </div>
       )}
+
+      <QuickAuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => {
+          setShowAuthModal(false);
+        }}
+        title="Sign In to Apply"
+        subTitle="Submit your application for this position in seconds."
+      />
     </div>
   );
 }

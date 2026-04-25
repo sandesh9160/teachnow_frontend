@@ -65,7 +65,14 @@ function LoginContent() {
       } else {
         toast.success("Logged in!");
         const u = "user" in res ? (res as { user?: { user_type?: string } }).user : undefined;
-        window.location.href = dashboardUrlAfterLogin(u);
+        
+        // Priority: Check for explicit redirect parameter
+        const redirectUrl = searchParams?.get("redirect");
+        if (redirectUrl && redirectUrl.startsWith("/")) {
+          window.location.href = redirectUrl;
+        } else {
+          window.location.href = dashboardUrlAfterLogin(u);
+        }
       }
     } catch (err: any) {
       toast.error(err.message || "An error occurred during login.");
