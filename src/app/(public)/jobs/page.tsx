@@ -45,6 +45,7 @@ function JobsContent() {
   const [sortBy, setSortBy] = useState("Default");
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     const fetchFilterOptions = async () => {
@@ -73,6 +74,7 @@ function JobsContent() {
       .filter(Boolean)
       .join(" ");
 
+    setIsSearching(true);
     if (!combined.trim()) {
       router.push("/jobs");
       return;
@@ -248,6 +250,7 @@ function JobsContent() {
         onOpenFilters={() => setMobileFiltersOpen(true)}
         onSearch={handleSearch}
         activeFilterCount={activeFilterCount}
+        loading={loading || isSearching}
       />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

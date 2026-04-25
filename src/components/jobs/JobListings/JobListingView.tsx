@@ -71,6 +71,8 @@ export default function JobListingView({
       }
     }, [pageName, initialKeyword, initialLocation]);
 
+
+
   // const normalizedPageName = String(pageName || "Search")
   //   .trim()
   //   .replace(/^in\s+/i, "") // Remove leading "In" for location pages
@@ -85,6 +87,10 @@ export default function JobListingView({
   // ];
 
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    setIsSearching(false);
+  }, [jobs, pageName]);
   const handleSearch = () => {
     const combined = [internalSearch, internalLocation]
       .filter(Boolean)

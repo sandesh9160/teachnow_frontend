@@ -209,9 +209,10 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
       <div className="relative w-full px-4 -mt-12 sm:-mt-24 md:-mt-32 pb-16 sm:px-6 lg:px-12 overflow-x-hidden">
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_340px] w-full">
+          
           {/* Main Content Area */}
           <div className="space-y-6 min-w-0">
-            {/* Header Card */}
+            {/* 1. Header Card */}
             <section className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-7 shadow-sm max-w-full">
               <div className="flex items-start gap-4 sm:gap-7">
                 {/* Logo Box */}
@@ -251,7 +252,6 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     <span className="text-[10px] sm:text-sm font-bold text-primary italic">
                       {job.category?.name || 'Education'}
                     </span>
-    
                   </div>
                 </div>
               </div>
@@ -290,20 +290,157 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               </div>
             </section>
 
-            {/* Job Description Section */}
+            {/* 2. Job Description Section */}
             <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
               <div className="p-6 sm:p-10 min-h-[400px]">
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-8 border-b border-slate-50 pb-5">Job Description</h2>
                 <div 
                   className="jd-rich-text text-slate-700 text-[15px] sm:text-[16px] leading-[1.8] font-normal"
-                  style={{
-                    fontFamily: 'inherit',
-                  }}
                   dangerouslySetInnerHTML={{ __html: job.description || "<p>No description provided.</p>" }}
                 />
               </div>
             </section>
-            
+
+            {/* MOBILE ONLY: 3. Salary, 4. Highlights, 5. Company Profile */}
+            <div className="flex flex-col gap-6 lg:hidden">
+              {/* 3. Salary (Mobile Only) */}
+              <section className="rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm">
+                <div className="text-center mb-6">
+                  <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Salary Range</p>
+                  <p className="text-xl sm:text-2xl font-bold text-slate-900 leading-none">{salaryRange}</p>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <Link href={`/apply/${jobSegment}`} className="w-full">
+                    <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
+                      Apply Now
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full h-12 rounded-xl font-bold border-slate-200 transition-all text-[14px]",
+                      isBookmarked && "bg-blue-50 text-primary border-blue-100"
+                    )}
+                    onClick={handleToggleBookmark}
+                    disabled={bookmarkBusy}
+                  >
+                    <Bookmark className={cn("h-4 w-4 mr-2", isBookmarked && "fill-primary")} />
+                    {isBookmarked ? "Saved" : "Save"}
+                  </Button>
+                </div>
+              </section>
+
+              {/* 4. Job Highlights (Mobile Only) */}
+              <section className="rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm">
+                <h3 className="text-[15px] sm:text-base font-bold text-[#111827] mb-4 sm:mb-5">Job Highlights</h3>
+                <div className="space-y-3.5 sm:space-y-4">
+                  {[
+                    { label: "Experience", value: `${job.experience_required}+ Year(s)` },
+                    { label: "Experience Type", value: job.experience_type ? job.experience_type.charAt(0).toUpperCase() + job.experience_type.slice(1) : "Experienced" },
+                    { label: "Job Type", value: jobType },
+                    { label: "Vacancies", value: job.vacancies || "Not specified" },
+                    { label: "Gender", value: job.gender ? job.gender.charAt(0).toUpperCase() + job.gender.slice(1) : "Any" },
+                    { label: "Deadline", value: formatDeadline(job.application_deadline || job.expires_at) },
+                    { label: "Location", value: job.location },
+                    { label: "Posted", value: postedText },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-center justify-between text-[12px] sm:text-[13px] font-semibold">
+                      <span className="text-slate-400">{item.label}</span>
+                      <span className="text-[#111827]">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* 5. Company Profile (Mobile Only) */}
+              <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+                <div className="bg-[#3b49df] px-6 py-6 text-white relative">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
+                      {employerLogo ? (
+                        <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
+                      ) : (
+                        logoFallback
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-lg font-bold leading-tight truncate">{employerName}</h3>
+                      <p className="mt-1 flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-white/80">
+                        <MapPin className="h-3 w-3" /> {job.location}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 sm:p-6">
+                  <p className="text-[11px] sm:text-[13px] font-medium text-slate-500 leading-relaxed mb-4 sm:mb-6">
+                    {employerName} is a premier educational institution offering world-class education.
+                  </p>
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
+                      <MapPin className="h-3 w-3 text-slate-400 shrink-0" /> {job.location}, India
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
+                      <Building2 className="h-3 w-3 text-slate-400 shrink-0" /> Education · Established Institution
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
+                      <Globe className="h-3 w-3 text-slate-400 shrink-0" /> 
+                      <a 
+                        href={`https://www.${sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-primary hover:underline transition-colors"
+                      >
+                        www.{sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+            {/* 6. Similar Jobs Section */}
+            {similarJobs.length > 0 && (
+              <section className="pt-6 sm:pt-10">
+                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] mb-6 sm:mb-8">Similar Jobs</h2>
+                <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {similarJobs.slice(0, 3).map((sJob) => {
+                    const sLogo = sJob.employer?.company_logo;
+                    const sName = sJob.employer?.company_name || "Confidential";
+                    const sFallback = (sName[0] || sJob.title[0]).toUpperCase();
+                    
+                    return (
+                      <Link
+                        key={sJob.id}
+                        href={`/${sanitizeSlug(sJob.slug || String(sJob.id))}`}
+                        className="group flex flex-col rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm hover:shadow-xl transition-all"
+                      >
+                        <div className="flex items-start gap-3 mb-4">
+                          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-[#ecf2ff] flex items-center justify-center text-primary font-bold text-base sm:text-lg shrink-0 border border-[#dbeafe] overflow-hidden">
+                            {sLogo ? (
+                              <img src={normalizeMediaUrl(sLogo)} alt={sName} className="h-full w-full object-contain" />
+                            ) : (
+                              <span>{sFallback}</span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-[13px] sm:text-[14px] font-bold text-[#111827] group-hover:text-[#2e3fc7] transition-colors truncate">{sJob.title}</h3>
+                            <p className="text-[11px] sm:text-[12px] font-medium text-slate-500 truncate">{sName}</p>
+                          </div>
+                        </div>
+                        <div className="mt-auto space-y-2.5 sm:space-y-3">
+                          <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-400">
+                            <MapPin className="h-3 w-3" /> {sJob.location}
+                          </div>
+                          <div className="text-[13px] sm:text-[14px] font-bold text-[#2e3fc7]">
+                            {formatSalaryRange(sJob)}
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             <style jsx global>{`
               .jd-rich-text h1, .jd-rich-text h2, .jd-rich-text h3 {
                 color: #111827;
@@ -324,51 +461,15 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               .jd-rich-text p { margin-bottom: 1rem; }
               .jd-rich-text strong { color: #111827; font-weight: 700; }
             `}</style>
-
-            {/* Similar Jobs Section */}
-            {similarJobs.length > 0 && (
-              <section className="pt-6 sm:pt-10">
-                <h2 className="text-xl sm:text-2xl font-bold text-[#111827] mb-6 sm:mb-8">Similar Jobs</h2>
-                <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {similarJobs.slice(0, 3).map((sJob) => (
-                    <Link
-                      key={sJob.id}
-                      href={`/${sanitizeSlug(sJob.slug || String(sJob.id))}`}
-                      className="group flex flex-col rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm hover:shadow-xl transition-all"
-                    >
-                      <div className="flex items-start gap-2.5 mb-4">
-                        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-[#ecf2ff] flex items-center justify-center text-primary font-bold text-base sm:text-lg shrink-0 border border-[#dbeafe]">
-                          {(sJob.employer?.company_name?.[0] || sJob.title[0]).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-[13px] sm:text-[14px] font-bold text-[#111827] group-hover:text-[#2e3fc7] transition-colors truncate">{sJob.title}</h3>
-                          <p className="text-[11px] sm:text-[12px] font-medium text-slate-500 truncate">{sJob.employer?.company_name}</p>
-                        </div>
-                      </div>
-                      <div className="mt-auto space-y-2.5 sm:space-y-3">
-                        <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-400">
-                          <MapPin className="h-3 w-3" /> {sJob.location}
-                        </div>
-                        <div className="text-[13px] sm:text-[14px] font-bold text-[#2e3fc7]">
-                          {formatSalaryRange(sJob)}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
           </div>
-
-          {/* Sidebar */}
-          <aside className="space-y-5 sm:space-y-6">
-            {/* Salary Action Card */}
+          {/* DESKTOP SIDEBAR: 3. Salary, 4. Highlights, 5. Company */}
+          <aside className="hidden lg:flex flex-col gap-6">
+            {/* 3. Salary Range */}
             <section className="rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm">
               <div className="text-center mb-6">
                 <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Salary Range</p>
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 leading-none">{salaryRange}</p>
               </div>
-              
               <div className="flex flex-col gap-3">
                 <Link href={`/apply/${jobSegment}`} className="w-full">
                   <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
@@ -388,51 +489,10 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   {isBookmarked ? "Saved" : "Save"}
                 </Button>
               </div>
-              
-              <p className="mt-5 text-xs font-medium text-slate-400 text-center">
-                Free to apply · Join 1,000+ applicants
-              </p>
             </section>
 
-            {/* Institution Profile Card */}
-            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
-              <div className="bg-[#3b49df] px-6 py-6 text-white relative">
-                <div className="flex items-center gap-4">
-                   <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
-                      {employerLogo ? (
-                        <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
-                      ) : (
-                        logoFallback
-                      )}
-                   </div>
-                   <div className="min-w-0">
-                      <h3 className="text-sm sm:text-lg font-bold leading-tight truncate">{employerName}</h3>
-                      <p className="mt-1 flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-white/80">
-                        <MapPin className="h-3 w-3" /> {job.location}
-                      </p>
-                   </div>
-                </div>
-              </div>
-              <div className="p-4 sm:p-6">
-                <p className="text-[11px] sm:text-[13px] font-medium text-slate-500 leading-relaxed mb-4 sm:mb-6">
-                  {employerName} is a premier educational institution offering world-class education.
-                </p>
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
-                    <MapPin className="h-3 w-3 text-slate-400 shrink-0" /> {job.location}, India
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
-                    <Building2 className="h-3 w-3 text-slate-400 shrink-0" /> Education - Established Institution
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
-                    <Globe className="h-3 w-3 text-slate-400 shrink-0" /> www.{sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Job Highlights Card */}
-            <section className="rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+            {/* 4. Job Highlights */}
+            <section className="rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm">
               <h3 className="text-[15px] sm:text-base font-bold text-[#111827] mb-4 sm:mb-5">Job Highlights</h3>
               <div className="space-y-3.5 sm:space-y-4">
                 {[
@@ -445,12 +505,56 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   { label: "Location", value: job.location },
                   { label: "Posted", value: postedText },
                 ].map((item) => (
-
                   <div key={item.label} className="flex items-center justify-between text-[12px] sm:text-[13px] font-semibold">
                     <span className="text-slate-400">{item.label}</span>
                     <span className="text-[#111827]">{item.value}</span>
                   </div>
                 ))}
+              </div>
+            </section>
+
+            {/* 5. Company Profile */}
+            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+              <div className="bg-[#3b49df] px-6 py-6 text-white relative">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
+                    {employerLogo ? (
+                      <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
+                    ) : (
+                      logoFallback
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-lg font-bold leading-tight truncate">{employerName}</h3>
+                    <p className="mt-1 flex items-center gap-1.5 text-[10px] sm:text-xs font-medium text-white/80">
+                      <MapPin className="h-3 w-3" /> {job.location}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 sm:p-6">
+                <p className="text-[11px] sm:text-[13px] font-medium text-slate-500 leading-relaxed mb-6">
+                  {employerName} is a premier educational institution offering world-class education.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
+                    <MapPin className="h-3 w-3 text-slate-400 shrink-0" /> {job.location}, India
+                  </div>
+                  <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
+                    <Building2 className="h-3 w-3 text-slate-400 shrink-0" /> Education · Established Institution
+                  </div>
+                  <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
+                    <Globe className="h-3 w-3 text-slate-400 shrink-0" /> 
+                    <a 
+                      href={`https://www.${sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-primary hover:underline transition-colors"
+                    >
+                      www.{sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in
+                    </a>
+                  </div>
+                </div>
               </div>
             </section>
           </aside>
@@ -470,4 +574,5 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
       />
     </div>
   );
-}   
+}
+
