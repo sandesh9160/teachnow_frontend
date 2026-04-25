@@ -46,7 +46,7 @@ export default function ApplyJobPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const router = useRouter();
-  const { isLoggedIn, user } = useClientSession();
+  const { isLoggedIn, user, loading: sessionLoading } = useClientSession();
   const { apply } = useApplications();
   const { resumes, fetchResumes, generatedResumes } = useResumes({ enabled: isLoggedIn });
   const { fetchTemplates, templates: cvTemplates, generateCVWithJob, fetchGeneratedCVs } = useCV();
@@ -66,12 +66,11 @@ export default function ApplyJobPage() {
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    if (mounted && !isLoggedIn) {
-      const timer = setTimeout(() => setShowAuthModal(true), 1500);
-      return () => clearTimeout(timer);
+    // Only redirect after session has fully resolved — prevents false redirect while cookie is being read
+    if (mounted && !sessionLoading && !isLoggedIn) {
+      router.replace(`/auth/login?redirect=/apply/${slug}`);
     }
-    return;
-  }, [mounted, isLoggedIn]);
+  }, [mounted, sessionLoading, isLoggedIn, router, slug]);
 
   const [step, setStep] = useState(0);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [step]);
@@ -323,7 +322,10 @@ export default function ApplyJobPage() {
   const handleSubmit = async () => {
     if (!jobDetails?.id) return;
     if (profileFlag === false) {
-      toast.error("Please complete your profile to apply.");
+      toast.error("Incomplete Profile", {
+        description: "Please complete your profile to apply.",
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
       return;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -387,10 +389,17 @@ export default function ApplyJobPage() {
       }
 
       setSubmitted(true);
-      toast.success("Application Submitted Successfully");
+      toast.success("Application Submitted Successfully", {
+        description: "Your application has been received. Good luck!",
+        style: { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
+        duration: 5000,
+      });
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Failed to submit application.";
-      toast.error(msg);
+      toast.error("Submission Failed", {
+        description: msg,
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -408,7 +417,19 @@ export default function ApplyJobPage() {
 
 
 
-  if (!mounted) return null;
+  if (!mounted || sessionLoading) return null;
+
+  // Block the apply page entirely for unauthenticated users — redirect handled by effect above
+  if (!isLoggedIn) {
+    return (
+      <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">Redirecting to Login...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (user?.role === "employer") {
     return (

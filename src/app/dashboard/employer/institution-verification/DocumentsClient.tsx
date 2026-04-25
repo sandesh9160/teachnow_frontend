@@ -204,31 +204,29 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                     <iframe src={previewData.url} className="w-full h-full border-none bg-white" onLoad={() => setIsPreviewLoading(false)} title="Viewer" />
                  )}
               </div>
-              
-              <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between gap-4 bg-white shrink-0">
+                            <div className="px-4 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white shrink-0">
                  <p className="text-xs text-slate-400 font-medium">Viewing secure document vault</p>
-                 <div className="flex items-center gap-3">
-                    <Button variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs" onClick={() => window.open(previewData.original, '_blank')}>
-                       <ExternalLink className="w-4 h-4 mr-2" /> Full Screen
-                    </Button>
-                    <Button className="h-9 px-6 rounded-lg text-xs bg-[#1E1B4B]" onClick={() => setPreviewData(null)}>Close</Button>
-                 </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                     <Button variant="outline" size="sm" className="h-9 px-4 rounded-lg text-xs flex-1 sm:flex-none" onClick={() => window.open(previewData.original, '_blank')}>
+                        <ExternalLink className="w-4 h-4 mr-1" /> Open
+                     </Button>
+                     <Button className="h-9 px-5 rounded-lg text-xs bg-[#1E1B4B] flex-1 sm:flex-none" onClick={() => setPreviewData(null)}>Close</Button>
+                  </div>
               </div>
            </div>
         </div>
       )}
 
-      {/* Header with Right-Side Upload Button */}
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-6">
-         <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-[#1E1B4B]">Institute Dashboard</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
+         <div className="space-y-0.5">
+            <h1 className="text-xl sm:text-2xl font-semibold text-[#1E1B4B]">Institution Verification</h1>
             <p className="text-sm text-slate-400">Manage and track your institutional credentials</p>
          </div>
          
          <Button 
             onClick={() => setShowUploadForm(!showUploadform)}
             className={cn(
-               "h-10 px-6 rounded-lg font-semibold text-xs transition-all shadow-sm flex items-center gap-2",
+               "h-10 px-5 rounded-lg font-semibold text-xs transition-all shadow-sm flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center",
                showUploadform ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
             )}
          >
@@ -307,15 +305,15 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                   const isImg = doc.document_file.match(/\.(jpg|jpeg|png|webp|gif|svg)/i);
                   const thumbUrl = normalizeMediaUrl(doc.document_file);
                   return (
-                     <div key={doc.id} className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-indigo-100 transition-all shadow-sm">
-                        <div className="flex items-center gap-4">
-                           <div className="w-14 h-14 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shrink-0">
+                     <div key={doc.id} className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col gap-3 hover:border-indigo-100 transition-all shadow-sm">
+                        <div className="flex items-center gap-3">
+                           <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shrink-0">
                               {isImg ? <img src={thumbUrl} alt="Preview" className="w-full h-full object-cover" /> : <FileText className="w-6 h-6 text-slate-300" />}
                            </div>
-                           <div className="space-y-0.5">
-                              <h4 className="text-[14px] font-semibold text-[#1E1B4B] capitalize leading-none">{doc.document_type.replace(/_/g, " ")}</h4>
-                              <div className="flex items-center gap-3 pt-1">
-                                 <p className="text-[10px] font-medium text-slate-400 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> Uploaded on {new Date(doc.created_at).toLocaleDateString('en-GB')}</p>
+                           <div className="flex-1 min-w-0 space-y-0.5">
+                              <h4 className="text-[13px] font-semibold text-[#1E1B4B] capitalize leading-none truncate">{doc.document_type.replace(/_/g, " ")}</h4>
+                              <div className="flex flex-wrap items-center gap-2 pt-1">
+                                 <p className="text-[10px] font-medium text-slate-400 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> {new Date(doc.created_at).toLocaleDateString('en-GB')}</p>
                                  <span className={cn(
                                     "text-[9px] font-bold uppercase tracking-tight",
                                     doc.status === 'approved' ? "text-emerald-600" : (doc.status === 'rejected' ? "text-rose-600" : "text-amber-500")
@@ -324,13 +322,12 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                                  </span>
                               </div>
                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                           <Button onClick={() => handlePreview(doc)} variant="outline" size="sm" className="h-8 px-4 rounded-lg text-[#1E1B4B] border-slate-200 hover:bg-slate-50 text-[11px] font-semibold flex items-center gap-2">
-                              <Eye className="w-3.5 h-3.5" /> Preview
-                           </Button>
-                           <button onClick={() => handleDelete(doc.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                           <div className="flex items-center gap-2 shrink-0">
+                              <Button onClick={() => handlePreview(doc)} variant="outline" size="sm" className="h-8 px-3 rounded-lg text-[#1E1B4B] border-slate-200 hover:bg-slate-50 text-[11px] font-semibold flex items-center gap-1.5">
+                                 <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Preview</span>
+                              </Button>
+                              <button onClick={() => handleDelete(doc.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                           </div>
                         </div>
                      </div>
                   );

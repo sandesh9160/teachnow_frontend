@@ -196,7 +196,7 @@ async function lookupBySearchFallback(s: string) {
       }
     }
 
-    const keyword = finalKeywordParts.filter(p => !["teaching", "jobs", "teacher"].includes(p)).join(" ").trim();
+    const keyword = finalKeywordParts.filter(p => !["jobs", "job"].includes(p)).join(" ").trim();
 
     // Build a nice display name that includes detected filters
     const filterLabels = [];

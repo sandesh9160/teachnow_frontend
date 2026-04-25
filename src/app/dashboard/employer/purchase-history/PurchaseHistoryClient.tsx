@@ -1,38 +1,40 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { 
-  CheckCircle2, 
-  Download, 
+import {
+  CheckCircle2,
+  Download,
   CreditCard,
   Loader2,
   AlertCircle,
   FileText,
   Calendar,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import { fetchAPI } from "@/services/api/client";
 import { useRazorpay } from "@/hooks/useRazorpay";
 
 interface Plan {
-    id: number;
-    name: string;
-    actual_price: string;
-    offer_price: string;
-    job_posts_limit: number;
-    validity_days: number;
-    job_live_days: number;
-    featured_jobs_limit: number;
-    company_featured: number;
-    features: string[];
-    is_active: number;
-    is_highlighted: number;
-    display_order: number;
-    created_at: string;
-    updated_at: string;
-    is_current?: boolean;
+  id: number;
+  name: string;
+  actual_price: string;
+  offer_price: string;
+  job_posts_limit: number;
+  validity_days: number;
+  job_live_days: number;
+  featured_jobs_limit: number;
+  company_featured: number;
+  features: string[];
+  is_active: number;
+  is_highlighted: number;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  is_current?: boolean;
 }
 
 const getFullUrl = (path: string | null) => {
@@ -43,39 +45,39 @@ const getFullUrl = (path: string | null) => {
 };
 
 interface CurrentSubscription {
-    id: number;
-    employer_id: number;
-    plan_id: number;
-    order_id?: number;
-    job_posts_total: number;
-    job_posts_used: number;
-    featured_jobs_total: number;
-    featured_jobs_used: number;
-    purchase_date: string;
-    starts_at: string;
-    expires_at: string;
-    status: string;
+  id: number;
+  employer_id: number;
+  plan_id: number;
+  order_id?: number;
+  job_posts_total: number;
+  job_posts_used: number;
+  featured_jobs_total: number;
+  featured_jobs_used: number;
+  purchase_date: string;
+  starts_at: string;
+  expires_at: string;
+  status: string;
 }
 
 interface Subscription {
-    id: number;
-    plan_id: number;
-    plan_name: string;
-    job_posts_total: number;
-    job_posts_used: number;
-    featured_jobs_total: number;
-    featured_jobs_used: number;
-    starts_at: string;
-    expires_at: string;
-    status: string;
-    is_active: boolean;
+  id: number;
+  plan_id: number;
+  plan_name: string;
+  job_posts_total: number;
+  job_posts_used: number;
+  featured_jobs_total: number;
+  featured_jobs_used: number;
+  starts_at: string;
+  expires_at: string;
+  status: string;
+  is_active: boolean;
 }
 
 interface PaginatedData<T> {
-    data: T[];
-    total: number;
-    current_page: number;
-    last_page: number;
+  data: T[];
+  total: number;
+  current_page: number;
+  last_page: number;
 }
 
 interface Payment {
@@ -98,17 +100,17 @@ interface Invoice {
 }
 
 interface PurchaseHistoryData {
-    plans: Plan[];
-    current_subscription: CurrentSubscription | null;
-    payments: PaginatedData<Payment>;
-    invoices: PaginatedData<Invoice>;
-    subscriptions: PaginatedData<Subscription>;
+  plans: Plan[];
+  current_subscription: CurrentSubscription | null;
+  payments: PaginatedData<Payment>;
+  invoices: PaginatedData<Invoice>;
+  subscriptions: PaginatedData<Subscription>;
 }
 
 interface ApiResponse {
-    status: boolean;
-    data: Plan[] | PurchaseHistoryData;
-    message?: string;
+  status: boolean;
+  data: Plan[] | PurchaseHistoryData;
+  message?: string;
 }
 
 export default function PurchaseHistoryClient() {
@@ -161,20 +163,39 @@ export default function PurchaseHistoryClient() {
     try {
       setLoading(true);
       setError(null);
-      const res = await dashboardServerFetch<ApiResponse>("employer/payments-history");
-      console.log("Employer Payments History Response:", res);
-      if (res.status) {
-        if (Array.isArray(res.data)) {
-          const sorted = [...res.data].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-          setPlansArray(sorted);
+
+      // Fetch plans from /open/plans (same as public pricing page) for consistent data
+      const [historyRes, plansRes] = await Promise.all([
+        dashboardServerFetch<ApiResponse>("employer/payments-history"),
+        fetchAPI<{ status: boolean; data: Plan[] }>("/open/plans"),
+      ]);
+
+      console.log("Employer Payments History Response:", historyRes);
+
+      if (historyRes.status) {
+        // Always use /open/plans data for the plan cards (authoritative source)
+        const openPlans = plansRes.status
+          ? [...plansRes.data].sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+          : [];
+
+        if (Array.isArray(historyRes.data)) {
+          // Response is just plans array — mark none as current
+          setPlansArray(openPlans);
           setData(null);
         } else {
-          setData(res.data);
-          const sorted = [...(res.data.plans || [])].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-          setPlansArray(sorted);
+          const histData = historyRes.data as PurchaseHistoryData;
+          setData(histData);
+
+          // Mark the current active plan using plan_id from current_subscription
+          const currentPlanId = histData.current_subscription?.plan_id;
+          const markedPlans = openPlans.map(p => ({
+            ...p,
+            is_current: p.id === currentPlanId,
+          }));
+          setPlansArray(markedPlans);
         }
       } else {
-        setError(res.message || "Failed to load billing data");
+        setError(historyRes.message || "Failed to load billing data");
       }
     } catch (err) {
       setError("An error occurred while fetching billing data");
@@ -203,7 +224,7 @@ export default function PurchaseHistoryClient() {
           <AlertCircle className="w-6 h-6 text-red-500" />
         </div>
         <p className="text-slate-600 font-medium">{error}</p>
-        <button 
+        <button
           onClick={fetchHistory}
           className="px-4 py-2 bg-[#00359E] text-white rounded-lg text-sm font-semibold hover:bg-[#002B80] transition-colors"
         >
@@ -261,18 +282,18 @@ export default function PurchaseHistoryClient() {
       </div>
 
       {/* Pricing Grid / Purchase History Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
         {(plansArray.length > 0 ? plansArray : plans).map((plan) => {
           const isCurrent = plan.is_current;
           const price = plan.offer_price === "0.00" || plan.offer_price === "0" ? "Free" : `₹${Number(plan.offer_price).toLocaleString('en-IN')}`;
-          
+
           return (
-            <div 
+            <div
               key={plan.id}
               className={cn(
-                "rounded-2xl p-6 flex flex-col border transition-all duration-300 relative",
-                isCurrent 
-                  ? "border-[#1E3A8A] bg-[#F1F5F9] shadow-lg shadow-blue-900/5 ring-1 ring-[#1E3A8A]" 
+                "rounded-2xl p-4 sm:p-6 flex flex-col border transition-all duration-300 relative",
+                isCurrent
+                  ? "border-[#1E3A8A] bg-[#F1F5F9] shadow-lg shadow-blue-900/5 ring-1 ring-[#1E3A8A]"
                   : "border-slate-200 bg-white hover:border-blue-200"
               )}
             >
@@ -281,39 +302,34 @@ export default function PurchaseHistoryClient() {
                   Current Active Plan
                 </div>
               )}
+              {!isCurrent && plan.is_highlighted === 1 && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[10px] font-bold text-white shadow-lg">
+                  <Star className="h-3 w-3 fill-current" /> MOST POPULAR
+                </div>
+              )}
 
               <div className="space-y-4 flex-1">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-[14px] font-semibold text-slate-900">{plan.name}</h3>
-                    {/* <div className="flex gap-1.5">
-                      <span className={cn(
-                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
-                        plan.is_active == 1 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-200"
-                      )}>
-                        {plan.is_active == 1 ? "Active" : "Inactive"}
-                      </span>
-                    </div> */}
-                  </div>
+                  <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-900">{plan.name}</h3>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-3xl font-semibold text-slate-900 tracking-tight">{price}</span>
+                    <span className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{price}</span>
                     {price !== "Free" && (
                       <span className="text-[13px] text-slate-400 font-medium">/ package</span>
                     )}
                   </div>
-                  {plan.actual_price !== plan.offer_price && (
+                  {parseFloat(plan.actual_price) > parseFloat(plan.offer_price) && (
                     <p className="text-[12px] text-slate-300 line-through font-medium">₹{Number(plan.actual_price).toLocaleString('en-IN')}</p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50">
-                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Job Postings</p>
-                    <p className="text-xl font-bold text-slate-900">{plan.job_posts_limit}</p>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1">
+                  <div className="bg-blue-50/50 rounded-xl p-2.5 sm:p-3 border border-blue-100/50">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Job Posts</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900">{plan.job_posts_limit}</p>
                   </div>
-                  <div className="bg-indigo-50/50 rounded-xl p-3 border border-indigo-100/50">
-                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Featured Jobs</p>
-                    <p className="text-xl font-bold text-slate-900">{plan.featured_jobs_limit ?? 0}</p>
+                  <div className="bg-indigo-50/50 rounded-xl p-2.5 sm:p-3 border border-indigo-100/50">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Featured</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900">{plan.featured_jobs_limit ?? 0}</p>
                   </div>
                 </div>
 
@@ -338,7 +354,7 @@ export default function PurchaseHistoryClient() {
                     </div>
                     <span className="text-[13px] text-slate-600 font-medium">Jobs live for {plan.job_live_days} days</span>
                   </div>
-                  
+
                   {plan.features && plan.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center gap-2 mt-0.5">
                       <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 bg-emerald-50">
@@ -351,19 +367,21 @@ export default function PurchaseHistoryClient() {
               </div>
 
               <div className="mt-8">
-                <button 
+                <button
                   onClick={() => handleUpgrade(plan)}
                   disabled={upgradingPlanId === plan.id || isProcessing}
                   className={cn(
                     "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 group border shadow-sm",
-                    isCurrent 
-                      ? "bg-[#1E3A8A] text-white border-[#1E3A8A] hover:bg-[#1E3A8A]/90" 
+                    isCurrent
+                      ? "bg-[#1E3A8A] text-white border-[#1E3A8A] hover:bg-[#1E3A8A]/90"
                       : "bg-white text-[#1E3A8A] border-blue-100 hover:bg-blue-50/50",
                     (upgradingPlanId === plan.id || isProcessing) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {upgradingPlanId === plan.id ? (
                     <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
+                  ) : isCurrent ? (
+                    "✓ Current Plan"
                   ) : (
                     <>Purchase Plan <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></>
                   )}
@@ -380,7 +398,7 @@ export default function PurchaseHistoryClient() {
           <div className="flex items-center justify-between px-1">
             <h2 className="text-lg font-semibold text-[#0F172A]">Subscription History</h2>
           </div>
-          
+
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
@@ -407,12 +425,12 @@ export default function PurchaseHistoryClient() {
                       <td className="px-5 py-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                             <span className="text-[12px] font-medium text-slate-600">Jobs:</span>
-                             <span className="text-[12px] font-bold text-slate-900">{item.job_posts_used} / {item.job_posts_total}</span>
+                            <span className="text-[12px] font-medium text-slate-600">Jobs:</span>
+                            <span className="text-[12px] font-bold text-slate-900">{item.job_posts_used} / {item.job_posts_total}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                             <span className="text-[12px] font-medium text-slate-600">Featured:</span>
-                             <span className="text-[12px] font-bold text-slate-900">{item.featured_jobs_used} / {item.featured_jobs_total}</span>
+                            <span className="text-[12px] font-medium text-slate-600">Featured:</span>
+                            <span className="text-[12px] font-bold text-slate-900">{item.featured_jobs_used} / {item.featured_jobs_total}</span>
                           </div>
                         </div>
                       </td>
@@ -446,39 +464,39 @@ export default function PurchaseHistoryClient() {
 
             {/* Mobile Card View */}
             <div className="md:hidden divide-y divide-slate-100">
-               {subscriptions.length > 0 ? subscriptions.map((item) => (
-                 <div key={item.id} className="p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                       <h4 className="text-[14px] font-semibold text-slate-900">{item.plan_name}</h4>
-                       {/* <span className={cn(
+              {subscriptions.length > 0 ? subscriptions.map((item) => (
+                <div key={item.id} className="p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[14px] font-semibold text-slate-900">{item.plan_name}</h4>
+                    {/* <span className={cn(
                          "px-2 py-0.5 rounded-full text-[10px] font-semibold",
                          (item.status === 'active' || item.is_active) ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
                        )}>
                          {item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : (item.is_active ? "Active" : "Inactive")}
                        </span> */}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-semibold text-slate-400 tracking-wider">JOBS</p>
+                      <p className="text-[12px] font-bold text-slate-800">{item.job_posts_used} / {item.job_posts_total}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-1">
-                          <p className="text-[10px] font-semibold text-slate-400 tracking-wider">JOBS</p>
-                          <p className="text-[12px] font-bold text-slate-800">{item.job_posts_used} / {item.job_posts_total}</p>
-                       </div>
-                       <div className="space-y-1 text-right">
-                          <p className="text-[10px] font-semibold text-slate-400 tracking-wider">FEATURED</p>
-                          <p className="text-[12px] font-bold text-slate-800">{item.featured_jobs_used} / {item.featured_jobs_total}</p>
-                       </div>
+                    <div className="space-y-1 text-right">
+                      <p className="text-[10px] font-semibold text-slate-400 tracking-wider">FEATURED</p>
+                      <p className="text-[12px] font-bold text-slate-800">{item.featured_jobs_used} / {item.featured_jobs_total}</p>
                     </div>
-                    <div className="pt-3 border-t border-slate-50 flex items-center justify-between text-[11px] text-slate-500 uppercase font-bold tracking-tight">
-                       <span>{formatDate(item.starts_at)}</span>
-                       <span className="text-slate-300 text-[18px]">→</span>
-                       <span>{formatDate(item.expires_at)}</span>
-                    </div>
-                 </div>
-               )) : (
-                 <div className="py-12 text-center opacity-40">
-                   <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                   <p className="text-sm font-semibold text-slate-400">No subscriptions found</p>
-                 </div>
-               )}
+                  </div>
+                  <div className="pt-3 border-t border-slate-50 flex items-center justify-between text-[11px] text-slate-500 uppercase font-bold tracking-tight">
+                    <span>{formatDate(item.starts_at)}</span>
+                    <span className="text-slate-300 text-[18px]">→</span>
+                    <span>{formatDate(item.expires_at)}</span>
+                  </div>
+                </div>
+              )) : (
+                <div className="py-12 text-center opacity-40">
+                  <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                  <p className="text-sm font-semibold text-slate-400">No subscriptions found</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -488,7 +506,7 @@ export default function PurchaseHistoryClient() {
           <div className="flex items-center justify-between px-1">
             <h2 className="text-lg font-semibold text-[#0F172A]">Payment History</h2>
           </div>
-          
+
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
@@ -549,7 +567,7 @@ export default function PurchaseHistoryClient() {
                   <div className="text-slate-400 shrink-0">
                     <CreditCard className="w-5 h-5" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <h4 className="text-[14px] font-semibold text-slate-900 leading-tight truncate">{payment.plan_name}</h4>
                     <p className="text-[12px] text-slate-400 font-medium">{payment.created_at ? formatDate(payment.created_at) : payment.transaction_id.slice(0, 8).toUpperCase()}</p>
@@ -617,7 +635,7 @@ export default function PurchaseHistoryClient() {
                         <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[11px] font-semibold">Paid</span>
                       </td>
                       <td className="px-5 py-4 text-center">
-                        <button 
+                        <button
                           onClick={() => invoice.pdf_path && window.open(getFullUrl(invoice.pdf_path), '_blank')}
                           className="p-2 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all"
                           title="Download Invoice"
@@ -645,7 +663,7 @@ export default function PurchaseHistoryClient() {
                   <div className="text-slate-400 shrink-0">
                     <CreditCard className="w-5 h-5" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <h4 className="text-[14px] font-semibold text-slate-900 leading-tight truncate">{invoice.invoice_number}</h4>
                     <p className="text-[12px] text-slate-400 font-medium">{formatDate(invoice.invoice_date)}</p>
@@ -656,7 +674,7 @@ export default function PurchaseHistoryClient() {
                     <span className="bg-[#ECFDF5] text-[#059669] px-2 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-100/50">
                       Paid
                     </span>
-                    <button 
+                    <button
                       onClick={() => invoice.pdf_path && window.open(getFullUrl(invoice.pdf_path), '_blank')}
                       className="p-1 text-slate-300 hover:text-slate-600 transition-colors"
                       title="Download Invoice"

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlogBySlug } from "@/hooks/useBlogs";
-import { Button } from "@/shared/ui/Buttons/Buttons";
 import { ChevronRight, Clock, Search, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -158,20 +157,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
                 <div dangerouslySetInnerHTML={{ __html: processedContent }} />
             </div>
 
-            {/* Subscribe CTA */}
-            <div className="mt-16 p-8 rounded-2xl bg-[#f8faff] border border-blue-100/50 relative overflow-hidden group">
-               <h3 className="text-xl font-bold text-[#111827] mb-2 relative z-10">Stay Updated!</h3>
-               <p className="text-slate-500 mb-6 text-[15px] relative z-10 font-medium">Join 10,000+ educators receiving our weekly newsletter on career growth.</p>
-               <div className="flex flex-col sm:flex-row gap-3 max-w-lg relative z-10">
-                 <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="flex-1 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium focus:outline-blue-600 transition-all shadow-sm"
-                  suppressHydrationWarning
-                 />
-                 <Button className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-600/20">Subscribe</Button>
-               </div>
-            </div>
+
           </article>
 
           {/* Sidebar */}

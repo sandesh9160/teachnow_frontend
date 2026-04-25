@@ -21,6 +21,9 @@ interface PricingPlan {
   featured_jobs_limit: number;
   company_featured: number;
   features: string[];
+  is_highlighted: number;
+  is_active: number;
+  display_order: number;
 }
 
 export default function PricingPage() {
@@ -63,13 +66,20 @@ export default function PricingPage() {
 
   const handleSelectPlan = async (plan: PricingPlan) => {
     if (!isLoggedIn) {
-      toast.error("Please login to purchase a plan");
-      router.push(`/auth/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+      toast.warning("Employer Login Required", {
+        description: "Please login as an Employer or Recruiter to purchase a plan.",
+        style: { background: '#FFF7ED', border: '1px solid #FED7AA', color: '#9A3412' },
+        duration: 4000,
+      });
+      router.push(`/auth/login?role=employer_recruiter&redirect=${encodeURIComponent("/pricing-plans")}`);
       return;
     }
 
     if (role !== "employer" && role !== "recruiter") {
-      toast.error("Only institutions can purchase job posting plans.");
+      toast.error("Access Denied", {
+        description: "Only Employer or Recruiter accounts can purchase job posting plans.",
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
       return;
     }
 
@@ -127,7 +137,7 @@ export default function PricingPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
             {plans.map((plan) => {
-              const isPopular = plan.company_featured === 1 || plan.name.toLowerCase().includes("silver") || plan.name.toLowerCase().includes("pro");
+              const isPopular = plan.is_highlighted === 1;
               const isBuying = activePlanId === plan.id && isProcessing;
               const isFree = parseFloat(plan.offer_price) === 0;
               

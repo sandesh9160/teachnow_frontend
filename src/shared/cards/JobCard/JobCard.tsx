@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { MapPin, Clock3, Bookmark, Building } from "lucide-react";
+import { MapPin, Clock3, Bookmark, Building, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -66,13 +66,19 @@ const JobCard = ({
     if (isExpired) return;
 
     if (!isLoggedIn) {
-      toast.info("Need to login as job seeker to apply for this job");
+      toast.warning("Login required", {
+        description: "Need to login as job seeker to apply for this job",
+        style: { background: '#FFF7ED', border: '1px solid #FED7AA', color: '#9A3412' },
+      });
       setAuthReason("apply");
       setShowAuthModal(true);
       return;
     }
     if (user?.role === "employer") {
-      toast.error("Employers cannot apply for jobs.");
+      toast.error("Access Denied", {
+        description: "Employers cannot apply for jobs.",
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
       return;
     }
     router.push(`/apply/${jobPath}`);
@@ -87,24 +93,36 @@ const JobCard = ({
     e.stopPropagation();
 
     if (!isLoggedIn) {
-      toast.info("Need to login as job seeker to save this job");
+      toast.warning("Login required", {
+        description: "Need to login as job seeker to save this job",
+        style: { background: '#FFF7ED', border: '1px solid #FED7AA', color: '#9A3412' },
+      });
       setAuthReason("save");
       setShowAuthModal(true);
       return;
     }
 
     if (user?.role === "employer") {
-      toast.error("Employers cannot bookmark jobs.");
+      toast.error("Access Denied", {
+        description: "Employers cannot bookmark jobs.",
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
       return;
     }
 
     try {
       setSaved(!saved);
       await toggleBookmark(id);
-      toast.success(saved ? "Removed from saved jobs" : "Job saved successfully!");
+      toast.success(saved ? "Removed from saved jobs" : "Job saved successfully!", {
+        style: saved
+          ? { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' }
+          : { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
+      });
     } catch (error: any) {
       setSaved(isSavedStatus);
-      toast.error(error.message || "An error occurred while saving the job.");
+      toast.error(error.message || "An error occurred while saving the job.", {
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
     }
   };
 
@@ -207,14 +225,14 @@ const JobCard = ({
             
             {deadline && (
               <div className="flex items-center gap-1.5">
-                <Clock3 className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                <span className="whitespace-nowrap text-red-600 font-semibold">Deadline: {new Date(deadline).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+                <Clock3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="whitespace-nowrap">Deadline: {new Date(deadline).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
               </div>
             )}
             
             {gender && gender !== "both" && (
               <div className="flex items-center gap-1.5">
-                <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded text-[11px] font-bold border border-purple-100 uppercase">
+                <span className="text-[11px] opacity-70 uppercase">
                   {gender} only
                 </span>
               </div>
@@ -222,9 +240,8 @@ const JobCard = ({
 
             {vacancies && Number(vacancies) > 0 && (
               <div className="flex items-center gap-1.5">
-                <span className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded text-[11px] font-bold border border-orange-100">
-                  {vacancies} {Number(vacancies) === 1 ? 'Vacancy' : 'Vacancies'}
-                </span>
+                <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="whitespace-nowrap">{vacancies} {Number(vacancies) === 1 ? 'Vacancy' : 'Vacancies'}</span>
               </div>
             )}
           </div>

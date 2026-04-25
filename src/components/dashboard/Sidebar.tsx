@@ -54,6 +54,7 @@ export function DashboardSidebar({
     { label: "Recruiter Management", href: "/dashboard/employer/recruiters", icon: Users },
     { label: "Company Profile", href: "/dashboard/employer/company-profile", icon: Building2 },
     { label: "Billing", href: "/dashboard/employer/purchase-history", icon: CreditCard },
+    { label: "Alerts", href: "/dashboard/employer/notifications", icon: Bell },
     { label: "Testimonials", href: "/dashboard/employer/testimonials", icon: MessageSquare },
   ];
 

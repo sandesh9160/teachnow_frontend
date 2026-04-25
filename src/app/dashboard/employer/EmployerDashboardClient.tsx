@@ -319,9 +319,9 @@ export default function EmployerDashboardClient({
 
          {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <div className="bg-white rounded-[24px] p-5 sm:p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+            <div className="bg-white rounded-[24px] p-4 sm:p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col gap-4 group">
                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
-               <div className="relative z-10 flex gap-4 md:items-center shrink-0">
+               <div className="relative z-10 flex gap-3 items-center shrink-0">
                   <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
                      <CreditCard className="w-6 h-6" />
                   </div>
@@ -334,7 +334,7 @@ export default function EmployerDashboardClient({
                   </div>
                </div>
 
-               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-4 lg:gap-6 lg:border-l lg:border-slate-100 lg:pl-10">
+               <div className="relative z-10 flex flex-col sm:flex-row items-stretch gap-3">
                   {/* Active Allocation Box */}
                   <div className="flex-1 bg-slate-50/50 border border-slate-100/50 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
                      <div className="flex items-center gap-2 mb-3">
@@ -377,7 +377,7 @@ export default function EmployerDashboardClient({
                   </div>
                </div>
 
-               <Link href="/dashboard/employer/purchase-history" className="relative z-10 lg:pl-4">
+               <Link href="/dashboard/employer/purchase-history" className="relative z-10">
                   <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
                      Upgrade Plan
                   </Button>
@@ -497,7 +497,7 @@ export default function EmployerDashboardClient({
                <div className="divide-y divide-slate-50">
                   {dashboardData?.latest_applications && dashboardData.latest_applications.length > 0 ? (
                      dashboardData.latest_applications.slice(0, 5).map((app) => (
-                        <div key={app.id} className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                        <div key={app.id} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
                            <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
                               <ApplicationAvatar
                                  src={app.job_seeker.profile_photo}
@@ -543,54 +543,49 @@ export default function EmployerDashboardClient({
                <div className="divide-y divide-slate-50">
                   {dashboardData?.latest_jobs && dashboardData.latest_jobs.length > 0 ? (
                      dashboardData.latest_jobs.slice(0, 5).map((job) => (
-                        <div key={job.id} className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                           <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                 <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
-                                    {job.title}
-                                 </h4>
-                                 <span className={cn(
-                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
-                                    (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
-                                 )}>
-                                    {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
-                                 </span>
-                              </div>
-                              <div className="flex items-center gap-3 text-[10px] text-[#1E1B4B]">
-                                 <span className="flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
-                              </div>
+                        <div key={job.id} className="px-4 py-3 flex flex-col gap-2 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                           <div className="flex items-start gap-2">
+                              <h4 className="text-[13px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors flex-1 min-w-0 line-clamp-1">
+                                 {job.title}
+                              </h4>
+                              <span className={cn(
+                                 "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
+                                 (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
+                              )}>
+                                 {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
+                              </span>
                            </div>
-
-                           <div className="flex items-center gap-2">
-                              {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                 <Button
-                                    onClick={() => handleJobAction(job.id, 'republish')}
-                                    disabled={loadingJobId === job.id}
-                                    size="sm"
-                                    className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] shrink-0 flex items-center gap-1.5"
-                                 >
-                                    {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                                    Republish
-                                 </Button>
-                              )}
-                              {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                 <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                                    <Button size="sm" className="h-7 px-3 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-semibold text-[10px] shrink-0 flex items-center gap-1.5">
-                                       <Users className="w-3.5 h-3.5" />
-                                       Applicants
-                                       {job.total_applications_count !== undefined && (
-                                          <span className="ml-0.5 bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
-                                             {job.total_applications_count || 0}
-                                          </span>
-                                       )}
+                           <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <span className="flex items-center gap-1 text-[10px] text-slate-400"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
+                              <div className="flex items-center gap-2">
+                                 {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                    <Button
+                                       onClick={() => handleJobAction(job.id, 'republish')}
+                                       disabled={loadingJobId === job.id}
+                                       size="sm"
+                                       className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] flex items-center gap-1.5"
+                                    >
+                                       {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                                       Republish
                                     </Button>
+                                 )}
+                                 {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                    <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                                       <Button size="sm" className="h-7 px-3 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-semibold text-[10px] flex items-center gap-1.5">
+                                          <Users className="w-3.5 h-3.5" />
+                                          <span className="hidden xs:inline">Applicants</span>
+                                          {job.total_applications_count !== undefined && (
+                                             <span className="bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
+                                                {job.total_applications_count || 0}
+                                             </span>
+                                          )}
+                                       </Button>
+                                    </Link>
+                                 )}
+                                 <Link href={`${basePath}/jobs/view/${job.id}`}>
+                                    <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px]">View</Button>
                                  </Link>
-                              )}
-                              <Link href={`${basePath}/jobs/view/${job.id}`}>
-                                 <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px] shrink-0">
-                                    View
-                                 </Button>
-                              </Link>
+                              </div>
                            </div>
                         </div>
                      ))
@@ -616,43 +611,32 @@ export default function EmployerDashboardClient({
                      {dashboardData?.total_recruiters || 0} Members
                   </span>
                </div>
-               <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                     <thead>
-                        <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-800 uppercase tracking-wider">
-                           <th className="px-5 py-3">Name</th>
-                           <th className="px-5 py-3">Email</th>
-                           <th className="px-5 py-3 text-center">Jobs Posted</th>
-                           <th className="px-5 py-3 text-right">Featured Jobs</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-50">
-                        {dashboardData?.recruiters?.data && dashboardData.recruiters.data.length > 0 ? (
-                           dashboardData.recruiters.data.map((recruiter) => (
-                              <tr key={recruiter.id} className="hover:bg-slate-50/50 transition-colors">
-                                 <td className="px-5 py-3">
-                                    <p className="text-[12px] font-bold text-slate-900">{recruiter.name}</p>
-                                 </td>
-                                 <td className="px-5 py-3">
-                                    <p className="text-[10px] text-slate-800 font-medium  max-w-[120px]">{recruiter.email}</p>
-                                 </td>
-                                 <td className="px-5 py-3 text-center">
-                                    <p className="text-[11px] font-bold text-slate-800">{recruiter.jobs_used}</p>
-                                 </td>
-                                 <td className="px-5 py-3 text-right">
-                                    <p className="text-[11px] font-bold text-indigo-600">{recruiter.featured_jobs_used}</p>
-                                 </td>
-                              </tr>
-                           ))
-                        ) : (
-                           <tr>
-                              <td colSpan={4} className="py-12 text-center opacity-30">
-                                 <p className="text-[11px] font-bold">No recruiters assigned</p>
-                              </td>
-                           </tr>
-                        )}
-                     </tbody>
-                  </table>
+               <div className="divide-y divide-slate-50">
+                  {dashboardData?.recruiters?.data && dashboardData.recruiters.data.length > 0 ? (
+                     dashboardData.recruiters.data.map((recruiter) => (
+                        <div key={recruiter.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                           <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-bold text-slate-900 truncate">{recruiter.name}</p>
+                              <p className="text-[11px] text-slate-500 font-medium truncate">{recruiter.email}</p>
+                           </div>
+                           <div className="flex items-center gap-4 shrink-0">
+                              <div className="text-center">
+                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Posts</p>
+                                 <p className="text-[13px] font-bold text-slate-800">{recruiter.jobs_used}</p>
+                              </div>
+                              <div className="text-center">
+                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Featured</p>
+                                 <p className="text-[13px] font-bold text-indigo-600">{recruiter.featured_jobs_used}</p>
+                              </div>
+                           </div>
+                        </div>
+                     ))
+                  ) : (
+                     <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
+                        <Users className="w-10 h-10 mb-2" />
+                        <p className="text-[11px] font-bold">No recruiters assigned</p>
+                     </div>
+                  )}
                </div>
             </div>
 
@@ -669,57 +653,38 @@ export default function EmployerDashboardClient({
                      </span>
                   )}
                </div>
-               <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                     <thead>
-                        <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-800 uppercase tracking-wider">
-                           <th className="px-5 py-3">Plan</th>
-                           <th className="px-5 py-3">Purchased</th>
-                           <th className="px-5 py-3">Validity</th>
-                           <th className="px-5 py-3 text-right">Status</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-50">
-                        {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (
-                           dashboardData.subscription_history.map((item, idx) => (
-                              <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                 <td className="px-5 py-3">
-                                    <div className="flex items-center gap-2">
-                                       <p className="text-[12px] font-bold text-slate-900">{item.plan_name}</p>
-                                       {new Date(item.expires_at) < new Date() && (
-                                          <span className="text-[8px] text-rose-500 font-bold uppercase border border-rose-100 px-1 rounded">Exp</span>
-                                       )}
-                                    </div>
-                                 </td>
-                                 <td className="px-5 py-3">
-                                    <p className="text-[10px] text-slate-500 font-medium">
-                                       {new Date(item.purchase_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                                    </p>
-                                 </td>
-                                 <td className="px-5 py-3">
-                                    <p className="text-[10px] text-slate-500 font-medium">
-                                       {new Date(item.starts_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – {new Date(item.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
-                                    </p>
-                                 </td>
-                                 <td className="px-5 py-3 text-right">
-                                    <span className={cn(
-                                       "px-2 py-0.5 rounded-full text-[10px] font-bold capitalize",
-                                       item.status === 'active' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
-                                    )}>
-                                       {item.status}
-                                    </span>
-                                 </td>
-                              </tr>
-                           ))
-                        ) : (
-                           <tr>
-                              <td colSpan={4} className="py-12 text-center opacity-30">
-                                 <p className="text-[11px] font-bold">No historical data available</p>
-                              </td>
-                           </tr>
-                        )}
-                     </tbody>
-                  </table>
+               <div className="divide-y divide-slate-50">
+                  {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (
+                     dashboardData.subscription_history.map((item, idx) => (
+                        <div key={idx} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                           <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                 <p className="text-[13px] font-bold text-slate-900">{item.plan_name}</p>
+                                 {new Date(item.expires_at) < new Date() && (
+                                    <span className="text-[8px] text-rose-500 font-bold uppercase border border-rose-100 px-1 rounded">Exp</span>
+                                 )}
+                              </div>
+                              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                 {new Date(item.starts_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – {new Date(item.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
+                              </p>
+                           </div>
+                           <div className="flex items-center gap-3 shrink-0">
+                              <p className="text-[10px] text-slate-400">{new Date(item.purchase_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
+                              <span className={cn(
+                                 "px-2 py-0.5 rounded-full text-[10px] font-bold capitalize",
+                                 item.status === 'active' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                              )}>
+                                 {item.status}
+                              </span>
+                           </div>
+                        </div>
+                     ))
+                  ) : (
+                     <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
+                        <Clock className="w-10 h-10 mb-2" />
+                        <p className="text-[11px] font-bold">No historical data available</p>
+                     </div>
+                  )}
                </div>
             </div>
          </div>

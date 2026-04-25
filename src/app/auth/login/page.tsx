@@ -69,7 +69,8 @@ function LoginContent() {
         // Priority: Check for explicit redirect parameter
         const redirectUrl = searchParams?.get("redirect");
         if (redirectUrl && redirectUrl.startsWith("/")) {
-          window.location.href = redirectUrl;
+          // Strip any trailing # fragment that may have been appended
+          window.location.href = redirectUrl.split("#")[0];
         } else {
           window.location.href = dashboardUrlAfterLogin(u);
         }

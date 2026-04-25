@@ -199,70 +199,41 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
          </div>
       </div>
 
-      {/* Recruiter Table / Mobile List */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden min-w-0">
-        {/* Desktop Header */}
-        <div className="hidden sm:grid grid-cols-12 bg-slate-50/50 border-b border-slate-100 px-4 py-3">
-          <div className="col-span-12 sm:col-span-6 md:col-span-5 text-xs font-semibold text-slate-500">Recruiter details</div>
-          <div className="hidden md:block col-span-5 text-xs font-semibold text-slate-500">Contact</div>
-          <div className="col-span-12 sm:col-span-6 md:col-span-2 text-xs font-semibold text-slate-500 text-right">Action</div>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="hidden sm:flex items-center bg-slate-50/50 border-b border-slate-100 px-4 py-3 text-xs font-semibold text-slate-500">
+          <div className="flex-1">Recruiter details</div>
+          <div className="w-32 text-right">Actions</div>
         </div>
 
         <div className="divide-y divide-slate-50">
           {filteredUsers.length > 0 ? filteredUsers.map((u) => (
-            <div key={u.id} className="grid grid-cols-12 items-center hover:bg-slate-50/20 transition-colors group px-4 py-4 sm:py-3 gap-y-3 sm:gap-y-0">
-               {/* Left Side: Avatar + Info */}
-               <div className="col-span-10 sm:col-span-6 md:col-span-5 min-w-0 pr-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-semibold text-indigo-600 text-sm shadow-inner shrink-0 group-hover:bg-indigo-100 transition-colors">
-                      {u.name[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-900 truncate tracking-tight">{u.name}</p>
-                      <p className="text-[11px] font-medium text-slate-400 mt-0.5 md:hidden break-all">{u.email}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={cn(
-                          "w-1.5 h-1.5 rounded-full",
-                          u.is_active ? "bg-emerald-500 shadow-sm" : "bg-slate-300"
-                        )} />
-                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">
-                          {u.is_active ? "Active account" : "Inactive"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+            <div key={u.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/30 transition-colors group">
+               {/* Avatar */}
+               <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-semibold text-indigo-600 text-sm shadow-inner shrink-0 group-hover:bg-indigo-100 transition-colors">
+                 {u.name[0]}
                </div>
 
-               {/* Right Side: Action (On top in mobile) */}
-               <div className="col-span-2 sm:col-span-6 md:col-span-2 order-2 sm:order-last flex justify-end items-center gap-1.5">
-                  <Link href={`/dashboard/employer/recruiters/${u.id}`}>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl text-indigo-500 hover:bg-indigo-50 transition-all p-0 border border-transparent hover:border-indigo-100 active:scale-95 inline-flex items-center justify-center shrink-0"
-                      title="View posted jobs"
-                    >
-                      <Eye className="w-4.5 h-4.5" />
-                    </Button>
-                  </Link>
-
-                  <Button 
-                    onClick={() => handleDelete(u.id)}
-                    variant="ghost" 
-                    size="sm"
-                    className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl text-red-500 hover:bg-red-50 transition-all p-0 border border-transparent hover:border-red-100 active:scale-95 inline-flex items-center justify-center shrink-0"
-                    title="Remove recruiter"
-                  >
-                    <Trash2 className="w-4.5 h-4.5" />
-                  </Button>
+               {/* Info */}
+               <div className="flex-1 min-w-0">
+                 <p className="text-sm font-semibold text-slate-900 truncate">{u.name}</p>
+                 <p className="text-[11px] text-slate-400 truncate">{u.email}</p>
+                 <div className="flex items-center gap-1.5 mt-0.5">
+                   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", u.is_active ? "bg-emerald-500" : "bg-slate-300")} />
+                   <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">{u.is_active ? "Active" : "Inactive"}</span>
+                 </div>
                </div>
 
-               {/* Middle: Contact (Desktop only mostly) */}
-               <div className="hidden md:block col-span-5 pr-2">
-                  <p className="text-xs font-medium text-slate-500 flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-slate-300 shrink-0" />
-                    {u.email}
-                  </p>
+               {/* Actions */}
+               <div className="flex items-center gap-1.5 shrink-0">
+                 <Link href={`/dashboard/employer/recruiters/${u.id}`}>
+                   <Button variant="ghost" size="sm" className="h-9 w-9 rounded-xl text-indigo-500 hover:bg-indigo-50 transition-all p-0 border border-transparent hover:border-indigo-100 active:scale-95 inline-flex items-center justify-center" title="View">
+                     <Eye className="w-4 h-4" />
+                   </Button>
+                 </Link>
+                 <Button onClick={() => handleDelete(u.id)} variant="ghost" size="sm" className="h-9 w-9 rounded-xl text-red-500 hover:bg-red-50 transition-all p-0 border border-transparent hover:border-red-100 active:scale-95 inline-flex items-center justify-center" title="Remove">
+                   <Trash2 className="w-4 h-4" />
+                 </Button>
                </div>
             </div>
           )) : (
