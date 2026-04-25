@@ -21,6 +21,7 @@ export {
 
 export function useJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [similarJobs, setSimilarJobs] = useState<Job[]>([]);
   const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,20 +32,37 @@ export function useJobs() {
       setLoading(true);
       const kw = opts?.keyword?.trim() ?? "";
       const loc = opts?.location?.trim() ?? "";
-      let endpoint = "open/jobs";
+      
+      // If we have search params, use the specialized search endpoint
+      let endpoint = (kw || loc) ? "open/search/jobs/search" : "open/jobs";
       let query = [];
       if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
       if (loc) query.push(`location=${encodeURIComponent(loc)}`);
       if (query.length) endpoint += `?${query.join("&")}`;
+      
       const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
       
-      // Use toArray to handle nested paginated data and normalize results
-      const rawData = res?.data ?? res;
-      const jobsList = toArray<any>(rawData).map(normalizeJob);
+      // Robust extraction from multiple possible response shapes
+      const root = res?.data ?? res;
+      const searchSource = root?.search_jobs || res?.search_jobs;
+      const similarSource = root?.similar_jobs || res?.similar_jobs;
+      
+      // If searchSource is present, use it; otherwise fallback to the root as a flat array
+      const jobsList = toArray<any>(searchSource || root).map(normalizeJob);
+      
+      // Extract similar jobs if they exist
+      const similarList = toArray<any>(similarSource).map(normalizeJob);
+      
+      // Deduplicate similar jobs against main results
+      const uniqueSimilar = similarList.filter(
+        sj => !jobsList.some(j => String(j.id) === String(sj.id))
+      );
       
       setJobs(jobsList);
+      setSimilarJobs(uniqueSimilar);
     } catch (e: unknown) {
       setJobs([]);
+      setSimilarJobs([]);
       setError(e instanceof Error ? e.message : "Failed to load jobs");
     } finally {
       setLoading(false);
@@ -70,6 +88,7 @@ export function useJobs() {
 
   return {
     jobs,
+    similarJobs,
     jobDetails,
     loading,
     error,

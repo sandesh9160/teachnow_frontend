@@ -70,6 +70,29 @@ function formatPostedDate(date?: string): string {
   })}`;
 }
 
+function formatDeadline(date?: string): string {
+  if (!date) return "Ongoing";
+  const deadline = new Date(date);
+  if (Number.isNaN(deadline.getTime())) return "Ongoing";
+  
+  const now = new Date();
+  if (deadline < now) return "Expired";
+  
+  const diffTime = deadline.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return "Ends today";
+  if (diffDays === 1) return "1 day left";
+  if (diffDays <= 7) return `${diffDays} days left`;
+  
+  return deadline.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+
 
 
 export default function JobDetails({ job, slug }: JobDetailsProps) {
@@ -414,10 +437,15 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               <div className="space-y-3.5 sm:space-y-4">
                 {[
                   { label: "Experience", value: `${job.experience_required}+ Year(s)` },
+                  { label: "Experience Type", value: job.experience_type ? job.experience_type.charAt(0).toUpperCase() + job.experience_type.slice(1) : "Experienced" },
                   { label: "Job Type", value: jobType },
+                  { label: "Vacancies", value: job.vacancies || "Not specified" },
+                  { label: "Gender", value: job.gender ? job.gender.charAt(0).toUpperCase() + job.gender.slice(1) : "Any" },
+                  { label: "Deadline", value: formatDeadline(job.application_deadline || job.expires_at) },
                   { label: "Location", value: job.location },
                   { label: "Posted", value: postedText },
                 ].map((item) => (
+
                   <div key={item.label} className="flex items-center justify-between text-[12px] sm:text-[13px] font-semibold">
                     <span className="text-slate-400">{item.label}</span>
                     <span className="text-[#111827]">{item.value}</span>

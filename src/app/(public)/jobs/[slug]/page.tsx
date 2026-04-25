@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
-import { getJobs, searchJobs, getJobBySlug, normalizeJob } from "@/lib/jobs/api";
+import { getJobs, fullSearchJobs, getJobBySlug, normalizeJob, toArray } from "@/lib/jobs/api";
 import { getCompanies, getCompanyBySlug } from "@/hooks/useCompanies";
 import { getCategories, getFilters } from "@/hooks/useHomepage";
 import { fetchAPI } from "@/services/api/client";
@@ -50,14 +50,17 @@ async function lookupByNavigation(s: string) {
 
       const res = await fetchAPI<ApiResponse<any>>(apiUrl);
       const data = res.data || res;
-      const jobsArray = Array.isArray(data)
-        ? data
-        : (Array.isArray(data?.jobs)
-          ? data.jobs
-          : (Array.isArray(data?.data) ? data.data : []));
-
-      const jobs = jobsArray.map(normalizeJob);
-      return { type: 'category' as const, data: jobs, name: match.title, keyword: match.title };
+      
+      const mainJobs = toArray<any>(data?.search_jobs || data).map(normalizeJob);
+      const similarJobs = toArray<any>(data?.similar_jobs).map(normalizeJob);
+      
+      return { 
+        type: 'category' as const, 
+        data: mainJobs, 
+        similarJobs: similarJobs,
+        name: match.title, 
+        keyword: match.title 
+      };
     }
   } catch (err) {
     //console.error("Navigation lookup error:", err);
@@ -71,8 +74,14 @@ async function lookupByCategory(s: string) {
     const catMatch = categories.find((c: any) => (c.slug ?? "").toLowerCase() === s);
     if (catMatch) {
       // Use the name but also pass the category_id for better accuracy
-      const jobs = await searchJobs(catMatch.name.toLowerCase(), "", catMatch.id);
-      return { type: 'category' as const, data: jobs, name: catMatch.name, keyword: catMatch.name };
+      const { jobs, similarJobs } = await fullSearchJobs(catMatch.name.toLowerCase(), "", catMatch.id);
+      return { 
+        type: 'category' as const, 
+        data: jobs, 
+        similarJobs,
+        name: catMatch.name, 
+        keyword: catMatch.name 
+      };
     }
   } catch { /* proceed */ }
   return null;
@@ -88,7 +97,7 @@ async function lookupByJob(s: string) {
     if (s.includes('-')) {
       const keyword = s.replace(/-/g, ' ');
       // Try searching for the keywords to see if we find a job with a messy slug
-      const searchResults = await searchJobs(keyword, "");
+      const { jobs: searchResults } = await fullSearchJobs(keyword, "");
       if (searchResults && searchResults.length > 0) {
         // Find best match (one where sanitized slug matches our current slug)
         const bestMatch = searchResults.find(j =>
@@ -203,10 +212,11 @@ async function lookupBySearchFallback(s: string) {
     ].filter(Boolean).join(" - ");
 
     if (keyword || location || initialFilters.types.length > 0 || initialFilters.experience.length > 0) {
-      const jobs = await searchJobs(keyword, location);
+      const { jobs, similarJobs } = await fullSearchJobs(keyword, location);
       return {
         type: 'category' as const,
         data: jobs || [],
+        similarJobs,
         name: displayName || "Jobs",
         keyword,
         location,
@@ -273,6 +283,7 @@ export default async function GenericJobDetailPage({ params }: { readonly params
     return (
       <JobListingView
         jobs={resolved.data as Job[]}
+        similarJobs={(resolved as any).similarJobs}
         pageName={(resolved as any).name || "Search"}
         initialKeyword={(resolved as any).keyword}
         initialLocation={(resolved as any).location}

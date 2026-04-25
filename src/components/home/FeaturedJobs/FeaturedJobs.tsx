@@ -138,6 +138,11 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
                     salary={salary}
                     tags={[]}
                     posted={job.created_at ? `Posted on ${formatDate(job.created_at)}` : ""}
+                    deadline={job.application_deadline}
+                    gender={job.gender}
+                    vacancies={job.vacancies}
+                    experience={job.experience_required}
+                    experienceType={job.experience_type}
                   />
                 </div>
               );

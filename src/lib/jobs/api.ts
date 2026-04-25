@@ -62,31 +62,38 @@ export async function getCategoryJobs(slug: string | number): Promise<CategoryJo
   }
 }
 
+export async function fullSearchJobs(
+  keyword: string,
+  location: string,
+  category_id?: string | number
+): Promise<{ jobs: Job[]; similarJobs: Job[] }> {
+  try {
+    const params = new URLSearchParams();
+    if (keyword?.trim()) params.set("keyword", keyword.trim());
+    if (location?.trim()) params.set("location", location.trim());
+    if (category_id) params.set("category_id", category_id.toString());
+
+    const query = params.toString();
+    const res = await fetchAPI<ApiResponse<any>>(`/open/search/jobs/search?${query}${query ? "&" : ""}t=${Date.now()}`);
+    const raw = (res.data ?? res);
+    
+    const mainJobs = toArray<Job>(raw?.search_jobs || raw).map(normalizeJob);
+    const similarJobs = toArray<Job>(raw?.similar_jobs).map(normalizeJob);
+
+    return { 
+      jobs: mainJobs, 
+      similarJobs: similarJobs.filter(sj => !mainJobs.some(j => String(j.id) === String(sj.id))) 
+    };
+  } catch (err: unknown) {
+    return { jobs: [], similarJobs: [] };
+  }
+}
+
 export async function searchJobs(
   keyword: string,
   location: string,
   category_id?: string | number
 ): Promise<Job[]> {
-  try {
-    const normalizedKeyword = keyword?.trim() || "";
-    const normalizedLocation = location?.trim() || "";
-
-    // We always use the main search endpoint because it returns more detailed data (employer profiles)
-    // than the specialized location-only endpoint.
-    const params = new URLSearchParams();
-    if (normalizedKeyword) params.set("keyword", normalizedKeyword);
-    if (normalizedLocation) params.set("location", normalizedLocation);
-    if (category_id) params.set("category_id", category_id.toString());
-
-    const query = params.toString();
-    const res = await fetchAPI<ApiResponse<unknown>>(`/open/search/jobs/search?${query}${query ? "&" : ""}t=${Date.now()}`);
-    const data = (res.data ?? res) as unknown;
-    return toArray<Job>(data).map(normalizeJob);
-  } catch (err: unknown) {
-    const status = (err as { status?: number })?.status;
-    if (status !== 404 && status !== 500) {
-      //console.error("searchJobs error:", err);
-    }
-    return [];
-  }
+  const result = await fullSearchJobs(keyword, location, category_id);
+  return result.jobs;
 }

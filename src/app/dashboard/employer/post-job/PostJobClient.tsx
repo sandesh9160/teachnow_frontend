@@ -125,6 +125,8 @@ export default function PostJobClient({
         if (!formData.job_type) newErrors.job_type = "Job Type is required";
         if (!formData.location) newErrors.location = "City is required";
         if (!formData.experience_required?.toString().trim()) newErrors.experience_required = "Experience Required is required";
+        if (!formData.experience_type) newErrors.experience_type = "Experience Type is required";
+        if (!formData.gender) newErrors.gender = "Gender preference is required";
         break;
       case 2:
         if (!description || description.replace(/<[^>]*>/g, '').trim().length < 50)
@@ -361,6 +363,40 @@ export default function PostJobClient({
                   )} 
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_type ? "text-red-500" : "text-slate-700")}>
+                  Experience Type <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <select 
+                  value={formData.experience_type} 
+                  onChange={(e) => updateField("experience_type", e.target.value)} 
+                  className={cn(
+                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
+                    errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )}
+                >
+                  <option value="freshers">Freshers</option>
+                  <option value="experienced">Experienced</option>
+                  <option value="both">Both</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.gender ? "text-red-500" : "text-slate-700")}>
+                  Gender Preference <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <select 
+                  value={formData.gender} 
+                  onChange={(e) => updateField("gender", e.target.value)} 
+                  className={cn(
+                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
+                    errors.gender ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )}
+                >
+                  <option value="both">Any / Both</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
             </div>
           </div>
         )}
@@ -567,19 +603,31 @@ export default function PostJobClient({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Salary Estimate</p>
-                  <p className={cn("text-sm md:text-base font-bold", formData.salary_min ? "text-[#1E1B4B]" : "text-slate-300")}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Salary</p>
+                  <p className={cn("text-xs md:text-sm font-bold", formData.salary_min ? "text-[#1E1B4B]" : "text-slate-300")}>
                     {formData.salary_min && formData.salary_max
                       ? `₹${Number(formData.salary_min).toLocaleString()} – ₹${Number(formData.salary_max).toLocaleString()}`
                       : "Not Disclosed"}
                   </p>
                 </div>
-                <div className="p-5 md:p-6 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2">Experience Required</p>
-                  <p className={cn("text-sm md:text-base font-bold", formData.experience_required ? "text-[#1E1B4B]" : "text-slate-300")}>
-                    {formData.experience_required ? `${formData.experience_required} years` : "Not Specified"}
+                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Experience</p>
+                  <p className={cn("text-xs md:text-sm font-bold", formData.experience_required ? "text-[#1E1B4B]" : "text-slate-300")}>
+                    {formData.experience_required ? `${formData.experience_required} years (${formData.experience_type})` : `Not Specified (${formData.experience_type})`}
+                  </p>
+                </div>
+                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Gender</p>
+                  <p className="text-xs md:text-sm font-bold text-[#1E1B4B] capitalize">
+                    {formData.gender}
+                  </p>
+                </div>
+                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
+                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Vacancies</p>
+                  <p className="text-xs md:text-sm font-bold text-[#1E1B4B]">
+                    {formData.vacancies}
                   </p>
                 </div>
               </div>

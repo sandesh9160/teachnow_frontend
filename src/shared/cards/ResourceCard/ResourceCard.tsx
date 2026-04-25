@@ -24,10 +24,14 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
   const resourceHref = `/resources/${resource.slug}`;
 
   return (
-    <div className={cn(
-      "group relative flex flex-col bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm transition-all duration-300 h-full overflow-hidden hover:shadow-md",
-      className
-    )}>
+    <Link 
+      href={resourceHref}
+      onClick={onClick}
+      className={cn(
+        "group relative flex flex-col bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm transition-all duration-300 h-full overflow-hidden hover:shadow-md cursor-pointer",
+        className
+      )}
+    >
       {/* Photo */}
       <div className="relative aspect-[1.15/1] w-full overflow-hidden rounded-md mb-1.5 bg-slate-50">
         <img
@@ -81,15 +85,11 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
         </div>
 
         {/* Action Button - Balanced */}
-        <Link
-          href={resourceHref}
-          onClick={onClick}
-          className="mt-auto block w-full py-2 bg-[#007AB0] hover:bg-[#006999] text-white text-center rounded-lg text-[11px] font-extrabold transition-colors shadow-sm active:scale-[0.98]"
-        >
+        <div className="mt-auto block w-full py-2 bg-[#007AB0] hover:bg-[#006999] text-white text-center rounded-lg text-[11px] font-extrabold transition-colors shadow-sm active:scale-[0.98]">
           VIEW DETAILS
-        </Link>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

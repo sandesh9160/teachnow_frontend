@@ -45,6 +45,12 @@ export const JobFilterSidebar = ({
     { value: "10-50", label: "10+ Years" },
   ];
 
+  const genderOptions = [
+    { value: "male", label: "Male only" },
+    { value: "female", label: "Female only" },
+    { value: "both", label: "Any" },
+  ];
+
   const handleClearAll = () => {
     Object.keys(selectedFilters).forEach((key) => {
       if (Array.isArray(selectedFilters[key as keyof JobsFilters])) {
@@ -146,6 +152,19 @@ export const JobFilterSidebar = ({
                 label={opt.label}
                 checked={selectedFilters.types?.includes(opt.value) || false}
                 onChange={() => onToggle("types", opt.value)}
+              />
+            ))}
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Gender">
+          <div className="space-y-1.5">
+            {genderOptions.map((opt) => (
+              <CheckboxItem
+                key={opt.value}
+                label={opt.label}
+                checked={selectedFilters.gender?.includes(opt.value) || false}
+                onChange={() => onToggle("gender", opt.value)}
               />
             ))}
           </div>

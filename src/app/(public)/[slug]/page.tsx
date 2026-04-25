@@ -5,9 +5,9 @@ import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 
-import { getJobBySlug, getCategoryJobs, searchJobs } from "@/lib/jobs/api";
+import { getJobBySlug, getCategoryJobs, fullSearchJobs } from "@/lib/jobs/api";
 import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
-import { getLocationJobs } from "@/hooks/useHomepage";
+// import { getLocationJobs } from "@/hooks/useHomepage";
 import { sanitizeSlug } from "@/lib/utils";
 
 
@@ -19,13 +19,7 @@ function normalizeLocationSlug(s: string): string {
   return (s || "").replace(/-(jobs|job)$/i, "").trim();
 }
 
-function parseSearchSlug(s: string) {
-  const parts = s.split("-");
-  return {
-    keyword: parts.slice(0, -1).join(" "),
-    location: parts.slice(-1).join(" ")
-  };
-}
+
 
 /* -------------------- STRATEGY RESOLVERS -------------------- */
 
@@ -52,7 +46,7 @@ async function lookupByJob(s: string, rawSlug: string) {
         .filter(p => !/^\d+$/.test(p) && p.length > 1)
         .join(' ');
 
-      const searchResults = await searchJobs(keyword, "");
+      const { jobs: searchResults } = await fullSearchJobs(keyword, "");
 
       if (searchResults && searchResults.length > 0) {
         const bestMatch = searchResults.find(j => {
@@ -112,19 +106,23 @@ async function lookupByCategory(s: string) {
 async function lookupByLocation(s: string) {
   try {
     const locationSlug = normalizeLocationSlug(s);
-    const res = await getLocationJobs(locationSlug);
-    const jobsRaw = res?.jobs ?? res?.data ?? res;
-    const jobs = Array.isArray(jobsRaw) ? jobsRaw : [];
+    const { jobs: locationJobs, similarJobs } = await fullSearchJobs("", locationSlug);
+    if (locationJobs.length === 0 && similarJobs.length === 0) return null;
 
-    const safeJobs = jobs.length > 0 ? jobs : await searchJobs("", locationSlug);
-    if (safeJobs.length === 0) return null;
-
-    const name = res?.location || res?.name || locationSlug || s;
+    const name = locationSlug.charAt(0).toUpperCase() + locationSlug.slice(1);
     return {
       type: 'location' as const,
-      data: { jobs: safeJobs, name, location: name }
+      data: { jobs: locationJobs, similarJobs, name, location: name }
     };
   } catch { return null; }
+}
+
+function parseSearchSlug(s: string) {
+  const parts = s.split("-");
+  return {
+    keyword: parts.slice(0, -1).join(" "),
+    location: parts.slice(-1).join(" ")
+  };
 }
 
 /**
@@ -135,11 +133,11 @@ async function lookupBySearch(s: string) {
     const { keyword, location } = parseSearchSlug(s);
     if (!keyword && !location) return null;
 
-    const jobs = await searchJobs(keyword || "", location || "");
-    if (!jobs || jobs.length === 0) return null;
+    const { jobs, similarJobs } = await fullSearchJobs(keyword || "", location || "");
+    if (!jobs || (jobs.length === 0 && similarJobs.length === 0)) return null;
 
     const name = [keyword, location].filter(Boolean).join(" in ") || "Search Results";
-    return { type: 'search' as const, data: { jobs, name, keyword, location } };
+    return { type: 'search' as const, data: { jobs, similarJobs, name, keyword, location } };
   } catch { return null; }
 }
 
@@ -244,17 +242,32 @@ export default async function PublicSlugPage({ params }: { readonly params: Prom
   }
 
   if (resolved.type === 'category') {
-    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} initialKeyword={resolved.data.keyword} />;
+    return (
+      <JobListingView 
+        jobs={resolved.data.jobs} 
+        similarJobs={(resolved.data as any).similarJobs}
+        pageName={resolved.data.name} 
+        initialKeyword={resolved.data.keyword} 
+      />
+    );
   }
 
   if (resolved.type === 'location') {
-    return <JobListingView jobs={resolved.data.jobs} pageName={resolved.data.name} initialLocation={resolved.data.location} />;
+    return (
+      <JobListingView 
+        jobs={resolved.data.jobs} 
+        similarJobs={(resolved.data as any).similarJobs}
+        pageName={resolved.data.name} 
+        initialLocation={resolved.data.location} 
+      />
+    );
   }
 
   if (resolved.type === 'search') {
     return (
       <JobListingView
         jobs={resolved.data.jobs}
+        similarJobs={(resolved.data as any).similarJobs}
         pageName={resolved.data.name}
         initialKeyword={resolved.data.keyword}
         initialLocation={resolved.data.location}

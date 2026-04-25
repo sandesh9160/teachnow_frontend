@@ -60,6 +60,8 @@ export function toArray<T>(data: unknown): T[] {
   const d = data as Record<string, unknown> | null | undefined;
   if (d?.data && Array.isArray(d.data)) return d.data as T[];
   if (Array.isArray(d?.jobs)) return d.jobs as T[];
+  if (Array.isArray(d?.search_jobs)) return d.search_jobs as T[];
+  if (Array.isArray(d?.similar_jobs)) return d.similar_jobs as T[];
   if (Array.isArray(d?.results)) return d.results as T[];
   if (Array.isArray(d?.items)) return d.items as T[];
   return [];

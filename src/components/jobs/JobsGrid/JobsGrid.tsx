@@ -79,6 +79,11 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
             posted={postedText}
             logo={normalizeMediaUrl(companyLogo)}
             slug={job.slug}
+            deadline={job.application_deadline}
+            gender={job.gender}
+            vacancies={job.vacancies}
+            experience={job.experience_required}
+            experienceType={job.experience_type}
           />
         );
       })}

@@ -24,7 +24,7 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
           </div>
         )}
       </div>
-      
+
       {/* Info Section */}
       <div className="flex-1 min-h-0 flex flex-col justify-start">
         <h3 className="text-[17px] font-semibold text-black leading-tight mb-1 line-clamp-2">

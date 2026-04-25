@@ -23,7 +23,7 @@ function JobsContent() {
   const keywordParam = searchParams?.get("keyword") || "";
   const locationParam = searchParams?.get("location") || "";
 
-  const { jobs, loading, error, fetchJobs } = useJobs();
+  const { jobs, similarJobs, loading, error, fetchJobs } = useJobs();
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
 
@@ -38,6 +38,7 @@ function JobsContent() {
     experience: [],
     salary: [],
     institution_type: [],
+    gender: [],
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -106,6 +107,7 @@ function JobsContent() {
       experience: [],
       salary: [],
       institution_type: [],
+      gender: [],
     });
     setSearch("");
     setCurrentPage(1);
@@ -186,6 +188,12 @@ function JobsContent() {
     if (selectedFilters.institution_type.length > 0) {
       const instType = (job as any).institution_type || (job.employer as any)?.institution_type;
       if (!instType || !selectedFilters.institution_type.includes(instType)) return false;
+    }
+
+    // Gender Filter
+    if (selectedFilters.gender.length > 0) {
+      const jobGender = (job.gender || "both").toLowerCase();
+      if (!selectedFilters.gender.includes(jobGender)) return false;
     }
 
     return true;
@@ -272,6 +280,19 @@ function JobsContent() {
               loading={loading}
               onClearAll={clearAll}
             />
+
+            {!loading && similarJobs.length > 0 && (
+              <div className="mt-16">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-foreground font-display">Similar Jobs</h2>
+                </div>
+                <JobsGrid
+                  jobs={similarJobs}
+                  loading={false}
+                  onClearAll={clearAll}
+                />
+              </div>
+            )}
 
             {!loading && filtered.length > resultsPerPage && (
               <div className="mt-12">

@@ -18,6 +18,8 @@ import { sanitizeSlug } from "@/lib/utils";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 
 interface InstitutionDetailsViewProps {
   readonly company: Institution;
@@ -30,7 +32,9 @@ export default function InstitutionDetailsView({
   companyJobs, 
   similarCompanies 
 }: Readonly<InstitutionDetailsViewProps>) {
+  const router = useRouter();
   const [isLoaded, setIsLoaded] = useState(false);
+
   const [mapLoading, setMapLoading] = useState(true);
 
   useEffect(() => {
@@ -143,8 +147,10 @@ export default function InstitutionDetailsView({
                 {companyJobs.map((job) => (
                   <div 
                     key={job.id}
-                    className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all duration-300 gap-3"
+                    onClick={() => router.push(`/${sanitizeSlug(job.slug || job.id.toString())}`)}
+                    className="group cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all duration-300 gap-3"
                   >
+
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-[#1a202c] group-hover:text-indigo-600 transition-colors mb-2">
                         {job.title}
@@ -174,9 +180,13 @@ export default function InstitutionDetailsView({
                         asChild
                         className="bg-indigo-900 hover:bg-indigo-950 text-white px-6 py-2 h-auto rounded-xl font-semibold text-sm transition-all flex items-center gap-2"
                       >
-                        <Link href={`/${sanitizeSlug(job.slug || job.id.toString())}`}>
+                        <Link 
+                          href={`/${sanitizeSlug(job.slug || job.id.toString())}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           View Details <ChevronRight className="h-4 w-4" />
                         </Link>
+
                       </Button>
                     </div>
                   </div>

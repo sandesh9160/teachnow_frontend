@@ -19,6 +19,7 @@ import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 
 interface JobListingViewProps {
   readonly jobs: Job[];
+  readonly similarJobs?: Job[];
   readonly pageName: string;
   readonly initialKeyword?: string;
   readonly initialLocation?: string;
@@ -27,6 +28,7 @@ interface JobListingViewProps {
 
 export default function JobListingView({ 
   jobs, 
+  similarJobs = [],
   pageName, 
   initialKeyword, 
   initialLocation,
@@ -45,6 +47,7 @@ export default function JobListingView({
     experience: initialFilters?.experience || [],
     salary: initialFilters?.salary || [],
     institution_type: initialFilters?.institution_type || [],
+    gender: initialFilters?.gender || [],
   });
 
   const [sortBy, setSortBy] = useState("Default");
@@ -183,6 +186,12 @@ export default function JobListingView({
       if (!instType || !selectedFilters.institution_type.includes(instType)) return false;
     }
 
+    // Gender Filter
+    if (selectedFilters.gender.length > 0) {
+      const jobGender = (job.gender || "both").toLowerCase();
+      if (!selectedFilters.gender.includes(jobGender)) return false;
+    }
+
     return true;
   });
 
@@ -256,22 +265,27 @@ export default function JobListingView({
                   .replaceAll(/_/g, " ")
                   .replaceAll(/\b\w/g, (c) => c.toUpperCase());
 
-                return (
-                  <JobCard
-                    key={job.id}
-                    id={job.id}
-                    title={job.title}
-                    company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
-                    location={job.location || "India"}
-                    type={jobTypeFormatted}
-                    salary={salary}
-                    tags={[]}
-                    posted={job.created_at || new Date().toISOString()}
-                    logo={job.employer?.company_logo}
-                    slug={job.slug}
-                    institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
-                  />
-                );
+                    return (
+                      <JobCard
+                        key={job.id}
+                        id={job.id}
+                        title={job.title}
+                        company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
+                        location={job.location || "India"}
+                        type={jobTypeFormatted}
+                        salary={salary}
+                        tags={[]}
+                        posted={job.created_at || new Date().toISOString()}
+                        logo={job.employer?.company_logo}
+                        slug={job.slug}
+                        institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
+                        deadline={job.application_deadline}
+                        gender={job.gender}
+                        vacancies={job.vacancies}
+                        experience={job.experience_required}
+                        experienceType={job.experience_type}
+                      />
+                    );
               })}
             </div>
 
@@ -281,6 +295,47 @@ export default function JobListingView({
                 <Link href="/jobs" className="mt-4 inline-block">
                   <Button variant="outline">Browse All Jobs</Button>
                 </Link>
+              </div>
+            )}
+
+            {!isSearching && similarJobs.length > 0 && (
+              <div className="mt-16">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-foreground font-display">Similar Jobs</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-6">
+                  {similarJobs.map((job) => {
+                    const salary = (() => {
+                      const min = Number(job.salary_min || 0);
+                      const max = Number(job.salary_max || 0);
+                      if (!min && !max) return "Not disclosed";
+                      const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+                      return `${fmt(min)} - ${fmt(max)}`;
+                    })();
+
+                    return (
+                      <JobCard
+                        key={`similar-${job.id}`}
+                        id={job.id}
+                        title={job.title}
+                        company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
+                        location={job.location || "India"}
+                        type={String(job.job_type || "").replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c) => c.toUpperCase())}
+                        salary={salary}
+                        tags={[]}
+                        posted={job.created_at || new Date().toISOString()}
+                        logo={job.employer?.company_logo}
+                        slug={job.slug}
+                        institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
+                        deadline={job.application_deadline}
+                        gender={job.gender}
+                        vacancies={job.vacancies}
+                        experience={job.experience_required}
+                        experienceType={job.experience_type}
+                      />
+                    );
+                  })}
+                </div>
               </div>
             )}
 

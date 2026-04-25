@@ -18,9 +18,13 @@ export type Job = {
   salary_min: string;
   salary_max: string;
   experience_required: number;
+  experience_type?: string;
   vacancies?: number;
+  application_deadline?: string;
   job_status?: string;
+  gender?: string;
   status?: string;
+  expires_at?: string;
   created_at?: string;
   updated_at?: string;
   meta_title?: string;
