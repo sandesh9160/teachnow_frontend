@@ -63,8 +63,9 @@ export const Footer = ({
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-[1440px] px-6 py-12 md:py-16 lg:px-12">
-        <div className="flex flex-wrap gap-x-16 md:gap-x-24 lg:gap-x-32 gap-y-12 justify-start">
-          <div className="max-w-[280px] space-y-4">
+        <div className="grid grid-cols-1 gap-y-10 gap-x-8 sm:grid-cols-4">
+          {/* Column 1 – Brand */}
+          <div className="space-y-4">
             <Link href="/" className="mb-4 flex items-center gap-2">
               {brandIcon ? (
                 <img
@@ -89,8 +90,9 @@ export const Footer = ({
             </p>
           </div>
 
+          {/* Columns 2 & 3 – Dynamic sections (Social Media, Top Cities, etc.) */}
           {gridSections.map((section) => (
-            <div key={section.title} className="min-w-[160px]">
+            <div key={section.title}>
               <h4 className="mb-4 text-sm font-semibold text-foreground">{section.title}</h4>
               <ul className="space-y-2.5">
                 {(Array.isArray(section.links) ? section.links : []).map((link) => {
@@ -137,8 +139,8 @@ export const Footer = ({
             </div>
           ))}
 
-          {/* Top Searches */}
-          <div className="min-w-[200px]">
+          {/* Column 4 – Top Searches */}
+          <div>
             <h4 className="mb-4 text-sm font-semibold text-foreground">Top Searches</h4>
             <ul className="space-y-2.5">
               {topSearches.map((link: any, index: number) => (

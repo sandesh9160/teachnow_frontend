@@ -7,6 +7,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import CharacterCount from "@tiptap/extension-character-count";
+import ImageExtension from "@tiptap/extension-image";
 import { 
   Bold, 
   Italic, 
@@ -28,14 +29,59 @@ import {
   Maximize2,
   Type,
   Eraser,
-  Palette,
-  Highlighter,
   ChevronDown,
   FileCode2,
-  Columns
+  Columns,
+  Image as ImageIcon,
+  Video as VideoIcon
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, normalizeMediaUrl } from "@/lib/utils";
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
+import { uploadFile } from "@/actions/FileUpload";
+import { Mark, mergeAttributes } from '@tiptap/core';
+
+// Custom extension for Font Size since the package is not installed
+const FontSize = Mark.create({
+  name: 'fontSize',
+  addAttributes() {
+    return {
+      size: {
+        default: null,
+        parseHTML: element => element.style.fontSize,
+        renderHTML: attributes => {
+          if (!attributes.size) return {}
+          return { style: `font-size: ${attributes.size}` }
+        },
+      },
+    }
+  },
+  parseHTML() {
+    return [{ tag: 'span[style*="font-size"]' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['span', mergeAttributes(HTMLAttributes), 0]
+  },
+  addCommands() {
+    return {
+      setFontSize: (size: string) => ({ chain }: any) => {
+        return chain().setMark('fontSize', { size }).run()
+      },
+      unsetFontSize: () => ({ chain }: any) => {
+        return chain().unsetMark('fontSize').run()
+      },
+    }
+  },
+});
+
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    fontSize: {
+      setFontSize: (size: string) => ReturnType;
+      unsetFontSize: () => ReturnType;
+    }
+  }
+}
 
 interface TipTapEditorProps {
   value: string;
@@ -99,7 +145,13 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
       }),
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      CharacterCount
+      CharacterCount,
+      ImageExtension.configure({
+        HTMLAttributes: {
+          class: "rounded-xl border border-slate-100 shadow-sm max-w-full h-auto my-4",
+        },
+      }),
+      FontSize,
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -129,13 +181,49 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
     setLinkUrl("");
     setShowLinkInput(false);
   }, [editor, linkUrl, isNofollow]);
+  
+  const onAddImage = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (file && editor) {
+        const formData = new FormData();
+        formData.append("document_file", file);
+        formData.append("document_type", "editor_image");
+
+        try {
+          toast.loading("Uploading image...", { id: "editor-upload" });
+          
+          // Using the common document upload endpoint as a fallback for editor images
+          const res = await uploadFile<any>("employer/documents/upload", {
+            method: "POST",
+            data: formData,
+          });
+
+          if (res?.status && res.data?.document_file) {
+            const url = normalizeMediaUrl(res.data.document_file);
+            editor.chain().focus().setImage({ src: url }).run();
+            toast.success("Image added to editor", { id: "editor-upload" });
+          } else {
+            toast.error(res?.message || "Failed to upload image", { id: "editor-upload" });
+          }
+        } catch (error) {
+          toast.error("An error occurred during upload", { id: "editor-upload" });
+          console.error("Editor Image Upload Error:", error);
+        }
+      }
+    };
+    input.click();
+  }, [editor]);
 
   if (!editor) return null;
 
   return (
     <div className="border border-slate-200 rounded-lg bg-white overflow-hidden shadow-sm transition-all focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/5">
       {/* High-Fidelity Grouped Toolbar (Matching User Screenshot) */}
-      <div className="flex flex-wrap items-center gap-0.5 p-1 bg-white border-b border-slate-50 overflow-x-auto no-scrollbar">
+      <div className="flex flex-wrap items-center gap-0.5 p-1 bg-white border-b border-slate-50 overflow-x-auto no-scrollbar shadow-sm">
         {/* Basic Styling Group */}
         <div className="flex items-center gap-0.5">
            <MenuButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive("bold")} title="Bold">
@@ -147,28 +235,62 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
            <MenuButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive("underline")} title="Underline">
              <UnderlineIcon className="w-3.5 h-3.5" />
            </MenuButton>
-        </div>
+            
+            <select 
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val) editor.chain().focus().setFontSize(val).run();
+                else editor.chain().focus().unsetFontSize().run();
+              }}
+              className="h-7 px-1.5 rounded-sm border border-slate-200 text-[10px] font-bold text-slate-500 bg-slate-50 focus:outline-none focus:border-primary/40 transition-all cursor-pointer ml-1"
+              value={editor.getAttributes('fontSize').size || ''}
+            >
+              <option value="">Size</option>
+              <option value="12px">12px</option>
+              <option value="14px">14px</option>
+              <option value="16px">16px</option>
+              <option value="18px">18px</option>
+              <option value="20px">20px</option>
+              <option value="24px">24px</option>
+            </select>
+         </div>
 
-        <div className="hidden md:flex h-6 flex items-center"><ToolbarDivider /></div>
+        <div className="hidden md:flex h-6"><ToolbarDivider /></div>
 
         {/* Dynamic & Formatting Group */}
-        <div className={cn("items-center gap-0.5", minimal ? "hidden md:flex" : "flex")}>
-           <MenuButton onClick={() => {}} title="Text Color (Static)">
-              <Palette className="w-3.5 h-3.5 text-slate-400" />
-           </MenuButton>
-           <MenuButton onClick={() => {}} title="Background Color (Static)">
-              <Highlighter className="w-3.5 h-3.5 text-slate-400" />
-           </MenuButton>
-           
-           <div className="flex items-center gap-1 px-1.5 py-1 mx-0.5 rounded-sm bg-slate-50 border border-slate-100 cursor-pointer">
-              <span className="text-[10px] font-bold text-slate-500 leading-none">11</span>
-              <ChevronDown className="w-2.5 h-2.5 text-slate-300" />
-           </div>
+        <div className="flex items-center gap-0.5">
+            <MenuButton 
+              onClick={() => editor.chain().focus().setParagraph().run()} 
+              isActive={editor.isActive('paragraph')} 
+              title="Paragraph"
+            >
+              <span className="text-[12px] font-bold">P</span>
+            </MenuButton>
 
-           <div className="flex items-center gap-2 px-1.5 py-1 rounded-sm bg-slate-50 border border-slate-100 cursor-pointer min-w-[40px]">
-              <span className="text-[10px] font-bold text-slate-500 leading-none">H1</span>
-              <ChevronDown className="w-2.5 h-2.5 text-slate-300 ml-auto" />
-           </div>
+            {/* Headings Dropdown */}
+            <select 
+              onChange={(e) => {
+                const level = parseInt(e.target.value);
+                if (level) editor.chain().focus().toggleHeading({ level: level as any }).run();
+              }}
+              className="h-7 px-1 rounded-sm border border-slate-200 text-[10px] font-bold text-slate-500 bg-slate-50 focus:outline-none focus:border-primary/40 transition-all cursor-pointer"
+              value={
+                editor.isActive('heading', { level: 1 }) ? '1' : 
+                editor.isActive('heading', { level: 2 }) ? '2' :
+                editor.isActive('heading', { level: 3 }) ? '3' :
+                editor.isActive('heading', { level: 4 }) ? '4' :
+                editor.isActive('heading', { level: 5 }) ? '5' :
+                editor.isActive('heading', { level: 6 }) ? '6' : ''
+              }
+            >
+              <option value="" disabled={!editor.isActive('heading')}>Headings</option>
+              <option value="1">H1</option>
+              <option value="2">H2</option>
+              <option value="3">H3</option>
+              <option value="4">H4</option>
+              <option value="5">H5</option>
+              <option value="6">H6</option>
+            </select>
         </div>
 
         <div className="hidden lg:flex h-6 items-center"><ToolbarDivider /></div>
@@ -203,6 +325,12 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
            <MenuButton onClick={() => editor.chain().focus().toggleCode().run()} isActive={editor.isActive("code")} title="Code">
              <Code className="w-3.5 h-3.5" />
            </MenuButton>
+           <MenuButton onClick={onAddImage} title="Upload Image">
+             <ImageIcon className="w-3.5 h-3.5" />
+           </MenuButton>
+           <MenuButton onClick={() => {}} title="Insert Video (Coming soon)">
+             <VideoIcon className="w-3.5 h-3.5" />
+           </MenuButton>
            <MenuButton onClick={() => editor.chain().focus().unsetAllMarks().run()} title="Clear Format">
              <Eraser className="w-3.5 h-3.5" />
            </MenuButton>
@@ -211,7 +339,7 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
            </MenuButton>
         </div>
 
-        <div className="hidden md:flex h-6 flex items-center"><ToolbarDivider /></div>
+        <div className="hidden md:flex h-6"><ToolbarDivider /></div>
 
         {/* Alignment Group */}
         <div className={cn("items-center gap-0.5", minimal ? "hidden md:flex" : "flex")}>
@@ -269,25 +397,24 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
              />
            </div>
            <div className="flex items-center gap-4 shrink-0 bg-white px-3 py-1.5 rounded-md border border-slate-100 shadow-sm">
-             <label className="flex items-center gap-2 cursor-pointer group">
-               <input 
-                 type="checkbox" 
-                 checked={isNofollow} 
-                 onChange={(e) => setIsNofollow(e.target.checked)}
-                 className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary transition-all active:scale-90"
-               />
-               <span className="text-[11px] font-bold text-slate-500 group-hover:text-primary transition-colors">rel="nofollow"</span>
-             </label>
+             <select 
+               value={isNofollow ? "nofollow" : "dofollow"}
+               onChange={(e) => setIsNofollow(e.target.value === "nofollow")}
+               className="h-8 px-2 rounded-md border border-slate-200 text-[11px] font-bold text-slate-500 bg-white focus:outline-none focus:border-primary transition-all cursor-pointer"
+             >
+               <option value="dofollow">Do-follow</option>
+               <option value="nofollow">No-follow</option>
+             </select>
              <div className="w-px h-4 bg-slate-100" />
              <div className="flex items-center gap-1">
-                <button onClick={setLink} className="h-7 px-4 rounded-md text-[10px] font-bold bg-primary text-white shadow-sm hover:bg-primary/90 transition-all active:scale-95">Link it</button>
+                <button onClick={setLink} className="h-7 px-4 rounded-md text-[10px] font-bold bg-primary text-white shadow-sm hover:bg-primary/90 transition-all active:scale-95">Apply</button>
                 <button onClick={() => setShowLinkInput(false)} className="h-7 px-2 rounded-md text-[10px] font-semibold text-slate-400 hover:text-slate-600 transition-colors">Cancel</button>
              </div>
            </div>
         </div>
       )}
       
-      <div className="bg-white min-h-[300px] relative">
+      <div className="bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative">
          <EditorContent editor={editor} />
       </div>
       
@@ -340,6 +467,10 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
            margin-top: 1.25rem;
            margin-bottom: 0.5rem;
         }
+        .prose h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-top: 1rem; }
+        .prose h4 { font-size: 1rem; font-weight: 700; color: #1e293b; margin-top: 0.75rem; }
+        .prose h5 { font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-top: 0.5rem; }
+        .prose h6 { font-size: 0.8rem; font-weight: 700; color: #1e293b; margin-top: 0.5rem; }
         .prose ul, .prose ol {
           padding-left: 1.5rem;
           margin: 1rem 0;

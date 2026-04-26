@@ -1,6 +1,8 @@
 // src/services/api/client.ts
 import axios from "axios";
 import { BASE_URL, IMAGE_BASE_URL } from "@/services/api/config";
+import { toast } from "sonner";
+import { clearAuthCookies } from "@/lib/api";
 
 // -----------------------------
 // Utility: Normalize Media URL
@@ -62,6 +64,30 @@ export const api = axios.create({
         "Content-Type": "application/json",
     },
 });
+
+// Global 401 Interceptor for session expiry
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error?.response?.status;
+        if (typeof window !== "undefined" && status === 401) {
+            if (!(window as any)._isSessionExpiredHandled) {
+                (window as any)._isSessionExpiredHandled = true;
+
+                toast.error("Session expired. Please login again");
+
+                // 2. Clear frontend state (if any)
+                clearAuthCookies();
+
+                setTimeout(() => {
+                    const currentPath = window.location.pathname;
+                    window.location.href = `/auth/login?session_expired=1&redirect=${encodeURIComponent(currentPath)}`;
+                }, 800);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Axios instance for Sanctum auth endpoints without /api prefix (/auth/*)
 export const authApi = axios.create({
@@ -127,18 +153,7 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
             data: error?.response?.data,
         };
 
-        if (status === 401) {
-            if (typeof window !== "undefined") {
-              // We use a custom event or just direct redirect to avoid multiple toasts
-              // if multiple requests fail at once.
-              if (!(window as any)._isRedirectingToLogin) {
-                  (window as any)._isRedirectingToLogin = true;
-                  // Use a small delay to allow toast to be visible if we were using a toast here
-                  // but we can also just redirect and handle toast in login page or via URL param
-                  window.location.href = "/auth/login?session_expired=1";
-              }
-            }
-        }
+        // 401 Handling is now centralized in the axios interceptor above
 
         if (!silentCodes.includes(finalError?.status)) {
             //console.error("fetchAPI error:", finalError);

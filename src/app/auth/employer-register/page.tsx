@@ -23,6 +23,7 @@ export default function EmployerRegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const hasMinLength = password.length >= 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -260,12 +261,27 @@ export default function EmployerRegisterPage() {
               </div>
             </div>
 
+            <div className="flex items-start gap-2 py-1 mt-2">
+              <input
+                type="checkbox"
+                id="terms_employer"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-3.5 w-3.5 rounded border-slate-300 text-secondary focus:ring-secondary"
+              />
+              <label htmlFor="terms_employer" className="text-[11px] text-slate-500 font-medium leading-tight">
+                I agree to the{" "}
+                <a href="#" className="font-bold text-secondary hover:underline">Terms of Service</a> and{" "}
+                <a href="#" className="font-bold text-secondary hover:underline">Privacy Policy</a>.
+              </label>
+            </div>
+
             <CaptchaField ref={captchaRef} onChange={setCaptchaToken} className="mt-2" />
 
             <button
               type="submit"
-              disabled={authLoading}
-              className="w-full h-12 bg-secondary hover:bg-[#209c8d] text-white font-bold rounded-xl shadow-lg shadow-secondary/20 transition-all disabled:opacity-50 mt-4 active:scale-[0.98]"
+              disabled={authLoading || !acceptedTerms}
+              className="w-full h-12 bg-secondary hover:bg-[#209c8d] text-white font-bold rounded-xl shadow-lg shadow-secondary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 active:scale-[0.98]"
               suppressHydrationWarning={true}
             >
               {authLoading ? "Creating Account..." : "Create Employer Account"}

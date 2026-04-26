@@ -12,7 +12,8 @@ import {
   Eye,
   Plus,
   Target,
-  HelpCircle
+  HelpCircle,
+
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -65,6 +66,7 @@ export default function PostJobClient({
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isRewriting, setIsRewriting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
@@ -85,6 +87,7 @@ export default function PostJobClient({
     meta_description: job?.meta_description || "",
     meta_keywords: job?.meta_keywords || "",
     keywords: job?.keywords || "",
+    keyword: job?.keyword || "",
   });
 
   const [description, setDescription] = useState(job?.description || "");
@@ -105,6 +108,48 @@ export default function PostJobClient({
 
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleRewriteJD = async () => {
+    if (!description || description.replace(/<[^>]*>/g, '').trim().length < 10) {
+      toast.warning("Please provide some content first to rewrite.", {
+        style: {
+          background: '#FFFAF0',
+          color: '#744210',
+          border: '1px solid #FBD38D',
+          fontWeight: '600',
+          fontSize: '13px'
+        }
+      });
+      return;
+    }
+
+    setIsRewriting(true);
+    try {
+      const result = await dashboardServerFetch("employer/jd-rewrite", {
+        method: "POST",
+        data: { jd_content: description }
+      });
+
+      if (result.status && result.jd_content) {
+        setDescription(result.jd_content);
+        toast.success("Job description optimized by AI!", {
+          style: {
+            background: '#F0FFF4',
+            color: '#22543D',
+            border: '1px solid #9AE6B4',
+            fontWeight: '600',
+            fontSize: '13px'
+          }
+        });
+      } else {
+        toast.error(result.message || "Failed to rewrite JD.");
+      }
+    } catch (error) {
+      toast.error("An error occurred during JD rewrite.");
+    } finally {
+      setIsRewriting(false);
+    }
   };
 
   const steps = [
@@ -154,8 +199,14 @@ export default function PostJobClient({
     const errorKeys = Object.keys(stepErrors);
     
     if (errorKeys.length > 0) {
-      toast.error(stepErrors[errorKeys[0]], {
-        style: { borderLeft: '4px solid #ef4444' },
+      toast.warning(stepErrors[errorKeys[0]], {
+        style: {
+          background: '#FFFAF0',
+          color: '#744210',
+          border: '1px solid #FBD38D',
+          fontWeight: '600',
+          fontSize: '13px'
+        },
         duration: 3000
       });
       return;
@@ -172,8 +223,14 @@ export default function PostJobClient({
     const errorKeys = Object.keys(stepErrors);
     
     if (errorKeys.length > 0) {
-      toast.error(stepErrors[errorKeys[0]], {
-        style: { borderLeft: '4px solid #ef4444' },
+      toast.warning(stepErrors[errorKeys[0]], {
+        style: {
+          background: '#FFFAF0',
+          color: '#744210',
+          border: '1px solid #FBD38D',
+          fontWeight: '600',
+          fontSize: '13px'
+        },
         duration: 3000
       });
       return;
@@ -208,14 +265,38 @@ export default function PostJobClient({
       console.log("[PostJobClient] Submission Result:", result);
       
       if (result.status) {
-        toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"));
+        toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"), {
+          style: {
+            background: '#F0FFF4',
+            color: '#22543D',
+            border: '1px solid #9AE6B4',
+            fontWeight: '600',
+            fontSize: '13px'
+          }
+        });
         setTimeout(() => { window.location.href = `${basePath}/jobs`; }, 1200);
       } else {
-        toast.error(result.message || "Failed.");
+        toast.error(result.message || "Failed.", {
+          style: {
+            background: '#FFF5F5',
+            color: '#C53030',
+            border: '1px solid #FEB2B2',
+            fontWeight: '600',
+            fontSize: '13px'
+          }
+        });
       }
     } catch (e: any) {
       console.error("[PostJobClient] Submission error:", e);
-      toast.error("Error occurred during submission.");
+      toast.error("Error occurred during submission.", {
+        style: {
+          background: '#FFF5F5',
+          color: '#C53030',
+          border: '1px solid #FEB2B2',
+          fontWeight: '600',
+          fontSize: '13px'
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -246,7 +327,15 @@ export default function PostJobClient({
                   if (step.id > currentStep) {
                     const currentError = validateStep(currentStep);
                     if (Object.keys(currentError).length > 0) {
-                      toast.error(Object.values(currentError)[0] as string, { style: { borderLeft: "4px solid #ef4444" } });
+                      toast.warning(Object.values(currentError)[0] as string, { 
+                        style: {
+                          background: '#FFFAF0',
+                          color: '#744210',
+                          border: '1px solid #FBD38D',
+                          fontWeight: '600',
+                          fontSize: '13px'
+                        } 
+                      });
                       return;
                     }
                   }
@@ -397,13 +486,36 @@ export default function PostJobClient({
                   <option value="female">Female</option>
                 </select>
               </div>
+              <div className="md:col-span-2 space-y-1.5">
+                <Label className="text-[11px] font-bold px-1 text-slate-700">
+                  Keywords <span className="text-slate-400 font-normal ml-1">(comma separated)</span>
+                </Label>
+                <Input 
+                  value={formData.keyword} 
+                  onChange={(e) => updateField("keyword", e.target.value)} 
+                  placeholder="e.g. physics, optics, laser" 
+                  className="h-10 rounded-xl text-xs bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all" 
+                />
+                {/* <p className="text-[9px] text-slate-400 px-1">Helps candidates find your job through specific technical terms.</p> */}
+              </div>
             </div>
           </div>
         )}
 
         {currentStep === 2 && (
           <div className="space-y-4 animate-in fade-in duration-300 overflow-hidden">
-            <h2 className="text-sm font-bold text-[#1E1B4B]">Job Description</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[#1E1B4B]">Job Description</h2>
+              <Button
+                type="button"
+                onClick={handleRewriteJD}
+                disabled={isRewriting}
+                className="h-8 px-5 rounded-lg text-[10px] font-bold bg-[#312E81] hover:bg-[#1E1B4B] text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+              >
+                {isRewriting && <Loader2 className="w-3 h-3 animate-spin" />}
+                {isRewriting ? "AI is rewriting..." : "Optimize JD with AI"}
+              </Button>
+            </div>
             <div className="min-h-[250px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-100 transition-all">
               <TipTapEditor value={description} onChange={setDescription} minimal={true} />
             </div>

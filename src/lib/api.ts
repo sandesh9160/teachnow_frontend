@@ -146,24 +146,52 @@ GLOBAL 401 HANDLER
 ===================================================== */
 import { toast } from "sonner";
 
-// let sessionToastShown = false;
-let sessionExpired = false;
+/**
+ * Client-side utility to clear all auth-related cookies.
+ * This is used when a session expires to ensure the frontend state is wiped.
+ */
+export const clearAuthCookies = () => {
+    if (typeof window === "undefined") return;
+    
+    const cookiesToClear = [
+        "userData", 
+        "laravel_session", 
+        "laravel-session", 
+        "fmg-session", 
+        "XSRF-TOKEN", 
+        "authSession", 
+        "authToken"
+    ];
+    
+    cookiesToClear.forEach(name => {
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+        // Also attempt to clear with the current domain to handle host-only duplicates
+        document.cookie = `${name}=; path=/; domain=${window.location.hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    });
+};
+
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error?.response?.status;
 
+        // Handle 401 Unauthenticated
         if (typeof window !== "undefined" && status === 401) {
-            if (!sessionExpired) {
-                sessionExpired = true;
+            if (!(window as any)._isSessionExpiredHandled) {
+                (window as any)._isSessionExpiredHandled = true;
 
-                toast.error("Session expired. Please log in again.");
+                // 1. Show toast
+                toast.error("Session expired. Please login again");
 
-                // Redirect after toast
+                // 2. Clear frontend state (if any)
+                clearAuthCookies();
+                
+                // 3. Redirect to login after a small delay
                 setTimeout(() => {
-                    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-                    window.location.replace(`/auth/login?message=Session expired. Please log in again.&callbackUrl=${encodeURIComponent(currentPath)}`);
-                }, 1500);
+                    const currentPath = window.location.pathname;
+                    const loginUrl = `/auth/login?session_expired=1&redirect=${encodeURIComponent(currentPath)}`;
+                    window.location.href = loginUrl;
+                }, 800);
             }
         }
 
@@ -171,7 +199,7 @@ api.interceptors.response.use(
         if (error.response?.data?.message) {
             error.message = error.response.data.message;
         } else if (status === 401) {
-            error.message = "Session expired. Please log in again.";
+            error.message = "Session expired. Please login again";
         }
 
         return Promise.reject(error);

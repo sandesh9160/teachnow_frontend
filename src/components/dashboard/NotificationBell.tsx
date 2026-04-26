@@ -10,11 +10,12 @@ import type { DashboardRole } from "@/types/session";
 export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole }) {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications(role);
   const roleSlug = role === "job_seeker" ? "jobseeker" : role;
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
+    setIsHydrated(true);
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -28,6 +29,7 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        suppressHydrationWarning
         className="relative p-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl transition-all duration-300 group"
       >
         <Bell className="w-5 h-5 group-hover:scale-105 transition-transform" />
@@ -101,7 +103,7 @@ export function NotificationBell({ role = "job_seeker" }: { role?: DashboardRole
                         {notification.title}
                       </span>
                       <span className="text-[8px] font-bold text-slate-500 whitespace-nowrap">
-                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                        {isHydrated ? formatDistanceToNow(new Date(notification.created_at), { addSuffix: true }) : 'Just now'}
                       </span>
                     </div>
                     <p className={`text-[10px] leading-snug line-clamp-2 ${

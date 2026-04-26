@@ -41,6 +41,7 @@ export function DashboardHeader({
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuToggle}
+          suppressHydrationWarning
           className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg md:hidden transition-colors"
         >
           <Menu className="w-5 h-5" />
@@ -78,6 +79,7 @@ export function DashboardHeader({
         <div className="relative" ref={menuRef}>
           <button 
             onClick={() => setShowProfileMenu(!showProfileMenu)}
+            suppressHydrationWarning
             className="w-9 h-9 rounded-full overflow-hidden bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center font-bold text-[14px] border border-blue-50 hover:ring-2 hover:ring-blue-100 transition-all shadow-sm"
           >
             {user?.avatar ? (
