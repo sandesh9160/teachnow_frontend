@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { clearAuthCookies } from "@/lib/api";
 import { useClientSession } from "@/hooks/useClientSession";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 
 /**
  * SessionTimeoutHandler - Monitors user inactivity and automatically logs out.
@@ -25,7 +25,7 @@ export default function SessionTimeoutHandler() {
       clearAuthCookies();
       
       // 2. Redirect to login with reason
-      const loginUrl = `/auth/login?session_expired=1&redirect=${encodeURIComponent(pathname)}`;
+      const loginUrl = `/auth/login?session_expired=1&redirect=${encodeURIComponent(pathname || "/")}`;
       window.location.href = loginUrl;
     }
   }, [isLoggedIn, pathname]);

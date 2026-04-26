@@ -164,9 +164,21 @@ export const clearAuthCookies = () => {
     ];
     
     cookiesToClear.forEach(name => {
+        // 1. Clear for current hostname
         document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
-        // Also attempt to clear with the current domain to handle host-only duplicates
-        document.cookie = `${name}=; path=/; domain=${window.location.hostname}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+        
+        // 2. Clear for current domain (with dot and without)
+        const host = window.location.hostname;
+        document.cookie = `${name}=; path=/; domain=${host}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+        document.cookie = `${name}=; path=/; domain=.${host}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+        
+        // 3. Clear for parent domain if applicable (e.g., jobsvedika.in for app.jobsvedika.in)
+        const parts = host.split('.');
+        if (parts.length > 2) {
+            const baseDomain = parts.slice(-2).join('.');
+            document.cookie = `${name}=; path=/; domain=${baseDomain}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+            document.cookie = `${name}=; path=/; domain=.${baseDomain}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+        }
     });
 };
 
