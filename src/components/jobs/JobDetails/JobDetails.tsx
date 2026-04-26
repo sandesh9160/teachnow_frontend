@@ -401,19 +401,19 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             {similarJobs.length > 0 && (
               <section className="pt-6 sm:pt-10">
                 <h2 className="text-xl sm:text-2xl font-bold text-[#111827] mb-6 sm:mb-8">Similar Jobs</h2>
-                <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
                   {similarJobs.slice(0, 3).map((sJob) => {
                     const sLogo = sJob.employer?.company_logo;
                     const sName = sJob.employer?.company_name || "Confidential";
-                    const sFallback = (sName[0] || sJob.title[0]).toUpperCase();
+                    const sFallback = (sName[0] || sJob.title[0] || "J").toUpperCase();
                     
                     return (
                       <Link
                         key={sJob.id}
                         href={`/${sanitizeSlug(sJob.slug || String(sJob.id))}`}
-                        className="group flex flex-col rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm hover:shadow-xl transition-all"
+                        className="group flex flex-col w-full min-w-0 rounded-xl border border-slate-200/80 bg-white p-3 sm:p-4 shadow-sm hover:shadow-xl transition-all"
                       >
-                        <div className="flex items-start gap-3 mb-4">
+                        <div className="flex items-start gap-3 mb-3 sm:mb-4">
                           <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-[#ecf2ff] flex items-center justify-center text-primary font-bold text-base sm:text-lg shrink-0 border border-[#dbeafe] overflow-hidden">
                             {sLogo ? (
                               <img src={normalizeMediaUrl(sLogo)} alt={sName} className="h-full w-full object-contain" />
@@ -421,16 +421,16 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                               <span>{sFallback}</span>
                             )}
                           </div>
-                          <div className="min-w-0">
+                          <div className="flex-1 min-w-0">
                             <h3 className="text-[13px] sm:text-[14px] font-bold text-[#111827] group-hover:text-[#2e3fc7] transition-colors truncate">{sJob.title}</h3>
                             <p className="text-[11px] sm:text-[12px] font-medium text-slate-500 truncate">{sName}</p>
                           </div>
                         </div>
-                        <div className="mt-auto space-y-2.5 sm:space-y-3">
-                          <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-400">
-                            <MapPin className="h-3 w-3" /> {sJob.location}
+                        <div className="mt-auto space-y-2 sm:space-y-3">
+                          <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 truncate">
+                            <MapPin className="h-3 w-3 shrink-0" /> {sJob.location}
                           </div>
-                          <div className="text-[13px] sm:text-[14px] font-bold text-[#2e3fc7]">
+                          <div className="text-[13px] sm:text-[14px] font-bold text-[#2e3fc7] break-words leading-tight">
                             {formatSalaryRange(sJob)}
                           </div>
                         </div>
