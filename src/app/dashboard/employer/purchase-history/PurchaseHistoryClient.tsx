@@ -11,12 +11,15 @@ import {
   Calendar,
   Clock,
   ArrowUpRight,
-  Star
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { fetchAPI } from "@/services/api/client";
 import { useRazorpay } from "@/hooks/useRazorpay";
+
+// import { toast } from "sonner";
+import Link from "next/link";
 
 interface Plan {
   id: number;
@@ -262,21 +265,6 @@ export default function PurchaseHistoryClient() {
 
         {sub && (
           <div>
-            {/* <div className="space-y-0.5 min-w-0">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Credits</p>
-              <p className="text-sm sm:text-lg font-semibold text-[#00359E] truncate">{sub.job_posts_total - sub.job_posts_used} <span className="text-[10px] sm:text-xs font-medium text-slate-400">/ {sub.job_posts_total}</span></p>
-            </div> */}
-            <div>
-              {/* <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Status</p>
-              <div className="flex items-center gap-1 min-w-0">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <p className="text-[11px] sm:text-sm font-semibold text-emerald-600 capitalize truncate">{sub.status}</p>
-              </div> */}
-            </div>
-            {/* <div className="space-y-0.5 border-l border-slate-100 pl-3 sm:pl-4 min-w-0">
-              <p className="text-[9px] sm:text-[10px] font-semibold text-slate-400 tracking-wider truncate">Expires</p>
-              <p className="text-[11px] sm:text-sm font-semibold text-slate-800 truncate">{formatDate(sub.expires_at)}</p>
-            </div> */}
           </div>
         )}
       </div>
@@ -406,9 +394,9 @@ export default function PurchaseHistoryClient() {
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-100">
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Plan Details</th>
-                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Usage (Jobs/Featured)</th>
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Usage Summary</th>
                     <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider">Duration</th>
-                    {/* <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Status</th> */}
+                    <th className="px-5 py-4 text-[11px] font-semibold text-slate-500 tracking-wider text-center">Usage Details</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -440,19 +428,19 @@ export default function PurchaseHistoryClient() {
                           <p className="text-[11px] text-slate-400 font-medium tracking-tight">Period</p>
                         </div>
                       </td>
-                      {/* <td className="px-5 py-4 text-center">
-                        <span className={cn(
-                          "px-3 py-1 rounded-full text-[11px] font-semibold inline-flex items-center gap-1.5",
-                          (item.status === 'active' || item.is_active) ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
-                        )}>
-                          <div className={cn("w-1.5 h-1.5 rounded-full", (item.status === 'active' || item.is_active) ? "bg-emerald-500" : "bg-slate-400")} />
-                          {item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : (item.is_active ? "Active" : "Inactive")}
-                        </span>
-                      </td> */}
+                      <td className="px-5 py-4 text-center">
+                        <Link href={`/dashboard/employer/subscriptions/${item.id}/usage`}>
+                          <button
+                            className="h-8 px-6 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px] mx-auto transition-all"
+                          >
+                            View
+                          </button>
+                        </Link>
+                      </td>
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={3} className="py-12 text-center opacity-40">
+                      <td colSpan={4} className="py-12 text-center opacity-40">
                         <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                         <p className="text-sm font-semibold text-slate-400">No subscriptions found</p>
                       </td>
@@ -468,12 +456,6 @@ export default function PurchaseHistoryClient() {
                 <div key={item.id} className="p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-[14px] font-semibold text-slate-900">{item.plan_name}</h4>
-                    {/* <span className={cn(
-                         "px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                         (item.status === 'active' || item.is_active) ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
-                       )}>
-                         {item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : (item.is_active ? "Active" : "Inactive")}
-                       </span> */}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
@@ -485,10 +467,19 @@ export default function PurchaseHistoryClient() {
                       <p className="text-[12px] font-bold text-slate-800">{item.featured_jobs_used} / {item.featured_jobs_total}</p>
                     </div>
                   </div>
-                  <div className="pt-3 border-t border-slate-50 flex items-center justify-between text-[11px] text-slate-500 uppercase font-bold tracking-tight">
-                    <span>{formatDate(item.starts_at)}</span>
-                    <span className="text-slate-300 text-[18px]">→</span>
-                    <span>{formatDate(item.expires_at)}</span>
+                  <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
+                    <div className="text-[11px] text-slate-500 uppercase font-bold tracking-tight flex items-center gap-2">
+                      <span>{formatDate(item.starts_at)}</span>
+                      <span className="text-slate-300 text-[18px]">→</span>
+                      <span>{formatDate(item.expires_at)}</span>
+                    </div>
+                    <Link href={`/dashboard/employer/subscriptions/${item.id}/usage`}>
+                      <button
+                        className="h-6 px-4 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px] transition-all"
+                      >
+                        View
+                      </button>
+                    </Link>
                   </div>
                 </div>
               )) : (

@@ -13,7 +13,6 @@ import {
   Plus,
   Target,
   HelpCircle,
-
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -67,6 +66,7 @@ export default function PostJobClient({
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
@@ -111,8 +111,9 @@ export default function PostJobClient({
   };
   
   const handleRewriteJD = async () => {
-    if (!description || description.replace(/<[^>]*>/g, '').trim().length < 10) {
-      toast.warning("Please provide some content first to rewrite.", {
+    // Check if we have at least a title if description is empty
+    if ((!description || description.replace(/<[^>]*>/g, '').trim().length < 10) && !formData.title?.toString().trim()) {
+      toast.warning("Please provide a Job Title first so AI can generate a description.", {
         style: {
           background: '#FFFAF0',
           color: '#744210',
@@ -125,6 +126,8 @@ export default function PostJobClient({
     }
 
     setIsRewriting(true);
+    const toastId = toast.loading(description ? "Optimizing with AI..." : "Generating with AI...");
+    
     try {
       // Use the appropriate endpoint based on userRole
       const endpoint = `${userRole}/jd-rewrite`;
@@ -134,14 +137,19 @@ export default function PostJobClient({
         data: { 
           data: {
             ...formData,
-            description: description 
+            description: description || "" 
           }
         }
       });
 
       if (result.status && result.output?.job_description) {
+        // Immediate update of description state
         setDescription(result.output.job_description);
-        toast.success("Job description optimized by AI!", {
+        // Increment key to force TipTapEditor to re-initialize with new content immediately
+        setEditorKey(prev => prev + 1);
+        
+        toast.dismiss(toastId);
+        toast.success(description ? "Job description optimized!" : "Job description generated!", {
           style: {
             background: '#F0FFF4',
             color: '#22543D',
@@ -151,10 +159,12 @@ export default function PostJobClient({
           }
         });
       } else {
-        toast.error(result.message || "Failed to rewrite JD.");
+        toast.dismiss(toastId);
+        toast.error(result.message || "Failed to process JD.");
       }
     } catch (error) {
-      toast.error("An error occurred during JD rewrite.");
+      toast.dismiss(toastId);
+      toast.error("An error occurred during AI processing.");
     } finally {
       setIsRewriting(false);
     }
@@ -521,11 +531,11 @@ export default function PostJobClient({
                 className="h-8 px-5 rounded-lg text-[10px] font-bold bg-[#312E81] hover:bg-[#1E1B4B] text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
               >
                 {isRewriting && <Loader2 className="w-3 h-3 animate-spin" />}
-                {isRewriting ? "AI is rewriting..." : "Optimize JD with AI"}
+                {isRewriting ? "AI is rewriting..." : "Rewrite JD with AI"}
               </Button>
             </div>
             <div className="min-h-[250px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-100 transition-all">
-              <TipTapEditor value={description} onChange={setDescription} minimal={true} />
+              <TipTapEditor key={editorKey} value={description} onChange={setDescription} minimal={true} />
             </div>
           </div>
         )}

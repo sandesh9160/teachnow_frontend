@@ -9,19 +9,16 @@ import {
    Zap,
    CreditCard,
    Check,
-   // Building2,
-   // MapPin,
-   // Globe,
    Loader2,
    RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { useState } from "react";
 import { toast } from "sonner";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import { useState } from "react";
+import Image from "next/image";
 
 interface LatestJob {
    id: number;
@@ -31,6 +28,9 @@ interface LatestJob {
    expires_at: string;
    total_applications_count?: number;
    location?: string;
+   company_logo?: string | null;
+   employer_logo?: string | null;
+   logo?: string | null;
 }
 
 interface LatestApplication {
@@ -85,6 +85,7 @@ interface RecruiterInfo {
 }
 
 interface SubscriptionHistoryItem {
+   id: number;
    plan_name: string;
    purchase_date: string;
    starts_at: string;
@@ -217,7 +218,6 @@ export default function EmployerDashboardClient({
          const res = await dashboardServerFetch<{ status: boolean, message?: string }>(`employer/${employerId}/toggle-feature`, {
             method: "POST"
          });
-         console.log("Toggle Feature Response:", res);
          if (res.status === true) {
             setIsFeatured(!isFeatured);
             toast.success(res.message || "Featured status updated");
@@ -319,66 +319,74 @@ export default function EmployerDashboardClient({
 
          {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <div className="bg-white rounded-[24px] p-4 sm:p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col gap-4 group">
-               <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
-               <div className="relative z-10 flex gap-3 items-center shrink-0">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
-                     <CreditCard className="w-6 h-6" />
+            <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group max-w-6xl">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
+
+               <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6 flex-1">
+                  {/* Left: Plan Info */}
+                  <div className="flex gap-3 items-center shrink-0">
+                     <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                     </div>
+                     <div>
+                        <div className="flex items-center gap-2">
+                           <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">Current Plan</span>
+                           <h2 className="text-lg font-bold text-black leading-none">{sub.plan_name}</h2>
+                        </div>
+                        <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-1">
+                           <Clock className="w-3 h-3 text-amber-500" /> Renewal: {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                     </div>
                   </div>
-                  <div>
-                     <p className="text-[10px] font-semibold text-slate-400 capitalize mb-0.5">Current membership</p>
-                     <h2 className="text-xl font-semibold text-black">{sub.plan_name}</h2>
-                     <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        <Clock className="w-3 h-3 text-amber-500" /> Renewal: {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                     </p>
+
+                  <div className="h-10 w-px bg-slate-100 hidden lg:block" />
+
+                  {/* Middle: Credits Grid (Allocation & Balance) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 lg:max-w-2xl">
+                     {/* Active Allocation Box */}
+                     <div className="bg-slate-50/50 border border-slate-100/50 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
+                        <div className="flex items-center justify-between mb-2">
+                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Allocation</span>
+                           <div className="flex items-center gap-1 px-1 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
+                              <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="text-[7px] font-bold text-emerald-600 uppercase">Live</span>
+                           </div>
+                        </div>
+                        <div className="flex justify-between items-end">
+                           <div>
+                              <span className="text-[10px] font-medium text-slate-500 block">Job posts</span>
+                              <p className="text-lg font-bold text-slate-900 leading-none">{jobTotal}</p>
+                           </div>
+                           <div className="text-right">
+                              <span className="text-[10px] font-medium text-slate-500 block">Featured</span>
+                              <p className="text-lg font-bold text-slate-900 leading-none">{featTotal}</p>
+                           </div>
+                        </div>
+                     </div>
+
+                     {/* Remaining Balance Box */}
+                     <div className="bg-indigo-50/30 border border-indigo-100/30 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
+                        <div className="flex items-center justify-between mb-2">
+                           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Remaining Balance</span>
+                           <span className="text-[7px] font-bold text-indigo-600 uppercase bg-indigo-100/50 px-1 py-0.5 rounded">Available</span>
+                        </div>
+                        <div className="flex justify-between items-end">
+                           <div>
+                              <span className="text-[10px] font-medium text-indigo-400 block">Job posts</span>
+                              <p className="text-lg font-bold text-indigo-600 leading-none">{jobRemaining}</p>
+                           </div>
+                           <div className="text-right">
+                              <span className="text-[10px] font-medium text-indigo-400 block">Featured</span>
+                              <p className="text-lg font-bold text-indigo-600 leading-none">{featRemaining}</p>
+                           </div>
+                        </div>
+                     </div>
                   </div>
                </div>
 
-               <div className="relative z-10 flex flex-col sm:flex-row items-stretch gap-3">
-                  {/* Active Allocation Box */}
-                  <div className="flex-1 bg-slate-50/50 border border-slate-100/50 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
-                     <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Active Credits</span>
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
-                           <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                           <span className="text-[8px] font-bold text-emerald-600 uppercase">Live</span>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-slate-500 capitalize">Job posts</span>
-                           <p className="text-xl font-bold text-slate-900">{jobTotal}</p>
-                        </div>
-                        <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-slate-500 capitalize">Featured</span>
-                           <p className="text-xl font-bold text-slate-900">{featTotal}</p>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Remaining Balance Box */}
-                  <div className="flex-1 bg-indigo-50/30 border border-indigo-100/30 rounded-2xl p-4 transition-all hover:bg-indigo-50/50 group/remaining">
-                     <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100/50 rounded-full border border-indigo-200/50">
-                           <span className="text-[8px] font-bold text-indigo-600 uppercase tracking-tight">Available</span>
-                        </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-indigo-400 capitalize">Job posts</span>
-                           <p className="text-xl font-bold text-indigo-600">{jobRemaining}</p>
-                        </div>
-                        <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-indigo-400 capitalize">Featured</span>
-                           <p className="text-xl font-bold text-indigo-600">{featRemaining}</p>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               <Link href="/dashboard/employer/purchase-history" className="relative z-10">
-                  <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap">
+               {/* Right: Upgrade Plan Button */}
+               <Link href="/dashboard/employer/purchase-history" className="relative z-10 shrink-0 self-end lg:self-center">
+                  <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-bold shadow-sm transition-all active:scale-95 whitespace-nowrap">
                      Upgrade Plan
                   </Button>
                </Link>
@@ -404,8 +412,6 @@ export default function EmployerDashboardClient({
                </div>
             ))}
          </div>
-
-
 
          {/* Promotion Hub - Full Width Sophisticated Design with Toggle */}
          <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group p-6">
@@ -496,8 +502,8 @@ export default function EmployerDashboardClient({
 
                <div className="divide-y divide-slate-50">
                   {dashboardData?.latest_applications && dashboardData.latest_applications.length > 0 ? (
-                     dashboardData.latest_applications.slice(0, 5).map((app) => (
-                        <div key={app.id} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                     dashboardData.latest_applications.slice(0, 5).map((app, idx) => (
+                        <div key={`${app.id}-${idx}`} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
                            <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
                               <ApplicationAvatar
                                  src={app.job_seeker.profile_photo}
@@ -519,7 +525,7 @@ export default function EmployerDashboardClient({
                               <span className="text-[10px] text-black opacity-40 hidden sm:block">
                                  {new Date(app.created_at).toLocaleDateString('en-GB')}
                               </span>
-                              <Button variant="outline" size="sm" className={cn("h-7 px-3 rounded-md border text-[10px] font-semibold capitalize", getStatusStyles(app.status))}>
+                              <Button variant="outline" size="sm" className={cn("h-6 px-2.5 rounded-md border text-[10px] font-medium capitalize", getStatusStyles(app.status))}>
                                  {app.status}
                               </Button>
                            </div>
@@ -542,20 +548,28 @@ export default function EmployerDashboardClient({
 
                <div className="divide-y divide-slate-50">
                   {dashboardData?.latest_jobs && dashboardData.latest_jobs.length > 0 ? (
-                     dashboardData.latest_jobs.slice(0, 5).map((job) => (
-                        <div key={job.id} className="px-4 py-3 flex flex-col gap-2 hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                           <div className="flex items-start gap-2">
-                              <h4 className="text-[13px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors flex-1 min-w-0 line-clamp-1">
-                                 {job.title}
-                              </h4>
-                              <span className={cn(
-                                 "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
-                                 (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
-                              )}>
-                                 {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
-                              </span>
+                     dashboardData.latest_jobs.slice(0, 5).map((job, idx) => (
+                        <div key={`${job.id}-${idx}`} className="px-4 py-3 flex gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                           <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
+                              <ApplicationAvatar
+                                 src={job.company_logo || job.employer_logo || job.logo || null}
+                                 alt={job.title}
+                                 initials={job.title?.charAt(0)}
+                              />
                            </div>
-                           <div className="flex items-center justify-between gap-2 flex-wrap">
+                           <div className="flex-1 min-w-0">
+                              <div className="flex items-start gap-2">
+                                 <h4 className="text-[13px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors flex-1 min-w-0 line-clamp-1">
+                                    {job.title}
+                                 </h4>
+                                 <span className={cn(
+                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
+                                    (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
+                                 )}>
+                                    {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
+                                 </span>
+                              </div>
+                              <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
                               <span className="flex items-center gap-1 text-[10px] text-slate-400"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
                               <div className="flex items-center gap-2">
                                  {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
@@ -571,8 +585,8 @@ export default function EmployerDashboardClient({
                                  )}
                                  {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                                     <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                                       <Button size="sm" className="h-7 px-3 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-semibold text-[10px] flex items-center gap-1.5">
-                                          <Users className="w-3.5 h-3.5" />
+                                       <Button size="sm" className="h-6 px-2.5 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-medium text-[10px] flex items-center gap-1.5">
+                                          <Users className="w-3 h-3" />
                                           <span className="hidden xs:inline">Applicants</span>
                                           {job.total_applications_count !== undefined && (
                                              <span className="bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
@@ -583,11 +597,12 @@ export default function EmployerDashboardClient({
                                     </Link>
                                  )}
                                  <Link href={`${basePath}/jobs/view/${job.id}`}>
-                                    <Button size="sm" className="h-7 px-3 rounded-md bg-white border border-slate-200 text-[#1E1B4B] hover:bg-slate-50 font-semibold text-[10px]">View</Button>
+                                    <Button size="sm" className="h-6 px-2.5 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px]">View</Button>
                                  </Link>
                               </div>
                            </div>
                         </div>
+                     </div>
                      ))
                   ) : (
                      <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
@@ -598,6 +613,7 @@ export default function EmployerDashboardClient({
                </div>
             </div>
          </div>
+
          {/* Management Intelligence: Team & Subscriptions Side-by-Side */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
             {/* Hiring Team Table */}
@@ -613,8 +629,8 @@ export default function EmployerDashboardClient({
                </div>
                <div className="divide-y divide-slate-50">
                   {dashboardData?.recruiters?.data && dashboardData.recruiters.data.length > 0 ? (
-                     dashboardData.recruiters.data.map((recruiter) => (
-                        <div key={recruiter.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                     dashboardData.recruiters.data.map((recruiter, idx) => (
+                        <div key={`${recruiter.id}-${idx}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
                            <div className="flex-1 min-w-0">
                               <p className="text-[13px] font-bold text-slate-900 truncate">{recruiter.name}</p>
                               <p className="text-[11px] text-slate-500 font-medium truncate">{recruiter.email}</p>
@@ -648,7 +664,7 @@ export default function EmployerDashboardClient({
                      <h2 className="text-[14px] font-semibold text-black">Subscription Timeline</h2>
                   </div>
                   {dashboardData?.credits_summary?.active_subscriptions_count && dashboardData.credits_summary.active_subscriptions_count > 1 && (
-                     <span className="text-[10px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full animate-pulse">
+                     <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full animate-pulse">
                         {dashboardData.credits_summary.active_subscriptions_count} Active Packs
                      </span>
                   )}
@@ -656,22 +672,22 @@ export default function EmployerDashboardClient({
                <div className="divide-y divide-slate-50">
                   {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (
                      dashboardData.subscription_history.map((item, idx) => (
-                        <div key={idx} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                        <div key={idx} className="px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
                            <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                 <p className="text-[13px] font-bold text-slate-900">{item.plan_name}</p>
+                                 <p className="text-[13px] font-semibold text-slate-900">{item.plan_name}</p>
                                  {new Date(item.expires_at) < new Date() && (
-                                    <span className="text-[8px] text-rose-500 font-bold uppercase border border-rose-100 px-1 rounded">Exp</span>
+                                    <span className="text-[8px] text-rose-500 font-semibold uppercase border border-rose-100 px-1 rounded">Exp</span>
                                  )}
                               </div>
                               <p className="text-[10px] text-slate-400 font-medium mt-0.5">
                                  {new Date(item.starts_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – {new Date(item.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
                               </p>
                            </div>
-                           <div className="flex items-center gap-3 shrink-0">
+                           <div className="flex items-center gap-3 shrink-0 ml-auto">
                               <p className="text-[10px] text-slate-400">{new Date(item.purchase_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
                               <span className={cn(
-                                 "px-2 py-0.5 rounded-full text-[10px] font-bold capitalize",
+                                 "px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize",
                                  item.status === 'active' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
                               )}>
                                  {item.status}

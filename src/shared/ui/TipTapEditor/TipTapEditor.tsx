@@ -36,7 +36,7 @@ import {
   Video as VideoIcon
 } from "lucide-react";
 import { cn, normalizeMediaUrl } from "@/lib/utils";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { uploadFile } from "@/actions/FileUpload";
 import { Mark, mergeAttributes } from '@tiptap/core';
@@ -163,6 +163,18 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
       },
     },
   });
+
+  // Update editor content if value prop changes externally (e.g. from AI generation)
+  useEffect(() => {
+    if (!editor) return;
+
+    // Only update if the content is actually different to avoid cursor jumping/loops
+    // We trim to avoid issues with trailing newlines
+    const currentHTML = editor.getHTML();
+    if (value !== currentHTML && value !== undefined) {
+      editor.commands.setContent(value, { emitUpdate: false });
+    }
+  }, [value, editor]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
