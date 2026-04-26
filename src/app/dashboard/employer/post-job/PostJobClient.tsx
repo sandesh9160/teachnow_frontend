@@ -126,13 +126,21 @@ export default function PostJobClient({
 
     setIsRewriting(true);
     try {
-      const result = await dashboardServerFetch("employer/jd-rewrite", {
+      // Use the appropriate endpoint based on userRole
+      const endpoint = `${userRole}/jd-rewrite`;
+
+      const result = await dashboardServerFetch(endpoint, {
         method: "POST",
-        data: { jd_content: description }
+        data: { 
+          data: {
+            ...formData,
+            description: description 
+          }
+        }
       });
 
-      if (result.status && result.jd_content) {
-        setDescription(result.jd_content);
+      if (result.status && result.output?.job_description) {
+        setDescription(result.output.job_description);
         toast.success("Job description optimized by AI!", {
           style: {
             background: '#F0FFF4',

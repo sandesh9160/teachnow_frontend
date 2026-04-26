@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/shared/ui/Tooltip/Tooltip";
 import { Toaster } from "@/shared/ui/Toaster/Toaster";
 import { ThemeProvider } from "next-themes";
 import { ReactNode, useState } from "react";
+import SessionTimeoutHandler from "@/components/auth/SessionTimeoutHandler";
 
 export function Providers({ children }: Readonly<{ children: ReactNode }>) {
   const [queryClient] = useState(() => new QueryClient());
@@ -14,6 +15,7 @@ export function Providers({ children }: Readonly<{ children: ReactNode }>) {
     <ThemeProvider attribute="class" defaultTheme="light">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <SessionTimeoutHandler />
           {children}
           <Toaster />
         </TooltipProvider>
