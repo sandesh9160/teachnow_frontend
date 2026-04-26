@@ -21,9 +21,16 @@ export type GeneratedCV = {
   [key: string]: unknown;
 };
 
+export type ResumeLimit = {
+  limit: number;
+  used: number;
+  remaining: number;
+};
+
 export function useCV() {
   const [templates, setTemplates] = useState<CvTemplate[]>([]);
   const [generatedCVs, setGeneratedCVs] = useState<GeneratedCV[]>([]);
+  const [resumeLimit, setResumeLimit] = useState<ResumeLimit | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +43,10 @@ export function useCV() {
       });
       const data = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
       setTemplates(data);
+      
+      if (res?.resume_limit) {
+        setResumeLimit(res.resume_limit);
+      }
     } catch (err: any) {
       setTemplates([]);
       setError(err?.message || "Failed to load CV templates");
@@ -110,6 +121,7 @@ export function useCV() {
   return {
     templates,
     generatedCVs,
+    resumeLimit,
     loading,
     error,
     fetchTemplates,

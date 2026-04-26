@@ -49,7 +49,7 @@ export default function ApplyJobPage() {
   const { isLoggedIn, user, loading: sessionLoading } = useClientSession();
   const { apply } = useApplications();
   const { resumes, fetchResumes, generatedResumes } = useResumes({ enabled: isLoggedIn });
-  const { fetchTemplates, templates: cvTemplates, generateCVWithJob, fetchGeneratedCVs } = useCV();
+  const { fetchTemplates, templates: cvTemplates, generateCVWithJob, fetchGeneratedCVs, resumeLimit } = useCV();
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
 
   useEffect(() => {
@@ -256,6 +256,15 @@ export default function ApplyJobPage() {
 
   const handleGenerateResume = async (templateId: number | string) => {
     if (!job?.id) return;
+
+    // Check resume generation limit
+    if (resumeLimit && resumeLimit.remaining <= 0) {
+      toast.error("Your monthly resume generation credits are completed", {
+        style: { background: '#FDF2F2', border: '1px solid #FECACA', color: '#991B1B' },
+      });
+      return;
+    }
+
     try {
       setIsGenerating(true);
       const res = await generateCVWithJob({
@@ -265,22 +274,27 @@ export default function ApplyJobPage() {
 
 
       if (res?.status) {
-        toast.success("Resume generated with AI!");
+        toast.success("Generation complete! Successfully created Resume.", {
+          style: { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
+        });
         await fetchResumes();
+        await fetchTemplates();
         setShowTemplateOverlay(false);
       }
     } catch (err: any) {
-      toast.error(err?.message || "Generation failed");
+      toast.error(err?.message || "Generation failed", {
+        style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
   useEffect(() => {
-    if (showTemplateOverlay) {
+    if (showTemplateOverlay || resumeTab === 'generated') {
       void fetchTemplates();
     }
-  }, [showTemplateOverlay, fetchTemplates]);
+  }, [showTemplateOverlay, resumeTab, fetchTemplates]);
 
   if (loading || !job) {
     return (
@@ -775,6 +789,59 @@ export default function ApplyJobPage() {
                   {/* Tab Content: AI Generated */}
                   {resumeTab === 'generated' && (
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
+                      {resumeLimit && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                          {/* Card 1: Resume Usage */}
+                          <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-4">
+                              <h3 className="text-[9px] font-bold text-slate-500 tracking-wide">Resume Usage</h3>
+                              <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[7px] font-bold rounded border border-emerald-100">Live</span>
+                            </div>
+                            <div className="flex gap-10">
+                              <div>
+                                <p className="text-[10px] font-medium text-slate-400 mb-1">Total Limit</p>
+                                <p className="text-xl font-bold text-slate-800 leading-none">{resumeLimit.limit}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-medium text-slate-400 mb-1">Used</p>
+                                <p className="text-xl font-bold text-slate-800 leading-none">{resumeLimit.used}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card 2: Remaining Credits */}
+                          <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-4">
+                              <h3 className="text-[9px] font-bold text-indigo-500 tracking-wide">Remaining Credits</h3>
+                              <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[7px] font-bold rounded border border-indigo-100">Available</span>
+                            </div>
+                            <div className="flex gap-10">
+                              <div>
+                                <p className="text-[10px] font-medium text-slate-400 mb-1">Remaining</p>
+                                <p className="text-xl font-bold text-indigo-600 leading-none">{resumeLimit.remaining}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Colorful Progress Bar with Percentage */}
+                      {resumeLimit && (
+                        <div className="flex flex-col gap-1.5 w-full mb-6 px-1">
+                          <div className="flex justify-between items-center px-0.5">
+                            <span className="text-[9px] font-bold text-slate-400">Usage Progress</span>
+                            <span className={`text-[10px] font-black ${resumeLimit.remaining <= 0 ? 'text-rose-500' : 'text-indigo-600'}`}>
+                              {Math.round((resumeLimit.used / resumeLimit.limit) * 100)}%
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                            <div 
+                              className={`h-full transition-all duration-1000 ease-out ${resumeLimit.remaining <= 0 ? 'bg-rose-500' : 'bg-indigo-600'}`}
+                              style={{ width: `${Math.min(100, (resumeLimit.used / resumeLimit.limit) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {(function () {
                           const start = (generatedPage - 1) * itemsPerPage;

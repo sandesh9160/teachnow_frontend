@@ -157,7 +157,7 @@ export const clearAuthCookies = () => {
         "userData", 
         "laravel_session", 
         "laravel-session", 
-        "fmg-session", 
+        // "fmg-session", 
         "XSRF-TOKEN", 
         "authSession", 
         "authToken"
