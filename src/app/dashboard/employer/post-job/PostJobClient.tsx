@@ -329,7 +329,7 @@ export default function PostJobClient({
 
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4 font-sans text-slate-900 pb-20">
+    <div className="max-w-3xl mx-auto px-4 py-4 font-sans text-slate-900 pb-20" suppressHydrationWarning>
       <div className="space-y-0.5">
         <h1 className="text-xl font-bold text-[#1E1B4B]">{isEdit ? "Edit Job" : "Post a New Job"}</h1>
         <p className="text-slate-400 text-xs">{isEdit ? "Update your job listing requirements" : "Create a job listing in 5 simple steps"}</p>

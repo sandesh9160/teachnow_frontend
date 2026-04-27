@@ -11,6 +11,7 @@ import {
   FileText 
 } from "lucide-react";
 import Link from "next/link";
+import { normalizeMediaUrl } from "@/lib/utils";
 
 function formatAppliedAt(iso: string | undefined) {
   if (!iso) return "—";
@@ -146,8 +147,12 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                         className="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 transition-colors group/row"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0 group-hover/row:bg-white transition-colors">
-                            {app?.company_name?.[0] || app?.title?.[0]}
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0 group-hover/row:bg-white transition-colors overflow-hidden">
+                            {app?.company_logo ? (
+                              <img src={normalizeMediaUrl(app.company_logo)} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              app?.company_name?.[0] || app?.title?.[0]
+                            )}
                           </div>
                           <div className="min-w-0">
                             <p className="text-[13px] font-bold text-indigo-950 truncate group-hover/row:text-primary transition-colors">{app?.title}</p>
@@ -191,9 +196,9 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
               <div className="flex-1">
                 <div className="divide-y divide-slate-50">
                   {[
-                    { title: "Senior Physics Teacher", location: "Hyderabad, India", salary: "₹50,000 - ₹80,000", time: "2h ago" },
-                    { title: "Secondary Math Educator", location: "Bangalore, India", salary: "₹45,000 - ₹75,000", time: "5h ago" },
-                    { title: "English Language Specialist", location: "Delhi, India", salary: "₹60,000 - ₹90,000", time: "1d ago" },
+                    { title: "Senior Physics Teacher", company: "Narayana Junior College", location: "Hyderabad, India", salary: "₹50,000 - ₹80,000", time: "2h ago", logo: "storage/media/company_logos/sboTbWV0eDbbAcRI9hnxPPbmQe8tOzdJliHa8GqP.jpg" },
+                    { title: "Secondary Math Educator", company: "St. Peter's Engineering College", location: "Bangalore, India", salary: "₹45,000 - ₹75,000", time: "5h ago", logo: "storage/media/company_logos/LL97H6QVy1bv7zeJwzvPaaCJ7sdu1LUUGhdet5Qd.jpg" },
+                    { title: "English Language Specialist", company: "Delhi Public School", location: "Delhi, India", salary: "₹60,000 - ₹90,000", time: "1d ago", logo: null },
                   ].map((job, idx) => (
                     <Link 
                       key={idx} 
@@ -201,15 +206,19 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                       className="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 transition-colors group/row"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0 border border-indigo-100 group-hover/row:bg-white transition-colors">
-                          <Briefcase className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0 group-hover/row:bg-white transition-colors overflow-hidden">
+                          {job.logo ? (
+                            <img src={normalizeMediaUrl(job.logo)} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            job.company?.[0] || job.title?.[0]
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="text-[13px] font-bold text-indigo-950 truncate group-hover/row:text-primary transition-colors">{job.title}</p>
-                          <div className="flex items-center gap-2">
-                             <p className="text-[11px] font-medium text-indigo-600/70 truncate">{job.location}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                             <p className="text-[11px] font-medium text-indigo-600/70 truncate">{job.company}</p>
                              <span className="w-1 h-1 rounded-full bg-slate-200" />
-                             <p className="text-[11px] font-bold text-[#0046B5]">{job.salary}</p>
+                             <p className="text-[11px] font-bold text-[#0046B5] whitespace-nowrap">{job.salary}</p>
                           </div>
                         </div>
                       </div>

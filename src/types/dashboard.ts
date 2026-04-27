@@ -2,6 +2,7 @@ export type RecentApplication = {
   job_id: number;
   title: string;
   company_name: string;
+  company_logo?: string | null;
   status: string;
   applied_at: string;
 };

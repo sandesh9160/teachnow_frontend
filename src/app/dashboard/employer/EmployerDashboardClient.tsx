@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { useState } from "react";
 import Image from "next/image";
+// import { format } from "date-fns";
 
 interface LatestJob {
    id: number;
@@ -570,39 +571,39 @@ export default function EmployerDashboardClient({
                                  </span>
                               </div>
                               <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
-                              <span className="flex items-center gap-1 text-[10px] text-slate-400"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
-                              <div className="flex items-center gap-2">
-                                 {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                    <Button
-                                       onClick={() => handleJobAction(job.id, 'republish')}
-                                       disabled={loadingJobId === job.id}
-                                       size="sm"
-                                       className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] flex items-center gap-1.5"
-                                    >
-                                       {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                                       Republish
-                                    </Button>
-                                 )}
-                                 {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                    <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                                       <Button size="sm" className="h-6 px-2.5 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-medium text-[10px] flex items-center gap-1.5">
-                                          <Users className="w-3 h-3" />
-                                          <span className="hidden xs:inline">Applicants</span>
-                                          {job.total_applications_count !== undefined && (
-                                             <span className="bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
-                                                {job.total_applications_count || 0}
-                                             </span>
-                                          )}
+                                 <span className="flex items-center gap-1 text-[10px] text-slate-400"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
+                                 <div className="flex items-center gap-2">
+                                    {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                       <Button
+                                          onClick={() => handleJobAction(job.id, 'republish')}
+                                          disabled={loadingJobId === job.id}
+                                          size="sm"
+                                          className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] flex items-center gap-1.5"
+                                       >
+                                          {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                                          Republish
                                        </Button>
+                                    )}
+                                    {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                       <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                                          <Button size="sm" className="h-6 px-2.5 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-medium text-[10px] flex items-center gap-1.5">
+                                             <Users className="w-3 h-3" />
+                                             <span className="hidden xs:inline">Applicants</span>
+                                             {job.total_applications_count !== undefined && (
+                                                <span className="bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
+                                                   {job.total_applications_count || 0}
+                                                </span>
+                                             )}
+                                          </Button>
+                                       </Link>
+                                    )}
+                                    <Link href={`${basePath}/jobs/view/${job.id}`}>
+                                       <Button size="sm" className="h-6 px-2.5 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px]">View</Button>
                                     </Link>
-                                 )}
-                                 <Link href={`${basePath}/jobs/view/${job.id}`}>
-                                    <Button size="sm" className="h-6 px-2.5 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px]">View</Button>
-                                 </Link>
+                                 </div>
                               </div>
                            </div>
                         </div>
-                     </div>
                      ))
                   ) : (
                      <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
