@@ -108,7 +108,7 @@ export const JobsHeader = ({
                   placeholder="Job title, subject..."
                   autoComplete="off"
                   className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-sm md:text-base"
-                  suppressHydrationWarning={true}
+                  suppressHydrationWarning
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
@@ -155,7 +155,7 @@ export const JobsHeader = ({
                   placeholder="City or remote"
                   autoComplete="off"
                   className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-sm md:text-base"
-                  suppressHydrationWarning={true}
+                  suppressHydrationWarning
                   value={location}
                   onChange={(e) => {
                     setLocation(e.target.value);
@@ -210,6 +210,7 @@ export const JobsHeader = ({
           <div className="mt-6 flex justify-center lg:hidden">
             <button
               onClick={onOpenFilters}
+              suppressHydrationWarning
               className="flex items-center gap-3 text-sm font-bold text-slate-600 bg-white px-6 py-3 rounded-xl shadow-sm border border-slate-100 hover:text-indigo-600 transition-all active:scale-95"
             >
               <SlidersHorizontal className="h-4 w-4" />

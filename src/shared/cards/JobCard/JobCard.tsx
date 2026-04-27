@@ -160,6 +160,7 @@ const JobCard = ({
 
             <button
               onClick={handleSave}
+              suppressHydrationWarning
               className="flex shrink-0 items-center justify-center w-8 h-8 transition-all active:scale-90"
             >
               <Bookmark
@@ -278,14 +279,18 @@ const JobCard = ({
               <>
                 <button
                   onClick={handleApply}
+                  suppressHydrationWarning
                   className="px-6 h-[40px] rounded-lg bg-[#1e3a8a] text-white font-semibold text-[14px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
                 >
                   Apply Now
                 </button>
-                <Link href={jobHref} onClick={(e) => e.stopPropagation()}>
-                  <button className="px-8 h-[40px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95">
-                    Details
-                  </button>
+                <Link 
+                  href={jobHref} 
+                  onClick={(e) => e.stopPropagation()}
+                  suppressHydrationWarning
+                  className="px-8 h-[40px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center"
+                >
+                  Details
                 </Link>
               </>
             )}
