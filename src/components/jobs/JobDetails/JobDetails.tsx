@@ -353,8 +353,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
               </section>
 
               {/* 5. Company Profile (Mobile Only) */}
-              <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
-                <div className="bg-[#3b49df] px-6 py-6 text-white relative">
+              <Link href={institutionHref} className="block rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm group hover:border-primary/30 transition-all">
+                <div className="bg-[#3b49df] px-6 py-6 text-white relative group-hover:bg-[#2e3bb3] transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
                       {employerLogo ? (
@@ -382,20 +382,12 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
                       <Building2 className="h-3 w-3 text-slate-400 shrink-0" /> Education · Established Institution
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] sm:text-[12px] font-semibold text-slate-600">
-                      <Globe className="h-3 w-3 text-slate-400 shrink-0" /> 
-                      <a 
-                        href={`https://www.${sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-primary hover:underline transition-colors"
-                      >
-                        www.{sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in
-                      </a>
-                    </div>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-end">
+                    <span className="text-[11px] sm:text-[13px] text-primary font-bold group-hover:underline">View Profile &rarr;</span>
                   </div>
                 </div>
-              </section>
+              </Link>
             </div>
             {/* 6. Similar Jobs Section */}
             {similarJobs.length > 0 && (
@@ -514,8 +506,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             </section>
 
             {/* 5. Company Profile */}
-            <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
-              <div className="bg-[#3b49df] px-6 py-6 text-white relative">
+            <Link href={institutionHref} className="block rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm group hover:border-primary/30 transition-all">
+              <div className="bg-[#3b49df] px-6 py-6 text-white relative group-hover:bg-[#2e3bb3] transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
                     {employerLogo ? (
@@ -543,20 +535,12 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
                     <Building2 className="h-3 w-3 text-slate-400 shrink-0" /> Education · Established Institution
                   </div>
-                  <div className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
-                    <Globe className="h-3 w-3 text-slate-400 shrink-0" /> 
-                    <a 
-                      href={`https://www.${sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-primary hover:underline transition-colors"
-                    >
-                      www.{sanitizeSlug(employerName).toLowerCase().replaceAll(' ','')}.edu.in
-                    </a>
-                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100/50 flex justify-end">
+                  <span className="text-[13px] text-primary font-bold group-hover:underline">View Profile &rarr;</span>
                 </div>
               </div>
-            </section>
+            </Link>
           </aside>
         </div>
       </div>
