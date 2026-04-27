@@ -75,8 +75,8 @@ export default function InstitutionDetailsView({
               </div>
 
               {/* Institution Title & Meta */}
-              <div className="text-center sm:text-left">
-                <h1 className="text-3xl sm:text-4xl font-semibold text-[#1a202c]  mb-3">
+              <div className="text-center sm:text-left min-w-0 flex-1">
+                <h1 className="text-3xl sm:text-4xl font-semibold text-[#1a202c] mb-3 break-words">
                   {company.company_name}
                 </h1>
                 
@@ -125,7 +125,7 @@ export default function InstitutionDetailsView({
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
           {/* Main Content */}
-          <div className="space-y-8">
+          <div className="min-w-0 space-y-8">
             
             {/* About the Organization */}
             {(company.company_description || company.description) && (
@@ -144,15 +144,15 @@ export default function InstitutionDetailsView({
             <section id="open-jobs" className="space-y-6">
               <h2 className="text-xl font-semibold text-[#1a202c]">Open Jobs at {company.company_name}</h2>
               <div className="space-y-4">
-                {companyJobs.map((job) => (
-                  <div 
-                    key={job.id}
-                    onClick={() => router.push(`/${sanitizeSlug(job.slug || job.id.toString())}`)}
-                    className="group cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all duration-300 gap-3"
-                  >
+                  {companyJobs.map((job) => (
+                    <div 
+                      key={job.id}
+                      onClick={() => router.push(`/${sanitizeSlug(job.slug || job.id.toString())}`)}
+                      className="group cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all duration-300 gap-4 w-full min-w-0"
+                    >
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-[#1a202c] group-hover:text-indigo-600 transition-colors mb-2">
+                      <h3 className="text-lg font-semibold text-[#1a202c] group-hover:text-indigo-600 transition-colors mb-2 line-clamp-2">
                         {job.title}
                       </h3>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -172,7 +172,7 @@ export default function InstitutionDetailsView({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 self-end sm:self-auto">
+                    <div className="flex items-center gap-4 shrink-0 self-end sm:self-auto">
                       <span className="inline-flex items-center rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600 border border-emerald-100/50">
                         {job.job_type === "full_time" ? "Full Time" : "Contract"}
                       </span>

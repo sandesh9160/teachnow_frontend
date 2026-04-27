@@ -33,7 +33,7 @@ export const Hero = ({
 
       {/* No overlay to show exact image */}
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-20 sm:py-24 text-center">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12 pb-20 sm:pt-16 sm:pb-24 text-center">
         <div className="mx-auto max-w-5xl">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1a202c] leading-[1.1] tracking-tight">
             Find Teaching Jobs at <br />
