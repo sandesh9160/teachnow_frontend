@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
 // import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { JobsFilters } from "@/types/jobs";
 import JobFilterSidebar from "@/components/jobs/Filters/JobFilterSidebar/JobFilterSidebar";
 import FilterCard from "@/components/jobs/Filters/shared/FilterCard";
@@ -35,6 +35,7 @@ export default function JobListingView({
   initialFilters
 }: Readonly<JobListingViewProps>) {
   const router = useRouter();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [internalSearch, setInternalSearch] = useState("");
   const [internalLocation, setInternalLocation] = useState("");
@@ -53,6 +54,15 @@ export default function JobListingView({
   const [sortBy, setSortBy] = useState("Default");
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
+
+  // Auto-scroll to top on page or filter change
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "instant" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [currentPage, selectedFilters, pageName]);
 
     useEffect(() => {
       // Initialize search fields and title separately as requested
@@ -247,7 +257,7 @@ export default function JobListingView({
           </aside>
 
           {/* Jobs List */}
-          <div className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
+          <div ref={scrollContainerRef} className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
             <PaginationFilter
               totalResults={filteredJobs.length}
               resultsPerPage={resultsPerPage}

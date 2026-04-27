@@ -60,6 +60,13 @@ function JobsContent() {
     fetchFilterOptions();
   }, []);
 
+  // Auto-scroll to top on page or filter change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [currentPage, selectedFilters]);
+
   useEffect(() => {
     void fetchJobs({
       keyword: keywordParam || undefined,
