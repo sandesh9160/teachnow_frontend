@@ -7,7 +7,6 @@ import {
   MapPin,
   Share2,
   TrendingUp,
-  Globe,
   Building2,
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";

@@ -23,11 +23,7 @@ export const JobFilterSidebar = ({
     { value: "Part-time", label: "Part Time" },
   ];
 
-  const salaryRanges = [
-    { value: "0-5", label: "0 - 5 Lakhs" },
-    { value: "5-10", label: "5 - 10 Lakhs" },
-    { value: "10-15", label: "10 - 15 Lakhs" },
-  ];
+
 
   const institutionTypeOptions = [
     { value: "UG", label: "UG" },
@@ -39,15 +35,15 @@ export const JobFilterSidebar = ({
 
   const experienceRanges = [
     { value: "0-0", label: "Fresher" },
-    { value: "0-2", label: "0 - 2 Years" },
-    { value: "2-5", label: "2 - 5 Years" },
-    { value: "5-10", label: "5 - 10 Years" },
-    { value: "10-50", label: "10+ Years" },
+    { value: "0-2", label: "0 - 2" },
+    { value: "2-5", label: "2 - 5" },
+    { value: "5-10", label: "5 - 10" },
+    { value: "10-50", label: "10+" },
   ];
 
   const genderOptions = [
-    { value: "male", label: "Male only" },
-    { value: "female", label: "Female only" },
+    { value: "male", label: "Male" },
+    { value: "female", label: "Female" },
     { value: "both", label: "Any" },
   ];
 
@@ -62,7 +58,7 @@ export const JobFilterSidebar = ({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-1">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Filters</h3>
         <button 
@@ -74,10 +70,10 @@ export const JobFilterSidebar = ({
         </button>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {availableSubjects.length > 0 && (
           <FilterSection title="Subject">
-            <div className="space-y-1.5 overflow-y-auto max-h-40 no-scrollbar">
+            <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
               {availableSubjects.map((sub) => (
                 <CheckboxItem
                   key={sub}
@@ -92,7 +88,7 @@ export const JobFilterSidebar = ({
 
         {availableLocations.length > 0 && (
           <FilterSection title="Location">
-            <div className="space-y-1.5 overflow-y-auto max-h-40 no-scrollbar">
+            <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
               {availableLocations.map((loc) => (
                 <CheckboxItem
                   key={loc}
@@ -106,7 +102,7 @@ export const JobFilterSidebar = ({
         )}
 
         <FilterSection title="Institution Type">
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
             {institutionTypeOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}
@@ -119,7 +115,7 @@ export const JobFilterSidebar = ({
         </FilterSection>
 
         <FilterSection title="Experience">
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
             {experienceRanges.map((range) => (
               <CheckboxItem
                 key={range.value}
@@ -131,21 +127,10 @@ export const JobFilterSidebar = ({
           </div>
         </FilterSection>
 
-        <FilterSection title="Salary (LPA)">
-          <div className="space-y-1.5">
-            {salaryRanges.map((range) => (
-              <CheckboxItem
-                key={range.value}
-                label={range.label}
-                checked={selectedFilters.salary?.includes(range.value) || false}
-                onChange={() => onToggle("salary", range.value)}
-              />
-            ))}
-          </div>
-        </FilterSection>
+
 
         <FilterSection title="Job type">
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
             {jobTypeOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}
@@ -158,7 +143,7 @@ export const JobFilterSidebar = ({
         </FilterSection>
 
         <FilterSection title="Gender">
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
             {genderOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}

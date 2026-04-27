@@ -214,10 +214,10 @@ export default function JobListingView({
   const paginatedJobs = sortedJobs.slice(startIndex, startIndex + resultsPerPage);
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen pb-12">
+    <div className="bg-[#F8FAFC] lg:h-[calc(100vh-5rem)] lg:overflow-hidden flex flex-col">
       {/* Consistent Breadcrumb Bar */}
-      <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 w-full">
+      <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-20 lg:static lg:shrink-0 z-40">
+        <div className="mx-auto w-full px-4 py-1 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex flex-col items-center w-full">
             <div className="w-full max-w-4xl">
               <JobsHeader
@@ -235,9 +235,9 @@ export default function JobListingView({
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-4">
-          <aside className="hidden w-64 shrink-0 lg:block pt-14 px-1">
+      <div className="flex-1 lg:overflow-hidden mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="flex flex-col lg:flex-row h-full gap-10">
+          <aside className="hidden w-72 shrink-0 lg:block h-full overflow-y-auto py-8 pb-20 pr-2 sticky top-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <FilterCard>
               <JobFilterSidebar
                 selectedFilters={selectedFilters}
@@ -247,7 +247,7 @@ export default function JobListingView({
           </aside>
 
           {/* Jobs List */}
-          <div className="lg:col-span-3">
+          <div className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
             <PaginationFilter
               totalResults={filteredJobs.length}
               resultsPerPage={resultsPerPage}

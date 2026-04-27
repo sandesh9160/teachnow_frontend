@@ -12,7 +12,7 @@ export function CheckboxItem({
   onChange: () => void;
 }>) {
   return (
-    <label className="group flex cursor-pointer items-center gap-2.5 rounded-lg border border-transparent px-2 py-1.5 transition-all duration-200 ease-out hover:bg-slate-50">
+    <label className="group flex cursor-pointer items-center gap-1.5 rounded-lg border border-transparent px-1 py-1 transition-all duration-200 ease-out hover:bg-slate-50">
       <div className="relative flex items-center justify-center">
         <input
           type="checkbox"
