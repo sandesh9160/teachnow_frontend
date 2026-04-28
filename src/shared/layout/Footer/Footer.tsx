@@ -28,8 +28,12 @@ function toSearchHref(item?: FooterTopSearch | null): string {
 
 export const Footer = ({
   footerData,
+  heroCTA,
+  navigationData,
 }: Readonly<{
   footerData: FooterData | null;
+  heroCTA?: any;
+  navigationData?: any;
 }>) => {
   const sections: FooterData["sections"] = footerData?.sections ?? [];
   const topSearches: FooterData["top_searches"] = footerData?.top_searches ?? [];
@@ -42,13 +46,32 @@ export const Footer = ({
   const brandLink =
     brandSection?.links?.find((l) => Boolean(l?.icon)) ?? brandSection?.links?.[0] ?? null;
 
-  const brandName = brandSection?.title || "";
-  const brandText =
-    brandLink?.title || "";
+  // --- Robust Brand Extraction (Matches Header) ---
+  const rawCompany =
+    (navigationData as any)?.companies?.list?.[0] ||
+    (navigationData as any)?.companies ||
+    (navigationData as any)?.company ||
+    (navigationData as any)?.brand ||
+    navigationData ||
+    (footerData as any)?.company ||
+    (footerData as any)?.brand ||
+    brandSection ||
+    footerData;
 
-  const brandIcon = brandLink?.icon ? normalizeMediaUrl(brandLink.icon) : "";
+  const companyName = rawCompany?.company_name || rawCompany?.name || rawCompany?.title || brandLink?.title || "TeachNow";
+  const rawLogo =
+    rawCompany?.company_logo ||
+    rawCompany?.logo ||
+    rawCompany?.brand_logo ||
+    rawCompany?.icon ||
+    brandLink?.icon;
 
-  const brandNameClean = String(brandName).trim();
+  const companyLogo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
+
+  // --- Description from Homepage Banner ---
+  const brandDescription = heroCTA?.hero?.subtitle ?? brandLink?.title ?? "Discover thousands of teaching opportunities across India. Connect with top schools, universities, and edtech companies.";
+
+  const brandNameClean = String(companyName).trim();
   let brandSecondaryPart = "";
   let brandPrimaryPart = "";
 
@@ -70,10 +93,10 @@ export const Footer = ({
           {/* Column 1 – Brand */}
           <div className="space-y-4">
             <Link href="/" className="mb-4 flex items-center gap-2">
-              {brandIcon ? (
+              {companyLogo ? (
                 <img
-                  src={brandIcon}
-                  alt={brandName}
+                  src={companyLogo}
+                  alt={companyName}
                   className="h-8 w-8 object-contain rounded-lg"
                 />
               ) : (
@@ -89,7 +112,7 @@ export const Footer = ({
               </span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {brandText}
+              {brandDescription}
             </p>
           </div>
 
@@ -163,7 +186,7 @@ export const Footer = ({
         </div>
 
         <div className="mt-12 flex flex-col items-center gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} {brandName || "TeachNow"}.in — All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {companyName || "TeachNow"}.in — All rights reserved.</span>
           <div className="flex gap-4">
             <Link href="/privacy-policy" className="hover:text-primary transition-colors">
               Privacy Policy

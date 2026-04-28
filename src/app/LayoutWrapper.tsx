@@ -25,11 +25,13 @@ export function LayoutWrapper({
   children,
   navigationData,
   footerData,
+  heroCTA,
   authUser,
 }: {
   children: React.ReactNode;
   navigationData: any;
   footerData: any;
+  heroCTA: any;
   authUser: any;
 }) {
   const pathname = usePathname();
@@ -55,7 +57,7 @@ export function LayoutWrapper({
       </Suspense>
       <Header navigationData={navigationData} footerData={footerData} authUser={authUser} />
       <main className="pt-20 min-h-screen flex flex-col">{children}</main>
-      <Footer footerData={footerData} />
+      <Footer footerData={footerData} heroCTA={heroCTA} navigationData={navigationData} />
     </>
   );
 

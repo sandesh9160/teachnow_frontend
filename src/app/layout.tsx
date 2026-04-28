@@ -22,7 +22,7 @@ export default function RootLayout({
 }
 
 async function RootLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [{ navigation, footer }, session] = await Promise.all([
+  const [{ navigation, footer, heroCTA }, session] = await Promise.all([
     getGlobalLayoutData(),
     getSessionProfile(),
   ]);
@@ -35,6 +35,7 @@ async function RootLayoutInner({ children }: Readonly<{ children: React.ReactNod
           <LayoutWrapper
             navigationData={navigation}
             footerData={footer}
+            heroCTA={heroCTA}
             authUser={authUser}
           >
             {children}
