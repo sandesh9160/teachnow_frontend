@@ -32,7 +32,9 @@ const BlogCard = ({ title, excerpt, readTime, date, slug, image }: BlogCardProps
           />
         ) : (
           <div className="h-full bg-slate-100 flex items-center justify-center">
-            <span className="text-slate-300 font-bold text-lg">TeachNow</span>
+            <span className="text-slate-300 font-bold text-lg">
+              Teach<span className="text-blue-400">Now</span>
+            </span>
           </div>
         )}
       </div>

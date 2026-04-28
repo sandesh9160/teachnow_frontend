@@ -551,9 +551,19 @@ const Header = ({
     footerBrandLink?.logo;
 
   const companyLogo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
-  const brandNameParts = companyName.split(" ").filter(Boolean);
-  const brandSecondaryPart = brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : companyName;
-  const brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
+
+  // Custom logic for TeachNow branding or multi-word branding
+  let brandSecondaryPart = "";
+  let brandPrimaryPart = "";
+
+  if (companyName.toLowerCase() === "teachnow") {
+    brandSecondaryPart = "Teach";
+    brandPrimaryPart = "Now";
+  } else {
+    const brandNameParts = companyName.split(" ").filter(Boolean);
+    brandSecondaryPart = brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : companyName;
+    brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" ref={navRef}>
@@ -572,7 +582,7 @@ const Header = ({
           <span className="font-display text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none">
             {brandSecondaryPart}
             {brandPrimaryPart ? (
-              <span className="text-primary">{brandPrimaryPart}</span>
+              <span className="text-primary">{companyName.includes(" ") ? " " : ""}{brandPrimaryPart}</span>
             ) : null}
           </span>
         </Link>

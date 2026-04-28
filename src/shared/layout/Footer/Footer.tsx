@@ -48,15 +48,18 @@ export const Footer = ({
 
   const brandIcon = brandLink?.icon ? normalizeMediaUrl(brandLink.icon) : "";
 
-  const brandNameParts = String(brandName)
-    .trim()
-    .split(" ")
-    .filter(Boolean);
+  const brandNameClean = String(brandName).trim();
+  let brandSecondaryPart = "";
+  let brandPrimaryPart = "";
 
-  const brandPrimaryPart =
-    brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
-  const brandSecondaryPart =
-    brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : brandName;
+  if (brandNameClean.toLowerCase() === "teachnow") {
+    brandSecondaryPart = "Teach";
+    brandPrimaryPart = "Now";
+  } else {
+    const brandNameParts = brandNameClean.split(" ").filter(Boolean);
+    brandSecondaryPart = brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : brandNameClean;
+    brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
+  }
 
   const gridSections = brandSection ? sections.filter((s) => s !== brandSection) : sections;
 
@@ -81,7 +84,7 @@ export const Footer = ({
               <span className="font-display text-lg font-bold text-foreground">
                 {brandSecondaryPart}
                 {brandPrimaryPart ? (
-                  <span className="text-primary">{brandPrimaryPart}</span>
+                  <span className="text-primary">{brandNameClean.includes(" ") ? " " : ""}{brandPrimaryPart}</span>
                 ) : null}
               </span>
             </Link>

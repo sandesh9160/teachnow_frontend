@@ -93,7 +93,9 @@ function LoginContent() {
               <GraduationCap className="h-7 w-7 text-primary" />
             </div>
             <div>
-              <h2 className="font-display text-xl font-bold text-foreground">TeachNow</h2>
+              <h2 className="font-display text-xl font-bold text-foreground">
+                Teach<span className="text-primary">Now</span>
+              </h2>
               <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-[240px]">
                 India's #1 education job portal
               </p>
@@ -121,7 +123,9 @@ function LoginContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <GraduationCap className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-display text-base font-bold text-foreground">TeachNow</span>
+            <span className="font-display text-base font-bold text-foreground">
+              Teach<span className="text-primary">Now</span>
+            </span>
           </div>
 
           <div className="mb-4">
