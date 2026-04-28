@@ -1,13 +1,14 @@
 "use client";
 
-import { CheckCircle2, Loader2, Star, ShieldCheck, Zap, Crown } from "lucide-react";
-import { Button } from "@/shared/ui/Buttons/Buttons";
+import { CheckCircle2, Loader2, Star, ShieldCheck, Zap, Crown, ArrowUpRight, Clock, Calendar } from "lucide-react";
+// import { Button } from "@/shared/ui/Buttons/Buttons";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { useEffect, useState } from "react";
 import { fetchAPI } from "@/services/api/client";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import { useRouter } from "next/navigation";
 import { useClientSession } from "@/hooks/useClientSession";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface PricingPlan {
@@ -120,16 +121,16 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <section className="bg-white border-b border-slate-100 py-3 md:py-4">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-xl font-bold text-slate-900 md:text-2xl">Pricing Plans</h1>
-            <p className="mt-0.5 text-xs text-slate-500 font-medium">Choose the right plan for your hiring needs</p>
+      <section className="bg-white border-b border-slate-100 py-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-semibold text-[#0F172A]">Pricing Plans</h1>
+            <p className="text-slate-500 text-sm">Choose the right plan for your hiring needs</p>
           </div>
         </div>
       </section>
 
-      <div className="container px-4 py-4 md:py-6">
+      <div className="mx-auto max-w-7xl px-4 py-8 font-sans overflow-x-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary opacity-20" />
@@ -141,93 +142,102 @@ export default function PricingPage() {
               const isPopular = plan.is_highlighted === 1;
               const isBuying = activePlanId === plan.id && isProcessing;
               const isFree = parseFloat(plan.offer_price) === 0;
-              
+              const price = isFree ? "Free" : `₹${Math.round(parseFloat(plan.offer_price)).toLocaleString('en-IN')}`;
               return (
-                <div 
-                  key={plan.id} 
-                  className={`relative flex flex-col rounded-xl border bg-card p-4 shadow-card transition-all ${
-                    isPopular ? "border-primary ring-2 ring-primary/20" : "border-border"
-                  }`}
+                <div
+                  key={plan.id}
+                  className={cn(
+                    "relative flex flex-col rounded-2xl p-4 sm:p-6 border transition-all duration-300",
+                    isPopular
+                      ? "border-[#1E3A8A] bg-[#F1F5F9] shadow-lg shadow-blue-900/5 ring-1 ring-[#1E3A8A]"
+                      : "border-slate-200 bg-white hover:border-blue-200"
+                  )}
                 >
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[10px] font-bold text-primary-foreground shadow-lg">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-[10px] font-bold text-white shadow-lg">
                       <Star className="h-3 w-3 fill-current" /> MOST POPULAR
                     </div>
                   )}
 
-                  <div className="mb-3">
-                    <h3 className="font-display text-base font-bold text-foreground">{plan.name}</h3>
-                    <div className="mt-3 flex items-baseline gap-1.5 flex-wrap">
-                      <span className="font-display text-xl font-bold text-foreground">
-                        {isFree ? "Free" : `₹${Math.round(parseFloat(plan.offer_price)).toLocaleString()}`}
-                      </span>
+                  <div className="space-y-4 flex-1">
+                    <div>
+                      <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-900">{plan.name}</h3>
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{price}</span>
+                        {!isFree && (
+                          <span className="text-[13px] text-slate-400 font-medium">/ package</span>
+                        )}
+                      </div>
                       {parseFloat(plan.actual_price) > parseFloat(plan.offer_price) && (
-                        <span className="text-xs font-medium text-muted-foreground line-through">₹{Math.round(parseFloat(plan.actual_price)).toLocaleString()}</span>
+                        <p className="text-[12px] text-slate-300 line-through font-medium">₹{Number(plan.actual_price).toLocaleString('en-IN')}</p>
                       )}
-                      <span className="ml-auto text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        {plan.validity_days} Days Validity
-                      </span>
                     </div>
 
-                  </div>
-
-                  <div className="space-y-3 flex-1">
-                    {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-lg bg-muted/30 p-2 border border-border/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase  mb-0.5">Job Posts</p>
-                        <p className="text-xs font-semibold text-foreground">{plan.job_posts_limit}</p>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1">
+                      <div className="bg-blue-50/50 rounded-xl p-2.5 sm:p-3 border border-blue-100/50">
+                        <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">Job Posts</p>
+                        <p className="text-lg sm:text-xl font-bold text-slate-900">{plan.job_posts_limit}</p>
                       </div>
-                      <div className="rounded-lg bg-muted/30 p-2 border border-border/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">Featured Jobs</p>
-                        <p className="text-xs font-semibold text-foreground">{plan.featured_jobs_limit}</p>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-2 border border-border/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5">Job Live</p>
-                        <p className="text-xs font-semibold text-foreground">{plan.job_live_days} Days</p>
-                      </div>
-                      <div className="rounded-lg bg-muted/30 p-2 border border-border/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-0.5 leading-none">Featured Job Validity</p>
-                        <p className="text-xs font-semibold text-foreground">{plan.feature_days} Days</p>
+                      <div className="bg-indigo-50/50 rounded-xl p-2.5 sm:p-3 border border-indigo-100/50">
+                        <p className="text-[9px] sm:text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Featured</p>
+                        <p className="text-lg sm:text-xl font-bold text-slate-900">{plan.featured_jobs_limit ?? 0}</p>
                       </div>
                     </div>
 
-                    {/* Compact Features List */}
                     <div className="space-y-2 pt-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Key Features</p>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                        {plan.features?.map((f, i) => (
-                          <div key={`${plan.id}-feat-${i}`} className="flex items-start gap-1.5 text-xs text-slate-600 leading-tight">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                            <span>{f}</span>
+                      {plan.company_featured == 1 && (
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-5 h-5 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-3 h-3 text-blue-600" strokeWidth={3} />
                           </div>
-                        ))}
-                        <div className="flex items-start gap-1.5 text-xs text-slate-600 leading-tight">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                          <span>Company Featured: {plan.company_featured === 1 ? "Yes" : "No"}</span>
+                          <span className="text-[13px] text-slate-600 font-medium">Company Featured</span>
                         </div>
+                      )}
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-5 h-5 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                          <Clock className="w-3 h-3 text-emerald-600" />
+                        </div>
+                        <span className="text-[13px] text-slate-600 font-medium">Valid for {plan.validity_days} days</span>
                       </div>
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-5 h-5 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
+                          <Calendar className="w-3 h-3 text-indigo-600" />
+                        </div>
+                        <span className="text-[13px] text-slate-600 font-medium">Jobs live for {plan.job_live_days} days</span>
+                      </div>
+
+                      {plan.features && plan.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-center gap-2 mt-0.5">
+                          <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 bg-emerald-50">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
+                          </div>
+                          <span className="text-[12px] text-slate-600 font-medium">{feature}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <Button 
-                    variant={isPopular ? "hero" : "outline"} 
-                    className="mt-4 w-full" 
-                    size="sm"
-                    disabled={isBuying}
-                    onClick={() => handleSelectPlan(plan)}
-                  >
-                    {isBuying ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Processing...
-                      </span>
-                    ) : isFree ? (
-                      "Get Started Free"
-                    ) : (
-                      "Select Plan"
-                    )}
-                  </Button>
+                  <div className="mt-8">
+                    <button
+                      onClick={() => handleSelectPlan(plan)}
+                      disabled={isBuying}
+                      className={cn(
+                        "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 group border shadow-sm",
+                        isPopular
+                          ? "bg-[#1E3A8A] text-white border-[#1E3A8A] hover:bg-[#1E3A8A]/90"
+                          : "bg-white text-[#1E3A8A] border-blue-100 hover:bg-blue-50/50",
+                        isBuying && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      {isBuying ? (
+                        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
+                      ) : isFree ? (
+                        "Get Started Free"
+                      ) : (
+                        <>Select Plan <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></>
+                      )}
+                    </button>
+                  </div>
                 </div>
               );
             })}

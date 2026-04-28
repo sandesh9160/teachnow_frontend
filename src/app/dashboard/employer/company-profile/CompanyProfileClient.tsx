@@ -463,7 +463,8 @@ export default function CompanyProfileClient({
                        </Label>
                        <Input 
                          name="country" 
-                         defaultValue={profile.country || "INDIA"} 
+                         defaultValue={profile.country || ""} 
+                         placeholder="e.g. INDIA"
                          className={cn(
                            "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
                            errors.country && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
@@ -609,18 +610,20 @@ export default function CompanyProfileClient({
 
            <div className="grid grid-cols-1 md:grid-cols-4 gap-y-4 gap-x-6 border-t border-slate-50 pt-4">
               {[
-                { label: 'Primary Location', value: profile.city || 'Not Set', icon: MapPin },
-                { label: 'Official Website', value: profile.website?.replace(/^https?:\/\//, '') || 'Not Set', icon: Globe },
+                { label: 'Primary Location', value: profile.city || '', icon: MapPin },
+                { label: 'Official Website', value: profile.website?.replace(/^https?:\/\//, '') || '', icon: Globe },
                 { label: 'Professional Email', value: profile.email, icon: Mail },
-                { label: 'Contact Number', value: profile.phone || 'Not Set', icon: Phone },
+                { label: 'Contact Number', value: profile.phone || '', icon: Phone },
               ].map((item, idx) => (
-                <div key={idx} className="flex flex-col gap-0.5 min-w-0 font-sans">
-                   <div className="flex items-center gap-1.5 text-slate-500">
-                      <item.icon className="w-2.5 h-2.5 text-indigo-400" />
-                      <span className="text-[9px] font-semibold capitalize">{item.label}</span>
-                   </div>
-                   <p className="text-[11.5px] font-semibold text-slate-800 leading-tight">{item.value}</p>
-                </div>
+                item.value && (
+                  <div key={idx} className="flex flex-col gap-0.5 min-w-0 font-sans">
+                     <div className="flex items-center gap-1.5 text-slate-500">
+                        <item.icon className="w-2.5 h-2.5 text-indigo-400" />
+                        <span className="text-[9px] font-semibold capitalize">{item.label}</span>
+                     </div>
+                     <p className="text-[11.5px] font-semibold text-slate-800 leading-tight">{item.value}</p>
+                  </div>
+                )
               ))}
            </div>
         </div>
@@ -688,20 +691,27 @@ export default function CompanyProfileClient({
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-semibold text-slate-500 capitalize px-1">Registered Address</span>
                     <p className="text-[13px] font-semibold text-slate-800 leading-relaxed px-1">
-                      {profile.address || "Complete address not provided."}, {profile.city && `${profile.city}, `} {profile.country || "INDIA"}
+                      {[profile.address, profile.city, profile.country].filter(Boolean).join(", ") || "Location details not specified"}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative group">
-                    <LocationPicker 
-                      lat={profile.latitude} 
-                      lng={profile.longitude} 
-                      onChange={() => {}} 
-                      hideControls={true}
-                      className="w-full h-64 grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" 
-                    />
-                    <div className="absolute inset-0 bg-transparent pointer-events-none" /> {/* Overlay to prevent accidental panning in view mode if needed, but keeping it interactive for user comfort */}
-                  </div>
+                  {profile.latitude && profile.longitude ? (
+                    <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative group">
+                      <LocationPicker 
+                        lat={profile.latitude} 
+                        lng={profile.longitude} 
+                        onChange={() => {}} 
+                        hideControls={true}
+                        className="w-full h-64 grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" 
+                      />
+                      <div className="absolute inset-0 bg-transparent pointer-events-none" />
+                    </div>
+                  ) : (
+                    <div className="h-32 flex flex-col items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl gap-2">
+                      <MapPin className="w-6 h-6 text-slate-300" />
+                      <p className="text-[11px] font-medium text-slate-400">Map coordinates not set for this institution</p>
+                    </div>
+                  )}
                </div>
             </div>
          </div>
@@ -719,17 +729,19 @@ export default function CompanyProfileClient({
                
                <div className="space-y-3.5 pt-1">
                   {[
-                    { label: 'Entity Type', value: profile.institution_type || 'Institution', icon: Flag },
-                    { label: 'Primary Sector', value: profile.industry || 'Education', icon: Layers },
-                    { label: 'Hiring City', value: profile.city || 'Not Set', icon: MapPin },
-                    { label: 'Region', value: profile.country || 'INDIA', icon: Globe },
+                    { label: 'Entity Type', value: profile.institution_type, icon: Flag },
+                    { label: 'Primary Sector', value: profile.industry, icon: Layers },
+                    { label: 'Hiring City', value: profile.city, icon: MapPin },
+                    { label: 'Region', value: profile.country, icon: Globe },
                   ].map((stat, i) => (
-                    <div key={i} className="flex items-center justify-between group/item">
-                       <span className="text-[12px] font-medium text-slate-500 flex items-center gap-2 capitalize">
-                          <stat.icon className="w-3 h-3 text-indigo-400 group-hover/item:scale-110 transition-transform" /> {stat.label}
-                       </span>
-                       <span className="text-[12.5px] font-semibold text-black">{stat.value}</span>
-                    </div>
+                    stat.value && (
+                      <div key={i} className="flex items-center justify-between group/item">
+                         <span className="text-[12px] font-medium text-slate-500 flex items-center gap-2 capitalize">
+                            <stat.icon className="w-3 h-3 text-indigo-400 group-hover/item:scale-110 transition-transform" /> {stat.label}
+                         </span>
+                         <span className="text-[12.5px] font-semibold text-black">{stat.value}</span>
+                      </div>
+                    )
                   ))}
                </div>
             </div>
