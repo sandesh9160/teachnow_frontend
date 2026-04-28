@@ -143,9 +143,9 @@ export default function ResourceDetailPage() {
 
       {/* --- Modern Hero Section --- */}
       <div className="bg-white border-y border-slate-100">
-        <div className="px-4 md:px-12 lg:px-20 py-5 md:py-8 max-w-7xl">
-          <div className="flex flex-col lg:flex-row gap-8 lg:items-center">
-            <div className="flex-1 max-w-xl space-y-4">
+        <div className="px-4 md:px-12 lg:px-20 py-5 md:py-8 w-full max-w-[1600px] mx-auto">
+          <div className="flex flex-col lg:flex-row gap-12 lg:items-center justify-between">
+            <div className="flex-1 space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <Badge variant="secondary" className="bg-primary/5 text-primary border-primary/10 px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-semibold">
                   {category}
@@ -166,7 +166,7 @@ export default function ResourceDetailPage() {
                 {resource.meta_description || "Expertly curated teaching material designed to enhance classroom engagement and learning outcomes."}
               </p>
 
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-2">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
                 <div className="flex items-center gap-3">
                   {resource.author_photo ? (
                     <img src={normalizeMediaUrl(resource.author_photo)} alt={resource.author_name || "Author"} className="w-9 h-9 rounded-full object-cover border border-slate-100" />
@@ -175,24 +175,24 @@ export default function ResourceDetailPage() {
                       <User className="w-4 h-4" />
                     </div>
                   )}
-                  <div>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Created by</p>
-                    <p className="font-semibold text-slate-700 text-sm leading-none">{resource.author_name || "Expert Educator"}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Created by:</p>
+                    <p className="font-semibold text-slate-700 text-sm">{resource.author_name || "Expert Educator"}</p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Status</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Status:</p>
                   <div className="flex items-center gap-1.5">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[11px] font-semibold text-slate-600">Verified</span>
+                    <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">Verified</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Preview Image Card - Pushed to right end */}
-            <div className="lg:w-[500px] lg:ml-auto shrink-0">
+            <div className="lg:w-[480px] shrink-0">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
