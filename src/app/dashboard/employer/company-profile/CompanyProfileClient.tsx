@@ -146,16 +146,16 @@ export default function CompanyProfileClient({
       formData.append("company_logo", logoFile);
     }
     
-    // User requested format for backend: lattitude (double t), longitude, mapLink (CamelCase)
-    formData.append("lattitude", profile.latitude || "");
+    // backend expects latitude (single t) and map_link (snake_case)
+    formData.append("latitude", profile.latitude || "");
     formData.append("longitude", profile.longitude || "");
-    formData.append("mapLink", profile.map_link || "");
+    formData.append("map_link", profile.map_link || "");
 
     // Log the data being sent
     console.log("Saving Profile Data:", {
-      lattitude: formData.get("lattitude"),
+      latitude: formData.get("latitude"),
       longitude: formData.get("longitude"),
-      mapLink: formData.get("mapLink"),
+      map_link: formData.get("map_link"),
       company_name: formData.get("company_name"),
       industry: formData.get("industry")
     });

@@ -146,10 +146,10 @@ export default function RecruiterCompanyProfileClient({
       formData.append("company_logo", logoFile);
     }
 
-    // Format for backend: lattitude (double t), longitude, mapLink (CamelCase)
-    formData.append("lattitude", profile.latitude || "");
+    // backend expects latitude (single t) and map_link (snake_case)
+    formData.append("latitude", profile.latitude || "");
     formData.append("longitude", profile.longitude || "");
-    formData.append("mapLink", profile.map_link || "");
+    formData.append("map_link", profile.map_link || "");
     
     console.log("Saving Recruiter Profile Data (Institution):", Object.fromEntries(formData.entries()));
 

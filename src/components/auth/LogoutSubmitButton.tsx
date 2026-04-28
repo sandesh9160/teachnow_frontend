@@ -15,6 +15,7 @@ function InternalButton({ className, children }: Props) {
 
   return (
     <button
+      suppressHydrationWarning
       type="submit"
       disabled={pending}
       className={`${className} ${pending ? "opacity-70 cursor-not-allowed" : ""}`}

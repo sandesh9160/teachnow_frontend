@@ -55,7 +55,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden font-sans antialiased text-indigo-950 selection:bg-primary/10 selection:text-primary">
+    <div suppressHydrationWarning className="flex flex-col h-screen bg-gray-50 overflow-hidden font-sans antialiased text-indigo-950 selection:bg-primary/10 selection:text-primary">
       <DashboardHeader 
         user={user} 
         branding={brandingData} 

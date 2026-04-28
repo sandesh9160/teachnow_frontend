@@ -260,14 +260,18 @@ export default function PostJobClient({
     setLoading(true);
     const data = { 
       ...formData, 
+      category_id: formData.category_id ? Number(formData.category_id) : null,
+      experience_required: formData.experience_required ? Number(formData.experience_required.toString().replace(/[^0-9.]/g, '')) : 0,
+      vacancies: formData.vacancies ? Number(formData.vacancies) : 1,
       school_name: job?.school_name || profile?.company_name || profile?.name || "",
-      description, 
-      salary_min: salaryUndisclosed ? null : formData.salary_min,
-      salary_max: salaryUndisclosed ? null : formData.salary_max,
+      institution_name: job?.institution_name || profile?.company_name || profile?.name || "",
+      institution_type: job?.institution_type || profile?.institution_type || "",
+      description: description || "", 
+      salary_min: (salaryUndisclosed || !formData.salary_min) ? null : Number(formData.salary_min),
+      salary_max: (salaryUndisclosed || !formData.salary_max) ? null : Number(formData.salary_max),
       application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
-      questions,
-      screening_questions: questions,
-      screening_questions_json: JSON.stringify(questions),
+      questions: questions.length > 0 ? questions : null,
+      screening_questions: questions.length > 0 ? questions : null,
       ...(userRole === 'recruiter' && isEdit ? { _method: 'PUT' } : {})
     };
     
@@ -322,7 +326,7 @@ export default function PostJobClient({
     }
   };
 
-  const addQuestion = (type: "boolean" | "numeric" | "text") => setQuestions([...questions, { question: "", question_type: type, recruiter_answer: type === 'boolean' ? 'yes' : '' }]);
+  const addQuestion = (type: "boolean" | "numeric" | "text") => setQuestions([...questions, { question: "", question_type: type, recruiter_answer: "" }]);
   const removeQuestion = (idx: number) => setQuestions(questions.filter((_, i) => i !== idx));
   const updateQuestion = (idx: number, field: keyof Question, val: string) => {
     const n = [...questions]; n[idx] = { ...n[idx], [field]: val }; setQuestions(n);
@@ -509,7 +513,6 @@ export default function PostJobClient({
                 >
                   <option value="freshers">Freshers</option>
                   <option value="experienced">Experienced</option>
-                  <option value="both">Both</option>
                 </select>
               </div>
               <div className="space-y-1.5">
@@ -622,6 +625,7 @@ export default function PostJobClient({
                               onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
                               className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
                             >
+                              <option value="">Select Answer</option>
                               <option value="yes">Yes</option>
                               <option value="no">No</option>
                             </select>

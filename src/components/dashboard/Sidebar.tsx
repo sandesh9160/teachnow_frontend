@@ -84,6 +84,7 @@ export function DashboardSidebar({
       )}
 
       <aside
+        suppressHydrationWarning
         className={`fixed md:sticky inset-y-0 left-0 h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-500 ease-in-out z-50 shadow-sm ${collapsed ? "w-[78px]" : "w-[260px]"} ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         {/* Mobile close button */}
