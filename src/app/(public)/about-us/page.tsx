@@ -94,7 +94,7 @@ export default function AboutPage() {
                   )}
                   {/* Section Content */}
                   <div 
-                    className="rich-text text-slate-600 text-base sm:text-lg leading-relaxed font-medium"
+                    className="rich-text text-base sm:text-lg leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: section.content }}
                   />
                 </div>

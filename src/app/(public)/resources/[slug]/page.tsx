@@ -188,7 +188,7 @@ export default function ResourceDetailPage() {
 
             <div className="bg-slate-50 rounded-xl p-1 mb-6 border border-slate-100">
               <div
-                className="prose prose-slate prose-img:rounded-xl prose-a:text-primary max-w-none p-4 md:p-6 bg-white rounded-lg shadow-sm"
+                className="rich-text prose prose-img:rounded-xl prose-a:text-primary max-w-none p-4 md:p-6 bg-white rounded-lg shadow-sm"
                 dangerouslySetInnerHTML={{
                   __html:
                     resource.description ||

@@ -254,7 +254,7 @@
     @apply pl-1 leading-relaxed;
   }
   .rich-text strong {
-    @apply font-bold text-slate-900;
+    @apply font-bold;
   }
 
   .gradient-primary {

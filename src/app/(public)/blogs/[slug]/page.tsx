@@ -101,9 +101,9 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
             {/* Content Body - Styled for Tiptap/ProseMirror Rendering */}
             <div className="blog-content prose prose-slate max-w-none tiptap-content">
                 <style dangerouslySetInnerHTML={{ __html: `
-                  .blog-content { color: #334155; font-size: 1rem; line-height: 1.8; }
-                  .blog-content h2 { font-size: 1.5rem; font-weight: 700; color: #111827; margin-top: 2.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
-                  .blog-content h3 { font-size: 1.25rem; font-weight: 700; color: #111827; margin-top: 2rem; margin-bottom: 1rem; }
+                  .blog-content { font-size: 1.125rem; line-height: 1.8; }
+                  .blog-content h2 { font-size: 1.875rem; font-weight: 700; margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.75rem; }
+                  .blog-content h3 { font-size: 1.5rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1.25rem; }
                   .blog-content p { margin-bottom: 1.5rem; text-align: justify; }
                   
                   /* Tiptap List Styles */
@@ -120,12 +120,11 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
                     margin: 2rem 0; 
                     border-radius: 0 0.75rem 0.75rem 0; 
                     font-style: italic; 
-                    color: #1e40af;
                     font-size: 1.1rem;
                   }
                   
                   /* Tiptap Mark Styles */
-                  .blog-content strong { color: #0f172a; font-weight: 700; }
+                  .blog-content strong { font-weight: 700; }
                   .blog-content em { font-style: italic; }
                   .blog-content u { text-decoration: underline; }
                   .blog-content s { text-decoration: line-through; }
@@ -141,8 +140,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
                   }
                   
                   /* Tiptap Link Styles */
-                  .blog-content a { color: #2563eb; text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
-                  .blog-content a:hover { color: #1d4ed8; }
+                  .blog-content a { text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
 
                   /* Tiptap Code Styles */
                   .blog-content code { 
@@ -151,7 +149,6 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
                     border-radius: 0.25rem; 
                     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
                     font-size: 0.9em;
-                    color: #e11d48;
                   }
                 `}} />
                 <div dangerouslySetInnerHTML={{ __html: processedContent }} />

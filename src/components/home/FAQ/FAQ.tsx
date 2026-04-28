@@ -33,8 +33,11 @@ export const FAQ = ({ faqs }: FAQProps) => {
               <AccordionTrigger className="text-left py-3 text-[15px] md:text-[16px] font-semibold text-[#111827] hover:no-underline transition-all gap-4">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="pb-4 text-[14px] text-slate-500 font-normal leading-relaxed">
-                {faq.answer}
+              <AccordionContent className="pb-4">
+                <div 
+                  className="rich-text text-[14px] leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: faq.answer }}
+                />
               </AccordionContent>
             </AccordionItem>
           ))}

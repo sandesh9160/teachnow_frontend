@@ -77,7 +77,7 @@ export default function FAQPage() {
                   </AccordionTrigger>
                   <AccordionContent className="pb-5">
                     <div 
-                      className="text-slate-500 text-sm leading-relaxed prose prose-slate max-w-none"
+                      className="rich-text text-sm leading-relaxed max-w-none"
                       dangerouslySetInnerHTML={{ __html: faq.answer }}
                     />
                   </AccordionContent>
