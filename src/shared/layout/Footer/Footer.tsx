@@ -123,7 +123,13 @@ export const Footer = ({
               <ul className="space-y-2.5">
                 {(Array.isArray(section.links) ? section.links : []).map((link) => {
                   const href = toAbsoluteUrl(link.url);
-                  const isExternal = /^https?:\/\//i.test(href) || href === "#";
+                  
+                  // Check if it's truly external or just an absolute internal link
+                  const isTrulyExternal = /^https?:\/\//i.test(href) && 
+                    !href.includes("teachnow.in") && 
+                    !href.includes("localhost");
+                    
+                  const isExternal = isTrulyExternal || href === "#";
 
                   return (
                     <li key={link.id || link.title}>
