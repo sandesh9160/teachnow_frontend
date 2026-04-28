@@ -6,11 +6,14 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/services/api/client";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
+import { useBranding } from "@/hooks/useBranding";
 
 export default function RegisterPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const router = useRouter();
   const captchaRef = useRef<any>(null);
+
+  const { companyName, companyLogo, brandSecondaryPart, brandPrimaryPart } = useBranding();
 
   // Jobseeker as default to ensure fields always show
   const [role, setRole] = useState<"job_seeker" | "employer">("job_seeker");
@@ -18,6 +21,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const [formData, setFormData] = useState({
     company_name: "",
@@ -34,6 +38,14 @@ export default function RegisterPage() {
   const hasNumber = /\d/.test(password);
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   const isPasswordValid = hasMinLength && hasUpperCase && hasNumber && hasSpecialChar;
+
+  const isFormValid = 
+    (role === "job_seeker" ? !!formData.name : (!!formData.company_name && !!formData.phone)) &&
+    !!formData.email &&
+    isPasswordValid &&
+    password === confirmPassword &&
+    acceptedTerms &&
+    !!captchaToken;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -112,55 +124,60 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container flex items-center justify-center py-4 md:py-5 bg-white">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-4 md:py-6">
       <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-[1.2fr_1.8fr]">
         {/* Left - Illustration */}
-        <div className="hidden flex-col items-center justify-start gap-4 bg-muted/10 p-4 pt-5 md:flex border-r border-border">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
-            <GraduationCap className="h-6 w-6 text-primary" />
-          </div>
+        <div className="hidden flex-col items-center justify-center gap-8 bg-muted/10 p-8 md:flex border-r border-border">
+          {companyLogo ? (
+            <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white shadow-2xl overflow-hidden p-4 transition-transform hover:scale-110 duration-500">
+              <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+            </div>
+          ) : (
+            <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white shadow-2xl transition-transform hover:scale-110 duration-500">
+              <GraduationCap className="h-14 w-14 text-primary" />
+            </div>
+          )}
           <div className="text-center">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Teach<span className="text-primary">Now</span>
+            <h2 className="font-display text-4xl font-black text-foreground tracking-tighter">
+              {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-[200px]">
-              India's #1 education job portal
-            </p>
           </div>
-          <img
-            src="/images/school-illustration.png"
-            alt="School Illustration"
-            className="w-60 drop-shadow-sm"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
-          <div className="flex flex-col gap-2 w-full">
-            {["Free to join", "Verified schools & institutes", "Apply with one click"].map((item) => (
-              <div key={item} className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs text-foreground font-medium shadow-sm border border-border/50">
-                <span className="text-primary font-bold">✓</span> {item}
-              </div>
-            ))}
+          <div className="relative mt-6 w-full max-w-[300px] overflow-hidden rounded-2xl drop-shadow-xl transition-transform duration-500 hover:scale-105">
+            <img
+              src="/images/auth-illustrator.png"
+              alt="Teaching Illustration"
+              className="w-full h-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
           </div>
         </div>
 
         {/* Right - Form */}
-        <div className="p-3 md:p-4 bg-white">
-          <div className="mb-2">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <GraduationCap className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-display text-base font-bold text-foreground">
-                Teach<span className="text-primary">Now</span>
+        <div className="p-5 md:p-6 bg-white">
+          <div className="mb-4">
+            {/* Mobile Brand - only visible on small screens */}
+            <div className="flex items-center gap-2 mb-4 md:hidden">
+              {companyLogo ? (
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-md overflow-hidden p-1.5 border border-border">
+                  <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+                </div>
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md">
+                  <GraduationCap className="h-5 w-5 text-primary-foreground" />
+                </div>
+              )}
+              <span className="font-display text-xl font-bold text-foreground">
+                {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
               </span>
             </div>
-            <h1 className="font-display text-base font-bold text-foreground">Create Account</h1>
-            <p className="mt-0.5 text-[10px] text-muted-foreground">Join India's #1 education job portal</p>
+            
+            <h1 className="font-display text-2xl font-bold text-foreground">Create Account</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Fill in the details below to get started</p>
           </div>
 
           {/* Role Selection */}
-          <div className="mb-2">
-            <label className="mb-1 block text-xs font-semibold text-foreground">I am a</label>
-            <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-border bg-muted/20 p-1">
+          <div className="mb-5">
+            <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/20 p-1">
               <button
                 type="button"
                 suppressHydrationWarning
@@ -187,17 +204,17 @@ export default function RegisterPage() {
               <div className="space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <label htmlFor="company_name_reg" className="mb-1.5 block text-sm font-medium text-foreground">Company Name</label>
-                  <input id="company_name_reg" name="company_name" value={formData.company_name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="Sri Chaitanya Junior College" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                  <input id="company_name_reg" name="company_name" value={formData.company_name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="Sri Chaitanya Junior College" className="w-full rounded-xl border border-border bg-white px-4 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
                 <div>
                   <label htmlFor="phone_reg" className="mb-1.5 block text-sm font-medium text-foreground">Phone Number</label>
-                  <input id="phone_reg" name="phone" value={formData.phone} onChange={handleChange} type="tel" suppressHydrationWarning required placeholder="+91 9638527410" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                  <input id="phone_reg" name="phone" value={formData.phone} onChange={handleChange} type="tel" suppressHydrationWarning required placeholder="+91 9638527410" className="w-full rounded-xl border border-border bg-white px-4 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
               </div>
             ) : role === "job_seeker" ? (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <label htmlFor="name_reg" className="mb-1.5 block text-sm font-medium text-foreground">Full Name</label>
-                <input id="name_reg" name="name" value={formData.name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="John Doe" className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                <input id="name_reg" name="name" value={formData.name} onChange={handleChange} type="text" suppressHydrationWarning required placeholder="John Doe" className="w-full rounded-xl border border-border bg-white px-4 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
               </div>
             ) : null}
 
@@ -205,7 +222,7 @@ export default function RegisterPage() {
               <>
                 <div>
                   <label htmlFor="email_reg" className="mb-1.5 block text-sm font-medium text-foreground">Email Address</label>
-                  <input id="email_reg" name="email" value={formData.email} onChange={handleChange} type="email" suppressHydrationWarning required placeholder={role === "employer" ? "durgakishorechitturi@gmail.com" : "you@example.com"} className="w-full rounded-xl border border-border bg-white px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                  <input id="email_reg" name="email" value={formData.email} onChange={handleChange} type="email" suppressHydrationWarning required placeholder={role === "employer" ? "durgakishorechitturi@gmail.com" : "you@example.com"} className="w-full rounded-xl border border-border bg-white px-4 py-1.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
                 <div>
                   <label htmlFor="pw_reg" className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
@@ -217,8 +234,10 @@ export default function RegisterPage() {
                       suppressHydrationWarning
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => !password && setPasswordFocused(false)}
                       placeholder="••••••••"
-                      className="w-full rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full rounded-lg border border-border bg-white px-4 py-1.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                     <div
                       onClick={() => setShowPassword(!showPassword)}
@@ -229,33 +248,35 @@ export default function RegisterPage() {
                   </div>
 
                   {/* Password Validation UI */}
-                  <div className="mt-3.5 space-y-3">
-                    <div className="flex gap-1.5 h-1.5 w-full">
-                      <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength ? "bg-green-500" : "bg-border"}`} />
-                      <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase ? "bg-green-500" : "bg-border"}`} />
-                      <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase && hasNumber ? "bg-green-500" : "bg-border"}`} />
-                      <div className={`h-full flex-1 rounded-full transition-colors ${isPasswordValid ? "bg-green-500" : "bg-border"}`} />
-                    </div>
+                  {passwordFocused && (
+                    <div className="mt-3.5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex gap-1.5 h-1.5 w-full">
+                        <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength ? "bg-green-500" : "bg-border"}`} />
+                        <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase ? "bg-green-500" : "bg-border"}`} />
+                        <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase && hasNumber ? "bg-green-500" : "bg-border"}`} />
+                        <div className={`h-full flex-1 rounded-full transition-colors ${isPasswordValid ? "bg-green-500" : "bg-border"}`} />
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-xs">
-                      <div className={`flex items-center gap-1.5 transition-colors ${hasMinLength ? "text-green-600 dark:text-green-400 font-medium" : "text-muted-foreground"}`}>
-                        {hasMinLength ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                        <span>At least 8 chars</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 transition-colors ${hasUpperCase ? "text-green-600 dark:text-green-400 font-medium" : "text-muted-foreground"}`}>
-                        {hasUpperCase ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                        <span>One uppercase</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-green-600 dark:text-green-400 font-medium" : "text-muted-foreground"}`}>
-                        {hasNumber ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                        <span>One number</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 transition-colors ${hasSpecialChar ? "text-green-600 dark:text-green-400 font-medium" : "text-muted-foreground"}`}>
-                        {hasSpecialChar ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                        <span>Special character</span>
+                      <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-[10px]">
+                        <div className={`flex items-center gap-1.5 transition-colors ${hasMinLength ? "text-green-600 font-bold" : "text-muted-foreground"}`}>
+                          {hasMinLength ? <Check className="h-3 w-3" /> : <X className="h-3 w-3 opacity-50" />}
+                          <span>At least 8 chars</span>
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${hasUpperCase ? "text-green-600 font-bold" : "text-muted-foreground"}`}>
+                          {hasUpperCase ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
+                          <span>One uppercase</span>
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-green-600 font-bold" : "text-muted-foreground"}`}>
+                          {hasNumber ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
+                          <span>One number</span>
+                        </div>
+                        <div className={`flex items-center gap-1.5 transition-colors ${hasSpecialChar ? "text-green-600 font-bold" : "text-muted-foreground"}`}>
+                          {hasSpecialChar ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
+                          <span>Special character</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="confirm_pw_reg" className="mb-1.5 block text-sm font-medium text-foreground">Confirm Password</label>
@@ -268,7 +289,7 @@ export default function RegisterPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      className="w-full rounded-lg border border-border bg-white px-4 py-1.5 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                     <div
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -300,8 +321,8 @@ export default function RegisterPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={authLoading || !acceptedTerms}
-                  className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
+                  disabled={authLoading || !isFormValid}
+                  className={`w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed ${role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
                     }`}
                 >
                   {authLoading ? "Creating Account..." : "Create Account"}

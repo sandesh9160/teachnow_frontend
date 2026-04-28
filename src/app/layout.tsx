@@ -4,6 +4,7 @@ import { Providers } from "@/providers";
 import "./globals.css";
 
 import { LayoutWrapper } from "./LayoutWrapper";
+import { LayoutDataProvider } from "@/providers/LayoutDataProvider";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
 
@@ -32,14 +33,20 @@ async function RootLayoutInner({ children }: Readonly<{ children: React.ReactNod
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <Providers>
-          <LayoutWrapper
+          <LayoutDataProvider
             navigationData={navigation}
             footerData={footer}
             heroCTA={heroCTA}
-            authUser={authUser}
           >
-            {children}
-          </LayoutWrapper>
+            <LayoutWrapper
+              navigationData={navigation}
+              footerData={footer}
+              heroCTA={heroCTA}
+              authUser={authUser}
+            >
+              {children}
+            </LayoutWrapper>
+          </LayoutDataProvider>
         </Providers>
       </body>
     </html>
