@@ -36,9 +36,10 @@ interface RecruitersClientProps {
     total_users: number;
     data: Recruiter[];
   };
+  isProfileComplete?: boolean;
 }
 
-export default function RecruitersClient({ initialData }: RecruitersClientProps) {
+export default function RecruitersClient({ initialData, isProfileComplete = true }: RecruitersClientProps) {
   const [users, setUsers] = useState<Recruiter[]>(initialData?.data || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -125,7 +126,29 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
         </div>
 
         <Button 
-          onClick={() => setShowAddForm(!showAddForm)} 
+          onClick={() => {
+            if (!isProfileComplete) {
+              toast("Finish Your Profile", {
+                id: "recruiters-profile-warning",
+                description: "You need to finish your profile before you can add team members.",
+                style: {
+                  background: '#FFFBEB',
+                  border: '1px solid #FCD34D',
+                  color: '#92400E',
+                },
+                action: {
+                  label: "Finish Now",
+                  onClick: () => window.location.href = "/dashboard/employer/company-profile"
+                },
+                actionButtonStyle: {
+                  backgroundColor: '#2563EB',
+                  color: '#fff',
+                }
+              });
+              return;
+            }
+            setShowAddForm(!showAddForm);
+          }} 
           size="sm"
           className={cn(
              "h-10 w-full sm:w-auto px-5 rounded-xl text-xs font-medium transition-all shadow-sm flex items-center justify-center",
@@ -136,6 +159,29 @@ export default function RecruitersClient({ initialData }: RecruitersClientProps)
           {showAddForm ? "Cancel" : "Add recruiter"}
         </Button>
       </div>
+
+      {!isProfileComplete && (
+        <div className="p-4 bg-[#FFFBEB] rounded-xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#F59E0B] shrink-0 shadow-sm">
+               <UserPlus className="w-4.5 h-4.5" />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-[#92400E]">Finish Your Profile</h3>
+              <p className="text-[11px] text-[#92400E]/80 font-medium">
+                You need to finish your profile before you can add team members.
+              </p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => window.location.href = "/dashboard/employer/company-profile"}
+            size="sm"
+            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[11px] font-bold px-5 h-8 rounded-lg whitespace-nowrap shadow-sm"
+          >
+            Finish Now
+          </Button>
+        </div>
+      )}
 
       {/* Add Recruiter Form */}
       {showAddForm && (

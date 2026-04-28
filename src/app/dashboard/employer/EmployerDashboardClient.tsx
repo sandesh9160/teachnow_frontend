@@ -17,7 +17,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 // import { format } from "date-fns";
 
@@ -194,12 +194,40 @@ const getJobStatusStyles = (status: string) => {
 export default function EmployerDashboardClient({
    welcomeName,
    dashboardData,
-   userRole = "employer"
+   userRole = "employer",
+   isProfileComplete = true
 }: {
    welcomeName: string,
    dashboardData?: DashboardStats,
-   userRole?: string
+   userRole?: string,
+   isProfileComplete?: boolean
 }) {
+   const [toastShown, setToastShown] = useState(false);
+
+   useEffect(() => {
+      if (!isProfileComplete && !toastShown) {
+         toast("Finish Your Profile", {
+            id: "profile-completion-warning",
+            description: "Please finish your profile to start posting jobs.",
+            duration: 10000,
+            style: {
+               background: '#FFFBEB',
+               border: '1px solid #FCD34D',
+               color: '#92400E',
+            },
+            action: {
+               label: "Finish Now",
+               onClick: () => window.location.href = `/dashboard/${userRole}/company-profile`
+            },
+            actionButtonStyle: {
+               backgroundColor: '#2563EB',
+               color: '#fff',
+            }
+         });
+         setToastShown(true);
+      }
+   }, [isProfileComplete, toastShown, userRole]);
+
    const [isFeatured, setIsFeatured] = useState(
       dashboardData?.company_featured === true ||
       dashboardData?.is_featured === 1 ||

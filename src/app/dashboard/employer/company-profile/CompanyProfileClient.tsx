@@ -17,6 +17,8 @@ import {
   Layers,
   Award,
 
+  ArrowRight,
+  ChevronLeft,
   X
 } from "lucide-react";
 import { useState } from "react";
@@ -112,11 +114,19 @@ export default function CompanyProfileClient({
     return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
   };
 
+  const handleNext = () => {
+    if (activeTab === "identity") setActiveTab("contact");
+    else if (activeTab === "contact") setActiveTab("location");
+  };
+
+  const handleBack = () => {
+    if (activeTab === "location") setActiveTab("contact");
+    else if (activeTab === "contact") setActiveTab("identity");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!profile) return;
-    setLoading(true);
-
     const formData = new FormData(e.currentTarget);
     
     // Strict Validation Check
@@ -173,6 +183,14 @@ export default function CompanyProfileClient({
             fontSize: '13px'
           }
         });
+        
+        // Update local state with the returned data to ensure UI reflects changes immediately
+        if (result.data) {
+          setProfile(result.data);
+        }
+        
+        setLogoFile(null);
+        setLogoPreview(null);
         setErrors({});
         setIsEditing(false);
         router.refresh();
@@ -205,7 +223,7 @@ export default function CompanyProfileClient({
 
   if (isEditing) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-3 space-y-4 font-sans text-slate-800 pb-16">
+      <div className="max-w-6xl mx-auto px-4 py-3 space-y-4 font-sans text-slate-800 pb-16">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
            <div className="space-y-0.5 min-w-0">
@@ -363,7 +381,7 @@ export default function CompanyProfileClient({
                          </div>
                        </div>
                      </div>
-                     <div className="space-y-1.5 sm:col-span-2">
+                     <div className="space-y-2.0 sm:col-span-2">
                        <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_description ? "text-red-500" : "text-slate-500")}>
                          Detailed introduction <span className="text-red-500 ml-0.5">*</span>
                        </Label>
@@ -497,25 +515,51 @@ export default function CompanyProfileClient({
                     <p className="text-[10px] text-slate-500 font-medium">Unsaved changes will be discarded on exit</p>
                   </div>
                   
-                   <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
-                     <Button 
-                       variant="outline" 
-                       size="sm" 
-                       type="button" 
-                       onClick={() => setIsEditing(false)} 
-                       className="w-full sm:w-auto h-11 px-5 rounded-xl text-[11px] font-semibold text-slate-600 border-slate-200 hover:bg-slate-50 transition-all"
-                     >
-                       Cancel
-                     </Button>
-                     <Button 
-                       size="sm" 
-                       type="submit" 
-                       disabled={loading} 
-                       className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-semibold bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
-                     >
-                       {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
-                       Save Profile
-                     </Button>
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto order-1 sm:order-2">
+                     <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          type="button" 
+                          onClick={() => setIsEditing(false)} 
+                          className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-semibold text-slate-600 border-slate-200 hover:bg-slate-50 transition-all"
+                        >
+                          Cancel
+                        </Button>
+                        
+                        {activeTab !== "identity" && (
+                          <Button 
+                            type="button"
+                            variant="outline"
+                            onClick={handleBack}
+                            className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                            Back
+                          </Button>
+                        )}
+                     </div>
+                     
+                     {activeTab !== "location" ? (
+                       <Button 
+                         type="button"
+                         onClick={handleNext}
+                         className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                       >
+                         Next Step
+                         <ArrowRight className="w-3.5 h-3.5" />
+                       </Button>
+                     ) : (
+                       <Button 
+                         size="sm" 
+                         type="submit" 
+                         disabled={loading} 
+                         className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-semibold bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                       >
+                         {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                         Save Profile
+                       </Button>
+                     )}
                    </div>
                 </div>
               </form>
@@ -695,7 +739,7 @@ export default function CompanyProfileClient({
                     </p>
                   </div>
 
-                  {profile.latitude && profile.longitude ? (
+                  {profile.latitude && profile.longitude && parseFloat(profile.latitude) !== 0 && parseFloat(profile.longitude) !== 0 ? (
                     <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative group">
                       <LocationPicker 
                         lat={profile.latitude} 

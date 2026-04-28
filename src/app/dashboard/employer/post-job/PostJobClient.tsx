@@ -40,6 +40,7 @@ interface PostJobClientProps {
   };
   isEdit?: boolean;
   profile?: any;
+  isProfileComplete?: boolean;
 }
 
 export default function PostJobClient({
@@ -47,7 +48,8 @@ export default function PostJobClient({
   initialData,
   isEdit = false,
   userRole = "employer",
-  profile
+  profile,
+  isProfileComplete = true
 }: PostJobClientProps & { userRole?: string }) {
   const basePath = `/dashboard/${userRole}`;
   const job = isEdit ? initialData?.job : initialData;
@@ -335,8 +337,31 @@ export default function PostJobClient({
         <p className="text-slate-400 text-xs">{isEdit ? "Update your job listing requirements" : "Create a job listing in 5 simple steps"}</p>
       </div>
 
+      {!isProfileComplete && (
+        <div className="mt-4 p-4 bg-[#FFFBEB] rounded-xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#F59E0B] shrink-0 shadow-sm">
+               <Target className="w-4.5 h-4.5" />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-[#92400E]">Finish Your Profile</h3>
+              <p className="text-[11px] text-[#92400E]/80 font-medium">
+                You need to finish your profile before you can post any jobs.
+              </p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => window.location.href = `/dashboard/${userRole}/company-profile`}
+            size="sm"
+            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[11px] font-bold px-5 h-8 rounded-lg whitespace-nowrap shadow-sm"
+          >
+            Finish Now
+          </Button>
+        </div>
+      )}
+
       {/* Stepper Indicator - Desktop Compact Side-by-Side Style */}
-      <div className="w-full py-2 md:py-4">
+      <div className={cn("w-full py-2 md:py-4", !isProfileComplete && "opacity-40 pointer-events-none")}>
         <div className="flex items-center justify-center flex-wrap gap-y-1 max-w-4xl mx-auto">
           {steps.map((step, idx) => (
             <div key={step.id} className="flex items-center">
@@ -388,7 +413,7 @@ export default function PostJobClient({
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 md:p-6 min-h-[350px]">
+      <div className={cn("bg-white rounded-2xl border border-slate-100 shadow-xs p-4 md:p-6 min-h-[350px]", !isProfileComplete && "opacity-40 pointer-events-none")}>
         {currentStep === 1 && (
           <div className="space-y-5 animate-in fade-in duration-300">
             <h2 className="text-sm font-bold text-[#1E1B4B]">Job Details</h2>
@@ -778,7 +803,7 @@ export default function PostJobClient({
       </div>
 
       {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-6 border-t border-slate-50 gap-4">
+      <div className={cn("flex items-center justify-between pt-6 border-t border-slate-50 gap-4", !isProfileComplete && "opacity-40 pointer-events-none")}>
         <Button
           variant="outline"
           onClick={handleBack}

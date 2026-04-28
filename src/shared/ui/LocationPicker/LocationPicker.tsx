@@ -90,6 +90,7 @@ export function LocationPicker({
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [position, setPosition] = useState<google.maps.LatLngLiteral>(DEFAULT_CENTER);
+  const [hasLocationSet, setHasLocationSet] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Sync external value
@@ -97,13 +98,15 @@ export function LocationPicker({
     const latNum = typeof lat === "string" ? parseFloat(lat) : lat;
     const lngNum = typeof lng === "string" ? parseFloat(lng) : lng;
     
-    if (latNum !== null && lngNum !== null && !Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+    if (latNum !== null && lngNum !== null && !Number.isNaN(latNum) && !Number.isNaN(lngNum) && latNum !== 0 && lngNum !== 0) {
       setPosition({ lat: latNum as number, lng: lngNum as number });
+      setHasLocationSet(true);
     }
   }, [lat, lng]);
 
   const updateLocation = useCallback((newLat: number, newLng: number) => {
     setPosition({ lat: newLat, lng: newLng });
+    setHasLocationSet(true);
     onChange(newLat, newLng);
     map?.panTo({ lat: newLat, lng: newLng });
   }, [map, onChange]);
@@ -235,27 +238,14 @@ export function LocationPicker({
             gestureHandling: hideControls ? "none" : "greedy",
           }}
         >
-          <AdvancedMarker 
-            map={map} 
-            position={position} 
-            onDragEnd={(lat, lng) => !hideControls && updateLocation(lat, lng)} 
-          />
+          {hasLocationSet && (
+            <AdvancedMarker 
+              map={map} 
+              position={position} 
+              onDragEnd={(lat, lng) => !hideControls && updateLocation(lat, lng)} 
+            />
+          )}
         </GoogleMap>
-
-        {/* Selected Coordinates Overlay */}
-        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm border border-slate-200/60 p-2.5 rounded-xl shadow-lg flex items-center justify-between pointer-events-none animate-in slide-in-from-bottom-2 duration-500">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 flex items-center justify-center bg-indigo-50 rounded-lg border border-indigo-100">
-              <MapPin className="h-4 w-4 text-indigo-600" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-indigo-900 uppercase tracking-wider leading-none mb-1">Target Coordinates</span>
-              <span className="text-[11px] font-bold text-slate-600 tabular-nums">
-                {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

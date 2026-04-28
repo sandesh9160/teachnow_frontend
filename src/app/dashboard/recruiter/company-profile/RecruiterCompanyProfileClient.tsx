@@ -16,6 +16,7 @@ import {
   Flag,
   Layers,
   Award,
+  ArrowRight,
   X,
   ChevronLeft
 } from "lucide-react";
@@ -111,11 +112,19 @@ export default function RecruiterCompanyProfileClient({
     return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
   };
 
+  const handleNext = () => {
+    if (activeTab === "identity") setActiveTab("contact");
+    else if (activeTab === "contact") setActiveTab("location");
+  };
+
+  const handleBack = () => {
+    if (activeTab === "location") setActiveTab("contact");
+    else if (activeTab === "contact") setActiveTab("identity");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!profile) return;
-    setLoading(true);
-
     const formData = new FormData(e.currentTarget);
     
     // Sequential high-fidelity validation
@@ -129,6 +138,8 @@ export default function RecruiterCompanyProfileClient({
       });
       return;
     }
+
+    setLoading(true);
 
     formData.append("_method", "PUT");
     if (logoFile) {
@@ -157,6 +168,15 @@ export default function RecruiterCompanyProfileClient({
 
       if (result.status === true) {
         toast.success("Institution profile updated!", { style: { borderLeft: '4px solid #10b981' } });
+        
+        // Update local state with the returned data
+        if (result.data) {
+          setProfile(result.data);
+        }
+        
+        setLogoFile(null);
+        setLogoPreview(null);
+        setErrors({});
         setIsEditing(false);
         router.refresh();
       } else {
@@ -472,25 +492,51 @@ export default function RecruiterCompanyProfileClient({
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="w-full sm:w-auto h-11 px-5 rounded-xl text-[11px] font-medium text-black opacity-70 border-slate-200 hover:bg-slate-50 transition-all"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="submit"
-                    disabled={loading}
-                    className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
-                  >
-                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
-                    Save Institution Profile
-                  </Button>
-                </div>
+                   <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-medium text-black opacity-70 border-slate-200 hover:bg-slate-50 transition-all"
+                      >
+                        Cancel
+                      </Button>
+                      
+                      {activeTab !== "identity" && (
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          onClick={handleBack}
+                          className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-medium text-indigo-600 border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                          Back
+                        </Button>
+                      )}
+                   </div>
+                   
+                   {activeTab !== "location" ? (
+                     <Button 
+                       type="button"
+                       onClick={handleNext}
+                       className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                     >
+                       Next Step
+                       <ArrowRight className="w-3.5 h-3.5" />
+                     </Button>
+                   ) : (
+                     <Button
+                       size="sm"
+                       type="submit"
+                       disabled={loading}
+                       className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                     >
+                       {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                       Save Institution Profile
+                     </Button>
+                   )}
+                 </div>
               </div>
             </form>
           </div>
@@ -515,6 +561,13 @@ export default function RecruiterCompanyProfileClient({
           <h1 className="text-lg font-medium text-black tracking-tight">Institution Profile</h1>
           <p className="text-[12px] text-black opacity-60">General identity and public presence of the institution.</p>
         </div>
+        <Button 
+          onClick={() => setIsEditing(true)}
+          className="h-9 px-4 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95 shrink-0 text-white"
+        >
+          <Loader2 className={cn("w-3.5 h-3.5", !loading && "hidden")} />
+          <BadgeCheck className={cn("w-3.5 h-3.5", loading && "hidden")} /> Edit Profile
+        </Button>
       </div>
 
       {/* Hero Banner Section */}
@@ -661,7 +714,7 @@ export default function RecruiterCompanyProfileClient({
               </div>
 
               <div className="rounded-[20px] overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative group h-80">
-                {profile.latitude && profile.longitude ? (
+                {profile.latitude && profile.longitude && parseFloat(profile.latitude) !== 0 && parseFloat(profile.longitude) !== 0 ? (
                   <iframe
                     width="100%"
                     height="100%"
@@ -673,13 +726,10 @@ export default function RecruiterCompanyProfileClient({
                     className="grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
                   />
                 ) : (
-                    <LocationPicker
-                      lat={profile.latitude}
-                      lng={profile.longitude}
-                      onChange={() => { }}
-                      hideControls={true}
-                      className="w-full h-64 grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-                    />
+                    <div className="h-full flex flex-col items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl gap-2">
+                      <MapPin className="w-6 h-6 text-slate-300" />
+                      <p className="text-[11px] font-medium text-slate-400">Map coordinates not set for this institution</p>
+                    </div>
                 )}
 
                 <div className="absolute top-4 right-4 z-10">
