@@ -64,6 +64,20 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
     void fetchDocuments();
   }, [fetchDocuments]);
 
+  useEffect(() => {
+    if (!loading && documents.length === 0) {
+      toast.warning("Upload documents to get verified institute", {
+        description: "Your verification process starts after the first upload.",
+        duration: 5000,
+        style: {
+          background: '#FFF7ED',
+          borderLeft: '4px solid #F97316',
+          color: '#C2410C',
+        }
+      });
+    }
+  }, [loading, documents.length]);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

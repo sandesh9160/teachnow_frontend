@@ -270,8 +270,8 @@ export default function PostJobClient({
       salary_min: (salaryUndisclosed || !formData.salary_min) ? null : Number(formData.salary_min),
       salary_max: (salaryUndisclosed || !formData.salary_max) ? null : Number(formData.salary_max),
       application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
-      questions: questions.length > 0 ? questions : null,
-      screening_questions: questions.length > 0 ? questions : null,
+      questions: questions,
+      screening_questions: questions,
       ...(userRole === 'recruiter' && isEdit ? { _method: 'PUT' } : {})
     };
     
@@ -511,7 +511,7 @@ export default function PostJobClient({
                     errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )}
                 >
-                  <option value="freshers">Freshers</option>
+                  <option value="fresher">Fresher</option>
                   <option value="experienced">Experienced</option>
                 </select>
               </div>

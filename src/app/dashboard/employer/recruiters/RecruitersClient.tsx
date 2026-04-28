@@ -221,7 +221,7 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
               <div className="flex justify-end">
                  <Button type="submit" disabled={loading} className="w-full sm:w-auto h-11 px-10 rounded-xl text-xs font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-[1.01]">
                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
-                   Provision account
+                   Save
                  </Button>
               </div>
            </form>
