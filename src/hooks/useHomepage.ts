@@ -399,3 +399,17 @@ export async function getLocationJobs(slug: string): Promise<any> {
     return null;
   }
 }
+/**
+ * Fetch Terms and Conditions.
+ * Endpoint: /open/terms-conditions
+ */
+export async function getTermsAndConditions(): Promise<any[]> {
+  try {
+    const res = await fetchAPI<ApiResponse<any>>("/open/terms-conditions");
+    const data = res.data || res;
+    return toArray(data);
+  } catch (error) {
+    //console.error("Error in getTermsAndConditions hook:", error);
+    return [];
+  }
+}
