@@ -279,8 +279,8 @@ export default function EmployerRegisterPage() {
                 />
                 <label htmlFor="terms_employer" className="text-[11px] text-slate-500 font-medium leading-tight">
                   I agree to the{" "}
-                  <a href="#" className="font-bold text-secondary hover:underline">Terms of Service</a> and{" "}
-                  <a href="#" className="font-bold text-secondary hover:underline">Privacy Policy</a>.
+                  <a href="/terms-and-conditions" className="font-bold text-secondary hover:underline">Terms of Service</a> and{" "}
+                  <a href="/privacy-policy" className="font-bold text-secondary hover:underline">Privacy Policy</a>.
                 </label>
               </div>
               {errors.acceptedTerms && (

@@ -403,8 +403,8 @@ export default function RegisterPage() {
                 />
                 <label htmlFor="terms" className="text-[11px] text-muted-foreground leading-tight">
                   I agree to the{" "}
-                  <a href="#" className={`font-medium hover:underline ${role === "job_seeker" ? "text-primary" : "text-secondary"}`}>Terms of Service</a> and{" "}
-                  <a href="#" className={`font-medium hover:underline ${role === "job_seeker" ? "text-primary" : "text-secondary"}`}>Privacy Policy</a>.
+                  <a href="/terms-and-conditions" className={`font-medium hover:underline ${role === "job_seeker" ? "text-primary" : "text-secondary"}`}>Terms of Service</a> and{" "}
+                  <a href="/privacy-policy" className={`font-medium hover:underline ${role === "job_seeker" ? "text-primary" : "text-secondary"}`}>Privacy Policy</a>.
                 </label>
               </div>
               {errors.acceptedTerms && (
