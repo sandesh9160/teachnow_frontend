@@ -3,7 +3,6 @@
 import {
    MapPin,
    DollarSign,
-   Edit3,
    ChevronLeft,
    Users,
    FileText,
@@ -175,13 +174,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                   </Button>
                )}
 
-               {job.job_status !== 'filled' && job.job_status !== 'expired' && (
-                  <Link href={`${basePath}/jobs/edit/${job.id}`}>
-                     <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-slate-600 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
-                        <Edit3 className="w-4 h-4 text-indigo-400" /> Edit
-                     </Button>
-                  </Link>
-               )}
+
             </div>
          </div>
 

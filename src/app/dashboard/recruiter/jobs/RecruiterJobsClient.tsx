@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { 
-  Briefcase, 
-  MapPin, 
-  Calendar, 
-  Edit3, 
-  Search, 
-  PlusCircle, 
+import {
+  Briefcase,
+  MapPin,
+  Calendar,
+  Search,
+  PlusCircle,
   Clock,
   TrendingUp,
   Eye,
@@ -64,7 +63,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  
+
   const userRole = "recruiter";
   const basePath = `/dashboard/${userRole}`;
 
@@ -74,7 +73,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
 
   const activeJobs = initialData?.active_jobs?.data || [];
   const expiredJobs = initialData?.expired_jobs?.data || [];
-  
+
   const jobs = useMemo(() => {
     const seen = new Set<number>();
     return [...activeJobs, ...expiredJobs].filter(job => {
@@ -121,9 +120,9 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
   const filteredJobs = partitionedJobs[activeTab];
 
   const handleAction = async (id: number, action: string) => {
-    const actionLabel = action === 'filled' ? 'mark this job as filled' : 
-                       action === 'delete' ? 'permanently delete this job' : 
-                       'republish this job';
+    const actionLabel = action === 'filled' ? 'mark this job as filled' :
+      action === 'delete' ? 'permanently delete this job' :
+        'republish this job';
 
     toast(`Are you sure you want to ${actionLabel}?`, {
       style: { borderLeft: '4px solid #ef4444' },
@@ -139,12 +138,12 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
             } else if (action === 'republish') {
               endpoint = `recruiter/jobs/${id}/republish`;
             }
-            
+
             const method = action === 'delete' ? "DELETE" : action === 'republish' ? "PUT" : "POST";
             console.log(`Calling recruiter endpoint: ${endpoint} with method: ${method}`);
             const res = await dashboardServerFetch<any>(endpoint, { method });
             console.log("Recruiter job action response:", res);
-            
+
             if (res?.status) {
               toast.success(res.message || `Job ${action} successful`, { style: { borderLeft: '4px solid #10b981' } });
               router.refresh();
@@ -160,7 +159,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
       },
       cancel: {
         label: 'Keep it',
-        onClick: () => {}
+        onClick: () => { }
       }
     });
   };
@@ -173,7 +172,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
       console.log(`Calling recruiter toggle-feature endpoint: ${endpoint}`);
       const res = await dashboardServerFetch<any>(endpoint, { method: "POST" });
       console.log("Recruiter toggle feature response:", res);
-      
+
       if (res?.status) {
         toast.success(res.message || "Featured status updated", { style: { borderLeft: '4px solid #10b981' } });
         router.refresh();
@@ -195,19 +194,19 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
 
   return (
     <div suppressHydrationWarning className="max-w-6xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-20">
-      
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-0.5">
           <h1 className="text-xl font-semibold text-slate-900 tracking-tight">Manage Job Posts</h1>
           <p className="text-[13px] font-medium text-slate-600">You have posted <span className="text-indigo-600 font-bold">{totalJobs}</span> teaching jobs in total.</p>
         </div>
-        
+
         <Link href={`${basePath}/post-job`}>
-           <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm transition-all flex items-center gap-2">
-             <PlusCircle className="w-4 h-4" />
-             Post New Job
-           </Button>
+          <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm transition-all flex items-center gap-2">
+            <PlusCircle className="w-4 h-4" />
+            Post New Job
+          </Button>
         </Link>
       </div>
 
@@ -235,15 +234,15 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
             { id: 'expired', label: 'Expired', count: partitionedJobs.expired.length },
             { id: 'featured', label: 'Featured', count: partitionedJobs.featured.length },
           ].map((tab) => (
-            <button 
+            <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               suppressHydrationWarning={true}
               className={cn(
                 "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap",
-                activeTab === tab.id 
-                ? "bg-[#312E81] text-white shadow-sm" 
-                : "text-slate-900 hover:bg-white/50"
+                activeTab === tab.id
+                  ? "bg-[#312E81] text-white shadow-sm"
+                  : "text-slate-900 hover:bg-white/50"
               )}
             >
               {tab.label} ({tab.count})
@@ -253,11 +252,11 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
 
         <div className="relative w-full lg:max-w-xs">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input 
+          <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search your jobs..." 
-            className="h-10 pl-10 bg-white border-slate-100 rounded-xl text-[12.5px] font-medium focus:ring-1 focus:ring-indigo-100 shadow-xs" 
+            placeholder="Search your jobs..."
+            className="h-10 pl-10 bg-white border-slate-100 rounded-xl text-[12.5px] font-medium focus:ring-1 focus:ring-indigo-100 shadow-xs"
           />
         </div>
       </div>
@@ -268,7 +267,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
           filteredJobs.map((job) => (
             <div key={job.id} className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden p-4 group transition-all hover:shadow-md hover:border-indigo-100/50">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                
+
                 {/* Left: Job Info */}
                 <div className="flex-1 space-y-3">
                   <div className="space-y-0.5">
@@ -278,9 +277,9 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                         <span className={cn(
                           "px-2 py-0.5 rounded-full text-[10px] font-semibold",
                           (job.expires_at && new Date(job.expires_at) < now) ? "bg-amber-50 text-amber-600" :
-                          (job.status === 'approved' || job.status === 'open') ? "bg-emerald-50 text-emerald-600" :
-                          job.status === 'rejected' ? "bg-rose-50 text-rose-600" :
-                          "bg-amber-50 text-amber-600"
+                            (job.status === 'approved' || job.status === 'open') ? "bg-emerald-50 text-emerald-600" :
+                              job.status === 'rejected' ? "bg-rose-50 text-rose-600" :
+                                "bg-amber-50 text-amber-600"
                         )}>
                           {(job.expires_at && new Date(job.expires_at) < now) ? "Expired" : (job.status || job.job_status)}
                         </span>
@@ -298,9 +297,9 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-900">
                       <Clock className="w-3.5 h-3.5 text-indigo-500" /> Posted {job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently"}
                     </span>
-                    {job.featured === 1 && job.featured_until && (
+                    {job.featured === 1 && job.admin_featured === 1 && job.featured_until && (
                       <span className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
-                        <TrendingUp className="w-3.5 h-3.5" /> Featured Until {job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"}
+                        <TrendingUp className="w-3.5 h-3.5" /> Featured {job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"}
                       </span>
                     )}
                   </div>
@@ -317,8 +316,8 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                   {!(job.expires_at && new Date(job.expires_at) < now) && (
                     <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
                       <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100 transition-all flex items-center gap-1.5 shadow-xs">
-                        <Users className="w-3.5 h-3.5" /> 
-                        Applicants 
+                        <Users className="w-3.5 h-3.5" />
+                        Applicants
                         {job.applicants_count !== undefined && (
                           <span className="ml-1 bg-white text-indigo-600 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-xs">
                             {job.applicants_count || 0}
@@ -327,15 +326,9 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                       </Button>
                     </Link>
                   )}
-                  
-                  <Link href={`${basePath}/jobs/edit/${job.id}`}>
-                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center gap-1.5">
-                      <Edit3 className="w-3.5 h-3.5 text-indigo-400" /> Edit
-                    </Button>
-                  </Link>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => {
                       const isExpiredFeatured = job.featured === 1 && job.featured_until && new Date(job.featured_until) < now;
                       if (job.featured === 0 || isExpiredFeatured) handleToggleFeatured(job.id);
@@ -354,11 +347,11 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : (
                       <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now)) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
-                    )} 
-                    {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now)) 
-                      ? "Featured" 
-                      : (job.featured === 1 && job.admin_featured !== 1) 
-                        ? "Awaiting" 
+                    )}
+                    {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= now))
+                      ? "Featured"
+                      : (job.featured === 1 && job.admin_featured !== 1)
+                        ? "Awaiting"
                         : "Feature"}
                   </Button>
 
@@ -369,7 +362,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                       variant="outline"
                       className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-50 hover:bg-indigo-50 hover:border-indigo-100 transition-all flex items-center gap-1.5"
                     >
-                      {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} 
+                      {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                       Republish Job
                     </Button>
                   )}

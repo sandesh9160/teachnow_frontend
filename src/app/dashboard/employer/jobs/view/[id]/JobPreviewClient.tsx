@@ -3,7 +3,6 @@
 import {
    MapPin,
    DollarSign,
-   Edit3,
    ChevronLeft,
    Users,
    FileText,
@@ -162,7 +161,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                      )}>
                         {job.status === 'approved' ? "Verified Post" : formatTerm(job.status || "Under Review")}
                      </span>
-                     {job.featured === 1 && (
+                     {job.featured === 1 && job.admin_featured === 1 && (
                         <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm border border-indigo-700">
                            <TrendingUp className="w-2.5 h-2.5" /> Featured on Home
                         </span>
@@ -192,13 +191,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                      Republish Job
                   </Button>
                )}
-               {job.job_status !== 'filled' && job.job_status !== 'expired' && (
-                  <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
-                     <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
-                        <Edit3 className="w-4 h-4 text-indigo-500" /> Edit Job
-                     </Button>
-                  </Link>
-               )}
+
                <Link href={`/jobs/${job.slug}`} target="_blank">
                   <Button className="h-10 px-6 rounded-xl text-xs font-semibold bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-lg shadow-indigo-100 flex items-center gap-2">
                      Live Preview <ExternalLink className="w-3.5 h-3.5" />

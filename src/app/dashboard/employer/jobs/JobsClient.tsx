@@ -6,7 +6,6 @@ import {
   Briefcase,
   MapPin,
   Calendar,
-  Edit3,
   Search,
   PlusCircle,
   Clock,
@@ -320,9 +319,9 @@ export default function JobsClient({
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-900">
                       <Clock className="w-3.5 h-3.5 text-indigo-500" /> Posted {job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently"}
                     </span>
-                    {job.featured === 1 && job.featured_until && (
+                    {job.featured === 1 && job.admin_featured === 1 && job.featured_until && (
                       <span className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
-                        <TrendingUp className="w-3.5 h-3.5" /> Featured Until {new Date(job.featured_until).toLocaleDateString('en-GB')}
+                        <TrendingUp className="w-3.5 h-3.5" /> Featured {new Date(job.featured_until).toLocaleDateString('en-GB')}
                       </span>
                     )}
                   </div>
@@ -350,11 +349,7 @@ export default function JobsClient({
                     </Link>
                   )}
 
-                  <Link href={`${basePath}/jobs/edit/${job.id}`}>
-                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center gap-1.5">
-                      <Edit3 className="w-3.5 h-3.5 text-indigo-400" /> Edit
-                    </Button>
-                  </Link>
+
 
                   {job.job_status === 'active' && (
                     <Button
@@ -389,7 +384,7 @@ export default function JobsClient({
                       <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
                     )} 
                     {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) 
-                      ? "Featured" 
+                      ? "Featured"
                       : (job.featured === 1 && job.admin_featured !== 1) 
                         ? "Awaiting" 
                         : "Feature"}
