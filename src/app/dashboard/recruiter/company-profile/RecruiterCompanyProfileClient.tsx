@@ -74,10 +74,20 @@ export default function RecruiterCompanyProfileClient({
 
     requiredFields.forEach(field => {
       const value = formData.get(field.key);
-      if (!value || String(value).trim() === "") {
+      const stringValue = value ? String(value).trim() : "";
+
+      if (!value || stringValue === "") {
         newErrors[field.key] = `${field.label} is required`;
-      } else if (field.key === "company_description" && String(value).trim().length < 50) {
+      } else if (field.key === "company_name") {
+        if (stringValue.length < 3) {
+          newErrors[field.key] = "Institution Name must be at least 3 characters";
+        } else if (stringValue.length > 100) {
+          newErrors[field.key] = "Institution Name cannot exceed 100 characters";
+        }
+      } else if (field.key === "company_description" && stringValue.length < 50) {
         newErrors[field.key] = `${field.label} must be at least 50 characters`;
+      } else if (field.key === "email" && !/\S+@\S+\.\S+/.test(stringValue)) {
+        newErrors[field.key] = "Please enter a valid email address";
       }
     });
 
@@ -316,7 +326,7 @@ export default function RecruiterCompanyProfileClient({
                       defaultValue={profile.company_name} 
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft transition-all",
-                        errors.company_name && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                        errors.company_name && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                       )} 
                     />
                   </div>
@@ -329,7 +339,7 @@ export default function RecruiterCompanyProfileClient({
                       defaultValue={profile.industry || ""} 
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft transition-all",
-                        errors.industry && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                        errors.industry && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                       )} 
                     />
                   </div>
@@ -343,7 +353,7 @@ export default function RecruiterCompanyProfileClient({
                         defaultValue={profile.institution_type || ""}
                         className={cn(
                           "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[13px] font-semibold text-black focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all appearance-none cursor-pointer shadow-xs-soft",
-                          errors.institution_type && "border-red-500 bg-red-50/50 focus:border-red-600 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                          errors.institution_type && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                         )}
                       >
                         <option value="" disabled>Select Type</option>
@@ -369,7 +379,7 @@ export default function RecruiterCompanyProfileClient({
                       defaultValue={profile.company_description || ""}
                       className={cn(
                         "w-full text-[13px] font-semibold p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black min-h-[120px] scrollbar-thin shadow-xs-soft",
-                        errors.company_description && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                        errors.company_description && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                       )}
                     />
                   </div>

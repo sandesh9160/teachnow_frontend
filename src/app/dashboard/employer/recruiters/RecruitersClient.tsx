@@ -44,17 +44,43 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleAddRecruiter = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      password: formData.get("password"),
-    };
+    const name = String(formData.get("name")).trim();
+    const email = String(formData.get("email")).trim();
+    const password = String(formData.get("password"));
+
+    const newErrors: Record<string, string> = {};
+    if (!name) {
+      newErrors.name = "Full name is required";
+    } else if (name.length < 3) {
+      newErrors.name = "Full name must be at least 3 characters";
+    } else if (name.length > 100) {
+      newErrors.name = "Full name cannot exceed 100 characters";
+    }
+    
+    if (!email) {
+      newErrors.email = "Email address is required";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      const firstError = Object.values(newErrors)[0];
+      toast.error(firstError);
+      setLoading(false);
+      return;
+    }
+
+    setErrors({});
+
+    const data = { name, email, password };
 
     try {
       const res = await dashboardServerFetch("employer/users", {
@@ -197,16 +223,35 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
                     <Label className="text-xs font-medium text-slate-400 ml-0.5">Full name</Label>
                     <div className="relative group">
                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                       <Input name="name" placeholder="Name" className="h-11 pl-10 rounded-xl border-gray-100 text-sm font-medium focus:ring-1 focus:ring-primary/10" required />
+                       <Input 
+                          name="name" 
+                          placeholder="Name" 
+                          className={cn(
+                            "h-11 pl-10 rounded-xl border-gray-100 text-sm font-medium transition-all",
+                            errors.name ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "focus:ring-1 focus:ring-primary/10"
+                          )} 
+                          required 
+                       />
                     </div>
+                    {errors.name && <p className="mt-1 text-[10px] font-bold text-red-500 ml-1">{errors.name}</p>}
                  </div>
 
                  <div className="space-y-1.5">
                     <Label className="text-xs font-medium text-slate-400 ml-0.5">Work email</Label>
                     <div className="relative group">
                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                       <Input name="email" type="email" placeholder="email@institution.com" className="h-11 pl-10 rounded-xl border-gray-100 text-sm font-medium focus:ring-1 focus:ring-primary/10" required />
+                       <Input 
+                          name="email" 
+                          type="email" 
+                          placeholder="email@institution.com" 
+                          className={cn(
+                            "h-11 pl-10 rounded-xl border-gray-100 text-sm font-medium transition-all",
+                            errors.email ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "focus:ring-1 focus:ring-primary/10"
+                          )} 
+                          required 
+                       />
                     </div>
+                    {errors.email && <p className="mt-1 text-[10px] font-bold text-red-500 ml-1">{errors.email}</p>}
                  </div>
 
                  <div className="space-y-1.5">

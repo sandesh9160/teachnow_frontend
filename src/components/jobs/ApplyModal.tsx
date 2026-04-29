@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
 import { useApplications } from "@/hooks/useApplications";
@@ -67,6 +68,7 @@ const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyM
     experience: "",
     location: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (user) {
@@ -291,16 +293,33 @@ const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyM
               ].map((field) => (
                 <div key={field.key}>
                   <label className="mb-1.5 block text-sm font-medium text-foreground">{field.label}</label>
-                  <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5">
-                    <field.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className={cn(
+                    "flex items-center gap-2 rounded-xl border px-4 py-2.5 transition-all",
+                    errors[field.key] 
+                      ? "border-red-500 bg-red-50/50 ring-1 ring-red-500/20" 
+                      : "border-border bg-background focus-within:ring-2 focus-within:ring-primary/20"
+                  )}>
+                    <field.icon className={cn("h-4 w-4 shrink-0", errors[field.key] ? "text-red-500" : "text-muted-foreground")} />
                     <input
                       type="text"
                       value={candidate[field.key]}
-                      onChange={(e) => setCandidate({ ...candidate, [field.key]: e.target.value })}
+                      onChange={(e) => {
+                        setCandidate({ ...candidate, [field.key]: e.target.value });
+                        if (errors[field.key]) setErrors(prev => {
+                          const next = { ...prev };
+                          delete next[field.key];
+                          return next;
+                        });
+                      }}
                       placeholder={field.placeholder}
                       className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                     />
                   </div>
+                  {errors[field.key] && (
+                    <p className="mt-1 text-[10px] font-bold text-red-500 ml-1 flex items-center gap-1">
+                      <AlertCircle size={10} /> {errors[field.key]}
+                    </p>
+                  )}
                 </div>
               ))}
 
@@ -308,7 +327,35 @@ const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyM
                 <Button variant="outline" className="flex-1" onClick={() => setStep(0)}>
                   <ArrowLeft className="mr-1 h-4 w-4" /> Back
                 </Button>
-                <Button className="flex-1" onClick={() => setStep(2)}>
+                <Button 
+                  className="flex-1" 
+                  onClick={() => {
+                    const newErrors: Record<string, string> = {};
+                    if (!candidate.name.trim()) {
+                      newErrors.name = "Full name is required";
+                    } else if (candidate.name.trim().length < 3) {
+                      newErrors.name = "Full name must be at least 3 characters";
+                    } else if (candidate.name.trim().length > 100) {
+                      newErrors.name = "Full name cannot exceed 100 characters";
+                    }
+
+                    if (!candidate.email.trim()) {
+                      newErrors.email = "Email address is required";
+                    } else if (!/\S+@\S+\.\S+/.test(candidate.email)) {
+                      newErrors.email = "Please enter a valid email address";
+                    }
+
+                    if (Object.keys(newErrors).length > 0) {
+                      setErrors(newErrors);
+                      const firstError = Object.values(newErrors)[0];
+                      toast.error(firstError);
+                      return;
+                    }
+                    
+                    setErrors({});
+                    setStep(2);
+                  }}
+                >
                   Continue <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>

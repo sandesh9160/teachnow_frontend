@@ -208,8 +208,7 @@ export default function PostJobClient({
         break;
     }
     
-    const firstKey = Object.keys(newErrors)[0];
-    setErrors(firstKey ? { [firstKey]: newErrors[firstKey] } : {});
+    setErrors(newErrors);
     return newErrors;
   };
 
@@ -431,7 +430,7 @@ export default function PostJobClient({
                   placeholder="e.g. Mathematics Teacher" 
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
-                    errors.title ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    errors.title ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )} 
                 />
               </div>
@@ -494,7 +493,7 @@ export default function PostJobClient({
                   placeholder="e.g. 3–5 years" 
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
-                    errors.experience_required ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    errors.experience_required ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )} 
                 />
               </div>

@@ -9,7 +9,7 @@ const passwordSchema = z
 
 const phoneSchema = z
   .string()
-  .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian phone number");
+  .regex(/^[6-9]\d{9}$/, "Please enter a valid phone number");
 
 export const jobSeekerRegisterSchema = z.object({
   name: z.string().min(3, "Full name must be at least 3 characters").max(100, "Full name cannot exceed 100 characters"),
@@ -26,7 +26,7 @@ export const jobSeekerRegisterSchema = z.object({
 
 export const employerRegisterSchema = z.object({
   company_name: z.string()
-    .min(10, "Company name must be at least 10 characters")
+    .min(3, "Company name must be at least 3 characters")
     .max(100, "Company name cannot exceed 100 characters"),
   phone: phoneSchema,
   email: z.string().email("Please enter a valid email address"),
@@ -70,11 +70,11 @@ export const registerSchema = z.object({
   path: ["phone"],
 }).refine((data) => {
   if (data.role === "employer") {
-    return !!data.company_name && data.company_name.length >= 10 && data.company_name.length <= 100;
+    return !!data.company_name && data.company_name.length >= 3 && data.company_name.length <= 100;
   }
   return true;
 }, {
-  message: "Company name (10-100 characters) is required",
+  message: "Company name (3-100 characters) is required",
   path: ["company_name"],
 }).refine((data) => {
   if (data.role === "employer") {

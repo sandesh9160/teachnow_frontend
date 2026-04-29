@@ -176,8 +176,10 @@ export default function RegisterPage() {
                     type="text" 
                     placeholder="Sri Chaitanya Junior College" 
                     className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
-                      errors.company_name ? "border-red-500" : "border-border focus:border-primary"
+                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
+                      errors.company_name 
+                        ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
+                        : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                     )}
                     suppressHydrationWarning
                   />
@@ -200,8 +202,10 @@ export default function RegisterPage() {
                     type="tel" 
                     placeholder="9876543210" 
                     className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
-                      errors.phone ? "border-red-500" : "border-border focus:border-primary"
+                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
+                      errors.phone 
+                        ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
+                        : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                     )}
                     suppressHydrationWarning
                   />
@@ -222,8 +226,10 @@ export default function RegisterPage() {
                     type="text" 
                     placeholder="John Doe" 
                     className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
-                      errors.name ? "border-red-500" : "border-border focus:border-primary"
+                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
+                      errors.name 
+                        ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
+                        : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                     )}
                     suppressHydrationWarning
                   />
@@ -246,8 +252,10 @@ export default function RegisterPage() {
                     type="tel" 
                     placeholder="9876543210" 
                     className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
-                      errors.phone ? "border-red-500" : "border-border focus:border-primary"
+                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
+                      errors.phone 
+                        ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
+                        : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                     )}
                     suppressHydrationWarning
                   />

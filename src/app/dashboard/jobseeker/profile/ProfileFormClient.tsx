@@ -72,7 +72,10 @@ function mapServerProfile(initial: Record<string, any>) {
     // expected_salary: String(data.expected_salary || ""),
     // preferred_location: String(data.preferred_location || ""),
     // teaching_mode: String(data.teaching_mode || ""),
-    skills: Array.isArray(data.skills) ? data.skills : [],
+    skills: Array.isArray(data.skills) ? data.skills.map((s: any) => {
+      if (typeof s === 'object' && s !== null) return s.name || s.id || "";
+      return String(s);
+    }) : [],
     certifications: Array.isArray(data.certifications) ? data.certifications : [],
   };
 }
@@ -136,6 +139,9 @@ export default function ProfileFormClient({
   const [skillInput, setSkillInput] = useState("");
   // const [langInput, setLangInput] = useState("");
   const [certInput, setCertInput] = useState("");
+  const [certIssuer, setCertIssuer] = useState("");
+  const [certIssuedAt, setCertIssuedAt] = useState("");
+  const [certExpiresAt, setCertExpiresAt] = useState("");
 
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
   const [showLocationSug, setShowLocationSug] = useState(false);
@@ -236,12 +242,24 @@ export default function ProfileFormClient({
   };
 
   const handleAddCertification = () => {
-    const val = certInput.trim();
-    if (!val) return;
-    if (!profileData.certifications.includes(val)) {
-      setProfileData(prev => ({ ...prev, certifications: [...prev.certifications, val] }));
-    }
+    const name = certInput.trim();
+    if (!name) return;
+    
+    setProfileData(prev => ({
+      ...prev,
+      certifications: [...prev.certifications, { 
+        name, 
+        issuer: certIssuer, 
+        issued_at: certIssuedAt, 
+        expires_at: certExpiresAt 
+      }]
+    }));
+
+    // Reset fields
     setCertInput("");
+    setCertIssuer("");
+    setCertIssuedAt("");
+    setCertExpiresAt("");
   };
 
   const handleEduSubmit = (e: React.FormEvent) => {
@@ -317,7 +335,14 @@ export default function ProfileFormClient({
     e.preventDefault();
     const newErrs: Record<string, string> = {};
     if (!expFormData.job_title.trim()) newErrs.job_title = "Job title is required";
-    if (!expFormData.company_name.trim()) newErrs.company_name = "Organization name is required";
+    const companyName = expFormData.company_name.trim();
+    if (!companyName) {
+      newErrs.company_name = "Organization name is required";
+    } else if (companyName.length < 3) {
+      newErrs.company_name = "Organization name must be at least 3 characters";
+    } else if (companyName.length > 100) {
+      newErrs.company_name = "Organization name cannot exceed 100 characters";
+    }
     if (!expFormData.start_date) newErrs.start_date = "Start date is required";
     if (!expFormData.is_current && expFormData.end_date && isAfter(parseISO(expFormData.start_date), parseISO(expFormData.end_date))) {
       newErrs.dates = "End date cannot be before start date";
@@ -383,7 +408,14 @@ export default function ProfileFormClient({
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
     
-    if (!profileData.name.trim()) newErrors.name = "Full name is required";
+    const name = profileData.name.trim();
+    if (!name) {
+      newErrors.name = "Full name is required";
+    } else if (name.length < 3) {
+      newErrors.name = "Full name must be at least 3 characters";
+    } else if (name.length > 100) {
+      newErrors.name = "Full name cannot exceed 100 characters";
+    }
     if (!profileData.title.trim()) newErrors.title = "Professional title is required";
     if (!profileData.phone.trim()) newErrors.phone = "Phone number is required";
     if (!profileData.location.trim()) newErrors.location = "Location is required";
@@ -419,16 +451,54 @@ export default function ProfileFormClient({
         if (!isNew) formData.append("_method", "PUT");
 
         Object.entries(profileData).forEach(([key, value]) => {
-          if (key === 'skills' || key === 'certifications') {
+          if (key === 'skills') {
             const list = (value as any[] || []);
-            console.log(`[ProfileDebug] Appending list ${key}:`, list);
-            list.forEach(v => formData.append(`${key}[]`, typeof v === 'string' ? v : v.name));
+            console.log(`[ProfileDebug] Appending skills:`, list);
+            const names = list.map(v => typeof v === 'string' ? v : (v.name || ""));
+            names.forEach(name => formData.append(`skills[]`, name));
+            // Add as JSON string as a fallback for some backend configurations
+            formData.append('skills_json', JSON.stringify(names));
+          } else if (key === 'certifications') {
+            const list = (value as any[] || []);
+            console.log(`[ProfileDebug] Appending certifications:`, list);
+            list.forEach((c: any, index: number) => {
+              const name = typeof c === 'string' ? c : (c.name || "");
+              formData.append(`certifications[${index}][name]`, name);
+              formData.append(`certifications[${index}][issuer]`, c.issuer || "");
+              formData.append(`certifications[${index}][issued_at]`, c.issued_at || "");
+              formData.append(`certifications[${index}][expires_at]`, c.expires_at || "");
+            });
           } else if (key !== 'profile_photo' && key !== 'email') {
             console.log(`[ProfileDebug] Appending ${key}:`, value);
             formData.append(key, value !== null && value !== undefined ? String(value) : "");
             if (key === 'title') formData.append('job_title', String(value));
           }
         });
+
+        // Add Education to FormData
+        localEduList.filter(edu => !(edu as any).is_deleted).forEach((edu, index) => {
+          const payload = toEducationPayload(edu);
+          formData.append(`education[${index}][institution]`, payload.institution || "");
+          formData.append(`education[${index}][degree]`, payload.degree || "");
+          formData.append(`education[${index}][field_of_study]`, payload.field_of_study || "");
+          formData.append(`education[${index}][start_year]`, payload.start_year || "");
+          formData.append(`education[${index}][end_year]`, payload.end_year || "");
+          formData.append(`education[${index}][grade]`, payload.grade || "");
+          formData.append(`education[${index}][is_current]`, String(payload.is_current || 0));
+        });
+
+        // Add Experience to FormData
+        localExpList.filter(exp => !(exp as any).is_deleted).forEach((exp, index) => {
+          const payload = toExperiencePayload(exp);
+          formData.append(`experience[${index}][job_title]`, payload.job_title || "");
+          formData.append(`experience[${index}][company_name]`, payload.company_name || "");
+          formData.append(`experience[${index}][location]`, payload.location || "");
+          formData.append(`experience[${index}][start_date]`, payload.start_date || "");
+          formData.append(`experience[${index}][end_date]`, payload.end_date || "");
+          formData.append(`experience[${index}][is_current]`, String(payload.is_current || 0));
+          formData.append(`experience[${index}][description]`, payload.description || "");
+        });
+
         formData.append("profile_photo", photoFile);
         profileResult = await uploadFile("jobseeker/profile", { method: "POST", data: formData });
       } else {
@@ -446,6 +516,8 @@ export default function ProfileFormClient({
               expires_at: c.expires_at || ""
             };
           }).filter((c: any) => c.name.length > 0),
+          education: localEduList.filter(e => !(e as any).is_deleted).map(toEducationPayload),
+          experience: localExpList.filter(e => !(e as any).is_deleted).map(toExperiencePayload),
         };
         console.log("[ProfileDebug] Submitting JSON payload:", JSON.stringify(payload, null, 2));
         profileResult = isNew ? await createProfile(payload) : await updateProfile(payload);
@@ -723,9 +795,11 @@ export default function ProfileFormClient({
               {profileData.certifications.map((cert: any, i: number) => (
                 <div key={i} className="flex flex-col">
                   <p className="text-black font-semibold text-[13px]">{typeof cert === 'string' ? cert : cert.name}</p>
-                  {cert.issuer && (
+                  {(cert.issuer || cert.issued_at || cert.expires_at) && (
                     <p className="text-black/60 text-[11px] font-medium mt-0.5">
-                      {cert.issuer} {cert.issued_at ? ` · Issued: ${cert.issued_at.split("-")[0]}` : ''} {cert.expires_at ? ` · Expires: ${cert.expires_at.split("-")[0]}` : ''}
+                      {cert.issuer || ''} 
+                      {cert.issued_at && cert.issued_at.includes("-") ? ` · Issued: ${cert.issued_at.split("-")[0]}` : (cert.issued_at ? ` · Issued: ${cert.issued_at}` : '')} 
+                      {cert.expires_at && cert.expires_at.includes("-") ? ` · Expires: ${cert.expires_at.split("-")[0]}` : (cert.expires_at ? ` · Expires: ${cert.expires_at}` : '')}
                     </p>
                   )}
                 </div>
@@ -761,15 +835,15 @@ export default function ProfileFormClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.name ? "text-red-500" : "text-slate-700")}>Full Name <span className="text-red-500">*</span></Label>
-                <Input name="name" value={profileData.name} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.name ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                <Input name="name" value={profileData.name} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.name ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.phone ? "text-red-500" : "text-slate-700")}>Phone Number <span className="text-red-500">*</span></Label>
-                <Input name="phone" value={profileData.phone} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.phone ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                <Input name="phone" value={profileData.phone} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.phone ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.title ? "text-red-500" : "text-slate-700")}>Professional Title <span className="text-red-500">*</span></Label>
-                <Input name="title" value={profileData.title} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.title ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                <Input name="title" value={profileData.title} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.title ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5 relative">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.location ? "text-red-500" : "text-slate-700")}>Location <span className="text-red-500">*</span></Label>
@@ -778,7 +852,7 @@ export default function ProfileFormClient({
                   value={profileData.location}
                   onChange={(e) => handleLocationChange(e, "location")}
                   onBlur={() => setTimeout(() => setShowLocationSug(false), 200)}
-                  className={cn("h-10 rounded-lg text-[13px] transition-all", errors.location ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                  className={cn("h-10 rounded-lg text-[13px] transition-all", errors.location ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")}
                 />
                 {showLocationSug && searchType === "location" && locationSuggestions.length > 0 && (
                   <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
@@ -821,7 +895,7 @@ export default function ProfileFormClient({
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.bio ? "text-red-500" : "text-slate-700")}>Professional Bio <span className="text-red-500">*</span></Label>
-                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className={cn("w-full rounded-lg border bg-white p-3 text-[13px] outline-none transition-all", errors.bio ? "border-red-500 bg-red-50/50" : "border-slate-200")} placeholder="Share your teaching philosophy and experience..." />
+                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className={cn("w-full rounded-lg border bg-white p-3 text-[13px] outline-none transition-all", errors.bio ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} placeholder="Share your teaching philosophy and experience..." />
               </div>
             </div>
           </section>
@@ -1112,7 +1186,8 @@ export default function ProfileFormClient({
                     <Label className="text-[11px] font-bold text-slate-500">Issuer</Label>
                     <Input
                       placeholder="e.g. Google, PMI"
-                      id="cert_issuer"
+                      value={certIssuer}
+                      onChange={(e) => setCertIssuer(e.target.value)}
                       className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
                     />
                   </div>
@@ -1120,7 +1195,8 @@ export default function ProfileFormClient({
                     <Label className="text-[11px] font-bold text-slate-500">Issued Date</Label>
                     <Input
                       type="date"
-                      id="cert_issued_at"
+                      value={certIssuedAt}
+                      onChange={(e) => setCertIssuedAt(e.target.value)}
                       className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
                     />
                   </div>
@@ -1128,26 +1204,12 @@ export default function ProfileFormClient({
                     <Label className="text-[11px] font-bold text-slate-500">Expiry Date</Label>
                     <Input
                       type="date"
-                      id="cert_expires_at"
+                      value={certExpiresAt}
+                      onChange={(e) => setCertExpiresAt(e.target.value)}
                       className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
                     />
                   </div>
-                  <Button type="button" onClick={() => {
-                    const name = certInput.trim();
-                    const issuer = (document.getElementById('cert_issuer') as HTMLInputElement)?.value;
-                    const issued_at = (document.getElementById('cert_issued_at') as HTMLInputElement)?.value;
-                    const expires_at = (document.getElementById('cert_expires_at') as HTMLInputElement)?.value;
-                    if (name) {
-                      setProfileData(prev => ({
-                        ...prev,
-                        certifications: [...prev.certifications, { name, issuer, issued_at, expires_at }]
-                      }));
-                      setCertInput("");
-                      (document.getElementById('cert_issuer') as HTMLInputElement).value = "";
-                      (document.getElementById('cert_issued_at') as HTMLInputElement).value = "";
-                      (document.getElementById('cert_expires_at') as HTMLInputElement).value = "";
-                    }
-                  }} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                  <Button type="button" onClick={handleAddCertification} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
                 </div>
 
             <div className="flex flex-wrap gap-3 mt-4">
@@ -1159,7 +1221,9 @@ export default function ProfileFormClient({
                   </div>
                   {(c.issuer || c.issued_at || c.expires_at) && (
                     <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
-                      {c.issuer} {c.issued_at ? ` · Issued: ${c.issued_at.split("-")[0]}` : ''} {c.expires_at ? ` · Expires: ${c.expires_at.split("-")[0]}` : ''}
+                      {c.issuer || ''} 
+                      {c.issued_at && c.issued_at.includes("-") ? ` · Issued: ${c.issued_at.split("-")[0]}` : (c.issued_at ? ` · Issued: ${c.issued_at}` : '')} 
+                      {c.expires_at && c.expires_at.includes("-") ? ` · Expires: ${c.expires_at.split("-")[0]}` : (c.expires_at ? ` · Expires: ${c.expires_at}` : '')}
                     </p>
                   )}
                 </div>
