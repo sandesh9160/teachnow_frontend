@@ -1,29 +1,44 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { Building2, Check, X, Eye, EyeOff } from "lucide-react";
+import { Building2, Check, X, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/services/api/client";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { employerRegisterSchema, type EmployerRegisterValues } from "@/lib/validations/auth";
+import { cn } from "@/lib/utils";
 
 export default function EmployerRegisterPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const router = useRouter();
   const captchaRef = useRef<any>(null);
 
-  const [formData, setFormData] = useState({
-    company_name: "",
-    phone: "",
-    email: "",
-  });
-
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<EmployerRegisterValues>({
+    resolver: zodResolver(employerRegisterSchema),
+    defaultValues: {
+      company_name: "",
+      phone: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      acceptedTerms: false,
+      captchaToken: "",
+    },
+  });
+
+  const password = watch("password") || "";
 
   const hasMinLength = password.length >= 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -31,52 +46,18 @@ export default function EmployerRegisterPage() {
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
   const isPasswordValid = hasMinLength && hasUpperCase && hasNumber && hasSpecialChar;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!captchaToken) {
-      toast.error("Security verification required", {
-        description: "Please complete the reCAPTCHA to continue."
-      });
-      return;
-    }
-
-    const trimmedEmail = formData.email.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\+?[\d\s-]{10,}$/;
-
-    if (!formData.company_name.trim()) { toast.error("Company Name is required"); return; }
-    if (!formData.phone.trim() || !phoneRegex.test(formData.phone)) { 
-      toast.error("Valid Phone Number is required (min 10 digits)"); return; 
-    }
-    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) { 
-      toast.error("Please enter a valid email address"); return; 
-    }
-
-    if (!password) { toast.error("Password is required"); return; }
-    if (!isPasswordValid) {
-      toast.error("Password must meet all security requirements");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
+  const onSubmit = async (data: EmployerRegisterValues) => {
     try {
       setAuthLoading(true);
       await fetchAPI("/auth/create-employer", {
         method: "POST",
         body: {
-          ...formData,
-          password,
-          password_confirmation: confirmPassword,
-          captcha_token: captchaToken,
+          company_name: data.company_name,
+          phone: data.phone,
+          email: data.email,
+          password: data.password,
+          password_confirmation: data.confirmPassword,
+          captcha_token: data.captchaToken,
           role: "employer",
         },
       });
@@ -140,61 +121,81 @@ export default function EmployerRegisterPage() {
             <p className="text-sm text-slate-500 font-medium">Streamlined registration for organizations.</p>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Company Name</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Company Name</label>
                 <input
-                  name="company_name"
-                  required
-                  value={formData.company_name}
-                  onChange={handleChange}
+                  {...register("company_name")}
                   placeholder="Sri Chaitanya School"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/10"
+                  className={cn(
+                    "w-full rounded-xl border bg-white px-4 py-2.5 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 outline-none",
+                    errors.company_name ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-secondary"
+                  )}
                   suppressHydrationWarning={true}
                 />
+                {errors.company_name && (
+                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <AlertCircle size={10} /> {errors.company_name.message}
+                  </p>
+                )}
               </div>
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
                 <input
-                  name="phone"
+                  {...register("phone")}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    e.target.value = value;
+                    register("phone").onChange(e);
+                  }}
                   type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+91 98765 43210"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/10"
+                  placeholder="9876543210"
+                  className={cn(
+                    "w-full rounded-xl border bg-white px-4 py-2.5 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 outline-none",
+                    errors.phone ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-secondary"
+                  )}
                   suppressHydrationWarning={true}
                 />
+                {errors.phone && (
+                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <AlertCircle size={10} /> {errors.phone.message}
+                  </p>
+                )}
               </div>
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
               <input
-                name="email"
+                {...register("email")}
                 type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
                 placeholder="hr@institution.com"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium transition-all focus:border-secondary focus:ring-2 focus:ring-secondary/10"
+                className={cn(
+                  "w-full rounded-xl border bg-white px-4 py-2.5 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 outline-none",
+                  errors.email ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-secondary"
+                )}
                 suppressHydrationWarning={true}
               />
+              {errors.email && (
+                <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <AlertCircle size={10} /> {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Password</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Password</label>
                 <div className="relative">
                   <input
+                    {...register("password")}
                     type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full rounded-xl border bg-white px-4 py-2.5 pr-10 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 ${
-                      password && !isPasswordValid ? "border-amber-300" : "border-slate-200 focus:border-secondary"
-                    }`}
+                    placeholder="••••••••"
+                    className={cn(
+                      "w-full rounded-xl border bg-white px-4 py-2.5 pr-10 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 outline-none",
+                      errors.password ? "border-red-500 focus:border-red-500" : (password && !isPasswordValid ? "border-amber-300" : "border-slate-200 focus:border-secondary")
+                    )}
                     suppressHydrationWarning={true}
                   />
                   <button
@@ -206,6 +207,11 @@ export default function EmployerRegisterPage() {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <AlertCircle size={10} /> {errors.password.message}
+                  </p>
+                )}
                 
                 {/* Password Strength Checklist */}
                 {password && (
@@ -233,17 +239,17 @@ export default function EmployerRegisterPage() {
                    </div>
                 )}
               </div>
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Confirm Password</label>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Confirm Password</label>
                 <div className="relative">
                   <input
+                    {...register("confirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full rounded-xl border bg-white px-4 py-2.5 pr-10 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 ${
-                      confirmPassword && password !== confirmPassword ? "border-red-300" : "border-slate-200 focus:border-secondary"
-                    }`}
+                    placeholder="••••••••"
+                    className={cn(
+                      "w-full rounded-xl border bg-white px-4 py-2.5 pr-10 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 outline-none",
+                      errors.confirmPassword ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-secondary"
+                    )}
                     suppressHydrationWarning={true}
                   />
                   <button
@@ -255,32 +261,51 @@ export default function EmployerRegisterPage() {
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="mt-1 text-[10px] font-bold text-red-500">Passwords don't match</p>
+                {errors.confirmPassword && (
+                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <AlertCircle size={10} /> {errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-start gap-2 py-1 mt-2">
-              <input
-                type="checkbox"
-                id="terms_employer"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-1 h-3.5 w-3.5 rounded border-slate-300 text-secondary focus:ring-secondary"
-              />
-              <label htmlFor="terms_employer" className="text-[11px] text-slate-500 font-medium leading-tight">
-                I agree to the{" "}
-                <a href="#" className="font-bold text-secondary hover:underline">Terms of Service</a> and{" "}
-                <a href="#" className="font-bold text-secondary hover:underline">Privacy Policy</a>.
-              </label>
+            <div className="flex flex-col gap-1 py-1 mt-2">
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="terms_employer"
+                  {...register("acceptedTerms")}
+                  className="mt-1 h-3.5 w-3.5 rounded border-slate-300 text-secondary focus:ring-secondary"
+                />
+                <label htmlFor="terms_employer" className="text-[11px] text-slate-500 font-medium leading-tight">
+                  I agree to the{" "}
+                  <a href="#" className="font-bold text-secondary hover:underline">Terms of Service</a> and{" "}
+                  <a href="#" className="font-bold text-secondary hover:underline">Privacy Policy</a>.
+                </label>
+              </div>
+              {errors.acceptedTerms && (
+                <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <AlertCircle size={10} /> {errors.acceptedTerms.message}
+                </p>
+              )}
             </div>
 
-            <CaptchaField ref={captchaRef} onChange={setCaptchaToken} className="mt-2" />
+            <div className="space-y-1">
+              <CaptchaField 
+                ref={captchaRef} 
+                onChange={(token) => setValue("captchaToken", token || "", { shouldValidate: true })} 
+                className="mt-2" 
+              />
+              {errors.captchaToken && (
+                <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <AlertCircle size={10} /> {errors.captchaToken.message}
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"
-              disabled={authLoading || !acceptedTerms}
+              disabled={authLoading}
               className="w-full h-12 bg-secondary hover:bg-[#209c8d] text-white font-bold rounded-xl shadow-lg shadow-secondary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 active:scale-[0.98]"
               suppressHydrationWarning={true}
             >
