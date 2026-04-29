@@ -63,7 +63,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
             {displayTestimonials.map((t, index) => (
               <div
                 key={`${t.id}-${index}`}
-                className="shrink-0 w-[280px] md:w-[320px] rounded-[16px] border border-[#eef2f8] bg-white p-7 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] whitespace-normal"
+                className="shrink-0 w-[280px] md:w-[320px] h-full rounded-[16px] border border-[#eef2f8] bg-white p-7 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] whitespace-normal"
               >
                 <div className="flex flex-col h-full text-left">
                   {/* Mini Stars at Top Left */}
@@ -84,12 +84,12 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
                     <Quote className="h-6 w-6 text-[#dbeafe] fill-white" strokeWidth={1.5} />
                   </div>
 
-                  <p className="text-[14px] text-slate-600 min-h-[70px] font-normal leading-relaxed">
+                  <p className="text-[14px] text-slate-600 flex-1 font-normal leading-relaxed mb-6">
                     {t.message}
                   </p>
 
                   {/* Subtle Divider and Small Author Profile */}
-                  <div className="mt-8 pt-5 border-t border-[#f1f5fb] flex items-center gap-3">
+                  <div className="pt-5 border-t border-[#f1f5fb] flex items-center gap-3">
                     <div className="relative h-10 w-10 shrink-0 rounded-full bg-[#ecf2ff] overflow-hidden flex items-center justify-center text-black font-semibold text-sm ring-1 ring-[#ecf2ff]">
                       <TestimonialAvatar src={t.photo} name={t.name} />
                     </div>

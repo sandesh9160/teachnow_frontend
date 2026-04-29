@@ -21,7 +21,7 @@ import {
   ChevronLeft,
   X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
@@ -59,38 +59,66 @@ export default function CompanyProfileClient({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [description, setDescription] = useState(initialData?.company_description || "");
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const validateForm = (formData: FormData) => {
+  const validateForm = (formData: FormData, tab?: TabType) => {
     const newErrors: Record<string, string> = {};
-    const requiredFields = [
-      { key: "company_name", label: "Institution Name" },
-      { key: "industry", label: "Industry / Sector" },
-      { key: "institution_type", label: "Institution Type" },
-      { key: "company_description", label: "Detailed introduction" },
-      { key: "email", label: "Official Email" },
-      { key: "phone", label: "Phone Number" },
-      { key: "address", label: "Physical Address" },
-      { key: "city", label: "Settlement / City" },
-      { key: "country", label: "Nation / Country" },
+    
+    const allFields = [
+      { key: "company_name", label: "Institution Name", tab: "identity" as TabType },
+      { key: "industry", label: "Industry / Sector", tab: "identity" as TabType },
+      { key: "institution_type", label: "Institution Type", tab: "identity" as TabType },
+      { key: "company_description", label: "Detailed introduction", tab: "identity" as TabType },
+      { key: "email", label: "Official Email", tab: "contact" as TabType },
+      { key: "phone", label: "Phone Number", tab: "contact" as TabType },
+      { key: "address", label: "Physical Address", tab: "location" as TabType },
+      { key: "city", label: "Settlement / City", tab: "location" as TabType },
+      { key: "country", label: "Nation / Country", tab: "location" as TabType },
     ];
 
-    requiredFields.forEach(field => {
+    const fieldsToValidate = tab ? allFields.filter(f => f.tab === tab) : allFields;
+
+    fieldsToValidate.forEach(field => {
       const value = formData.get(field.key);
-      if (!value || String(value).trim() === "") {
+      const valStr = value ? String(value).trim() : "";
+
+      if (!valStr) {
         newErrors[field.key] = `${field.label} is required`;
       } else if (field.key === "company_name") {
-        const val = String(value).trim();
-        if (val.length < 3) {
+        if (valStr.length < 3) {
           newErrors[field.key] = "Institution Name must be at least 3 characters";
-        } else if (val.length > 100) {
+        } else if (valStr.length > 100) {
           newErrors[field.key] = "Institution Name cannot exceed 100 characters";
         }
-      } else if (field.key === "company_description" && String(value).trim().length < 50) {
-        newErrors[field.key] = `${field.label} must be at least 50 characters`;
+      } else if (field.key === "company_description") {
+        if (valStr.length < 50) {
+          newErrors[field.key] = `${field.label} must be at least 50 characters`;
+        } else if (valStr.length > 1000) {
+          newErrors[field.key] = `${field.label} cannot exceed 1000 characters`;
+        }
+      } else if (field.key === "email") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(valStr)) {
+          newErrors[field.key] = "Please enter a valid official email address";
+        }
+      } else if (field.key === "phone") {
+        if (!/^\d{10}$/.test(valStr)) {
+          newErrors[field.key] = "Phone number must be exactly 10 digits";
+        }
       }
     });
 
-    setErrors(newErrors);
+    setErrors(prev => {
+      if (tab) {
+        // Clear errors for the current tab first, then merge new ones
+        const cleanedErrors = { ...prev };
+        allFields.filter(f => f.tab === tab).forEach(f => delete cleanedErrors[f.key]);
+        return { ...cleanedErrors, ...newErrors };
+      }
+      return newErrors;
+    });
+    
     return newErrors;
   };
 
@@ -121,6 +149,18 @@ export default function CompanyProfileClient({
   };
 
   const handleNext = () => {
+    if (!formRef.current) return;
+    const formData = new FormData(formRef.current);
+    const stepErrors = validateForm(formData, activeTab);
+    
+    if (Object.keys(stepErrors).length > 0) {
+      const firstError = Object.values(stepErrors)[0];
+      toast.error(firstError, {
+        style: { borderLeft: '4px solid #ef4444' }
+      });
+      return;
+    }
+
     if (activeTab === "identity") setActiveTab("contact");
     else if (activeTab === "contact") setActiveTab("location");
   };
@@ -132,10 +172,18 @@ export default function CompanyProfileClient({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Crucial: Prevent submission if not on the final step. 
+    // This handles "Enter" key presses on intermediate steps.
+    if (activeTab !== "location") {
+      handleNext();
+      return;
+    }
+
     if (!profile) return;
     const formData = new FormData(e.currentTarget);
     
-    // Strict Validation Check
+    // Strict Validation Check for ALL fields before final save
     const validationErrors = validateForm(formData);
     const errorKeys = Object.keys(validationErrors);
     if (errorKeys.length > 0) {
@@ -253,7 +301,28 @@ export default function CompanyProfileClient({
              ].map((tab) => (
                <button
                  key={tab.id}
-                 onClick={() => setActiveTab(tab.id as TabType)}
+                  onClick={() => {
+                    if (isEditing) {
+                      // Prevent jumping ahead if current tab is invalid
+                      if (activeTab === "identity" && tab.id !== "identity") {
+                         const formData = new FormData(formRef.current!);
+                         const stepErrors = validateForm(formData, "identity");
+                         if (Object.keys(stepErrors).length > 0) {
+                           toast.error("Please complete Identity details first");
+                           return;
+                         }
+                      }
+                      if (activeTab === "contact" && tab.id === "location") {
+                         const formData = new FormData(formRef.current!);
+                         const stepErrors = validateForm(formData, "contact");
+                         if (Object.keys(stepErrors).length > 0) {
+                           toast.error("Please complete Contact details first");
+                           return;
+                         }
+                      }
+                    }
+                    setActiveTab(tab.id as TabType);
+                  }}
                  className={cn(
                    "px-4 py-1.5 rounded-xl text-[11.5px] font-semibold transition-all whitespace-nowrap flex items-center gap-2",
                    activeTab === tab.id 
@@ -289,7 +358,7 @@ export default function CompanyProfileClient({
           </div>
           
           <div className="p-3 sm:p-6">
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                 <div className={cn("space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "identity" && "hidden")}>
                   <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/30 p-4 border border-slate-100 rounded-xl">
                     <div 
@@ -348,6 +417,7 @@ export default function CompanyProfileClient({
                            errors.company_name && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                          )} 
                        />
+                       {errors.company_name && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.company_name}</p>}
                      </div>
                      <div className="space-y-1.5">
                        <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.industry ? "text-red-500" : "text-slate-500")}>
@@ -361,6 +431,7 @@ export default function CompanyProfileClient({
                            errors.industry && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                          )} 
                        />
+                       {errors.industry && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.industry}</p>}
                      </div>
                      <div className="space-y-1.5">
                        <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.institution_type ? "text-red-500" : "text-slate-500")}>
@@ -386,6 +457,7 @@ export default function CompanyProfileClient({
                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
                          </div>
                        </div>
+                       {errors.institution_type && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.institution_type}</p>}
                      </div>
                      <div className="space-y-2.0 sm:col-span-2">
                        <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_description ? "text-red-500" : "text-slate-500")}>
@@ -395,12 +467,26 @@ export default function CompanyProfileClient({
                          name="company_description" 
                          rows={4} 
                          placeholder="Describe your institution..."
-                         defaultValue={profile.company_description || ""} 
+                         value={description}
+                          onChange={(e) => setDescription(e.target.value)} 
                          className={cn(
                            "w-full text-[13px] font-semibold p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black min-h-[120px] scrollbar-thin shadow-xs-soft",
                            errors.company_description && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                          )}
                        />
+                       <div className="flex items-center justify-between mt-1 px-1">
+                          {errors.company_description ? (
+                            <p className="text-[10px] font-bold text-red-500">{errors.company_description}</p>
+                          ) : (
+                            <div />
+                          )}
+                          <span className={cn(
+                            "text-[10px] font-bold transition-colors",
+                            description.length > 1000 ? "text-red-500" : "text-slate-400"
+                          )}>
+                            {description.length}/1000
+                          </span>
+                        </div>
                      </div>
                    </div>
                 </div>
@@ -432,6 +518,7 @@ export default function CompanyProfileClient({
                              errors.email && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
                            )} 
                          />
+                         {errors.email && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.email}</p>}
                        </div>
                      </div>
                      <div className="space-y-1.5">
@@ -448,6 +535,7 @@ export default function CompanyProfileClient({
                              errors.phone && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
                            )} 
                          />
+                         {errors.phone && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.phone}</p>}
                        </div>
                      </div>
                    </div>
@@ -467,6 +555,7 @@ export default function CompanyProfileClient({
                            errors.address && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
                          )} 
                        />
+                       {errors.address && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.address}</p>}
                      </div>
                      <div className="space-y-1.5">
                        <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.city ? "text-red-500" : "text-slate-500")}>
@@ -480,6 +569,7 @@ export default function CompanyProfileClient({
                            errors.city && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
                          )} 
                        />
+                       {errors.city && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.city}</p>}
                      </div>
                      <div className="space-y-1.5">
                        <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.country ? "text-red-500" : "text-slate-500")}>
@@ -494,6 +584,7 @@ export default function CompanyProfileClient({
                            errors.country && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
                          )} 
                        />
+                       {errors.country && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.country}</p>}
                      </div>
                    </div>
 
