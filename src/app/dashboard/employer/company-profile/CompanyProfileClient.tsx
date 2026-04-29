@@ -161,6 +161,7 @@ export default function CompanyProfileClient({
       return;
     }
 
+    lastStepChange.current = Date.now();
     if (activeTab === "identity") setActiveTab("contact");
     else if (activeTab === "contact") setActiveTab("location");
   };
@@ -170,9 +171,15 @@ export default function CompanyProfileClient({
     else if (activeTab === "contact") setActiveTab("identity");
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const lastStepChange = useRef<number>(0);
+
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement> | React.MouseEvent) => {
+    if (e) e.preventDefault();
     
+    // Prevent submission if a step change just occurred (within 500ms)
+    // This prevents accidental saves from double-clicks or Enter key bleed-through
+    if (Date.now() - lastStepChange.current < 500) return;
+
     // Crucial: Prevent submission if not on the final step. 
     // This handles "Enter" key presses on intermediate steps.
     if (activeTab !== "location") {
@@ -181,7 +188,9 @@ export default function CompanyProfileClient({
     }
 
     if (!profile) return;
-    const formData = new FormData(e.currentTarget);
+    const formElement = formRef.current;
+    if (!formElement) return;
+    const formData = new FormData(formElement);
     
     // Strict Validation Check for ALL fields before final save
     const validationErrors = validateForm(formData);
@@ -648,14 +657,15 @@ export default function CompanyProfileClient({
                        </Button>
                      ) : (
                        <Button 
-                         size="sm" 
-                         type="submit" 
-                         disabled={loading} 
-                         className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-semibold bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
-                       >
-                         {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
-                         Save Profile
-                       </Button>
+                          size="sm" 
+                          type="button" 
+                          disabled={loading} 
+                          onClick={handleSubmit}
+                          className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-semibold bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                        >
+                          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                          Save Profile
+                        </Button>
                      )}
                    </div>
                 </div>

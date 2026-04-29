@@ -45,6 +45,7 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const handleAddRecruiter = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -133,6 +134,30 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
       actionButtonStyle: { backgroundColor: '#ef4444', color: '#fff' },
       cancelButtonStyle: { backgroundColor: '#3b82f6', color: '#fff' }
     });
+  };
+
+  const handleToggleStatus = async (id: number, currentStatus: number) => {
+    setTogglingId(id);
+    // Toggle logic: 1 is active (enable), 0 is inactive (disable).
+    const nextStatus = currentStatus === 1 ? 0 : 1;
+    
+    try {
+      const res = await dashboardServerFetch(`employer/recruiter/${id}/toggle`, {
+        method: "PATCH",
+        data: { is_active: nextStatus },
+      });
+
+      if (res.status === true) {
+        toast.success(res.message || `Recruiter ${nextStatus === 1 ? 'activated' : 'deactivated'}`);
+        setUsers(users.map(u => u.id === id ? { ...u, is_active: nextStatus } : u));
+      } else {
+        toast.error(res.message || "Failed to update status");
+      }
+    } catch (error) {
+      toast.error("An error occurred while updating status");
+    } finally {
+      setTogglingId(null);
+    }
   };
 
 
@@ -309,9 +334,28 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
                <div className="flex-1 min-w-0">
                  <p className="text-sm font-semibold text-slate-900 truncate">{u.name}</p>
                  <p className="text-[11px] text-slate-400 truncate">{u.email}</p>
-                 <div className="flex items-center gap-1.5 mt-0.5">
-                   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", u.is_active ? "bg-emerald-500" : "bg-slate-300")} />
-                   <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tighter">{u.is_active ? "Active" : "Inactive"}</span>
+                 <div className="flex items-center gap-2.5 mt-1">
+                     <button
+                      onClick={() => handleToggleStatus(u.id, u.is_active)}
+                      disabled={togglingId === u.id}
+                      className={cn(
+                        "relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50",
+                        u.is_active === 1 ? "bg-emerald-500" : "bg-slate-300"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          u.is_active === 1 ? "translate-x-3.5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                    <span className={cn(
+                      "text-[9px] font-bold uppercase tracking-tight",
+                      u.is_active === 1 ? "text-emerald-600" : "text-slate-400"
+                    )}>
+                      {togglingId === u.id ? "Updating..." : (u.is_active === 1 ? "Active" : "Inactive")}
+                    </span>
                  </div>
                </div>
 
