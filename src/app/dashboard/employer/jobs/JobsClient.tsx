@@ -263,6 +263,7 @@ export default function JobsClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
+              suppressHydrationWarning={true}
               className={cn(
                 "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap",
                 activeTab === tab.id

@@ -30,6 +30,8 @@ export type Job = {
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
+  keyword?: string;
+  keywords?: string;
   similar_jobs?: Job[];
   cover_letter_question_id?: number;
   screening_questions?: { id: number; question: string }[];

@@ -88,8 +88,7 @@ export default function PostJobClient({
     meta_title: job?.meta_title || "",
     meta_description: job?.meta_description || "",
     meta_keywords: job?.meta_keywords || "",
-    keywords: job?.keywords || "",
-    keyword: job?.keyword || "",
+    keywords: job?.keywords || job?.keyword || "",
   });
 
   const [description, setDescription] = useState(job?.description || "");
@@ -537,8 +536,8 @@ export default function PostJobClient({
                   Keywords <span className="text-slate-400 font-normal ml-1">(comma separated)</span>
                 </Label>
                 <Input 
-                  value={formData.keyword} 
-                  onChange={(e) => updateField("keyword", e.target.value)} 
+                  value={formData.keywords} 
+                  onChange={(e) => updateField("keywords", e.target.value)} 
                   placeholder="e.g. physics, optics, laser" 
                   className="h-10 rounded-xl text-xs bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all" 
                 />

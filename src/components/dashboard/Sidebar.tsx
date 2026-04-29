@@ -91,6 +91,7 @@ export function DashboardSidebar({
         <div className="md:hidden p-4 flex items-center justify-end">
           <button
             onClick={onClose}
+            suppressHydrationWarning={true}
             className="p-2 rounded-xl text-slate-400 hover:text-rose-500 transition-colors"
           >
             <X size={20} />
@@ -103,6 +104,7 @@ export function DashboardSidebar({
           <div className={`mb-2 hidden md:flex ${collapsed ? "justify-center" : "justify-end"}`}>
             <button
               onClick={() => setCollapsed(!collapsed)}
+              suppressHydrationWarning={true}
               className="p-1.5 rounded-lg text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-300"
               title={collapsed ? "Expand" : "Collapse"}
             >
