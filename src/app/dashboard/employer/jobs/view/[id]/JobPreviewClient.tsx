@@ -317,7 +317,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   />
                   <DetailItem
                      label="Featured Deadline"
-                     value={job.featured_until ? new Date(job.featured_until).toLocaleDateString('en-GB') : "No Deadline"}
+                     value={job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "No Deadline"}
                      icon={Clock}
                      colorClass="bg-rose-50 text-rose-600 border-rose-100/50"
                   />
@@ -334,8 +334,8 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
 
                   <div className="space-y-4">
                      {[
-                        { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
-                        { label: 'Apply Before', value: job.deadline || job.application_deadline ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Not Specified", icon: Clock, color: 'rose' },
+                        { label: 'Posted on', value: job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently", icon: Calendar, color: 'indigo' },
+                        { label: 'Apply Before', value: (job.deadline || job.application_deadline) && !isNaN(new Date(job.deadline || job.application_deadline).getTime()) ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Not Specified", icon: Clock, color: 'rose' },
                         {
                            label: 'Post Status',
                            value: job.status === 'approved'

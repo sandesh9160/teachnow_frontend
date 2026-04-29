@@ -108,10 +108,10 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                       <MapPin className="w-3 h-3 text-indigo-400" /> {job.location}
                     </span>
                     <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-                      <Calendar className="w-3 h-3 text-indigo-400" /> Exp: {new Date(job.expires_at).toLocaleDateString('en-GB')}
+                      <Calendar className="w-3 h-3 text-indigo-400" /> Expires: {job.expires_at && !isNaN(new Date(job.expires_at).getTime()) ? new Date(job.expires_at).toLocaleDateString('en-GB') : "Not Specified"}
                     </span>
                     <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-                      <Clock className="w-3 h-3 text-indigo-400" /> Posted: {new Date(job.created_at).toLocaleDateString('en-GB')}
+                      <Clock className="w-3 h-3 text-indigo-400" /> Posted: {job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently"}
                     </span>
                   </div>
                 </div>

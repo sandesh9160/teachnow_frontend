@@ -436,23 +436,38 @@ export default function ProfileFormClient({
         const payload = {
           ...safeData,
           job_title: safeData.title,
-          skills: profileData.skills.map((s: any) => typeof s === 'string' ? s : s.name),
-          certifications: profileData.certifications.map((c: any) => ({
-            name: typeof c === 'string' ? c : c.name,
-            issuer: c.issuer || "",
-            issued_at: c.issued_at || "",
-            expires_at: c.expires_at || ""
-          })),
+          skills: profileData.skills.map((s: any) => typeof s === 'string' ? s : (s.name || "")),
+          certifications: profileData.certifications.map((c: any) => {
+            const name = typeof c === 'string' ? c : (c.name || "");
+            return {
+              name: name,
+              issuer: c.issuer || "",
+              issued_at: c.issued_at || "",
+              expires_at: c.expires_at || ""
+            };
+          }).filter((c: any) => c.name.length > 0),
         };
-        console.log("[ProfileDebug] Submitting JSON payload:", payload);
+        console.log("[ProfileDebug] Submitting JSON payload:", JSON.stringify(payload, null, 2));
         profileResult = isNew ? await createProfile(payload) : await updateProfile(payload);
       }
 
-      console.log("[ProfileDebug] Primary Profile Update Result:", profileResult);
+      console.log("[ProfileDebug] Response:", profileResult);
 
-      if (profileResult?.status === false) {
-        toast.error(profileResult.message || "Update failed", { style: { borderLeft: '4px solid #ef4444' } });
-        return;
+      if (profileResult.status === true) {
+        toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!", {
+          style: { borderLeft: '4px solid #10b981' }
+        });
+        setMode("view");
+        if (isNew) {
+          window.location.reload();
+        } else {
+          // Refresh data
+          setProfileData(mapServerProfile(profileResult));
+        }
+      } else {
+        console.error("[ProfileDebug] Error detail:", profileResult);
+        toast.error(profileResult.message || "Failed to save profile. Please try again.");
+        return; // Stop here if main profile failed
       }
 
       console.log("[ProfileDebug] Syncing Education Records:", localEduList);

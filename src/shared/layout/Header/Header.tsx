@@ -646,8 +646,8 @@ const Header = ({
           {!isLoggedIn && (
             <Link href="/auth/login" className="text-[10px] font-bold text-primary px-2 py-1.5 bg-primary/5 rounded-lg whitespace-nowrap">Register / Login</Link>
           )}
-          <button 
-            className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50" 
+          <button
+            className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50"
             onClick={() => setMobileOpen(!mobileOpen)}
             suppressHydrationWarning
           >

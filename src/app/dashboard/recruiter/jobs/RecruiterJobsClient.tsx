@@ -293,14 +293,14 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                       <MapPin className="w-3.5 h-3.5 text-indigo-500" /> {job.location}
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-900">
-                      <Calendar className="w-3.5 h-3.5 text-indigo-500" /> Expires {job.expires_at ? new Date(job.expires_at).toLocaleDateString('en-GB') : 'N/A'}
+                      <Calendar className="w-3.5 h-3.5 text-indigo-500" /> Expires {job.expires_at && !isNaN(new Date(job.expires_at).getTime()) ? new Date(job.expires_at).toLocaleDateString('en-GB') : "Not Specified"}
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-900">
-                      <Clock className="w-3.5 h-3.5 text-indigo-500" /> Posted {new Date(job.created_at).toLocaleDateString('en-GB')}
+                      <Clock className="w-3.5 h-3.5 text-indigo-500" /> Posted {job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently"}
                     </span>
                     {job.featured === 1 && job.featured_until && (
                       <span className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
-                        <TrendingUp className="w-3.5 h-3.5" /> Featured Until {new Date(job.featured_until).toLocaleDateString('en-GB')}
+                        <TrendingUp className="w-3.5 h-3.5" /> Featured Until {job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"}
                       </span>
                     )}
                   </div>

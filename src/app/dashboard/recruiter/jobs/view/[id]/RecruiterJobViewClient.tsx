@@ -247,7 +247,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      <div>
                         <p className="text-[11px] font-bold text-slate-400 leading-none mb-1">Promotion Expiry</p>
                         <p className="text-[13px] font-bold text-rose-700">
-                           {new Date(job.featured_until).toLocaleDateString('en-GB')}
+                           {job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"}
                         </p>
                      </div>
                   </div>
@@ -326,7 +326,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      colorClass={isActuallyFeatured ? "bg-[#312E81] text-white border-indigo-700 shadow-sm" : isAwaitingFeatured ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100/50"}
                   />
                   {job.featured_until && (
-                     <DetailItem label="Feature Expiry" value={new Date(job.featured_until).toLocaleDateString('en-GB')} icon={Clock} colorClass="bg-rose-50 text-rose-600 border-rose-100/50" />
+                     <DetailItem label="Feature Expiry" value={!isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"} icon={Clock} colorClass="bg-rose-50 text-rose-600 border-rose-100/50" />
                   )}
                   <DetailItem
                      label="Admin Home Status"
@@ -341,8 +341,8 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
 
                   <div className="space-y-3">
                      {[
-                        { label: 'Posted on', value: new Date(job.created_at).toLocaleDateString('en-GB'), icon: Calendar, color: 'indigo' },
-                        { label: 'Deadline', value: job.deadline || job.application_deadline ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Not Specified", icon: Clock, color: 'rose' },
+                        { label: 'Posted on', value: job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently", icon: Calendar, color: 'indigo' },
+                        { label: 'Deadline', value: (job.deadline || job.application_deadline) && !isNaN(new Date(job.deadline || job.application_deadline).getTime()) ? new Date(job.deadline || job.application_deadline).toLocaleDateString('en-GB') : "Not Specified", icon: Clock, color: 'rose' },
                      ].map((item, i) => (
                         <div key={i} className="flex items-center justify-between gap-4">
                            <div className="flex items-center gap-2.5">

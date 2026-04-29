@@ -315,10 +315,10 @@ export default function JobsClient({
                       <MapPin className="w-3.5 h-3.5 text-indigo-500" /> {job.location}
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-900">
-                      <Calendar className="w-3.5 h-3.5 text-indigo-500" /> Expires {new Date(job.expires_at).toLocaleDateString('en-GB')}
+                      <Calendar className="w-3.5 h-3.5 text-indigo-500" /> Expires {job.expires_at && !isNaN(new Date(job.expires_at).getTime()) ? new Date(job.expires_at).toLocaleDateString('en-GB') : "Not Specified"}
                     </span>
                     <span className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-900">
-                      <Clock className="w-3.5 h-3.5 text-indigo-500" /> Posted {new Date(job.created_at).toLocaleDateString('en-GB')}
+                      <Clock className="w-3.5 h-3.5 text-indigo-500" /> Posted {job.created_at && !isNaN(new Date(job.created_at).getTime()) ? new Date(job.created_at).toLocaleDateString('en-GB') : "Recently"}
                     </span>
                     {job.featured === 1 && job.featured_until && (
                       <span className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
