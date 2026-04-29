@@ -26,12 +26,18 @@ function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
   const id = data.id ?? data.user_id;
   if (!email && (id === undefined || id === null || id === "")) return null;
   const name =
-    String(data.f_name ?? data.name ?? data.full_name ?? data.company_name ?? "").trim() ||
-    (email ? email.split("@")[0] : "User");
+    String(
+      data.name ??
+      (data.user as any)?.name ??
+      data.f_name ??
+      data.full_name ??
+      data.company_name ??
+      ""
+    ).trim() || (email ? email.split("@")[0] : "User");
   return {
     name,
     email,
-    role: normalizeRole(data.user_type ?? data.role),
+    role: normalizeRole(data.user_type ?? data.role ?? (data.user as any)?.user_type),
   };
 }
 

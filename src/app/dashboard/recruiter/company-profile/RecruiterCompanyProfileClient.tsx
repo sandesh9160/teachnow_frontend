@@ -571,13 +571,6 @@ export default function RecruiterCompanyProfileClient({
           <h1 className="text-lg font-medium text-black tracking-tight">Institution Profile</h1>
           <p className="text-[12px] text-black opacity-60">General identity and public presence of the institution.</p>
         </div>
-        <Button 
-          onClick={() => setIsEditing(true)}
-          className="h-9 px-4 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95 shrink-0 text-white"
-        >
-          <Loader2 className={cn("w-3.5 h-3.5", !loading && "hidden")} />
-          <BadgeCheck className={cn("w-3.5 h-3.5", loading && "hidden")} /> Edit Profile
-        </Button>
       </div>
 
       {/* Hero Banner Section */}
@@ -732,13 +725,24 @@ export default function RecruiterCompanyProfileClient({
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${profile.latitude},${profile.longitude}&zoom=15`}
+                    src={`https://maps.google.com/maps?q=${profile.latitude},${profile.longitude}&z=15&output=embed`}
+                    className="grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
+                  />
+                ) : profile.address ? (
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(profile.address + " " + (profile.city || ""))}&z=15&output=embed`}
                     className="grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
                   />
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl gap-2">
                       <MapPin className="w-6 h-6 text-slate-300" />
-                      <p className="text-[11px] font-medium text-slate-400">Map coordinates not set for this institution</p>
+                      <p className="text-[11px] font-medium text-slate-400">Map location not set for this institution</p>
                     </div>
                 )}
 

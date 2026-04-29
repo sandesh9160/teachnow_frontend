@@ -125,6 +125,22 @@ export default function CompanyProfileClient({
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 2MB Limit check
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      if (file.size > maxSize) {
+        toast("File Too Large", {
+          description: "Please upload a logo smaller than 2MB.",
+          style: {
+            background: '#FFFBEB',
+            border: '1px solid #FCD34D',
+            color: '#92400E',
+          },
+          duration: 4000,
+        });
+        e.target.value = ""; // Reset input
+        return;
+      }
+
       setLogoFile(file);
       setLogoPreview(URL.createObjectURL(file));
     }

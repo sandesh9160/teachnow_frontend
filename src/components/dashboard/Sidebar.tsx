@@ -62,10 +62,10 @@ export function DashboardSidebar({
   const recruiterLinks = [
     { label: "Overview", href: "/dashboard/recruiter", icon: LayoutGrid },
     { label: "Company", href: "/dashboard/recruiter/company-profile", icon: Building2 },
-    { label: "New Post", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
-    { label: "Job List", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
+    { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
+    { label: "Manage Jobs", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
     { label: "Alerts", href: "/dashboard/recruiter/notifications", icon: Bell },
-    { label: "Feedback", href: "/dashboard/recruiter/testimonials", icon: MessageSquare },
+    { label: "Testimonials", href: "/dashboard/recruiter/testimonials", icon: MessageSquare },
   ];
 
   const links =

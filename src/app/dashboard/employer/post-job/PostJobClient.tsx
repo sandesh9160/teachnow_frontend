@@ -76,10 +76,10 @@ export default function PostJobClient({
     category_id: job?.category_id || "",
     job_type: job?.job_type || "",
     location: job?.location || "",
-    experience_type: job?.experience_type || "experienced",
+    experience_type: job?.experience_type || "",
     experience_required: job?.experience_required || "",
     vacancies: job?.vacancies || 1,
-    gender: job?.gender || "both",
+    gender: job?.gender || "",
     salary_min: job?.salary_min != null ? job.salary_min.toString().split('.')[0] : "",
     salary_max: job?.salary_max != null ? job.salary_max.toString().split('.')[0] : "",
     education_qualification: job?.education_qualification || "",
@@ -184,7 +184,13 @@ export default function PostJobClient({
     
     switch (step) {
       case 1:
-        if (!formData.title?.toString().trim()) newErrors.title = "Job Title is required";
+        if (!formData.title?.toString().trim()) {
+          newErrors.title = "Job Title is required";
+        } else if (formData.title.length < 7) {
+          newErrors.title = "Job Title must be at least 7 characters";
+        } else if (formData.title.length > 50) {
+          newErrors.title = "Job Title cannot exceed 50 characters";
+        }
         if (!formData.category_id) newErrors.category_id = "Subject / Category is required";
         if (!formData.job_type) newErrors.job_type = "Job Type is required";
         if (!formData.location) newErrors.location = "City is required";
@@ -193,8 +199,11 @@ export default function PostJobClient({
         if (!formData.gender) newErrors.gender = "Gender preference is required";
         break;
       case 2:
-        if (!description || description.replace(/<[^>]*>/g, '').trim().length < 50)
+        const jdLength = description.replace(/<[^>]*>/g, '').trim().length;
+        if (!description || jdLength < 50)
           newErrors.description = "Detailed Description (min 50 chars) is required";
+        if (jdLength > 3000)
+          newErrors.description = "Detailed Description cannot exceed 3000 characters";
         break;
       case 4:
         if (!salaryUndisclosed) {
@@ -256,6 +265,9 @@ export default function PostJobClient({
 
     const jobId = job?.id || job?.job_id;
     setLoading(true);
+    // Filter out incomplete questions where the text is empty
+    const filteredQuestions = questions.filter(q => q.question.trim().length > 0);
+
     const data = { 
       ...formData, 
       category_id: formData.category_id ? Number(formData.category_id) : null,
@@ -268,8 +280,8 @@ export default function PostJobClient({
       salary_min: (salaryUndisclosed || !formData.salary_min) ? null : Number(formData.salary_min),
       salary_max: (salaryUndisclosed || !formData.salary_max) ? null : Number(formData.salary_max),
       application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
-      questions: questions,
-      screening_questions: questions,
+      questions: filteredQuestions,
+      screening_questions: filteredQuestions,
       ...(userRole === 'recruiter' && isEdit ? { _method: 'PUT' } : {})
     };
     
@@ -428,6 +440,7 @@ export default function PostJobClient({
                   value={formData.title} 
                   onChange={(e) => updateField("title", e.target.value)} 
                   placeholder="e.g. Mathematics Teacher" 
+                  maxLength={50}
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
                     errors.title ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -509,6 +522,7 @@ export default function PostJobClient({
                     errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )}
                 >
+                  <option value="">Select experience type</option>
                   <option value="fresher">Fresher</option>
                   <option value="experienced">Experienced</option>
                 </select>
@@ -525,6 +539,7 @@ export default function PostJobClient({
                     errors.gender ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )}
                 >
+                  <option value="">Select gender</option>
                   <option value="both">Any / Both</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -563,6 +578,14 @@ export default function PostJobClient({
             <div className="min-h-[250px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-100 transition-all">
               <TipTapEditor key={editorKey} value={description} onChange={setDescription} minimal={true} />
             </div>
+            <div className="flex justify-end">
+              <p className={cn(
+                "text-[10px] font-bold",
+                description.replace(/<[^>]*>/g, '').trim().length > 3000 ? "text-red-500" : "text-slate-400"
+              )}>
+                {description.replace(/<[^>]*>/g, '').trim().length} / 3000 characters
+              </p>
+            </div>
           </div>
         )}
 
@@ -571,7 +594,7 @@ export default function PostJobClient({
             <div className="space-y-4">
               <div className="pt-0 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-50 pb-3">
-                  <h2 className="text-sm font-bold text-[#1E1B4B]">Candidate Questions</h2>
+                  <h2 className="text-sm font-bold text-[#1E1B4B]">Candidate Questions (Optional)</h2>
                   <Button 
                     type="button" 
                     onClick={() => addQuestion("boolean")}

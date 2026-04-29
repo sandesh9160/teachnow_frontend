@@ -52,7 +52,7 @@ export default function RecruiterTestimonialsPage() {
       setFormData(prev => ({
         ...prev,
         name: user.name || "",
-        designation: "Recruiter"
+        designation: user.role === 'recruiter' ? 'Recruiter' : (user.role === 'employer' ? 'Employer' : 'Member')
       }));
     }
   }, [user]);
@@ -63,14 +63,14 @@ export default function RecruiterTestimonialsPage() {
       setSaving(true);
       if (editingId) {
         await updateTestimonial(editingId, formData);
-        toast.success("Success: Feedback updated!");
+        toast.success("Success: Testimonial updated!");
       } else {
         await createTestimonial(formData);
-        toast.success("Success: Thank you for your feedback!");
+        toast.success("Success: Thank you for your testimonial!");
       }
       setFormData({ 
         name: user?.name || "", 
-        designation: "Recruiter", 
+        designation: user?.role === 'recruiter' ? 'Recruiter' : (user?.role === 'employer' ? 'Employer' : 'Member'), 
         company: "", 
         message: "", 
         rating: 5 
@@ -86,8 +86,8 @@ export default function RecruiterTestimonialsPage() {
 
   const handleEdit = (testimonial: any) => {
     setFormData({
-      name: testimonial.name || user?.name || "",
-      designation: testimonial.designation || "Recruiter",
+      name: user?.name || testimonial.name || "",
+      designation: user?.role === 'recruiter' ? 'Recruiter' : (user?.role === 'employer' ? 'Employer' : 'Member'),
       company: testimonial.company || "",
       message: testimonial.message || "",
       rating: testimonial.rating || 5,
@@ -98,7 +98,7 @@ export default function RecruiterTestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    toast.info("Remove this feedback?", {
+    toast.info("Remove this testimonial?", {
       action: {
         label: "Remove",
         onClick: async () => {
@@ -118,9 +118,9 @@ export default function RecruiterTestimonialsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
         <div className="space-y-1">
           <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-             My Feedback
+             My Testimonials
           </h1>
-          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Share your recruiting journey</p>
+          <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">Share your recruitment story</p>
         </div>
         
         <Button 
@@ -128,7 +128,7 @@ export default function RecruiterTestimonialsPage() {
           onClick={() => { setShowForm(!showForm); if (!showForm) setEditingId(null); }}
           className="rounded font-bold h-10 sm:h-9 px-5 active:scale-95 transition-all text-xs w-full sm:w-auto shadow-sm"
         >
-          {showForm ? <><X className="w-3.5 h-3.5 mr-1.5" /> Cancel</> : <><Plus className="w-3.5 h-3.5 mr-1.5" /> New Feedback</>}
+          {showForm ? <><X className="w-3.5 h-3.5 mr-1.5" /> Cancel</> : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Share Experience</>}
         </Button>
       </div>
 
@@ -136,7 +136,7 @@ export default function RecruiterTestimonialsPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-6 animate-in fade-in slide-in-from-top-4 duration-500 shadow-sm">
           <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
             <Edit2 className="w-4 h-4 text-primary" />
-            {editingId ? "Update Feedback" : "Post New Experience"}
+            {editingId ? "Update Testimonial" : "Submit Testimonial"}
           </h2>
           
           <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
@@ -152,12 +152,12 @@ export default function RecruiterTestimonialsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Recruiter Role</Label>
+                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Your Role</Label>
                 <Input 
                   id="designation" 
                   value={formData.designation} 
                   readOnly
-                  placeholder="e.g. Talent Acquisition"
+                  placeholder="e.g. Recruiter"
                   className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"
                 />
               </div>
@@ -188,7 +188,7 @@ export default function RecruiterTestimonialsPage() {
             
             <div className="space-y-1.5">
               <div className="flex justify-between items-end pr-1">
-                <Label htmlFor="message" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Feedback Message</Label>
+                <Label htmlFor="message" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Testimonial Message</Label>
                 <span className={cn(
                   "text-[10px] font-bold tracking-tight",
                   formData.message.length >= 200 ? "text-rose-500" : "text-slate-400"
@@ -211,7 +211,7 @@ export default function RecruiterTestimonialsPage() {
             <div className="pt-2 flex justify-end gap-3">
               <Button type="submit" disabled={saving} className="rounded font-bold h-9 px-6 text-xs active:scale-95 transition-all text-white">
                 {saving && <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />}
-                {editingId ? "Update Now" : "Post Experience"}
+                {editingId ? "Save Changes" : "Post Testimonial"}
               </Button>
             </div>
           </form>
@@ -274,8 +274,8 @@ export default function RecruiterTestimonialsPage() {
       ) : (
         <div className="bg-white rounded-xl border border-dashed border-slate-200 p-20 text-center">
            <Award className="w-12 h-12 text-slate-100 mx-auto mb-4" />
-           <p className="text-slate-400 font-bold text-sm">No feedback entries yet.</p>
-           <Button onClick={() => setShowForm(true)} className="mt-8 rounded h-10 px-8 font-bold text-xs text-white">Post Your Experience</Button>
+           <p className="text-slate-400 font-bold text-sm">No testimonials yet.</p>
+           <Button onClick={() => setShowForm(true)} className="mt-8 rounded h-10 px-8 font-bold text-xs text-white">Share Your Story</Button>
         </div>
       )}
     </div>

@@ -10,7 +10,6 @@ import {
   FileUp,
   X,
   CheckCircle2,
-  Trash2,
   Calendar,
   ExternalLink,
 } from "lucide-react";
@@ -81,8 +80,27 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const allowedExtensions = ["svg", "jpg", "jpeg", "png", "webp", "pdf"];
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
+
+    if (!fileExt || !allowedExtensions.includes(fileExt)) {
+      toast("Unsupported File Format", {
+        description: `Please upload only ${allowedExtensions.join(", ").toUpperCase()} files.`,
+        style: {
+          background: '#FFFBEB',
+          border: '1px solid #FCD34D',
+          color: '#92400E',
+        },
+        duration: 5000,
+      });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     if (!selectedDocType) {
       toast.error("Please select a document type.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
@@ -113,18 +131,6 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this document?")) return;
-    try {
-      const res = await dashboardServerFetch<any>(`employer/documents/${id}`, { method: 'DELETE' });
-      if (res?.status) {
-        toast.success("Document deleted");
-        void fetchDocuments();
-      }
-    } catch (e) {
-      toast.error("An error occurred");
-    }
-  };
 
   const handlePreview = (doc: EmployerDocument) => {
     if (!doc.document_file) return;
@@ -301,9 +307,9 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                      {uploading ? "Uploading..." : "Select & Upload"}
                   </Button>
                </div>
-               <p className="text-center text-[10px] text-slate-400 font-medium pt-2 italic">
-                  Supported: PDF, JPG, PNG, DOC (Max 10MB)
-               </p>
+                <p className="text-center text-[10px] text-slate-400 font-medium pt-2 italic">
+                   Supported: SVG, JPG, PNG, WEBP, PDF (Max 10MB)
+                </p>
             </div>
          </div>
       )}
@@ -340,7 +346,6 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                               <Button onClick={() => handlePreview(doc)} variant="outline" size="sm" className="h-8 px-3 rounded-lg text-[#1E1B4B] border-slate-200 hover:bg-slate-50 text-[11px] font-semibold flex items-center gap-1.5">
                                  <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Preview</span>
                               </Button>
-                              <button onClick={() => handleDelete(doc.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                            </div>
                         </div>
                      </div>
@@ -357,7 +362,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
       </div>
 
       {/* Hidden File Input */}
-      <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" disabled={uploading} />
+      <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".svg,.jpg,.jpeg,.png,.webp,.pdf" disabled={uploading} />
     </div>
   );
 }
