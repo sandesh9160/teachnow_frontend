@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTestimonials } from "@/hooks/useTestimonials";
+import { useClientSession } from "@/hooks/useClientSession";
 import { 
   Loader2, 
   Plus, 
@@ -28,6 +29,8 @@ export default function RecruiterTestimonialsPage() {
     deleteTestimonial,
   } = useTestimonials("recruiter");
 
+  const { user } = useClientSession();
+
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | string | null>(null);
@@ -44,22 +47,38 @@ export default function RecruiterTestimonialsPage() {
     void fetchTestimonials();
   }, [fetchTestimonials]);
 
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || "",
+        designation: "Recruiter"
+      }));
+    }
+  }, [user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setSaving(true);
       if (editingId) {
         await updateTestimonial(editingId, formData);
-        toast.success("Feedback updated!");
+        toast.success("Success: Feedback updated!");
       } else {
         await createTestimonial(formData);
-        toast.success("Thank you for your feedback!");
+        toast.success("Success: Thank you for your feedback!");
       }
-      setFormData({ name: "", designation: "", company: "", message: "", rating: 5 });
+      setFormData({ 
+        name: user?.name || "", 
+        designation: "Recruiter", 
+        company: "", 
+        message: "", 
+        rating: 5 
+      });
       setShowForm(false);
       setEditingId(null);
     } catch (error) {
-      toast.error("Failed to save your experience.");
+      toast.error("Failed: Could not save your experience.");
     } finally {
       setSaving(false);
     }
@@ -67,8 +86,8 @@ export default function RecruiterTestimonialsPage() {
 
   const handleEdit = (testimonial: any) => {
     setFormData({
-      name: testimonial.name || "",
-      designation: testimonial.designation || "",
+      name: testimonial.name || user?.name || "",
+      designation: testimonial.designation || "Recruiter",
       company: testimonial.company || "",
       message: testimonial.message || "",
       rating: testimonial.rating || 5,
@@ -79,15 +98,15 @@ export default function RecruiterTestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    toast("Remove this feedback?", {
+    toast.info("Remove this feedback?", {
       action: {
         label: "Remove",
         onClick: async () => {
           try {
             await deleteTestimonial(id);
-            toast.success("Deleted.");
+            toast.error("Success: Deleted.");
           } catch (error) {
-            toast.error("Failed to delete.");
+            toast.error("Failed: Could not delete.");
           }
         },
       },
@@ -127,10 +146,9 @@ export default function RecruiterTestimonialsPage() {
                 <Input 
                   id="name" 
                   value={formData.name} 
-                  onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                  readOnly
                   placeholder="Your full name"
-                  className="rounded-lg border-slate-200 focus:border-primary transition-all h-10 text-sm font-medium"
-                  required
+                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"
                 />
               </div>
               <div className="space-y-1.5">
@@ -138,10 +156,9 @@ export default function RecruiterTestimonialsPage() {
                 <Input 
                   id="designation" 
                   value={formData.designation} 
-                  onChange={(e) => setFormData({...formData, designation: e.target.value})} 
+                  readOnly
                   placeholder="e.g. Talent Acquisition"
-                  className="rounded-lg border-slate-200 focus:border-primary transition-all h-10 text-sm font-medium"
-                  required
+                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"
                 />
               </div>
             </div>
@@ -170,12 +187,21 @@ export default function RecruiterTestimonialsPage() {
             </div>
             
             <div className="space-y-1.5">
-              <Label htmlFor="message" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Feedback Message</Label>
+              <div className="flex justify-between items-end pr-1">
+                <Label htmlFor="message" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Feedback Message</Label>
+                <span className={cn(
+                  "text-[10px] font-bold tracking-tight",
+                  formData.message.length >= 200 ? "text-rose-500" : "text-slate-400"
+                )}>
+                  {formData.message.length}/200
+                </span>
+              </div>
               <textarea
                 id="message"
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
                 rows={3}
+                maxLength={200}
                 className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium placeholder:text-slate-300 focus:outline-none focus:border-primary transition-all shadow-none"
                 placeholder="How has TeachNow helped your recruiting efforts?..."
                 required

@@ -63,10 +63,10 @@ export default function EmployerTestimonialsPage() {
       setSaving(true);
       if (editingId) {
         await updateTestimonial(editingId, formData);
-        toast.success("Testimonial updated successfully!");
+        toast.success("Success: Testimonial updated successfully!");
       } else {
         await createTestimonial(formData);
-        toast.success("Testimonial added! It will be reviewed by our team.");
+        toast.success("Success: Testimonial added! It will be reviewed by our team.");
       }
       setFormData({ 
         name: user?.name || "", 
@@ -78,7 +78,7 @@ export default function EmployerTestimonialsPage() {
       setShowForm(false);
       setEditingId(null);
     } catch (error) {
-      toast.error("Failed to save testimonial.");
+      toast.error("Failed: Could not save testimonial.");
     } finally {
       setSaving(false);
     }
@@ -87,7 +87,7 @@ export default function EmployerTestimonialsPage() {
   const handleEdit = (testimonial: any) => {
     setFormData({
       name: testimonial.name || user?.name || "",
-      designation: testimonial.designation || "",
+      designation: testimonial.designation || (user?.role === 'employer' ? 'Employer' : (user?.role === 'recruiter' ? 'Recruiter' : 'Member')),
       company: testimonial.company || "",
       message: testimonial.message || "",
       rating: testimonial.rating || 5,
@@ -98,15 +98,15 @@ export default function EmployerTestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    toast("Remove this testimonial?", {
+    toast.info("Remove this testimonial?", {
       action: {
         label: "Remove",
         onClick: async () => {
           try {
             await deleteTestimonial(id);
-            toast.success("Deleted successfully.");
+            toast.error("Success: Deleted successfully.");
           } catch (error) {
-            toast.error("Failed to delete.");
+            toast.error("Failed: Could not delete.");
           }
         },
       },
@@ -152,14 +152,13 @@ export default function EmployerTestimonialsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px]  pl-0.5">Designation</Label>
+                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px]  pl-0.5 uppercase tracking-widest">Designation</Label>
                 <Input 
                   id="designation" 
                   value={formData.designation} 
-                  onChange={(e) => setFormData({...formData, designation: e.target.value})} 
+                  readOnly
                   placeholder="e.g. HR Manager"
-                  className="rounded-lg border-slate-200 focus:border-primary transition-all h-10 text-sm font-medium"
-                  required
+                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"
                 />
               </div>
             </div>
@@ -188,12 +187,21 @@ export default function EmployerTestimonialsPage() {
             </div>
             
             <div className="space-y-1.5">
-              <Label htmlFor="message" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Your Message</Label>
+              <div className="flex justify-between items-end pr-1">
+                <Label htmlFor="message" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Your Message</Label>
+                <span className={cn(
+                  "text-[10px] font-bold tracking-tight",
+                  formData.message.length >= 200 ? "text-rose-500" : "text-slate-400"
+                )}>
+                  {formData.message.length}/200
+                </span>
+              </div>
               <textarea
                 id="message"
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
                 rows={3}
+                maxLength={200}
                 className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium placeholder:text-slate-300 focus:outline-none focus:border-primary transition-all"
                 placeholder="Share your experience with TeachNow..."
                 required

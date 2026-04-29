@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTestimonials } from "@/hooks/useTestimonials";
+import { useClientSession } from "@/hooks/useClientSession";
 import {
   Loader2,
   Plus,
@@ -29,6 +30,8 @@ export default function TestimonialsPage() {
     deleteTestimonial,
   } = useTestimonials();
 
+  const { user } = useClientSession();
+
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | string | null>(null);
@@ -45,22 +48,38 @@ export default function TestimonialsPage() {
     void fetchTestimonials();
   }, [fetchTestimonials]);
 
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || "",
+        designation: "Job Seeker"
+      }));
+    }
+  }, [user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setSaving(true);
       if (editingId) {
         await updateTestimonial(editingId, formData);
-        toast.success("Updated!");
+        toast.success("Success: Testimonial updated!");
       } else {
         await createTestimonial(formData);
-        toast.success("Added to profile!");
+        toast.success("Success: Testimonial added to profile!");
       }
-      setFormData({ name: "", designation: "", company: "", message: "", rating: 5 });
+      setFormData({ 
+        name: user?.name || "", 
+        designation: "Job Seeker", 
+        company: "", 
+        message: "", 
+        rating: 5 
+      });
       setShowForm(false);
       setEditingId(null);
     } catch (error) {
-      toast.error("Failed to save recommendation.");
+      toast.error("Failed: Could not save recommendation.");
     } finally {
       setSaving(false);
     }
@@ -68,8 +87,8 @@ export default function TestimonialsPage() {
 
   const handleEdit = (testimonial: any) => {
     setFormData({
-      name: testimonial.name || "",
-      designation: testimonial.designation || "",
+      name: testimonial.name || user?.name || "",
+      designation: testimonial.designation || "Job Seeker",
       company: testimonial.company || "",
       message: testimonial.message || "",
       rating: testimonial.rating || 5,
@@ -80,15 +99,15 @@ export default function TestimonialsPage() {
   };
 
   const handleDelete = async (id: number | string) => {
-    toast("Remove this entry?", {
+    toast.info("Remove this entry?", {
       action: {
         label: "Remove",
         onClick: async () => {
           try {
             await deleteTestimonial(id);
-            toast.success("Removed.");
+            toast.error("Success: Removed.");
           } catch (error) {
-            toast.error("Failed to delete.");
+            toast.error("Failed: Could not delete.");
           }
         },
       },
@@ -124,25 +143,23 @@ export default function TestimonialsPage() {
           <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Full Name</Label>
+                <Label htmlFor="name" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5 uppercase">Full Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  readOnly
                   placeholder="e.g. Ramesh Kumar"
-                  className="rounded-lg border-slate-200 focus:border-indigo-600 transition-all h-10 text-sm font-medium"
-                  required
+                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-indigo-600 transition-all h-10 text-sm font-medium"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="designation" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Designation</Label>
+                <Label htmlFor="designation" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5 uppercase">Designation</Label>
                 <Input
                   id="designation"
                   value={formData.designation}
-                  onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                  readOnly
                   placeholder="e.g. Principal"
-                  className="rounded-lg border-slate-200 focus:border-indigo-600 transition-all h-10 text-sm font-medium"
-                  required
+                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-indigo-600 transition-all h-10 text-sm font-medium"
                 />
               </div>
             </div>
@@ -171,12 +188,21 @@ export default function TestimonialsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="message" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5">Feedback</Label>
+              <div className="flex justify-between items-end pr-1">
+                <Label htmlFor="message" className="text-black/80 font-extrabold text-[10px] tracking-widest pl-0.5 uppercase">Feedback</Label>
+                <span className={cn(
+                  "text-[10px] font-bold tracking-tight",
+                  formData.message.length >= 200 ? "text-rose-500" : "text-slate-400"
+                )}>
+                  {formData.message.length}/200
+                </span>
+              </div>
               <textarea
                 id="message"
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 rows={3}
+                maxLength={200}
                 className="flex w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium placeholder:text-slate-300 focus:outline-none focus:border-indigo-600 transition-all shadow-none"
                 placeholder="What did they say?..."
                 required

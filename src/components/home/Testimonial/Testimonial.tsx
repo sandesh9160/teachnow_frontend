@@ -32,11 +32,12 @@ const TestimonialAvatar = ({ src, name }: { src?: string | null, name: string })
 };
 
 export const Testimonial = ({ testimonials }: TestimonialProps) => {
-  // const scrollRef = useRef<HTMLDivElement>(null);
-
   if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) return null;
 
-
+  const isSingle = testimonials.length === 1;
+  const displayTestimonials = isSingle 
+    ? testimonials 
+    : [...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials];
 
   return (
     <section className="py-24 bg-[#f8faff] overflow-hidden relative w-full">
@@ -51,10 +52,15 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
         </div>
 
         {/* Full-width Autoscrolling Container */}
-        <div className="relative w-full overflow-hidden py-4 flex">
-          <div className="flex gap-6 animate-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused] w-max" style={{ width: 'max-content' }}>
-            {/* Duplicating array multiple times for a truly seamless infinite scroll */}
-            {[...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials].map((t, index) => (
+        <div className={cn("relative w-full overflow-hidden py-4 flex", isSingle && "justify-center")}>
+          <div 
+            className={cn(
+              "flex gap-6 w-max", 
+              !isSingle && "animate-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused]"
+            )} 
+            style={{ width: isSingle ? 'auto' : 'max-content' }}
+          >
+            {displayTestimonials.map((t, index) => (
               <div
                 key={`${t.id}-${index}`}
                 className="shrink-0 w-[280px] md:w-[320px] rounded-[16px] border border-[#eef2f8] bg-white p-7 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] whitespace-normal"
