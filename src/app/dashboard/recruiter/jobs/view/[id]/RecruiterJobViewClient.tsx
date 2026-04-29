@@ -146,11 +146,23 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                   </Button>
                </Link>
 
-               <Link href={`/jobs/${job.slug}`} target="_blank">
-                  <Button className="h-9 px-5 rounded-xl text-[12px] font-semibold bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-sm flex items-center gap-2">
+               {job.status === 'approved' ? (
+                  <Link href={`/jobs/${job.slug}`} target="_blank">
+                     <Button className="h-9 px-5 rounded-xl text-[12px] font-semibold bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-sm flex items-center gap-2">
+                        Live View <ExternalLink className="w-3.5 h-3.5" />
+                     </Button>
+                  </Link>
+               ) : (
+                  <Button 
+                     onClick={() => toast.warning("Not Live Yet", {
+                        description: "This job is waiting for approval. It will be live soon!",
+                        style: { borderLeft: '4px solid #f59e0b' }
+                     })}
+                     className="h-9 px-5 rounded-xl text-[12px] font-semibold bg-slate-100 text-slate-400 border-slate-200 shadow-none flex items-center gap-2 hover:bg-slate-200 transition-colors"
+                  >
                      Live View <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
-               </Link>
+               )}
 
                {job.job_status === 'expired' && (
                   <Button

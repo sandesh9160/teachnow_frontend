@@ -194,7 +194,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-20">
+    <div suppressHydrationWarning className="max-w-6xl mx-auto px-4 py-4 space-y-6 font-sans text-slate-800 pb-20">
       
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -238,6 +238,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
+              suppressHydrationWarning={true}
               className={cn(
                 "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap",
                 activeTab === tab.id 
