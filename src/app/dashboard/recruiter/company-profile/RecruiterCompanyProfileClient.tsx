@@ -99,6 +99,27 @@ export default function RecruiterCompanyProfileClient({
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ["svg", "jpg", "jpeg", "png", "webp"];
+      const fileExt = file.name.split(".").pop()?.toLowerCase();
+
+      if (!fileExt || !allowedExtensions.includes(fileExt)) {
+        toast.error("Unsupported file format", {
+          description: `Please upload only ${allowedExtensions.join(", ").toUpperCase()} files.`,
+          style: { borderLeft: '4px solid #ef4444' }
+        });
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error("File is too large", {
+          description: "Please upload an image smaller than 4MB.",
+          style: { borderLeft: '4px solid #ef4444' }
+        });
+        e.target.value = "";
+        return;
+      }
+
       setLogoFile(file);
       setLogoPreview(URL.createObjectURL(file));
     }
@@ -284,6 +305,7 @@ export default function RecruiterCompanyProfileClient({
                         fill
                         sizes="(max-width: 768px) 64px, 64px"
                         className="object-cover"
+                        onError={() => toast.error("Institution logo failed to load", { duration: 3000 })}
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
@@ -296,11 +318,11 @@ export default function RecruiterCompanyProfileClient({
                   </div>
                   <div className="space-y-0.5 text-center sm:text-left">
                     <h4 className="text-[12.5px] font-semibold text-black">Institution Logo</h4>
-                    <p className="text-[11px] font-medium text-slate-500 max-w-sm leading-tight">Recommended: PNG/JPG, Square (1:1)</p>
+                    <p className="text-[11px] font-medium text-slate-500 max-w-sm leading-tight">Recommended: PNG/JPG/SVG/WEBP, Max 4MB</p>
                     <input
                       id="logo-upload"
                       type="file"
-                      accept="image/*"
+                      accept=".svg,.jpg,.jpeg,.png,.webp"
                       className="hidden"
                       onChange={handleLogoChange}
                     />
@@ -606,6 +628,7 @@ export default function RecruiterCompanyProfileClient({
                   width={96}
                   height={96}
                   className="w-full h-full object-cover"
+                  onError={() => toast.error("Institution logo failed to load", { duration: 3000 })}
                 />
               ) : (
                 <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center text-slate-300">

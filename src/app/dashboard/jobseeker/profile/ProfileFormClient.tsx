@@ -214,10 +214,24 @@ export default function ProfileFormClient({
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("File is too large. Under 2MB required.", {
+      const allowedExtensions = ["svg", "jpg", "jpeg", "png", "webp"];
+      const fileExt = file.name.split(".").pop()?.toLowerCase();
+
+      if (!fileExt || !allowedExtensions.includes(fileExt)) {
+        toast.error("Unsupported file format", {
+          description: `Please upload only ${allowedExtensions.join(", ").toUpperCase()} files.`,
           style: { borderLeft: '4px solid #ef4444' }
         });
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error("File is too large", {
+          description: "Please upload an image smaller than 4MB.",
+          style: { borderLeft: '4px solid #ef4444' }
+        });
+        e.target.value = "";
         return;
       }
       setPhotoFile(file);
@@ -608,7 +622,12 @@ export default function ProfileFormClient({
             onClick={() => isEdit && document.getElementById("photo-upload")?.click()}
           >
             {photoPreview || profileData.profile_photo ? (
-              <img src={photoPreview || getFullImageUrl(profileData.profile_photo)!} alt="" className="w-full h-full object-cover rounded-xl" />
+              <img 
+                src={photoPreview || getFullImageUrl(profileData.profile_photo)!} 
+                alt="" 
+                className="w-full h-full object-cover rounded-xl" 
+                onError={() => toast.error("Profile photo failed to load", { duration: 3000 })}
+              />
             ) : (
               <div className="w-full h-full bg-slate-50 flex items-center justify-center text-xl font-bold text-indigo-900">
                 {profileData.name?.[0]}
@@ -645,7 +664,7 @@ export default function ProfileFormClient({
           </div>
         </div>
       </div>
-      {isEdit && <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />}
+      {isEdit && <input id="photo-upload" type="file" accept=".svg,.jpg,.jpeg,.png,.webp" className="hidden" onChange={handlePhotoChange} />}
     </div>
   );
 

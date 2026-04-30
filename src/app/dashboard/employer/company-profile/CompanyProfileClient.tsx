@@ -146,6 +146,23 @@ export default function CompanyProfileClient({
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedExtensions = ["svg", "jpg", "jpeg", "png", "webp"];
+      const fileExt = file.name.split(".").pop()?.toLowerCase();
+
+      if (!fileExt || !allowedExtensions.includes(fileExt)) {
+        toast("Unsupported File Format", {
+          description: `Please upload only ${allowedExtensions.join(", ").toUpperCase()} files.`,
+          style: {
+            background: '#FEF2F2',
+            border: '1px solid #FCA5A5',
+            color: '#991B1B',
+          },
+          duration: 4000,
+        });
+        e.target.value = "";
+        return;
+      }
+
       // 4MB Limit check
       const maxSize = 4 * 1024 * 1024; // 4MB in bytes
       if (file.size > maxSize) {
@@ -463,6 +480,7 @@ export default function CompanyProfileClient({
                           fill 
                           sizes="(max-width: 768px) 64px, 64px"
                           className="object-cover" 
+                          onError={() => toast.error("Institution logo failed to load", { duration: 3000 })}
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
@@ -481,7 +499,7 @@ export default function CompanyProfileClient({
                       <input 
                         id="logo-upload" 
                         type="file" 
-                        accept="image/*" 
+                        accept=".svg,.jpg,.jpeg,.png,.webp" 
                         className="hidden" 
                         onChange={handleLogoChange}
                       />
@@ -831,6 +849,7 @@ export default function CompanyProfileClient({
                       width={96} 
                       height={96}
                       className="w-full h-full object-cover"
+                      onError={() => toast.error("Institution logo failed to load", { duration: 3000 })}
                     />
                  ) : (
                     <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center text-slate-300">
