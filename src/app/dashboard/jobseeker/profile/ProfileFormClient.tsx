@@ -26,7 +26,7 @@ function toEducationPayload(form: any): EducationPayload {
     institution: form.institution,
     field_of_study: form.field_of_study ?? "",
     start_year: form.start_date ? String(new Date(form.start_date).getFullYear()) : "",
-    end_year: form.is_current ? "" : (form.end_date ? String(new Date(form.end_date).getFullYear()) : ""),
+    end_year: form.is_current ? null : (form.end_date ? String(new Date(form.end_date).getFullYear()) : null),
     grade: form.grade?.trim() ?? "",
     // description: form.description ?? "",
     is_current: form.is_current ? 1 : 0,
@@ -45,7 +45,7 @@ function toExperiencePayload(form: any): ExperiencePayload {
     company_name: form.company_name,
     location: form.location ?? "",
     start_date: form.start_date,
-    end_date: form.is_current ? undefined : form.end_date,
+    end_date: form.is_current ? null : form.end_date,
     is_current: form.is_current ? 1 : 0,
     description: form.description ?? "",
   };
@@ -284,6 +284,15 @@ export default function ProfileFormClient({
       }
     }
 
+    if (eduFormData.grade) {
+      const gradeVal = parseFloat(eduFormData.grade);
+      if (eduFormData.grade_type === "Percentage" && gradeVal > 100) {
+        errors.grade = "Percentage cannot exceed 100";
+      } else if (eduFormData.grade_type === "CGPA" && gradeVal > 10) {
+        errors.grade = "CGPA cannot exceed 10";
+      }
+    }
+
     // Check for timeline overlaps with other records
     const otherEdus = localEduList.filter(e => e.id !== editingEduId && !(e as any).is_deleted);
     const currentStart = parseISO(eduFormData.start_date);
@@ -311,6 +320,7 @@ export default function ProfileFormClient({
 
     const newRecord = {
       ...eduFormData,
+      end_date: eduFormData.is_current ? null : eduFormData.end_date,
       grade: `${eduFormData.grade_type}: ${eduFormData.grade}`,
       id: editingEduId || `new_${Date.now()}`,
       is_new: !editingEduId,
@@ -409,6 +419,7 @@ export default function ProfileFormClient({
 
     const newRecord = {
       ...expFormData,
+      end_date: expFormData.is_current ? null : expFormData.end_date,
       id: editingExpId || `new_${Date.now()}`,
       is_new: !editingExpId,
       is_dirty: true
@@ -1098,7 +1109,7 @@ export default function ProfileFormClient({
                     </div>
                   </div>
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <button type="button" onClick={() => setExpFormData(p => ({ ...p, is_current: !p.is_current }))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-200"}`}>
+                    <button type="button" onClick={() => setExpFormData(p => ({ ...p, is_current: !p.is_current, end_date: !p.is_current ? "" : p.end_date }))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${expFormData.is_current ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-200"}`}>
                       {expFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Working
                     </button>
                   </div>
@@ -1169,14 +1180,59 @@ export default function ProfileFormClient({
                     <div className="flex gap-2">
                       <select
                         value={eduFormData.grade_type}
-                        onChange={(e) => setEduFormData({ ...eduFormData, grade_type: e.target.value as any })}
+                        onChange={(e) => {
+                          const nextType = e.target.value as any;
+                          const currentGrade = parseFloat(eduFormData.grade);
+                          if (!isNaN(currentGrade)) {
+                            if (nextType === "CGPA" && currentGrade > 10) {
+                              toast.error("Grade reset: CGPA cannot exceed 10", { style: { borderLeft: '4px solid #ef4444' } });
+                              setEduFormData({ ...eduFormData, grade_type: nextType, grade: "" });
+                              return;
+                            }
+                          }
+                          setEduFormData({ ...eduFormData, grade_type: nextType });
+                        }}
                         className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-[12px] outline-none shrink-0"
                       >
                         <option value="Percentage">Percentage</option>
                         <option value="CGPA">CGPA</option>
                       </select>
-                      <Input value={eduFormData.grade} onChange={(e) => setEduFormData({ ...eduFormData, grade: e.target.value })} placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85%" : "e.g. 9.2"} className="h-10 rounded-lg text-sm bg-white" />
+                      <Input 
+                        value={eduFormData.grade} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val !== "" && !/^\d*\.?\d*$/.test(val)) return;
+                          
+                          const numVal = parseFloat(val);
+                          if (!isNaN(numVal)) {
+                            if (eduFormData.grade_type === "Percentage" && numVal > 100) {
+                              toast.error("Percentage cannot exceed 100", { id: "grade-warn", style: { borderLeft: '4px solid #ef4444' } });
+                              setEduErrors(prev => ({ ...prev, grade: "Percentage cannot exceed 100" }));
+                              return;
+                            }
+                            if (eduFormData.grade_type === "CGPA" && numVal > 10) {
+                              toast.error("CGPA cannot exceed 10", { id: "grade-warn", style: { borderLeft: '4px solid #ef4444' } });
+                              setEduErrors(prev => ({ ...prev, grade: "CGPA cannot exceed 10" }));
+                              return;
+                            }
+                          }
+                          setEduErrors(prev => {
+                             const { grade, ...rest } = prev;
+                             return rest;
+                          });
+                          setEduFormData({ ...eduFormData, grade: val });
+                        }} 
+                        placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85" : "e.g. 9.2"} 
+                        className={cn("h-10 rounded-lg text-sm bg-white", eduErrors.grade ? "border-red-500 bg-red-50/50" : "border-slate-200")} 
+                      />
                     </div>
+                    {eduErrors.grade ? (
+                      <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{eduErrors.grade}</p>
+                    ) : (
+                      <p className="text-[10px] font-semibold text-slate-400 mt-1 px-1">
+                        {eduFormData.grade_type === "Percentage" ? "Max limit: 100%" : "Max limit: 10.0 CGPA"}
+                      </p>
+                    )}
                   </div>
                   <div className="md:col-span-2 space-y-2">
                     <Label className={cn("text-[13px] font-bold transition-colors", eduErrors.start_date ? "text-red-500" : "text-slate-900")}>Academic Timeline <span className="text-red-500">*</span></Label>
@@ -1220,7 +1276,7 @@ export default function ProfileFormClient({
                     </div>
                   </div>
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <button type="button" onClick={() => setEduFormData(p => ({ ...p, is_current: !p.is_current }))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${eduFormData.is_current ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white text-slate-500 border-slate-200"}`}>
+                    <button type="button" onClick={() => setEduFormData(p => ({ ...p, is_current: !p.is_current, end_date: !p.is_current ? "" : p.end_date }))} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-all ${eduFormData.is_current ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white text-slate-500 border-slate-200"}`}>
                       {eduFormData.is_current ? <CheckSquare className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />} Currently Pursuing
                     </button>
                   </div>

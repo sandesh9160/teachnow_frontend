@@ -17,7 +17,7 @@ export interface ExperiencePayload {
   company_name: string;
   location: string;
   start_date: string;
-  end_date?: string;
+  end_date?: string | null;
   is_current?: boolean | number;
-  description?: string;
+  description?: string | null;
 }

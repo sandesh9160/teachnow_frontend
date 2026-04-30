@@ -3,7 +3,7 @@ export type EducationPayload = {
   institution: string;
   field_of_study: string;
   start_year: string;
-  end_year?: string;
+  end_year?: string | null;
   grade: string;
   description?: string;
   is_current?: number;
@@ -16,7 +16,7 @@ export type EducationRecord = {
   institution?: string;
   field_of_study?: string;
   start_year?: string;
-  end_year?: string;
+  end_year?: string | null;
   grade?: string;
   start_date?: string;
   end_date?: string;
