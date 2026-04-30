@@ -180,6 +180,8 @@ const RegisterForm = () => {
                 className="pl-12 h-12 bg-slate-50 border-slate-100 rounded-2xl focus:bg-white transition-all font-medium"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onPaste={(e) => e.preventDefault()}
+                onCopy={(e) => e.preventDefault()}
                 disabled={isLoading}
                 required
               />
@@ -197,6 +199,8 @@ const RegisterForm = () => {
                 className="pl-12 h-12 bg-slate-50 border-slate-100 rounded-2xl focus:bg-white transition-all font-medium"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onPaste={(e) => e.preventDefault()}
+                onCopy={(e) => e.preventDefault()}
                 disabled={isLoading}
                 required
               />

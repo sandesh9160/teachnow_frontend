@@ -300,6 +300,8 @@ export default function RegisterPage() {
                     register("password").onBlur(e);
                     !password && setPasswordFocused(false);
                   }}
+                  onPaste={(e) => e.preventDefault()}
+                  onCopy={(e) => e.preventDefault()}
                   placeholder="••••••••"
                   className={cn(
                     "w-full rounded-lg border bg-white px-4 py-2 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
@@ -359,6 +361,8 @@ export default function RegisterPage() {
                   id="confirm_pw_reg"
                   type={showConfirmPassword ? "text" : "password"}
                   {...register("confirmPassword")}
+                  onPaste={(e) => e.preventDefault()}
+                  onCopy={(e) => e.preventDefault()}
                   placeholder="••••••••"
                   className={cn(
                     "w-full rounded-lg border bg-white px-4 py-2 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",

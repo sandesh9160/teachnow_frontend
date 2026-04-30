@@ -258,14 +258,14 @@ export default function ProfileFormClient({
   const handleAddCertification = () => {
     const name = certInput.trim();
     if (!name) return;
-    
+
     setProfileData(prev => ({
       ...prev,
-      certifications: [...prev.certifications, { 
-        name, 
-        issuer: certIssuer, 
-        issued_at: certIssuedAt, 
-        expires_at: certExpiresAt 
+      certifications: [...prev.certifications, {
+        name,
+        issuer: certIssuer,
+        issued_at: certIssuedAt,
+        expires_at: certExpiresAt
       }]
     }));
 
@@ -421,7 +421,7 @@ export default function ProfileFormClient({
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-    
+
     const name = profileData.name.trim();
     if (!name) {
       newErrors.name = "Full name is required";
@@ -622,10 +622,10 @@ export default function ProfileFormClient({
             onClick={() => isEdit && document.getElementById("photo-upload")?.click()}
           >
             {photoPreview || profileData.profile_photo ? (
-              <img 
-                src={photoPreview || getFullImageUrl(profileData.profile_photo)!} 
-                alt="" 
-                className="w-full h-full object-cover rounded-xl" 
+              <img
+                src={photoPreview || getFullImageUrl(profileData.profile_photo)!}
+                alt=""
+                className="w-full h-full object-cover rounded-xl"
                 onError={() => toast.error("Profile photo failed to load", { duration: 3000 })}
               />
             ) : (
@@ -816,8 +816,8 @@ export default function ProfileFormClient({
                   <p className="text-black font-semibold text-[13px]">{typeof cert === 'string' ? cert : cert.name}</p>
                   {(cert.issuer || cert.issued_at || cert.expires_at) && (
                     <p className="text-black/60 text-[11px] font-medium mt-0.5">
-                      {cert.issuer || ''} 
-                      {cert.issued_at && cert.issued_at.includes("-") ? ` · Issued: ${cert.issued_at.split("-")[0]}` : (cert.issued_at ? ` · Issued: ${cert.issued_at}` : '')} 
+                      {cert.issuer || ''}
+                      {cert.issued_at && cert.issued_at.includes("-") ? ` · Issued: ${cert.issued_at.split("-")[0]}` : (cert.issued_at ? ` · Issued: ${cert.issued_at}` : '')}
                       {cert.expires_at && cert.expires_at.includes("-") ? ` · Expires: ${cert.expires_at.split("-")[0]}` : (cert.expires_at ? ` · Expires: ${cert.expires_at}` : '')}
                     </p>
                   )}
@@ -1231,38 +1231,38 @@ export default function ProfileFormClient({
                   <Button type="button" onClick={handleAddCertification} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
                 </div>
 
-            <div className="flex flex-wrap gap-3 mt-4">
-              {profileData.certifications.map((c: any, idx: number) => (
-                <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl min-w-[220px] relative group pointer-events-auto">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="font-semibold text-emerald-900 text-[13px]">{typeof c === 'string' ? c : c.name}</p>
-                    <button type="button" onClick={() => setProfileData(p => ({ ...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx) }))} className="p-1 text-emerald-300 hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
-                  </div>
-                  {(c.issuer || c.issued_at || c.expires_at) && (
-                    <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
-                      {c.issuer || ''} 
-                      {c.issued_at && c.issued_at.includes("-") ? ` · Issued: ${c.issued_at.split("-")[0]}` : (c.issued_at ? ` · Issued: ${c.issued_at}` : '')} 
-                      {c.expires_at && c.expires_at.includes("-") ? ` · Expires: ${c.expires_at.split("-")[0]}` : (c.expires_at ? ` · Expires: ${c.expires_at}` : '')}
-                    </p>
-                  )}
+                <div className="flex flex-wrap gap-3 mt-4">
+                  {profileData.certifications.map((c: any, idx: number) => (
+                    <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl min-w-[220px] relative group pointer-events-auto">
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="font-semibold text-emerald-900 text-[13px]">{typeof c === 'string' ? c : c.name}</p>
+                        <button type="button" onClick={() => setProfileData(p => ({ ...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx) }))} className="p-1 text-emerald-300 hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                      {(c.issuer || c.issued_at || c.expires_at) && (
+                        <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
+                          {c.issuer || ''}
+                          {c.issued_at && c.issued_at.includes("-") ? ` · Issued: ${c.issued_at.split("-")[0]}` : (c.issued_at ? ` · Issued: ${c.issued_at}` : '')}
+                          {c.expires_at && c.expires_at.includes("-") ? ` · Expires: ${c.expires_at.split("-")[0]}` : (c.expires_at ? ` · Expires: ${c.expires_at}` : '')}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          </section>
         </div>
-      </section>
+      </div>
+
+      <div className="flex justify-end gap-3 px-4 sm:px-0">
+        <Button variant="outline" onClick={() => setMode("view")} className="px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
+        <Button onClick={handleSubmit} disabled={saving} className="px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
+          Save Final Profile
+        </Button>
+      </div>
     </div>
-  </div>
+  );
 
-  <div className="flex justify-end gap-3 px-4 sm:px-0">
-    <Button variant="outline" onClick={() => setMode("view")} className="px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
-    <Button onClick={handleSubmit} disabled={saving} className="px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
-      Save Final Profile
-    </Button>
-  </div>
-</div>
-);
-
-return mode === "view" ? renderProfileView() : renderProfileEdit();
+  return mode === "view" ? renderProfileView() : renderProfileEdit();
 }
 

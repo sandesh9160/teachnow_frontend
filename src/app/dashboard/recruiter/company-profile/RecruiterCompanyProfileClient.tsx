@@ -157,11 +157,11 @@ export default function RecruiterCompanyProfileClient({
     e.preventDefault();
     if (!profile) return;
     const formData = new FormData(e.currentTarget);
-    
+
     // Sequential high-fidelity validation
     const validationErrors = validateForm(formData);
     const errorKeys = Object.keys(validationErrors);
-    
+
     if (errorKeys.length > 0) {
       toast.error(validationErrors[errorKeys[0]], {
         style: { borderLeft: '4px solid #ef4444' },
@@ -181,7 +181,7 @@ export default function RecruiterCompanyProfileClient({
     formData.append("latitude", profile.latitude || "");
     formData.append("longitude", profile.longitude || "");
     formData.append("map_link", profile.map_link || "");
-    
+
     console.log("Saving Recruiter Profile Data (Institution):", Object.fromEntries(formData.entries()));
 
     try {
@@ -199,12 +199,12 @@ export default function RecruiterCompanyProfileClient({
 
       if (result.status === true) {
         toast.success("Institution profile updated!", { style: { borderLeft: '4px solid #10b981' } });
-        
+
         // Update local state with the returned data
         if (result.data) {
           setProfile(result.data);
         }
-        
+
         setLogoFile(null);
         setLogoPreview(null);
         setErrors({});
@@ -343,26 +343,26 @@ export default function RecruiterCompanyProfileClient({
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_name ? "text-red-500" : "text-slate-500")}>
                       Institution Name <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Input 
-                      name="company_name" 
-                      defaultValue={profile.company_name} 
+                    <Input
+                      name="company_name"
+                      defaultValue={profile.company_name}
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft transition-all",
                         errors.company_name && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
-                      )} 
+                      )}
                     />
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.industry ? "text-red-500" : "text-slate-500")}>
                       Industry / Sector <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Input 
-                      name="industry" 
-                      defaultValue={profile.industry || ""} 
+                    <Input
+                      name="industry"
+                      defaultValue={profile.industry || ""}
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft transition-all",
                         errors.industry && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
-                      )} 
+                      )}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -414,10 +414,10 @@ export default function RecruiterCompanyProfileClient({
                     <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Official Website</Label>
                     <div className="relative group">
                       <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 group-focus-within:scale-110 transition-all" />
-                      <Input 
-                        name="website" 
-                        defaultValue={profile.website || ""} 
-                        className="h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft" 
+                      <Input
+                        name="website"
+                        defaultValue={profile.website || ""}
+                        className="h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft"
                       />
                     </div>
                   </div>
@@ -427,13 +427,13 @@ export default function RecruiterCompanyProfileClient({
                     </Label>
                     <div className="relative">
                       <Mail className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5", errors.email ? "text-red-400" : "text-indigo-400")} />
-                      <Input 
-                        name="email" 
-                        defaultValue={profile.email} 
+                      <Input
+                        name="email"
+                        defaultValue={profile.email}
                         className={cn(
                           "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
                           errors.email && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                        )} 
+                        )}
                       />
                     </div>
                   </div>
@@ -443,13 +443,13 @@ export default function RecruiterCompanyProfileClient({
                     </Label>
                     <div className="relative group">
                       <Phone className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-all", errors.phone ? "text-red-400" : "text-indigo-400")} />
-                      <Input 
-                        name="phone" 
-                        defaultValue={profile.phone || ""} 
+                      <Input
+                        name="phone"
+                        defaultValue={profile.phone || ""}
                         className={cn(
                           "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
                           errors.phone && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                        )} 
+                        )}
                       />
                     </div>
                   </div>
@@ -462,43 +462,43 @@ export default function RecruiterCompanyProfileClient({
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.address ? "text-red-500" : "text-slate-500")}>
                       Physical Address <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Input 
-                      name="address" 
-                      defaultValue={profile.address || ""} 
+                    <Input
+                      name="address"
+                      defaultValue={profile.address || ""}
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
                         errors.address && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                      )} 
+                      )}
                     />
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.city ? "text-red-500" : "text-slate-500")}>
                       Settlement / City <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Input 
-                      name="city" 
-                      defaultValue={profile.city || ""} 
+                    <Input
+                      name="city"
+                      defaultValue={profile.city || ""}
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
                         errors.city && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                      )} 
+                      )}
                     />
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.country ? "text-red-500" : "text-slate-500")}>
                       Nation / Country <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Input 
-                      name="country" 
-                      defaultValue={profile.country || "INDIA"} 
+                    <Input
+                      name="country"
+                      defaultValue={profile.country || "INDIA"}
                       className={cn(
                         "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
                         errors.country && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                      )} 
+                      )}
                     />
                   </div>
                 </div>
-                
+
                 {activeTab === "location" && (
                   <div className="space-y-2.5 animate-in fade-in duration-500">
                     <div className="flex items-center justify-between">
@@ -524,51 +524,51 @@ export default function RecruiterCompanyProfileClient({
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                   <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-medium text-black opacity-70 border-slate-200 hover:bg-slate-50 transition-all"
+                    >
+                      Cancel
+                    </Button>
+
+                    {activeTab !== "identity" && (
                       <Button
-                        variant="outline"
-                        size="sm"
                         type="button"
-                        onClick={() => setIsEditing(false)}
-                        className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-medium text-black opacity-70 border-slate-200 hover:bg-slate-50 transition-all"
+                        variant="outline"
+                        onClick={handleBack}
+                        className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-medium text-indigo-600 border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
                       >
-                        Cancel
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        Back
                       </Button>
-                      
-                      {activeTab !== "identity" && (
-                        <Button 
-                          type="button"
-                          variant="outline"
-                          onClick={handleBack}
-                          className="flex-1 sm:flex-none h-11 px-5 rounded-xl text-[11px] font-medium text-indigo-600 border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
-                        >
-                          <ChevronLeft className="w-3.5 h-3.5" />
-                          Back
-                        </Button>
-                      )}
-                   </div>
-                   
-                   {activeTab !== "location" ? (
-                     <Button 
-                       type="button"
-                       onClick={handleNext}
-                       className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
-                     >
-                       Next Step
-                       <ArrowRight className="w-3.5 h-3.5" />
-                     </Button>
-                   ) : (
-                     <Button
-                       size="sm"
-                       type="submit"
-                       disabled={loading}
-                       className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
-                     >
-                       {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
-                       Save Institution Profile
-                     </Button>
-                   )}
-                 </div>
+                    )}
+                  </div>
+
+                  {activeTab !== "location" ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                    >
+                      Next Step
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      type="submit"
+                      disabled={loading}
+                      className="w-full sm:w-auto h-11 px-6 rounded-xl text-[11px] font-medium bg-[#312E81] hover:bg-[#1E1B4B] shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 text-white"
+                    >
+                      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                      Save Institution Profile
+                    </Button>
+                  )}
+                </div>
               </div>
             </form>
           </div>
@@ -763,10 +763,10 @@ export default function RecruiterCompanyProfileClient({
                     className="grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
                   />
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl gap-2">
-                      <MapPin className="w-6 h-6 text-slate-300" />
-                      <p className="text-[11px] font-medium text-slate-400">Map location not set for this institution</p>
-                    </div>
+                  <div className="h-full flex flex-col items-center justify-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl gap-2">
+                    <MapPin className="w-6 h-6 text-slate-300" />
+                    <p className="text-[11px] font-medium text-slate-400">Map location not set for this institution</p>
+                  </div>
                 )}
 
                 <div className="absolute top-4 right-4 z-10">
