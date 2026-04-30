@@ -21,19 +21,33 @@ function normalizeRole(raw: unknown): DashboardRole {
   return "job_seeker";
 }
 
+function tryUserDataCookie(): Record<string, unknown> | null {
+  try {
+    const cookies = document.cookie.split(';');
+    const userDataCookie = cookies.find(c => c.trim().startsWith('userData='));
+    if (!userDataCookie) return null;
+    const raw = decodeURIComponent(userDataCookie.split('=')[1]);
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
   const email = String(data.email ?? "").trim();
   const id = data.id ?? data.user_id;
   if (!email && (id === undefined || id === null || id === "")) return null;
-  const name =
-    String(
-      data.name ??
-      (data.user as any)?.name ??
-      data.f_name ??
-      data.full_name ??
-      data.company_name ??
-      ""
-    ).trim() || (email ? email.split("@")[0] : "User");
+  const name = (
+    String(data.name || "").trim() ||
+    String((data.user as any)?.name || "").trim() ||
+    String(data.f_name || "").trim() ||
+    String(data.full_name || "").trim() ||
+    String(data.company_name || "").trim() ||
+    String(data.institution_name || "").trim() ||
+    (email ? email.split("@")[0] : "User")
+  );
   return {
     name,
     email,
@@ -49,7 +63,17 @@ function mapPayload(data: Record<string, unknown>): ClientSessionUser | null {
 export function getSharedClientSession(): Promise<ClientSessionUser | null> {
   if (sessionPromise) return sessionPromise;
   sessionPromise = (async () => {
-    const tryEndpoints = ["auth/profile", "jobseeker/profile", "employer/profile", "recruiter/profile"];
+    // 1. Try cookie first (fastest and usually contains personal f_name like "Kiran")
+    const cookieUser = tryUserDataCookie();
+    if (cookieUser) {
+      const mapped = mapPayload(cookieUser);
+      if (mapped && mapped.name !== "User" && !mapped.name.includes("@")) {
+        return mapped;
+      }
+    }
+
+    // 2. Fallback to API probes if cookie is missing or has generic name
+    const tryEndpoints = ["recruiter/profile", "recruiter/company-profile", "employer/profile", "employer/company-profile", "jobseeker/profile", "auth/profile"];
     for (const ep of tryEndpoints) {
       try {
         const res = await dashboardServerFetch<unknown>(ep, { method: "GET" });
@@ -68,11 +92,28 @@ export function getSharedClientSession(): Promise<ClientSessionUser | null> {
 
         if (!data || typeof data !== "object") continue;
         const mapped = mapPayload(data as Record<string, unknown>);
-        if (mapped) return mapped;
+        if (mapped) {
+          // High-Fidelity: For recruiters, we often need the company name/logo which is in a separate endpoint
+          if (mapped.role === "recruiter") {
+            try {
+              const compRes = await dashboardServerFetch<any>("recruiter/company-profile", { method: "GET" });
+              if (compRes?.status && compRes?.data) {
+                if (compRes.data.company_logo) (mapped as any).avatar = compRes.data.company_logo;
+              }
+            } catch { /* ignore */ }
+          }
+          return mapped;
+        }
       } catch {
         /* try next */
       }
     }
+
+    // Final fallback to cookie if all API endpoints fail
+    if (cookieUser) {
+      return mapPayload(cookieUser);
+    }
+
     return null;
   })();
   return sessionPromise;

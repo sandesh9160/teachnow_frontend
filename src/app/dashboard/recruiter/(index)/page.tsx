@@ -13,6 +13,7 @@ export default async function RecruiterDashboardPage() {
       welcomeName={profile?.name || "Member"} 
       dashboardData={dashboardRes?.data}
     />
+    
   );
 }
 

@@ -21,7 +21,7 @@ import {
   ChevronLeft,
   X
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
@@ -58,6 +58,13 @@ export default function CompanyProfileClient({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Auto-fetch location when switching to location tab if coordinates are missing
+  useEffect(() => {
+    if (isEditing && activeTab === "location" && (!profile?.latitude || !profile?.longitude || profile.latitude === "0" || profile.latitude === "")) {
+       fetchLiveLocation();
+    }
+  }, [activeTab, isEditing, profile?.latitude, profile?.longitude]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [description, setDescription] = useState(initialData?.company_description || "");
   const formRef = useRef<HTMLFormElement>(null);
@@ -109,6 +116,20 @@ export default function CompanyProfileClient({
       }
     });
 
+    // Logo Validation (Identity Tab)
+    if (!tab || tab === "identity") {
+      if (!logoFile && !profile?.company_logo) {
+        newErrors["company_logo"] = "Institution logo is required";
+      }
+    }
+
+    // Location Validation (Location Tab)
+    if (!tab || tab === "location") {
+      if (!profile?.latitude || !profile?.longitude || profile.latitude === "0" || profile.longitude === "0") {
+        newErrors["location"] = "Geospatial coordinates are required. Please pinpoint your location on the map.";
+      }
+    }
+
     setErrors(prev => {
       if (tab) {
         // Clear errors for the current tab first, then merge new ones
@@ -125,11 +146,11 @@ export default function CompanyProfileClient({
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 2MB Limit check
-      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      // 4MB Limit check
+      const maxSize = 4 * 1024 * 1024; // 4MB in bytes
       if (file.size > maxSize) {
         toast("File Too Large", {
-          description: "Please upload a logo smaller than 2MB.",
+          description: "Please upload a logo smaller than 4MB.",
           style: {
             background: '#FFFBEB',
             border: '1px solid #FCD34D',
@@ -143,6 +164,11 @@ export default function CompanyProfileClient({
 
       setLogoFile(file);
       setLogoPreview(URL.createObjectURL(file));
+      setErrors(prev => {
+        const newErrs = { ...prev };
+        delete newErrs["company_logo"];
+        return newErrs;
+      });
     }
   };
 
@@ -154,7 +180,41 @@ export default function CompanyProfileClient({
         longitude: String(lng),
         map_link: `https://www.google.com/maps?q=${lat},${lng}`
       });
+      // Clear location error when coordinates are updated
+      setErrors(prev => {
+        const newErrs = { ...prev };
+        delete newErrs["location"];
+        return newErrs;
+      });
     }
+  };
+
+  const fetchLiveLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    toast.info("Requesting your location...", { duration: 2000 });
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        handleMapChange(latitude, longitude);
+        toast.success("Live location detected", {
+           style: { background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0369A1' }
+        });
+      },
+      (error) => {
+        console.warn("Geolocation permission denied or failed:", error);
+        if (error.code === 1) {
+          toast.error("Location permission denied. Please select your location manually.");
+        } else {
+          toast.error("Unable to retrieve location. Please use the map search.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   const getLogoUrl = (path: string | null) => {
@@ -385,9 +445,15 @@ export default function CompanyProfileClient({
           <div className="p-3 sm:p-6">
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                 <div className={cn("space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "identity" && "hidden")}>
-                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/30 p-4 border border-slate-100 rounded-xl">
+                  <div className={cn(
+                    "flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-xl transition-all",
+                    errors.company_logo ? "bg-red-50/50 border-red-200" : "bg-slate-50/30 border-slate-100"
+                  )}>
                     <div 
-                      className="relative w-16 h-16 rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden group shrink-0 cursor-pointer hover:border-indigo-300 transition-all active:scale-95"
+                      className={cn(
+                        "relative w-16 h-16 rounded-xl bg-white border shadow-sm overflow-hidden group shrink-0 cursor-pointer transition-all active:scale-95",
+                        errors.company_logo ? "border-red-300 ring-2 ring-red-100" : "border-slate-200 hover:border-indigo-300"
+                      )}
                       onClick={() => document.getElementById("logo-upload")?.click()}
                     >
                       {logoPreview || profile.company_logo ? (
@@ -408,8 +474,10 @@ export default function CompanyProfileClient({
                       </div>
                     </div>
                     <div className="space-y-0.5 text-center sm:text-left">
-                      <h4 className="text-[12.5px] font-semibold text-black">Institution Logo</h4>
-                      <p className="text-[11px] font-medium text-slate-500 max-w-sm leading-tight">Recommended: PNG/JPG, Square (1:1)</p>
+                      <h4 className={cn("text-[12.5px] font-semibold", errors.company_logo ? "text-red-600" : "text-black")}>
+                        Institution Logo <span className="text-red-500">*</span>
+                      </h4>
+                      <p className="text-[11px] font-medium text-slate-500 max-w-sm leading-tight">Recommended: PNG/JPG, Square (1:1), Max 4MB</p>
                       <input 
                         id="logo-upload" 
                         type="file" 
@@ -422,10 +490,16 @@ export default function CompanyProfileClient({
                         size="sm" 
                         type="button" 
                         onClick={() => document.getElementById("logo-upload")?.click()}
-                        className="h-7 mt-1.5 px-3 rounded-lg text-[10px] font-semibold text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition-all"
+                        className={cn(
+                          "h-7 mt-1.5 px-3 rounded-lg text-[10px] font-semibold transition-all",
+                          errors.company_logo 
+                            ? "text-red-600 border-red-200 bg-red-50 hover:bg-red-100" 
+                            : "text-indigo-600 border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50"
+                        )}
                       >
                         Upload New Logo
                       </Button>
+                      {errors.company_logo && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.company_logo}</p>}
                     </div>
                   </div>
 
@@ -616,10 +690,20 @@ export default function CompanyProfileClient({
                    {activeTab === "location" && (
                      <div className="space-y-2.5 animate-in fade-in duration-500">
                        <div className="flex items-center justify-between">
-                         <Label className="text-[10px] font-bold text-slate-500 px-1 capitalize">Geospatial Intelligence</Label>
-                         <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 whitespace-nowrap shadow-xs">Live Engine</span>
+                         <Label className={cn(
+                            "text-[10px] font-bold px-1 capitalize transition-colors",
+                            errors.location ? "text-red-500" : "text-slate-500"
+                          )}>
+                            Geospatial Intelligence <span className="text-red-500 ml-0.5">*</span>
+                          </Label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 whitespace-nowrap shadow-xs">Live Engine</span>
+                          </div>
                        </div>
-                       <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner p-1">
+                                               <div className={cn(
+                          "rounded-2xl overflow-hidden border bg-slate-50 shadow-inner p-1 transition-all",
+                          errors.location ? "border-red-300 ring-2 ring-red-50 shadow-[0_0_0_2px_rgba(239,68,68,0.1)]" : "border-slate-200"
+                        )}>
                         <LocationPicker 
                           lat={profile.latitude} 
                           lng={profile.longitude} 
@@ -627,6 +711,7 @@ export default function CompanyProfileClient({
                           className="w-full h-64" 
                         />
                       </div>
+                      {errors.location && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.location}</p>}
                     </div>
                    )}
                 </div>

@@ -104,6 +104,21 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
       return;
     }
 
+    const maxSize = 4 * 1024 * 1024; // 4MB
+    if (file.size > maxSize) {
+      toast.error("File size exceeds 4MB limit", {
+        description: "Please upload a document smaller than 4MB for successful verification.",
+        style: {
+          background: '#FEF2F2',
+          border: '1px solid #FCA5A5',
+          color: '#991B1B',
+        },
+        duration: 5000,
+      });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     try {
       setUploading(true);
       const formData = new FormData();
@@ -307,9 +322,15 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                      {uploading ? "Uploading..." : "Select & Upload"}
                   </Button>
                </div>
-                <p className="text-center text-[10px] text-slate-400 font-medium pt-2 italic">
-                   Supported: SVG, JPG, PNG, WEBP, PDF (Max 10MB)
-                </p>
+                <div className="mt-6 p-4 rounded-xl border border-blue-200 bg-blue-50/50 flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                      <AlertCircle className="w-5 h-5 text-blue-600" />
+                   </div>
+                   <div>
+                      <p className="text-sm font-bold text-[#1E1B4B]">Upload Documents with Limit not exceed 4 MB</p>
+                      <p className="text-[11px] text-slate-500">Supported: SVG, JPG, PNG, WEBP, PDF</p>
+                   </div>
+                </div>
             </div>
          </div>
       )}

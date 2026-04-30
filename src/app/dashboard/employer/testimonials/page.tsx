@@ -52,7 +52,7 @@ export default function EmployerTestimonialsPage() {
       setFormData(prev => ({
         ...prev,
         name: user.name || "",
-        designation: user.role === 'employer' ? 'Employer' : (user.role === 'recruiter' ? 'Recruiter' : 'Member')
+        designation: 'Employer'
       }));
     }
   }, [user]);
@@ -61,16 +61,21 @@ export default function EmployerTestimonialsPage() {
     e.preventDefault();
     try {
       setSaving(true);
+      const payload = {
+        ...formData,
+        name: formData.name || user?.name || "",
+        designation: formData.designation || (user?.role === 'employer' ? 'Employer' : (user?.role === 'recruiter' ? 'Recruiter' : 'Member'))
+      };
       if (editingId) {
-        await updateTestimonial(editingId, formData);
+        await updateTestimonial(editingId, payload);
         toast.success("Success: Testimonial updated successfully!");
       } else {
-        await createTestimonial(formData);
+        await createTestimonial(payload);
         toast.success("Success: Testimonial added! It will be reviewed by our team.");
       }
       setFormData({ 
         name: user?.name || "", 
-        designation: user?.role === 'employer' ? 'Employer' : (user?.role === 'recruiter' ? 'Recruiter' : 'Member'), 
+        designation: 'Employer', 
         company: "", 
         message: "", 
         rating: 5 
@@ -87,7 +92,7 @@ export default function EmployerTestimonialsPage() {
   const handleEdit = (testimonial: any) => {
     setFormData({
       name: testimonial.name || user?.name || "",
-      designation: testimonial.designation || (user?.role === 'employer' ? 'Employer' : (user?.role === 'recruiter' ? 'Recruiter' : 'Member')),
+      designation: 'Employer',
       company: testimonial.company || "",
       message: testimonial.message || "",
       rating: testimonial.rating || 5,
@@ -145,7 +150,7 @@ export default function EmployerTestimonialsPage() {
                 <Label htmlFor="name" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Author Name</Label>
                 <Input 
                   id="name" 
-                  value={formData.name} 
+                  value={formData.name || user?.name || ""} 
                   readOnly
                   placeholder="Your full name"
                   className="rounded-lg border-slate-200 bg-slate-50 focus:border-slate-200 cursor-not-allowed transition-all h-10 text-sm font-medium"
@@ -155,7 +160,7 @@ export default function EmployerTestimonialsPage() {
                 <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px]  pl-0.5 uppercase tracking-widest">Designation</Label>
                 <Input 
                   id="designation" 
-                  value={formData.designation} 
+                  value={formData.designation || "Employer"} 
                   readOnly
                   placeholder="e.g. HR Manager"
                   className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"

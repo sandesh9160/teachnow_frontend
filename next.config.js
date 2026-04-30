@@ -12,6 +12,11 @@ const nextConfig = {
   },
   turbopack: {}, // ✅ just enable Turbopack
   distDir: '.next', // optional but safe
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
+  },
 };
 
 module.exports = nextConfig;

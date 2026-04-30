@@ -52,7 +52,7 @@ export default function RecruiterTestimonialsPage() {
       setFormData(prev => ({
         ...prev,
         name: user.name || "",
-        designation: user.role === 'recruiter' ? 'Recruiter' : (user.role === 'employer' ? 'Employer' : 'Member')
+        designation: 'Recruiter'
       }));
     }
   }, [user]);
@@ -61,16 +61,21 @@ export default function RecruiterTestimonialsPage() {
     e.preventDefault();
     try {
       setSaving(true);
+      const payload = {
+        ...formData,
+        name: formData.name || user?.name || "",
+        designation: formData.designation || (user?.role === 'recruiter' ? 'Recruiter' : user?.role === 'employer' ? 'Employer' : 'Member') || ""
+      };
       if (editingId) {
-        await updateTestimonial(editingId, formData);
+        await updateTestimonial(editingId, payload);
         toast.success("Success: Testimonial updated!");
       } else {
-        await createTestimonial(formData);
+        await createTestimonial(payload);
         toast.success("Success: Thank you for your testimonial!");
       }
       setFormData({ 
         name: user?.name || "", 
-        designation: user?.role === 'recruiter' ? 'Recruiter' : (user?.role === 'employer' ? 'Employer' : 'Member'), 
+        designation: 'Recruiter', 
         company: "", 
         message: "", 
         rating: 5 
@@ -86,8 +91,8 @@ export default function RecruiterTestimonialsPage() {
 
   const handleEdit = (testimonial: any) => {
     setFormData({
-      name: user?.name || testimonial.name || "",
-      designation: user?.role === 'recruiter' ? 'Recruiter' : (user?.role === 'employer' ? 'Employer' : 'Member'),
+      name: testimonial.name || user?.name || "",
+      designation: 'Recruiter',
       company: testimonial.company || "",
       message: testimonial.message || "",
       rating: testimonial.rating || 5,
@@ -145,20 +150,20 @@ export default function RecruiterTestimonialsPage() {
                 <Label htmlFor="name" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Author Name</Label>
                 <Input 
                   id="name" 
-                  value={formData.name} 
+                  value={formData.name || user?.name || ""} 
                   readOnly
                   placeholder="Your full name"
-                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"
+                  className="rounded-lg border-slate-200 bg-slate-50 focus:border-slate-200 cursor-not-allowed transition-all h-10 text-sm font-medium"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Your Role</Label>
+                <Label htmlFor="designation" className="text-slate-900 font-extrabold text-[10px] uppercase tracking-widest pl-0.5">Designation</Label>
                 <Input 
                   id="designation" 
-                  value={formData.designation} 
+                  value={formData.designation || "Recruiter"} 
                   readOnly
                   placeholder="e.g. Recruiter"
-                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-primary transition-all h-10 text-sm font-medium"
+                  className="rounded-lg border-slate-200 bg-slate-50 cursor-not-allowed focus:border-slate-200 transition-all h-10 text-sm font-medium"
                 />
               </div>
             </div>
@@ -260,13 +265,13 @@ export default function RecruiterTestimonialsPage() {
                    "{t.message}"
                  </div>
 
-                 <div className="pt-3 border-t border-slate-50">
-                    <h4 className="font-bold text-slate-900 text-[13px] truncate">{t.name}</h4>
-                    <p className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 mt-0.5 uppercase tracking-tighter">
-                       <UserCheck className="w-2.5 h-2.5" />
+                  <div className="pt-3 border-t border-slate-50">
+                    <h4 className="font-bold text-slate-900 text-[14px] truncate">{t.name}</h4>
+                    <p className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 mt-0.5 uppercase tracking-tight">
+                       <UserCheck className="w-3 h-3" />
                        <span className="truncate">{t.designation}</span>
                     </p>
-                 </div>
+                  </div>
               </div>
             </div>
           ))}
