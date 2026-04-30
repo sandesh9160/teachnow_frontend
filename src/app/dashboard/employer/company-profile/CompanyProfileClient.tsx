@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import {
   Building2,
   Globe,
-  Phone,
   Loader2,
   Upload,
   Mail,
@@ -78,7 +77,6 @@ export default function CompanyProfileClient({
       { key: "institution_type", label: "Institution Type", tab: "identity" as TabType },
       { key: "company_description", label: "Detailed introduction", tab: "identity" as TabType },
       { key: "email", label: "Official Email", tab: "contact" as TabType },
-      { key: "phone", label: "Phone Number", tab: "contact" as TabType },
       { key: "address", label: "Physical Address", tab: "location" as TabType },
       { key: "city", label: "Settlement / City", tab: "location" as TabType },
       { key: "country", label: "Nation / Country", tab: "location" as TabType },
@@ -108,10 +106,6 @@ export default function CompanyProfileClient({
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(valStr)) {
           newErrors[field.key] = "Please enter a valid official email address";
-        }
-      } else if (field.key === "phone") {
-        if (!/^\d{10}$/.test(valStr)) {
-          newErrors[field.key] = "Phone number must be exactly 10 digits";
         }
       }
     });
@@ -623,9 +617,9 @@ export default function CompanyProfileClient({
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.email ? "text-red-500" : "text-slate-500")}>
-                      Official Email <span className="text-red-500 ml-0.5">*</span>
+                      Helpdesk Email <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <div className="relative">
+                    <div className="relative group">
                       <Mail className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5", errors.email ? "text-red-400" : "text-indigo-400")} />
                       <Input
                         name="email"
@@ -638,26 +632,8 @@ export default function CompanyProfileClient({
                       {errors.email && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.email}</p>}
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.phone ? "text-red-500" : "text-slate-500")}>
-                      Phone Number <span className="text-red-500 ml-0.5">*</span>
-                    </Label>
-                    <div className="relative group">
-                      <Phone className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 transition-all", errors.phone ? "text-red-400" : "text-indigo-400")} />
-                      <Input
-                        name="phone"
-                        defaultValue={profile.phone || ""}
-                        className={cn(
-                          "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
-                          errors.phone && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                        )}
-                      />
-                      {errors.phone && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.phone}</p>}
-                    </div>
-                  </div>
                 </div>
               </div>
-
               <div className={cn("space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "location" && "hidden")}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
@@ -884,7 +860,6 @@ export default function CompanyProfileClient({
               { label: 'Primary Location', value: profile.city || '', icon: MapPin },
               { label: 'Official Website', value: profile.website?.replace(/^https?:\/\//, '') || '', icon: Globe },
               { label: 'Professional Email', value: profile.email, icon: Mail },
-              { label: 'Contact Number', value: profile.phone || '', icon: Phone },
             ].map((item, idx) => (
               item.value && (
                 <div key={idx} className="flex flex-col gap-0.5 min-w-0 font-sans">
@@ -928,7 +903,6 @@ export default function CompanyProfileClient({
               {[
                 { label: 'Official Website', value: profile.website || 'Not Set', icon: Globe, link: profile.website },
                 { label: 'Helpdesk Email', value: profile.email, icon: Mail, link: `mailto:${profile.email}` },
-                { label: 'Primary Phone', value: profile.phone || 'Not Set', icon: Phone, link: `tel:${profile.phone}` },
               ].map((contact, idx) => (
                 <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-xl border border-slate-100/50 group hover:border-indigo-100 transition-all">
                   <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-indigo-500 border border-slate-100 group-hover:scale-110 transition-transform">

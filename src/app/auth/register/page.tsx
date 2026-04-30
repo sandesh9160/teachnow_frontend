@@ -35,7 +35,6 @@ export default function RegisterPage() {
       role: "job_seeker",
       name: "",
       company_name: "",
-      phone: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -59,7 +58,6 @@ export default function RegisterPage() {
 
     const payload = isEmployer ? {
       company_name: data.company_name,
-      phone: data.phone,
       email: data.email,
       password: data.password,
       password_confirmation: data.confirmPassword,
@@ -67,7 +65,6 @@ export default function RegisterPage() {
       role: data.role,
     } : {
       name: data.name,
-      phone: data.phone,
       email: data.email,
       password: data.password,
       role: data.role,
@@ -189,32 +186,6 @@ export default function RegisterPage() {
                     </p>
                   )}
                 </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="phone_reg" className="block text-sm font-medium text-foreground">Phone Number</label>
-                  <input 
-                    id="phone_reg" 
-                    {...register("phone")} 
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      e.target.value = value;
-                      register("phone").onChange(e);
-                    }}
-                    type="tel" 
-                    placeholder="9876543210" 
-                    className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
-                      errors.phone 
-                        ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
-                        : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    )}
-                    suppressHydrationWarning
-                  />
-                  {errors.phone && (
-                    <p className="flex items-center gap-1 text-[10px] font-bold text-red-500">
-                      <AlertCircle size={10} /> {errors.phone.message}
-                    </p>
-                  )}
-                </div>
               </div>
             ) : (
               <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -236,32 +207,6 @@ export default function RegisterPage() {
                   {errors.name && (
                     <p className="flex items-center gap-1 text-[10px] font-bold text-red-500">
                       <AlertCircle size={10} /> {errors.name.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="phone_reg_js" className="block text-sm font-medium text-foreground">Phone Number</label>
-                  <input 
-                    id="phone_reg_js" 
-                    {...register("phone")} 
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      e.target.value = value;
-                      register("phone").onChange(e);
-                    }}
-                    type="tel" 
-                    placeholder="9876543210" 
-                    className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
-                      errors.phone 
-                        ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
-                        : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    )}
-                    suppressHydrationWarning
-                  />
-                  {errors.phone && (
-                    <p className="flex items-center gap-1 text-[10px] font-bold text-red-500">
-                      <AlertCircle size={10} /> {errors.phone.message}
                     </p>
                   )}
                 </div>

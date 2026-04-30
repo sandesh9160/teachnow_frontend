@@ -194,40 +194,41 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                 </Link>
               </div>
               <div className="flex-1">
-                <div className="divide-y divide-slate-50">
-                  {[
-                    { title: "Senior Physics Teacher", company: "Narayana Junior College", location: "Hyderabad, India", salary: "₹50,000 - ₹80,000", time: "2h ago", logo: "storage/media/company_logos/sboTbWV0eDbbAcRI9hnxPPbmQe8tOzdJliHa8GqP.jpg" },
-                    { title: "Secondary Math Educator", company: "St. Peter's Engineering College", location: "Bangalore, India", salary: "₹45,000 - ₹75,000", time: "5h ago", logo: "storage/media/company_logos/LL97H6QVy1bv7zeJwzvPaaCJ7sdu1LUUGhdet5Qd.jpg" },
-                    { title: "English Language Specialist", company: "Delhi Public School", location: "Delhi, India", salary: "₹60,000 - ₹90,000", time: "1d ago", logo: null },
-                  ].map((job, idx) => (
-                    <Link 
-                      key={idx} 
-                      href="/jobs"
-                      className="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 transition-colors group/row"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0 group-hover/row:bg-white transition-colors overflow-hidden">
-                          {job.logo ? (
-                            <img src={normalizeMediaUrl(job.logo)} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            job.company?.[0] || job.title?.[0]
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-bold text-indigo-950 truncate group-hover/row:text-primary transition-colors">{job.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                             <p className="text-[11px] font-medium text-indigo-600/70 truncate">{job.company}</p>
-                             <span className="w-1 h-1 rounded-full bg-slate-200" />
-                             <p className="text-[11px] font-bold text-[#0046B5] whitespace-nowrap">{job.salary}</p>
+                {data?.recent_job_alerts?.length ? (
+                  <div className="divide-y divide-slate-50">
+                    {data.recent_job_alerts.map((job) => (
+                      <Link 
+                        key={job.job_id} 
+                        href={`/jobs/${job.job_id}`}
+                        className="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 transition-colors group/row"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-100 shrink-0 group-hover/row:bg-white transition-colors overflow-hidden">
+                            {job.company_logo ? (
+                              <img src={normalizeMediaUrl(job.company_logo)} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              job.company_name?.[0] || job.title?.[0]
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-bold text-indigo-950 truncate group-hover/row:text-primary transition-colors">{job.title}</p>
+                            <p className="text-[11px] font-medium text-indigo-600/70 truncate">{job.company_name}</p>
                           </div>
                         </div>
-                      </div>
-                      <div className="shrink-0 ml-4">
-                        <span className="text-[11px] font-medium text-slate-400">{job.time}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                        <div className="flex flex-col items-end gap-1.5 shrink-0 ml-4">
+                          <span className="text-[11px] font-medium text-slate-400">
+                            {job.posted_at ? formatAppliedAt(job.posted_at) : "Just now"}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-60 flex flex-col items-center justify-center text-center p-6 grayscale opacity-40">
+                    <Search className="w-10 h-10 mb-3" />
+                    <p className="text-xs font-bold uppercase tracking-widest">No Alerts Found</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -7,14 +7,9 @@ const passwordSchema = z
   .regex(/\d/, "Password must contain at least one number")
   .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least one special character");
 
-const phoneSchema = z
-  .string()
-  .regex(/^[6-9]\d{9}$/, "Please enter a valid phone number");
-
 export const jobSeekerRegisterSchema = z.object({
   name: z.string().min(3, "Full name must be at least 3 characters").max(100, "Full name cannot exceed 100 characters"),
   email: z.string().email("Please enter a valid email address"),
-  phone: phoneSchema,
   password: passwordSchema,
   confirmPassword: z.string(),
   acceptedTerms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
@@ -28,7 +23,6 @@ export const employerRegisterSchema = z.object({
   company_name: z.string()
     .min(3, "Company name must be at least 3 characters")
     .max(100, "Company name cannot exceed 100 characters"),
-  phone: phoneSchema,
   email: z.string().email("Please enter a valid email address"),
   password: passwordSchema,
   confirmPassword: z.string(),
@@ -43,7 +37,6 @@ export const registerSchema = z.object({
   role: z.enum(["job_seeker", "employer"]),
   name: z.string().optional(),
   company_name: z.string().optional(),
-  phone: z.string().optional(),
   email: z.string().email("Please enter a valid email address"),
   password: passwordSchema,
   confirmPassword: z.string(),
@@ -61,14 +54,6 @@ export const registerSchema = z.object({
   message: "Full name (3-100 characters) is required",
   path: ["name"],
 }).refine((data) => {
-  if (data.role === "job_seeker") {
-    return /^[6-9]\d{9}$/.test(data.phone || "");
-  }
-  return true;
-}, {
-  message: "Valid 10-digit Indian phone number is required",
-  path: ["phone"],
-}).refine((data) => {
   if (data.role === "employer") {
     return !!data.company_name && data.company_name.length >= 3 && data.company_name.length <= 100;
   }
@@ -76,14 +61,6 @@ export const registerSchema = z.object({
 }, {
   message: "Company name (3-100 characters) is required",
   path: ["company_name"],
-}).refine((data) => {
-  if (data.role === "employer") {
-    return /^[6-9]\d{9}$/.test(data.phone || "");
-  }
-  return true;
-}, {
-  message: "Valid 10-digit Indian phone number is required",
-  path: ["phone"],
 });
 
 export type RegisterValues = z.infer<typeof registerSchema>;

@@ -16,7 +16,6 @@ const RegisterForm = () => {
   const [role, setRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -47,7 +46,6 @@ const RegisterForm = () => {
       const payload: any = isEmployer ? {
         company_name: name,
         email,
-        phone,
         password,
         password_confirmation: confirmPassword,
         role: role,
@@ -86,11 +84,10 @@ const RegisterForm = () => {
         <button
           type="button"
           onClick={() => setRole("job_seeker")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
-            role === "job_seeker" 
-              ? "bg-white text-primary shadow-sm border border-slate-100" 
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${role === "job_seeker"
+              ? "bg-white text-primary shadow-sm border border-slate-100"
               : "text-slate-500 hover:text-slate-700 font-semibold"
-          }`}
+            }`}
         >
           <User className="w-4 h-4" />
           Job Seeker
@@ -98,11 +95,10 @@ const RegisterForm = () => {
         <button
           type="button"
           onClick={() => setRole("employer")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
-            role === "employer" 
-              ? "bg-white text-primary shadow-sm border border-slate-100" 
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${role === "employer"
+              ? "bg-white text-primary shadow-sm border border-slate-100"
               : "text-slate-500 hover:text-slate-700 font-semibold"
-          }`}
+            }`}
         >
           <Building2 className="w-4 h-4" />
           Employer
@@ -147,26 +143,7 @@ const RegisterForm = () => {
           </div>
         </div>
 
-        {role === "employer" && (
-          <div className="space-y-2 animate-in slide-in-from-left-2 duration-300">
-            <Label htmlFor="reg-phone" className="text-slate-700 font-bold ml-1">Phone Number</Label>
-            <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors flex items-center justify-center font-bold text-[10px]">
-                +91
-              </div>
-              <Input
-                id="reg-phone"
-                type="tel"
-                placeholder="10 digit mobile number"
-                className="pl-12 h-12 bg-slate-50 border-slate-100 rounded-2xl focus:bg-white transition-all font-medium"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                disabled={isLoading}
-                required={role === "employer"}
-              />
-            </div>
-          </div>
-        )}
+        {/* Phone number removed */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -212,10 +189,10 @@ const RegisterForm = () => {
           <CaptchaField ref={captchaRef} onChange={setCaptchaToken} />
         </div>
 
-        <Button 
-          type="submit" 
-          variant="hero" 
-          className="w-full h-12 rounded-2xl font-black shadow-lg shadow-primary/20 transition-all hover:scale-[1.01]" 
+        <Button
+          type="submit"
+          variant="hero"
+          className="w-full h-12 rounded-2xl font-black shadow-lg shadow-primary/20 transition-all hover:scale-[1.01]"
           disabled={isLoading}
         >
           {isLoading ? (

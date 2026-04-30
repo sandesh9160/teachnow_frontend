@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
 import { useEducation } from "@/hooks/useEducation";
 import { useExperience } from "@/hooks/useExperience";
@@ -57,7 +56,6 @@ function mapServerProfile(initial: Record<string, any>) {
   return {
     name: String(data.user?.name || data.name || data.full_name || ""),
     email: String(data.user?.email || data.email || ""),
-    phone: String(data.phone || ""),
     location: String(data.location || ""),
     title: String(data.title || data.job_title || data.headline || ""),
     bio: String(data.bio || data.about || data.summary || ""),
@@ -69,9 +67,7 @@ function mapServerProfile(initial: Record<string, any>) {
     gender: String(data.gender || ""),
     // open_to_work: String(data.open_to_work || "Actively Looking"),
     notice_period: String(data.notice_period || ""),
-    // expected_salary: String(data.expected_salary || ""),
-    // preferred_location: String(data.preferred_location || ""),
-    // teaching_mode: String(data.teaching_mode || ""),
+    phone: String(data.phone || ""),
     skills: Array.isArray(data.skills) ? data.skills.map((s: any) => {
       if (typeof s === 'object' && s !== null) return s.name || s.id || "";
       return String(s);
@@ -87,7 +83,6 @@ export default function ProfileFormClient({
   initialResponse: Record<string, unknown>;
   isNewProfile?: boolean;
 }) {
-  const router = useRouter();
   const { updateProfile, createProfile } = useProfile();
   const {
     data: education,
@@ -278,18 +273,39 @@ export default function ProfileFormClient({
 
   const handleEduSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrs: Record<string, string> = {};
-    if (!eduFormData.institution.trim()) newErrs.institution = "Institution name is required";
-    if (!eduFormData.degree.trim()) newErrs.degree = "Degree is required";
-    if (!eduFormData.start_date) newErrs.start_date = "Start date is required";
-    if (!eduFormData.is_current && eduFormData.end_date && isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
-      newErrs.dates = "End date cannot be before start date";
+    const errors: Record<string, string> = {};
+    if (!eduFormData.institution.trim()) errors.institution = "Institution is required";
+    if (!eduFormData.degree.trim()) errors.degree = "Degree is required";
+    if (!eduFormData.start_date) errors.start_date = "Start date is required";
+    
+    if (eduFormData.start_date && eduFormData.end_date && !eduFormData.is_current) {
+      if (isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
+        errors.dates = "End date must be after start date";
+      }
     }
 
-    setEduErrors(newErrs);
-    const firstErr = Object.values(newErrs)[0];
-    if (firstErr) {
-      toast.error(firstErr, { style: { borderLeft: '4px solid #ef4444' } });
+    // Check for timeline overlaps with other records
+    const otherEdus = localEduList.filter(e => e.id !== editingEduId && !(e as any).is_deleted);
+    const currentStart = parseISO(eduFormData.start_date);
+    const currentEnd = eduFormData.is_current ? new Date() : (eduFormData.end_date ? parseISO(eduFormData.end_date) : new Date());
+
+    for (const other of otherEdus) {
+       const otherStart = parseISO(other.start_date || "");
+       const otherEnd = other.is_current ? new Date() : (other.end_date ? parseISO(other.end_date) : new Date());
+       
+       if (
+         (currentStart >= otherStart && currentStart <= otherEnd) ||
+         (currentEnd >= otherStart && currentEnd <= otherEnd) ||
+         (currentStart <= otherStart && currentEnd >= otherEnd)
+       ) {
+         errors.dates = "This timeline overlaps with an existing education record";
+         break;
+       }
+    }
+
+    setEduErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error(Object.values(errors)[0], { style: { borderLeft: '4px solid #ef4444' } });
       return;
     }
 
@@ -337,7 +353,15 @@ export default function ProfileFormClient({
         label: "Remove",
         onClick: () => {
           setLocalEduList(prev => prev.map(edu => edu.id === id ? { ...edu, is_deleted: true } : edu));
-          toast.success("Record marked for removal", { style: { borderLeft: '4px solid #10b981' } });
+          if (editingEduId === id) {
+            setShowEduForm(false);
+            setEditingEduId(null);
+            setEduFormData({
+              institution: "", degree: "", field_of_study: "", start_date: "", end_date: "", grade: "", description: "",
+              is_current: false, grade_type: "Percentage"
+            });
+          }
+          toast.success("Record removed from list", { style: { borderLeft: '4px solid #10b981' } });
         },
       },
       style: { borderLeft: '4px solid #ef4444' },
@@ -347,25 +371,39 @@ export default function ProfileFormClient({
 
   const handleExpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrs: Record<string, string> = {};
-    if (!expFormData.job_title.trim()) newErrs.job_title = "Job title is required";
-    const companyName = expFormData.company_name.trim();
-    if (!companyName) {
-      newErrs.company_name = "Organization name is required";
-    } else if (companyName.length < 3) {
-      newErrs.company_name = "Organization name must be at least 3 characters";
-    } else if (companyName.length > 100) {
-      newErrs.company_name = "Organization name cannot exceed 100 characters";
-    }
-    if (!expFormData.start_date) newErrs.start_date = "Start date is required";
-    if (!expFormData.is_current && expFormData.end_date && isAfter(parseISO(expFormData.start_date), parseISO(expFormData.end_date))) {
-      newErrs.dates = "End date cannot be before start date";
+    const errors: Record<string, string> = {};
+    if (!expFormData.job_title.trim()) errors.job_title = "Job title is required";
+    if (!expFormData.company_name.trim()) errors.company_name = "Institution name is required";
+    if (!expFormData.start_date) errors.start_date = "Start date is required";
+    
+    if (expFormData.start_date && expFormData.end_date && !expFormData.is_current) {
+      if (isAfter(parseISO(expFormData.start_date), parseISO(expFormData.end_date))) {
+        errors.dates = "End date must be after start date";
+      }
     }
 
-    setExpErrors(newErrs);
-    const firstErr = Object.values(newErrs)[0];
-    if (firstErr) {
-      toast.error(firstErr, { style: { borderLeft: '4px solid #ef4444' } });
+    // Check for timeline overlaps with other records
+    const otherExps = localExpList.filter(e => e.id !== editingExpId && !(e as any).is_deleted);
+    const currentStart = parseISO(expFormData.start_date);
+    const currentEnd = expFormData.is_current ? new Date() : (expFormData.end_date ? parseISO(expFormData.end_date) : new Date());
+
+    for (const other of otherExps) {
+       const otherStart = parseISO(other.start_date || "");
+       const otherEnd = other.is_current ? new Date() : (other.end_date ? parseISO(other.end_date) : new Date());
+       
+       if (
+         (currentStart >= otherStart && currentStart <= otherEnd) ||
+         (currentEnd >= otherStart && currentEnd <= otherEnd) ||
+         (currentStart <= otherStart && currentEnd >= otherEnd)
+       ) {
+         errors.dates = "This timeline overlaps with an existing work history record";
+         break;
+       }
+    }
+
+    setExpErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error(Object.values(errors)[0], { style: { borderLeft: '4px solid #ef4444' } });
       return;
     }
 
@@ -407,7 +445,12 @@ export default function ProfileFormClient({
         label: "Remove",
         onClick: () => {
           setLocalExpList(prev => prev.map(exp => exp.id === id ? { ...exp, is_deleted: true } : exp));
-          toast.success("Record marked for removal", { style: { borderLeft: '4px solid #10b981' } });
+          if (editingExpId === id) {
+            setShowExpForm(false);
+            setEditingExpId(null);
+            setExpFormData({ job_title: "", company_name: "", location: "", start_date: "", end_date: "", is_current: false, description: "" });
+          }
+          toast.success("Record removed from list", { style: { borderLeft: '4px solid #10b981' } });
         },
       },
       style: { borderLeft: '4px solid #ef4444' },
@@ -430,12 +473,42 @@ export default function ProfileFormClient({
     } else if (name.length > 100) {
       newErrors.name = "Full name cannot exceed 100 characters";
     }
-    if (!profileData.title.trim()) newErrors.title = "Professional title is required";
-    if (!profileData.phone.trim()) newErrors.phone = "Phone number is required";
+    const title = profileData.title.trim();
+    if (!title) {
+      newErrors.title = "Professional title is required";
+    } else if (title.length < 3) {
+      newErrors.title = "Professional title must be at least 3 characters";
+    } else if (title.length > 100) {
+      newErrors.title = "Professional title cannot exceed 100 characters";
+    }
+
     if (!profileData.location.trim()) newErrors.location = "Location is required";
-    if (!profileData.bio.trim()) newErrors.bio = "Bio is required";
-    else if (profileData.bio.trim().length < 50) newErrors.bio = "Bio should be at least 50 characters";
-    if (profileData.experience_years < 0) newErrors.experience_years = "Experience years cannot be negative";
+
+    const bio = profileData.bio.trim();
+    if (!bio) {
+      newErrors.bio = "Bio is required";
+    } else if (bio.length < 100) {
+      newErrors.bio = "Your bio is too short (min 100 characters). Share more about your teaching philosophy.";
+    } else if (bio.length > 1000) {
+      newErrors.bio = "Bio cannot exceed 1000 characters";
+    }
+
+    if (profileData.experience_years === undefined || profileData.experience_years === null || String(profileData.experience_years).trim() === "") {
+      newErrors.experience_years = "Total experience is required";
+    } else if (Number(profileData.experience_years) < 0) {
+      newErrors.experience_years = "Experience years cannot be negative";
+    }
+
+    if (profileData.phone) {
+      const phoneClean = profileData.phone.replace(/\D/g, '');
+      if (phoneClean.length !== 10) {
+        newErrors.phone = "Phone number must be exactly 10 digits";
+      }
+    }
+
+    if (profileData.dob && isAfter(parseISO(profileData.dob), new Date())) {
+      newErrors.dob = "Date of Birth cannot be in the future";
+    }
 
     setErrors(newErrors);
     const firstError = Object.values(newErrors)[0];
@@ -539,22 +612,13 @@ export default function ProfileFormClient({
 
       console.log("[ProfileDebug] Response:", profileResult);
 
-      if (profileResult.status === true) {
-        toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!", {
-          style: { borderLeft: '4px solid #10b981' }
-        });
-        setMode("view");
-        if (isNew) {
-          window.location.reload();
-        } else {
-          // Refresh data
-          setProfileData(mapServerProfile(profileResult));
-        }
-      } else {
+      if (profileResult.status !== true) {
         console.error("[ProfileDebug] Error detail:", profileResult);
         toast.error(profileResult.message || "Failed to save profile. Please try again.");
-        return; // Stop here if main profile failed
+        return;
       }
+
+      // Sub-records will be synced next, then page reloaded
 
       console.log("[ProfileDebug] Syncing Education Records:", localEduList);
       await Promise.all(localEduList.map(async (edu) => {
@@ -592,9 +656,12 @@ export default function ProfileFormClient({
         }
       }));
 
-      toast.success("Profile updated successfully!", { style: { borderLeft: '4px solid #10b981' } });
-      setMode("view");
-      router.refresh();
+      toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!", { 
+        style: { borderLeft: '4px solid #10b981' } 
+      });
+      
+      // Reload immediately to avoid intermediate empty states
+      window.location.reload();
     } catch (err: any) {
       console.error("[ProfileDebug] CRITICAL ERROR:", err);
 
@@ -652,7 +719,7 @@ export default function ProfileFormClient({
           </div>
           <div className="flex items-center gap-2.5 text-black/70 px-2 sm:px-0">
             <Phone className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="text-[12px] font-semibold truncate">{profileData.phone || "Not specified"}</span>
+            <span className="text-[12px] font-semibold truncate">{profileData.phone || "No phone added"}</span>
           </div>
           <div className="flex items-center gap-2.5 text-black/70 px-2 sm:px-0">
             <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
@@ -796,9 +863,9 @@ export default function ProfileFormClient({
           <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-black/30" /> Skills
           </h3>
-          <div className="flex flex-wrap gap-x-6 sm:gap-x-10 gap-y-3">
+          <div className="flex flex-wrap gap-2.5">
             {(profileData.skills || []).map((item: any, i: number) => (
-              <span key={i} className="text-indigo-600 font-semibold text-[13px]">
+              <span key={i} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-[11px] uppercase tracking-wider border border-indigo-100 shadow-sm transition-all hover:scale-105 hover:bg-indigo-100 cursor-default">
                 {typeof item === 'string' ? item : item.name}
               </span>
             ))}
@@ -857,10 +924,6 @@ export default function ProfileFormClient({
                 <Input name="name" value={profileData.name} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.name ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
               </div>
               <div className="space-y-1.5">
-                <Label className={cn("text-[13px] font-semibold transition-colors", errors.phone ? "text-red-500" : "text-slate-700")}>Phone Number <span className="text-red-500">*</span></Label>
-                <Input name="phone" value={profileData.phone} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.phone ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
-              </div>
-              <div className="space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.title ? "text-red-500" : "text-slate-700")}>Professional Title <span className="text-red-500">*</span></Label>
                 <Input name="title" value={profileData.title} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.title ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
               </div>
@@ -905,16 +968,37 @@ export default function ProfileFormClient({
                 <Input name="experience_years" type="number" min="0" value={profileData.experience_years} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Date of Birth</Label>
-                <DatePicker
-                  date={profileData.dob ? parseISO(profileData.dob) : undefined}
-                  setDate={(d) => setProfileData({ ...profileData, dob: d ? format(d, 'yyyy-MM-dd') : "" })}
-                  className="h-10 rounded-lg text-[13px] bg-white border border-slate-200"
-                />
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.dob ? "text-red-500" : "text-slate-700")}>Date of Birth</Label>
+                <div className={cn("rounded-lg transition-all", errors.dob && "ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]")}>
+                  <DatePicker
+                    date={profileData.dob ? parseISO(profileData.dob) : undefined}
+                    setDate={(d) => {
+                      const dateStr = d ? format(d, 'yyyy-MM-dd') : "";
+                      if (d && isAfter(d, new Date())) {
+                        toast.error("Invalid Date of Birth", {
+                          description: "Date of Birth cannot be in the future.",
+                          style: { borderLeft: '4px solid #ef4444' }
+                        });
+                        return; // Don't set the date if it's invalid
+                      }
+                      setProfileData({ ...profileData, dob: dateStr });
+                      if (errors.dob) setErrors(prev => {
+                        const newErrs = { ...prev };
+                        delete newErrs.dob;
+                        return newErrs;
+                      });
+                    }}
+                    className={cn("h-10 rounded-lg text-[13px] bg-white border transition-all", errors.dob ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] font-semibold text-slate-700">Phone Number</Label>
+                <Input name="phone" value={profileData.phone} onChange={handleChange} placeholder="e.g. 9876543210" className="h-10 rounded-lg text-[13px] border-slate-200" />
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.bio ? "text-red-500" : "text-slate-700")}>Professional Bio <span className="text-red-500">*</span></Label>
-                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={3} className={cn("w-full rounded-lg border bg-white p-3 text-[13px] outline-none transition-all", errors.bio ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} placeholder="Share your teaching philosophy and experience..." />
+                <textarea name="bio" value={profileData.bio} onChange={handleChange} rows={6} className={cn("w-full rounded-lg border bg-white p-3 text-[13px] outline-none transition-all", errors.bio ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} placeholder="Share your teaching philosophy and experience..." />
               </div>
             </div>
           </section>
@@ -972,17 +1056,44 @@ export default function ProfileFormClient({
                       placeholder="e.g. Mumbai, India"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[12px] font-medium transition-colors", expErrors.start_date ? "text-red-500" : "text-slate-600")}>Timeline <span className="text-red-500">*</span></Label>
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
-                      <div className="flex-1 space-y-1">
-                        <p className={cn("text-[10px] font-semibold transition-colors", expErrors.start_date ? "text-red-500" : "text-black/60")}>Start Date</p>
-                        <DatePicker date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", expErrors.start_date ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className={cn("text-[13px] font-bold transition-colors", expErrors.start_date ? "text-red-500" : "text-slate-900")}>Work Period <span className="text-red-500">*</span></Label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="w-full sm:flex-1">
+                        <DatePicker
+                          date={expFormData.start_date ? parseISO(expFormData.start_date) : undefined}
+                          setDate={(d) => {
+                            if (d && isAfter(d, new Date())) {
+                              toast.error("Invalid Start Date", { description: "Start date cannot be in the future.", style: { borderLeft: '4px solid #ef4444' } });
+                              return;
+                            }
+                            setExpFormData({ ...expFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" });
+                          }}
+                          placeholder="Start Date"
+                          className={cn("h-11 text-[13px] bg-white", expErrors.start_date ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                        />
                       </div>
-                      <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
-                      <div className="flex-1 space-y-1">
-                        <p className={cn("text-[11px] font-semibold transition-colors", expErrors.dates ? "text-red-500" : "text-black/60")}>End Date</p>
-                        <DatePicker disabled={expFormData.is_current} date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined} setDate={(d) => setExpFormData({ ...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", expErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                      <div className="flex items-center justify-center h-full px-2">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">to</span>
+                      </div>
+                      <div className="w-full sm:flex-1">
+                        <DatePicker
+                          disabled={expFormData.is_current}
+                          date={expFormData.end_date ? parseISO(expFormData.end_date) : undefined}
+                          setDate={(d) => {
+                            if (d && isAfter(d, new Date())) {
+                              toast.error("Invalid End Date", { description: "End date cannot be in the future.", style: { borderLeft: '4px solid #ef4444' } });
+                              return;
+                            }
+                            if (d && expFormData.start_date && isAfter(parseISO(expFormData.start_date), d)) {
+                              toast.error("Invalid Date Range", { description: "End date cannot be before start date.", style: { borderLeft: '4px solid #ef4444' } });
+                              return;
+                            }
+                            setExpFormData({ ...expFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" });
+                          }}
+                          placeholder={expFormData.is_current ? "Present" : "End Date"}
+                          className={cn("h-11 text-[13px] bg-white", expErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1005,7 +1116,17 @@ export default function ProfileFormClient({
                     <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><Briefcase className="w-4 h-4" /></div>
                     <div>
                       <h4 className="font-semibold text-slate-800 text-[13px]">{exp.job_title}</h4>
-                      <p className="text-[11px] font-medium text-slate-400">{exp.company_name}</p>
+                      <p className="text-[11px] font-medium text-slate-500">
+                        {exp.company_name} 
+                        <span className="mx-1.5 text-slate-300">·</span>
+                        <span className="text-slate-400 font-semibold">{exp.start_date?.split("-")[0]} — {exp.is_current ? "Present" : exp.end_date?.split("-")[0] || "—"}</span>
+                        {exp.location && (
+                          <>
+                            <span className="mx-1.5 text-slate-300">·</span>
+                            <span className="text-indigo-600 font-bold">{exp.location}</span>
+                          </>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5">
@@ -1057,17 +1178,44 @@ export default function ProfileFormClient({
                       <Input value={eduFormData.grade} onChange={(e) => setEduFormData({ ...eduFormData, grade: e.target.value })} placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85%" : "e.g. 9.2"} className="h-10 rounded-lg text-sm bg-white" />
                     </div>
                   </div>
-                  <div className="space-y-1.5 md:col-span-2">
-                    <Label className={cn("text-[13px] font-semibold transition-colors", eduErrors.start_date ? "text-red-500" : "text-slate-700")}>Joined Timeline <span className="text-red-500">*</span></Label>
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-2">
-                      <div className="flex-1 space-y-1">
-                        <p className={cn("text-[12px] font-semibold transition-colors", eduErrors.start_date ? "text-red-500" : "text-slate-500")}>Start Date</p>
-                        <DatePicker date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", eduErrors.start_date ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className={cn("text-[13px] font-bold transition-colors", eduErrors.start_date ? "text-red-500" : "text-slate-900")}>Academic Timeline <span className="text-red-500">*</span></Label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="w-full sm:flex-1">
+                        <DatePicker
+                          date={eduFormData.start_date ? parseISO(eduFormData.start_date) : undefined}
+                          setDate={(d) => {
+                            if (d && isAfter(d, new Date())) {
+                              toast.error("Invalid Start Date", { description: "Start date cannot be in the future.", style: { borderLeft: '4px solid #ef4444' } });
+                              return;
+                            }
+                            setEduFormData({ ...eduFormData, start_date: d ? format(d, 'yyyy-MM-dd') : "" });
+                          }}
+                          placeholder="Start Date"
+                          className={cn("h-11 text-[13px] bg-white", eduErrors.start_date ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                        />
                       </div>
-                      <span className="hidden sm:flex h-10 items-center text-[10px] text-black/40 font-semibold shrink-0">to</span>
-                      <div className="flex-1 space-y-1">
-                        <p className={cn("text-[11px] font-semibold transition-colors", eduErrors.dates ? "text-red-500" : "text-black/60")}>End Date</p>
-                        <DatePicker disabled={eduFormData.is_current} date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined} setDate={(d) => setEduFormData({ ...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" })} className={cn("h-10 text-[13px] bg-white transition-all", eduErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")} />
+                      <div className="flex items-center justify-center h-full px-2">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">to</span>
+                      </div>
+                      <div className="w-full sm:flex-1">
+                        <DatePicker
+                          disabled={eduFormData.is_current}
+                          date={eduFormData.end_date ? parseISO(eduFormData.end_date) : undefined}
+                          setDate={(d) => {
+                            if (d && isAfter(d, new Date())) {
+                              toast.error("Invalid End Date", { description: "End date cannot be in the future.", style: { borderLeft: '4px solid #ef4444' } });
+                              return;
+                            }
+                            if (d && eduFormData.start_date && isAfter(parseISO(eduFormData.start_date), d)) {
+                              toast.error("Invalid Date Range", { description: "End date cannot be before start date.", style: { borderLeft: '4px solid #ef4444' } });
+                              return;
+                            }
+                            setEduFormData({ ...eduFormData, end_date: d ? format(d, 'yyyy-MM-dd') : "" });
+                          }}
+                          placeholder={eduFormData.is_current ? "Present" : "End Date"}
+                          className={cn("h-11 text-[13px] bg-white", eduErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1090,7 +1238,17 @@ export default function ProfileFormClient({
                     <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500"><GraduationCap className="w-4 h-4" /></div>
                     <div>
                       <h4 className="font-semibold text-slate-800 text-[13px]">{edu.degree}</h4>
-                      <p className="text-[11px] font-medium text-slate-400">{edu.institution}</p>
+                      <p className="text-[11px] font-medium text-slate-500">
+                        {edu.institution}
+                        <span className="mx-1.5 text-slate-300">·</span>
+                        <span className="text-slate-400 font-semibold">{edu.start_date?.split("-")[0]} — {edu.is_current ? "Present" : edu.end_date?.split("-")[0] || "—"}</span>
+                        {edu.grade && (
+                          <>
+                            <span className="mx-1.5 text-slate-300">·</span>
+                            <span className="text-emerald-600 font-bold">{edu.grade}</span>
+                          </>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-0.5">

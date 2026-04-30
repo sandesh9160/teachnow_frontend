@@ -29,7 +29,6 @@ export default function EmployerRegisterPage() {
     resolver: zodResolver(employerRegisterSchema),
     defaultValues: {
       company_name: "",
-      phone: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -53,7 +52,6 @@ export default function EmployerRegisterPage() {
         method: "POST",
         body: {
           company_name: data.company_name,
-          phone: data.phone,
           email: data.email,
           password: data.password,
           password_confirmation: data.confirmPassword,
@@ -137,29 +135,6 @@ export default function EmployerRegisterPage() {
                 {errors.company_name && (
                   <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
                     <AlertCircle size={10} /> {errors.company_name.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
-                <input
-                  {...register("phone")}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-                    e.target.value = value;
-                    register("phone").onChange(e);
-                  }}
-                  type="tel"
-                  placeholder="9876543210"
-                  className={cn(
-                    "w-full rounded-xl border bg-white px-4 py-2.5 text-sm font-medium transition-all focus:ring-2 focus:ring-secondary/10 outline-none",
-                    errors.phone ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-secondary"
-                  )}
-                  suppressHydrationWarning={true}
-                />
-                {errors.phone && (
-                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 animate-in fade-in slide-in-from-top-1 duration-200">
-                    <AlertCircle size={10} /> {errors.phone.message}
                   </p>
                 )}
               </div>
