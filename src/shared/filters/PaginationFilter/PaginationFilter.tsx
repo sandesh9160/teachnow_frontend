@@ -12,13 +12,12 @@ interface PaginationFilterProps {
 export const PaginationFilter = ({
   totalResults,
   resultsPerPage,
-  setResultsPerPage,
   sortBy,
   setSortBy,
   startIndex,
 }: PaginationFilterProps) => {
   const sortOptions = ["Default", "Salary: High to Low", "Experience: Low to High"];
-  const pageOptions = [10, 20, 50];
+  // const pageOptions = [10, 20, 50];
 
   const endIndex = Math.min(startIndex + resultsPerPage, totalResults);
 
