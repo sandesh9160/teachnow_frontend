@@ -41,7 +41,7 @@ function JobsContent() {
     gender: [],
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [resultsPerPage, setResultsPerPage] = useState(40);
+  const [resultsPerPage, setResultsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState("Default");
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -74,6 +74,7 @@ function JobsContent() {
       location: locationParam || undefined,
       page: currentPage,
       limit: resultsPerPage,
+      filters: selectedFilters, // Pass filters to server
     });
     if (keywordParam) {
       setSearch(keywordParam);
@@ -97,7 +98,7 @@ function JobsContent() {
         }));
       }
     }
-  }, [keywordParam, locationParam, currentPage, resultsPerPage, availableSubjects, availableLocations]);
+  }, [keywordParam, locationParam, currentPage, resultsPerPage, availableSubjects, availableLocations, selectedFilters]);
 
   const handleSearch = () => {
     if (!search.trim() && !locationSearch.trim()) {
@@ -151,8 +152,8 @@ function JobsContent() {
 
   const activeFilterCount = Object.values(selectedFilters).flat().length;
 
-  // Client-side Filtering Logic
-  const filtered = jobs.filter((job) => {
+  // Client-side Filtering Logic (Only used if server doesn't provide meta)
+  const clientFiltered = meta ? jobs : jobs.filter((job) => {
     if (!job) return false;
 
     // Search (Keyword) - Checks Title, Company, and Category
@@ -243,17 +244,19 @@ function JobsContent() {
   });
 
   // Sorting
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = meta ? clientFiltered : [...clientFiltered].sort((a, b) => {
     if (sortBy === "Salary: High to Low") return Number(b.salary_max) - Number(a.salary_max);
     if (sortBy === "Experience: Low to High") return a.experience_required - b.experience_required;
     return 0; // Default Latest (as provided by API)
   });
 
   const totalPages = meta?.last_page || Math.max(1, Math.ceil(sorted.length / resultsPerPage));
-  const totalResults = meta?.total || filtered.length;
-  const startIndex = meta ? (meta.current_page - 1) * meta.per_page : (currentPage - 1) * resultsPerPage;
+  const totalResults = meta?.total || sorted.length;
   
-  // If we have meta from server, the jobs list is already the current page
+  const currentLimit = meta?.per_page || resultsPerPage;
+  const startIndex = meta ? (meta.current_page - 1) * currentLimit : (currentPage - 1) * resultsPerPage;
+  
+  // Final paginated list
   const paginatedJobs = meta ? sorted : sorted.slice(startIndex, startIndex + resultsPerPage);
 
 
@@ -314,7 +317,7 @@ function JobsContent() {
           <main className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
             <PaginationFilter
               totalResults={totalResults}
-              resultsPerPage={40}
+              resultsPerPage={currentLimit}
               setResultsPerPage={(v) => { setResultsPerPage(v); setCurrentPage(1); }}
               sortBy={sortBy}
               setSortBy={setSortBy}
@@ -340,7 +343,7 @@ function JobsContent() {
               </div>
             )}
 
-            {!loading && totalResults > resultsPerPage && (
+            {!loading && totalPages > 1 && (
               <div className="mt-12">
                 <JobPagination
                   currentPage={currentPage}
@@ -356,7 +359,7 @@ function JobsContent() {
       <MobileFilters
         isOpen={mobileFiltersOpen}
         onClose={() => setMobileFiltersOpen(false)}
-        resultCount={filtered.length}
+        resultCount={totalResults}
         filterContent={
           <JobFilterSidebar
             selectedFilters={selectedFilters}

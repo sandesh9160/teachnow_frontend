@@ -37,6 +37,7 @@ export function useJobs() {
     location?: string;
     page?: number;
     limit?: number;
+    filters?: Partial<any>;
   }) => {
     try {
       setError(null);
@@ -45,43 +46,78 @@ export function useJobs() {
       const loc = opts?.location?.trim() ?? "";
       const page = opts?.page ?? 1;
       const limit = opts?.limit ?? 10;
+      const filters = opts?.filters ?? {};
       
       // If we have search params, use the specialized search endpoint
-      let endpoint = (kw || loc) ? "open/search/jobs/search" : "open/jobs/";
+      let endpoint = (kw || loc) ? "open/search/jobs/search" : "open/jobs";
       let query = [];
       if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
       if (loc) query.push(`location=${encodeURIComponent(loc)}`);
       query.push(`page=${page}`);
       query.push(`per_page=${limit}`);
+
+      // Append filters
+      Object.entries(filters).forEach(([key, values]) => {
+        if (Array.isArray(values) && values.length > 0) {
+          values.forEach(val => {
+            query.push(`${encodeURIComponent(key)}[]=${encodeURIComponent(String(val))}`);
+          });
+        } else if (values !== undefined && values !== null && values !== "") {
+          query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(values))}`);
+        }
+      });
       
       if (query.length) endpoint += `?${query.join("&")}`;
       
       const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
       
-      // The backend returns { status: true, total_jobs: 26, data: { current_page: 1, data: [...], total: 26, ... } }
-      // Or sometimes just { data: [...] } for search results
-      const root = res?.data ?? res;
+      // The backend can return several structures:
+      // 1. { status: true, total_jobs: 26, data: { current_page: 1, data: [...], total: 26, ... } }
+      // 2. { search_jobs: [...], similar_jobs: [...], total_jobs: 26 }
+      // 3. Just the paginated object: { current_page: 1, data: [...], total: 26 }
+      // 4. A flat array of jobs: [...]
       
-      // Determine the source for jobs array
-      // 1. root.data (nested in pagination object)
-      // 2. root.search_jobs (specific to search endpoint)
-      // 3. root itself (if it's an array)
-      const searchSource = root?.data || root?.search_jobs || (Array.isArray(root) ? root : null);
-      const similarSource = res?.similar_jobs || root?.similar_jobs;
-      
-      const jobsList = toArray<any>(searchSource).map(normalizeJob);
-      const similarList = toArray<any>(similarSource).map(normalizeJob);
-      
-      // Extract pagination meta - prioritize the data object if it has current_page
-      if (root && typeof root === "object" && "current_page" in root) {
+      let jobsList: Job[] = [];
+      let similarList: Job[] = [];
+      let paginationMeta: any = null;
+
+      // Determine the main data source and pagination metadata
+      if (res?.search_jobs) {
+        // Case A: Explicit search results container
+        const source = res.search_jobs;
+        jobsList = toArray<any>(source).map(normalizeJob);
+        paginationMeta = (source && typeof source === "object" && "current_page" in source) ? source : res;
+      } else if (res?.data && typeof res.data === "object" && !Array.isArray(res.data)) {
+        // Case B: Nested in 'data' (standard paginated response)
+        const source = res.data;
+        jobsList = toArray<any>(source.data || source).map(normalizeJob);
+        paginationMeta = ("current_page" in source) ? source : null;
+      } else if (res?.data && Array.isArray(res.data)) {
+        // Case C: Flat 'data' array
+        jobsList = res.data.map(normalizeJob);
+        paginationMeta = ("current_page" in res) ? res : null;
+      } else if (Array.isArray(res)) {
+        // Case D: Pure array
+        jobsList = res.map(normalizeJob);
+      } else if (res && typeof res === "object") {
+        // Case E: Flat object might be paginated
+        jobsList = toArray<any>(res.data || res).map(normalizeJob);
+        paginationMeta = ("current_page" in res) ? res : null;
+      }
+
+      // Capture similar jobs
+      const similarSource = res?.similar_jobs || res?.data?.similar_jobs;
+      similarList = toArray<any>(similarSource).map(normalizeJob);
+
+      // Finalize Meta
+      if (paginationMeta) {
         setMeta({
-          current_page: Number(root.current_page),
-          last_page: Number(root.last_page),
-          total: Number(root.total || res?.total_jobs || jobsList.length),
-          per_page: Number(root.per_page || 10),
+          current_page: Number(paginationMeta.current_page),
+          last_page: Number(paginationMeta.last_page),
+          total: Number(paginationMeta.total || res?.total_jobs || jobsList.length),
+          per_page: Number(paginationMeta.per_page || 10),
         });
       } else if (res?.total_jobs) {
-        // Fallback for non-paginated root responses that still provide a total count
         setMeta({
           current_page: 1,
           last_page: 1,

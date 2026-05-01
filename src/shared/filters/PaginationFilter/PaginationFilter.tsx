@@ -44,18 +44,6 @@ export const PaginationFilter = ({
           <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-hover:text-primary transition-colors" />
         </div>
 
-        {/* Limit Dropdown */}
-        <div className="relative group min-w-[120px]">
-          <select 
-            value={resultsPerPage}
-            onChange={(e) => setResultsPerPage(Number(e.target.value))}
-            className="w-full appearance-none bg-white rounded-xl px-5 py-2.5 pr-10 text-sm font-semibold text-slate-600 border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 cursor-pointer transition-all hover:border-slate-300"
-            suppressHydrationWarning={true}
-          >
-            {pageOptions.map(opt => <option key={opt} value={opt}>{opt} per page</option>)}
-          </select>
-          <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-hover:text-primary transition-colors" />
-        </div>
       </div>
     </div>
   );
