@@ -226,3 +226,15 @@ export type NavigationData = {
   company_logos?: any[];
   company?: any;
 };
+
+export type PolicyData = {
+  id: number;
+  parent_id: number | null;
+  title: string;
+  content: string;
+  display_order: number;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+  children: PolicyData[];
+};

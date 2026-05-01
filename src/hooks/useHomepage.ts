@@ -11,6 +11,7 @@ import {
   NavigationData,
   ResourceData,
   Category,
+  PolicyData,
 } from "@/types/homepage";
 
 /* -------------------- HELPERS -------------------- */
@@ -403,13 +404,28 @@ export async function getLocationJobs(slug: string): Promise<any> {
  * Fetch Terms and Conditions.
  * Endpoint: /open/terms-conditions
  */
-export async function getTermsAndConditions(): Promise<any[]> {
+export async function getTermsAndConditions(): Promise<PolicyData[]> {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/terms-conditions");
     const data = res.data || res;
     return toArray(data);
   } catch (error) {
     //console.error("Error in getTermsAndConditions hook:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch Privacy Policy.
+ * Endpoint: /open/privacy-policy
+ */
+export async function getPrivacyPolicy(): Promise<PolicyData[]> {
+  try {
+    const res = await fetchAPI<ApiResponse<any>>("/open/privacy-policy");
+    const data = res.data || res;
+    return toArray(data);
+  } catch (error) {
+    //console.error("Error in getPrivacyPolicy hook:", error);
     return [];
   }
 }
