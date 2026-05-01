@@ -130,7 +130,7 @@ export default function JobListingView({
       [category]: prev[category].includes(value)
         ? prev[category].filter((v: string) => v !== value)
         : [...prev[category], value],
-    }));
+    }));  
     setCurrentPage(1);
   };
 

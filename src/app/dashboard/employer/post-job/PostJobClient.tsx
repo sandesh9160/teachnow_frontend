@@ -212,7 +212,15 @@ export default function PostJobClient({
           if (formData.salary_min && formData.salary_max && Number(formData.salary_min) > Number(formData.salary_max))
             newErrors.salary_range = "Max salary should be more than min salary";
         }
-        if (!deadline) newErrors.deadline = "Application Deadline is required";
+        if (!deadline) {
+          newErrors.deadline = "Application Deadline is required";
+        } else {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          if (deadline < today) {
+            newErrors.deadline = "Application deadline cannot be in the past";
+          }
+        }
         if (!formData.vacancies || Number(formData.vacancies) <= 0) newErrors.vacancies = "Open Vacancies is required";
         break;
     }
@@ -741,6 +749,7 @@ export default function PostJobClient({
                         setDate={setDeadline}
                         className="h-10 bg-transparent border-none text-xs"
                         placeholder="Select date"
+                        calendarDisabled={{ before: new Date() }}
                       />
                     </div>
                   </div>
