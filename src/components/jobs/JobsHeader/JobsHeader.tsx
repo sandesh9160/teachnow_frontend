@@ -14,6 +14,7 @@ interface JobsHeaderProps {
   onSearch: () => void;
   activeFilterCount: number;
   loading?: boolean;
+  error?: string;
 }
 
 export const JobsHeader = ({
@@ -25,6 +26,7 @@ export const JobsHeader = ({
   onSearch,
   activeFilterCount,
   loading,
+  error,
 }: JobsHeaderProps) => {
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -205,6 +207,16 @@ export const JobsHeader = ({
               <span>{loading ? "Searching..." : "Search Jobs"}</span>
             </Button>
           </div>
+
+          {/* Validation Error Message */}
+          {error && (
+            <div className="mt-2 px-2 animate-in fade-in slide-in-from-top-1 duration-300">
+              <p className="text-[12px] font-bold text-red-500 flex items-center gap-1.5 bg-red-50 w-fit px-3 py-1 rounded-full border border-red-100 shadow-sm">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                {error}
+              </p>
+            </div>
+          )}
 
           {/* Mobile Filter Toggle */}
           <div className="mt-6 flex justify-center lg:hidden">

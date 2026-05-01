@@ -9,7 +9,7 @@ const passwordSchema = z
 
 export const jobSeekerRegisterSchema = z.object({
   name: z.string().min(3, "Full name must be at least 3 characters").max(100, "Full name cannot exceed 100 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(1, "Email address is required").email("Please enter a valid email address"),
   password: passwordSchema,
   confirmPassword: z.string(),
   acceptedTerms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
@@ -23,7 +23,7 @@ export const employerRegisterSchema = z.object({
   company_name: z.string()
     .min(3, "Company name must be at least 3 characters")
     .max(100, "Company name cannot exceed 100 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(1, "Email address is required").email("Please enter a valid email address"),
   password: passwordSchema,
   confirmPassword: z.string(),
   acceptedTerms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
@@ -37,7 +37,7 @@ export const registerSchema = z.object({
   role: z.enum(["job_seeker", "employer"]),
   name: z.string().optional(),
   company_name: z.string().optional(),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(1, "Email address is required").email("Please enter a valid email address"),
   password: passwordSchema,
   confirmPassword: z.string(),
   acceptedTerms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),

@@ -1,23 +1,22 @@
 "use client";
 
+// import { useState } from "react";
 import { JobsFilters } from "@/types/jobs";
-// import FilterCard from "../shared/FilterCard";
 import FilterSection from "../shared/FilterSection";
 import CheckboxItem from "../shared/CheckboxItem";
+
 
 interface JobFilterSidebarProps {
   selectedFilters: JobsFilters;
   onToggle: (category: keyof JobsFilters, value: string) => void;
-  availableSubjects?: string[];
-  availableLocations?: string[];
 }
 
 export const JobFilterSidebar = ({
   selectedFilters,
   onToggle,
-  availableSubjects = [],
-  availableLocations = [],
 }: JobFilterSidebarProps) => {
+
+
   const jobTypeOptions = [
     { value: "Full-time", label: "Full Time" },
     { value: "Part-time", label: "Part Time" },
@@ -71,36 +70,6 @@ export const JobFilterSidebar = ({
       </div>
 
       <div className="space-y-4">
-        {availableSubjects.length > 0 && (
-          <FilterSection title="Subject">
-            <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
-              {availableSubjects.map((sub) => (
-                <CheckboxItem
-                  key={sub}
-                  label={sub}
-                  checked={selectedFilters.subjects?.includes(sub) || false}
-                  onChange={() => onToggle("subjects", sub)}
-                />
-              ))}
-            </div>
-          </FilterSection>
-        )}
-
-        {availableLocations.length > 0 && (
-          <FilterSection title="Location">
-            <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
-              {availableLocations.map((loc) => (
-                <CheckboxItem
-                  key={loc}
-                  label={loc}
-                  checked={selectedFilters.locations?.includes(loc) || false}
-                  onChange={() => onToggle("locations", loc)}
-                />
-              ))}
-            </div>
-          </FilterSection>
-        )}
-
         <FilterSection title="Institution Type">
           <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
             {institutionTypeOptions.map((opt) => (
@@ -130,7 +99,7 @@ export const JobFilterSidebar = ({
 
 
         <FilterSection title="Job type">
-          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
+          <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
             {jobTypeOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}

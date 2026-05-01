@@ -10,7 +10,7 @@ import {
   Loader2, Mail, MapPin, Briefcase, GraduationCap,
   Camera, Trash2, Edit2, CheckSquare, Square,
   X, BookOpen, Award, UserCircle,
-  Globe, Search, PlusCircle, Phone
+  Globe, Search, PlusCircle, Phone, AlertCircle
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -293,24 +293,7 @@ export default function ProfileFormClient({
       }
     }
 
-    // Check for timeline overlaps with other records
-    const otherEdus = localEduList.filter(e => e.id !== editingEduId && !(e as any).is_deleted);
-    const currentStart = parseISO(eduFormData.start_date);
-    const currentEnd = eduFormData.is_current ? new Date() : (eduFormData.end_date ? parseISO(eduFormData.end_date) : new Date());
 
-    for (const other of otherEdus) {
-       const otherStart = parseISO(other.start_date || "");
-       const otherEnd = other.is_current ? new Date() : (other.end_date ? parseISO(other.end_date) : new Date());
-       
-       if (
-         (currentStart >= otherStart && currentStart <= otherEnd) ||
-         (currentEnd >= otherStart && currentEnd <= otherEnd) ||
-         (currentStart <= otherStart && currentEnd >= otherEnd)
-       ) {
-         errors.dates = "This timeline overlaps with an existing education record";
-         break;
-       }
-    }
 
     setEduErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -392,24 +375,7 @@ export default function ProfileFormClient({
       }
     }
 
-    // Check for timeline overlaps with other records
-    const otherExps = localExpList.filter(e => e.id !== editingExpId && !(e as any).is_deleted);
-    const currentStart = parseISO(expFormData.start_date);
-    const currentEnd = expFormData.is_current ? new Date() : (expFormData.end_date ? parseISO(expFormData.end_date) : new Date());
 
-    for (const other of otherExps) {
-       const otherStart = parseISO(other.start_date || "");
-       const otherEnd = other.is_current ? new Date() : (other.end_date ? parseISO(other.end_date) : new Date());
-       
-       if (
-         (currentStart >= otherStart && currentStart <= otherEnd) ||
-         (currentEnd >= otherStart && currentEnd <= otherEnd) ||
-         (currentStart <= otherStart && currentEnd >= otherEnd)
-       ) {
-         errors.dates = "This timeline overlaps with an existing work history record";
-         break;
-       }
-    }
 
     setExpErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -510,10 +476,15 @@ export default function ProfileFormClient({
       newErrors.experience_years = "Experience years cannot be negative";
     }
 
-    if (profileData.phone) {
-      const phoneClean = profileData.phone.replace(/\D/g, '');
+    const phone = (profileData.phone || "").trim();
+    if (!phone) {
+      newErrors.phone = "Phone number is required";
+    } else {
+      const phoneClean = phone.replace(/\D/g, '');
       if (phoneClean.length !== 10) {
         newErrors.phone = "Phone number must be exactly 10 digits";
+      } else if (!/^[6-9]\d{9}$/.test(phoneClean)) {
+        newErrors.phone = "Please enter a valid 10-digit mobile number";
       }
     }
 
@@ -1004,8 +975,26 @@ export default function ProfileFormClient({
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Phone Number</Label>
-                <Input name="phone" value={profileData.phone} onChange={handleChange} placeholder="e.g. 9876543210" className="h-10 rounded-lg text-[13px] border-slate-200" />
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.phone ? "text-red-500" : "text-slate-700")}>
+                  Phone Number <span className="text-red-500">*</span>
+                </Label>
+                <Input 
+                  name="phone" 
+                  value={profileData.phone} 
+                  onChange={handleChange} 
+                  placeholder="e.g. 9876543210" 
+                  className={cn(
+                    "h-10 rounded-lg text-[13px] transition-all", 
+                    errors.phone 
+                      ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
+                      : "border-slate-200"
+                  )} 
+                />
+                {errors.phone && (
+                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 mt-1 px-1">
+                    <AlertCircle size={10} /> {errors.phone}
+                  </p>
+                )}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.bio ? "text-red-500" : "text-slate-700")}>Professional Bio <span className="text-red-500">*</span></Label>

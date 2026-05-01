@@ -279,7 +279,7 @@
 
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
+    scrollbar-color: #3f3f46 #f4f4f5;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -288,17 +288,18 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f4f4f5;
+    border-radius: 10px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--border) / 0.5);
+    background: #3f3f46;
     border-radius: 10px;
-    transition: background 0.2s;
+    border: 1px solid #f4f4f5;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: #27272a;
   }
 
 }

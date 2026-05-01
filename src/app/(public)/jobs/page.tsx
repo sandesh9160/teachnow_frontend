@@ -15,7 +15,7 @@ import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter
 import { getFilters } from "@/hooks/useHomepage";
 
 import MobileFilters from "@/components/jobs/Filters/MobileFilters";
-import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+
 
 function JobsContent() {
   const router = useRouter();
@@ -23,7 +23,7 @@ function JobsContent() {
   const keywordParam = searchParams?.get("keyword") || "";
   const locationParam = searchParams?.get("location") || "";
 
-  const { jobs, similarJobs, loading, error, fetchJobs } = useJobs();
+  const { jobs, similarJobs, loading, error, fetchJobs, meta } = useJobs();
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
 
@@ -41,11 +41,12 @@ function JobsContent() {
     gender: [],
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [resultsPerPage, setResultsPerPage] = useState(10);
+  const [resultsPerPage, setResultsPerPage] = useState(40);
   const [sortBy, setSortBy] = useState("Default");
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
     const fetchFilterOptions = async () => {
@@ -71,22 +72,48 @@ function JobsContent() {
     void fetchJobs({
       keyword: keywordParam || undefined,
       location: locationParam || undefined,
+      page: currentPage,
+      limit: resultsPerPage,
     });
-    if (keywordParam) setSearch(keywordParam);
-    if (locationParam) setLocationSearch(locationParam);
-  }, [keywordParam, locationParam, fetchJobs]);
+    if (keywordParam) {
+      setSearch(keywordParam);
+      // Synchronize with subjects if it matches
+      const matchedSubject = availableSubjects.find(s => s.toLowerCase() === keywordParam.toLowerCase());
+      if (matchedSubject && !selectedFilters.subjects.includes(matchedSubject)) {
+        setSelectedFilters(prev => ({
+          ...prev,
+          subjects: [...prev.subjects, matchedSubject]
+        }));
+      }
+    }
+    if (locationParam) {
+      setLocationSearch(locationParam);
+      // Synchronize with locations if it matches
+      const matchedLocation = availableLocations.find(l => l.toLowerCase() === locationParam.toLowerCase());
+      if (matchedLocation && !selectedFilters.locations.includes(matchedLocation)) {
+        setSelectedFilters(prev => ({
+          ...prev,
+          locations: [...prev.locations, matchedLocation]
+        }));
+      }
+    }
+  }, [keywordParam, locationParam, currentPage, resultsPerPage, availableSubjects, availableLocations]);
 
   const handleSearch = () => {
+    if (!search.trim() && !locationSearch.trim()) {
+      setSearchError("Please enter at least a job title or location to search.");
+      // Clear error after 3 seconds
+      setTimeout(() => setSearchError(""), 3000);
+      return;
+    }
+    setSearchError("");
+
     const combined = [search, locationSearch]
       .filter(Boolean)
       .join(" ");
 
     setIsSearching(true);
-    if (!combined.trim()) {
-      router.push("/jobs");
-      return;
-    }
-
+    
     const slug = combined
       .toLowerCase()
       .trim()
@@ -128,8 +155,15 @@ function JobsContent() {
   const filtered = jobs.filter((job) => {
     if (!job) return false;
 
-    // Search
-    if (search && !(job.title?.toLowerCase().includes(search.toLowerCase()) || job.employer?.company_name?.toLowerCase().includes(search.toLowerCase()))) return false;
+    // Search (Keyword) - Checks Title, Company, and Category
+    if (search) {
+      const sLower = search.toLowerCase();
+      const titleMatch = job.title?.toLowerCase().includes(sLower);
+      const companyMatch = job.employer?.company_name?.toLowerCase().includes(sLower);
+      const categoryMatch = (job.category?.name || "").toLowerCase().includes(sLower);
+      
+      if (!(titleMatch || companyMatch || categoryMatch)) return false;
+    }
 
     // Job Type Filter
     if (selectedFilters.types.length) {
@@ -215,22 +249,37 @@ function JobsContent() {
     return 0; // Default Latest (as provided by API)
   });
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / resultsPerPage));
-  const startIndex = (currentPage - 1) * resultsPerPage;
-  const paginatedJobs = sorted.slice(startIndex, startIndex + resultsPerPage);
+  const totalPages = meta?.last_page || Math.max(1, Math.ceil(sorted.length / resultsPerPage));
+  const totalResults = meta?.total || filtered.length;
+  const startIndex = meta ? (meta.current_page - 1) * meta.per_page : (currentPage - 1) * resultsPerPage;
+  
+  // If we have meta from server, the jobs list is already the current page
+  const paginatedJobs = meta ? sorted : sorted.slice(startIndex, startIndex + resultsPerPage);
 
 
 
-  const breadcrumbItems = [
-    { label: "Jobs", isCurrent: true },
-  ];
+
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="bg-[#F8FAFC] lg:h-[calc(100vh-5rem)] lg:overflow-hidden flex flex-col">
       {/* Consistent Breadcrumb Bar */}
-      <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-          <Breadcrumb items={breadcrumbItems} />
+      <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-20 lg:static lg:shrink-0 z-40">
+        <div className="mx-auto w-full px-4 py-1 sm:px-6 lg:px-8 xl:px-12">
+          <div className="flex flex-col items-center w-full">
+            <div className="w-full max-w-4xl">
+              <JobsHeader
+                search={search}
+                setSearch={(val) => { setSearch(val); setCurrentPage(1); setSearchError(""); }}
+                location={locationSearch}
+                setLocation={(val) => { setLocationSearch(val); setCurrentPage(1); setSearchError(""); }}
+                onOpenFilters={() => setMobileFiltersOpen(true)}
+                onSearch={handleSearch}
+                activeFilterCount={activeFilterCount}
+                loading={loading || isSearching}
+                error={searchError}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -249,36 +298,23 @@ function JobsContent() {
         </div>
       ) : null}
 
-      <JobsHeader
-        search={search}
-        setSearch={(val) => { setSearch(val); setCurrentPage(1); }}
-        location={locationSearch}
-        setLocation={(val) => { setLocationSearch(val); setCurrentPage(1); }}
-        onOpenFilters={() => setMobileFiltersOpen(true)}
-        onSearch={handleSearch}
-        activeFilterCount={activeFilterCount}
-        loading={loading || isSearching}
-      />
-
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex-1 lg:overflow-hidden mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="flex flex-col lg:flex-row h-full gap-10">
           {/* Sidebar */}
-          <aside className="hidden w-64 shrink-0 lg:block pt-14">
-            <FilterCard>
+          <aside className="hidden w-72 shrink-0 lg:block h-full py-8 sticky top-0">
+            <FilterCard className="h-full overflow-y-auto custom-scrollbar">
               <JobFilterSidebar
                 selectedFilters={selectedFilters}
-                onToggle={(category, value) => handleToggle(category, value)}
-                availableSubjects={availableSubjects}
-                availableLocations={availableLocations}
+                onToggle={handleToggle}
               />
             </FilterCard>
           </aside>
 
           {/* Job List */}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
             <PaginationFilter
-              totalResults={filtered.length}
-              resultsPerPage={resultsPerPage}
+              totalResults={totalResults}
+              resultsPerPage={40}
               setResultsPerPage={(v) => { setResultsPerPage(v); setCurrentPage(1); }}
               sortBy={sortBy}
               setSortBy={setSortBy}
@@ -304,7 +340,7 @@ function JobsContent() {
               </div>
             )}
 
-            {!loading && filtered.length > resultsPerPage && (
+            {!loading && totalResults > resultsPerPage && (
               <div className="mt-12">
                 <JobPagination
                   currentPage={currentPage}
@@ -324,9 +360,7 @@ function JobsContent() {
         filterContent={
           <JobFilterSidebar
             selectedFilters={selectedFilters}
-            onToggle={(category, value) => handleToggle(category, value)}
-            availableSubjects={availableSubjects}
-            availableLocations={availableLocations}
+            onToggle={handleToggle}
           />
         }
       />

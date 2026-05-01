@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter";
 import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 
+
 interface JobListingViewProps {
   readonly jobs: Job[];
   readonly similarJobs?: Job[];
@@ -26,11 +27,11 @@ interface JobListingViewProps {
   readonly initialFilters?: Partial<JobsFilters>;
 }
 
-export default function JobListingView({ 
-  jobs, 
+export default function JobListingView({
+  jobs,
   similarJobs = [],
-  pageName, 
-  initialKeyword, 
+  pageName,
+  initialKeyword,
   initialLocation,
   initialFilters
 }: Readonly<JobListingViewProps>) {
@@ -55,6 +56,8 @@ export default function JobListingView({
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
 
+
+
   // Auto-scroll to top on page or filter change
   useEffect(() => {
     if (scrollContainerRef.current) {
@@ -64,22 +67,22 @@ export default function JobListingView({
     }
   }, [currentPage, selectedFilters, pageName]);
 
-    useEffect(() => {
-      // Initialize search fields and title separately as requested
-      if (initialKeyword) {
-          setInternalSearch(initialKeyword);
-      } else if (pageName && pageName !== "Search") {
-          // If pageName is just the location, don't double-fill it in keywords
-          const isOnlyLocation = initialLocation && pageName.toLowerCase().includes(initialLocation.toLowerCase());
-          if (!isOnlyLocation) {
-              setInternalSearch(pageName);
-          }
+  useEffect(() => {
+    // Initialize search fields and title separately as requested
+    if (initialKeyword) {
+      setInternalSearch(initialKeyword);
+    } else if (pageName && pageName !== "Search") {
+      // If pageName is just the location, don't double-fill it in keywords
+      const isOnlyLocation = initialLocation && pageName.toLowerCase().includes(initialLocation.toLowerCase());
+      if (!isOnlyLocation) {
+        setInternalSearch(pageName);
       }
+    }
 
-      if (initialLocation) {
-          setInternalLocation(initialLocation);
-      }
-    }, [pageName, initialKeyword, initialLocation]);
+    if (initialLocation) {
+      setInternalLocation(initialLocation);
+    }
+  }, [pageName, initialKeyword, initialLocation]);
 
 
 
@@ -152,17 +155,17 @@ export default function JobListingView({
     if (selectedFilters.subjects.length > 0) {
       const jobCategory = (job.category?.name || "").toLowerCase();
       const jobTitle = (job.title || "").toLowerCase();
-      
+
       const isMatch = selectedFilters.subjects.some(sub => {
         const subLower = sub.toLowerCase();
         // Exact match or includes
         if (jobCategory.includes(subLower) || jobTitle.includes(subLower)) return true;
-        
+
         // Fuzzy word match (check if any word from the filter exists in category/title)
         const subWords = subLower.split(/\s+/).filter(w => w.length > 2); // only words > 2 chars
         return subWords.some(word => jobCategory.includes(word) || jobTitle.includes(word));
       });
-      
+
       if (!isMatch) return false;
     }
 
@@ -247,8 +250,8 @@ export default function JobListingView({
 
       <div className="flex-1 lg:overflow-hidden mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="flex flex-col lg:flex-row h-full gap-10">
-          <aside className="hidden w-72 shrink-0 lg:block h-full overflow-y-auto py-8 pb-20 pr-2 sticky top-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <FilterCard>
+          <aside className="hidden w-72 shrink-0 lg:block h-full py-8 sticky top-0">
+            <FilterCard className="h-full overflow-y-auto custom-scrollbar">
               <JobFilterSidebar
                 selectedFilters={selectedFilters}
                 onToggle={handleToggle}
@@ -267,13 +270,13 @@ export default function JobListingView({
               startIndex={startIndex}
             />
 
-            <div className="grid grid-cols-1 gap-6">  
+            <div className="grid grid-cols-1 gap-6">
               {paginatedJobs.map((job) => {
                 const salary = (() => {
                   const min = Number(job.salary_min || 0);
                   const max = Number(job.salary_max || 0);
                   if (!min && !max) return "Not disclosed";
-                  const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+                  const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
                   return `${fmt(min)} - ${fmt(max)}`;
                 })();
 
@@ -281,27 +284,27 @@ export default function JobListingView({
                   .replaceAll(/_/g, " ")
                   .replaceAll(/\b\w/g, (c) => c.toUpperCase());
 
-                    return (
-                      <JobCard
-                        key={job.id}
-                        id={job.id}
-                        title={job.title}
-                        company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
-                        location={job.location || "India"}
-                        type={jobTypeFormatted}
-                        salary={salary}
-                        tags={[]}
-                        posted={job.created_at || new Date().toISOString()}
-                        logo={job.employer?.company_logo}
-                        slug={job.slug}
-                        institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
-                        deadline={job.application_deadline}
-                        gender={job.gender}
-                        vacancies={job.vacancies}
-                        experience={job.experience_required}
-                        experienceType={job.experience_type}
-                      />
-                    );
+                return (
+                  <JobCard
+                    key={job.id}
+                    id={job.id}
+                    title={job.title}
+                    company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
+                    location={job.location || "India"}
+                    type={jobTypeFormatted}
+                    salary={salary}
+                    tags={[]}
+                    posted={job.created_at || new Date().toISOString()}
+                    logo={job.employer?.company_logo}
+                    slug={job.slug}
+                    institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
+                    deadline={job.application_deadline}
+                    gender={job.gender}
+                    vacancies={job.vacancies}
+                    experience={job.experience_required}
+                    experienceType={job.experience_type}
+                  />
+                );
               })}
             </div>
 
@@ -325,7 +328,7 @@ export default function JobListingView({
                       const min = Number(job.salary_min || 0);
                       const max = Number(job.salary_max || 0);
                       if (!min && !max) return "Not disclosed";
-                      const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+                      const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
                       return `${fmt(min)} - ${fmt(max)}`;
                     })();
 
