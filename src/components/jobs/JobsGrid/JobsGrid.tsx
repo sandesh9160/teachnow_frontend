@@ -22,9 +22,9 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
         <div className="flex flex-col items-center justify-center py-10 animate-in fade-in duration-700">
           <div className="relative">
             <div className="h-24 w-24 rounded-[22%] bg-white flex items-center justify-center p-2 animate-pulse shadow-2xl shadow-blue-900/10 border border-slate-100">
-              <img 
-                src="/images/branded-logo.png" 
-                alt="TeachNow Logo" 
+              <img
+                src="/images/branded-logo.png"
+                alt="TeachNow Logo"
                 className="h-full w-full object-contain"
               />
             </div>
@@ -38,7 +38,7 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
 
         <div className="grid grid-cols-1 gap-6">
           {[...Array(6)].map((_, i) => (
-            <JobCardSkeleton key={i} />
+            <JobCardSkeleton key={i} compact={true} />
           ))}
         </div>
       </div>
@@ -76,7 +76,7 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
           const min = parseVal(job.salary_min);
           const max = parseVal(job.salary_max);
           if (!min && !max) return "Not disclosed";
-          const fmt = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+          const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
           return `${fmt(min)} - ${fmt(max)}`;
         })();
 

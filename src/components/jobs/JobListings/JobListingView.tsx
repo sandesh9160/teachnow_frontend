@@ -281,7 +281,7 @@ export default function JobListingView({
           </aside>
 
           {/* Jobs List */}
-          <div ref={scrollContainerRef} className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
+          <div ref={scrollContainerRef} className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24 max-w-4xl mx-auto w-full">
             <PaginationFilter
               totalResults={filteredJobs.length}
               resultsPerPage={resultsPerPage}
@@ -291,7 +291,7 @@ export default function JobListingView({
               startIndex={startIndex}
             />
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               {paginatedJobs.map((job) => {
                 const salary = (() => {
                   const min = Number(job.salary_min || 0);
@@ -324,6 +324,7 @@ export default function JobListingView({
                     vacancies={job.vacancies}
                     experience={job.experience_required}
                     experienceType={job.experience_type}
+                    compact={true}
                   />
                 );
               })}
@@ -343,7 +344,7 @@ export default function JobListingView({
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-foreground font-display">Similar Jobs</h2>
                 </div>
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4">
                   {similarJobs.map((job) => {
                     const salary = (() => {
                       const min = Number(job.salary_min || 0);
@@ -372,6 +373,7 @@ export default function JobListingView({
                         vacancies={job.vacancies}
                         experience={job.experience_required}
                         experienceType={job.experience_type}
+                        compact={true}
                       />
                     );
                   })}

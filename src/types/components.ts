@@ -28,6 +28,7 @@ export interface JobCardProps {
   slug?: string | null;
   logo?: string;
   institutionType?: string;
+  compact?: boolean;
 }
 
 /**

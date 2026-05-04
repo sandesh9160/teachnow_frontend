@@ -30,7 +30,8 @@ const JobCard = ({
   gender,
   vacancies,
   experience,
-  experienceType
+  experienceType,
+  compact
 }: JobCardProps & { 
   expiresAt?: string; 
   savedAt?: string;
@@ -132,13 +133,13 @@ const JobCard = ({
     <>
       <div
         onClick={() => router.push(jobHref)}
-        className={`group relative flex flex-col h-full rounded-xl border bg-white p-3 transition-all duration-300 cursor-pointer ${isExpired
+        className={`group relative flex flex-col h-full rounded-xl border bg-white ${compact ? "p-2.5" : "p-3"} transition-all duration-300 cursor-pointer ${isExpired
             ? "border-slate-100 opacity-75 grayscale-[0.5]"
             : "border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200"
           }`}>
         <div className="relative z-10 flex flex-col h-full">
           {/* Top Row: Logo, Title, Bookmark */}
-          <div className="flex items-start gap-3 mb-3">
+          <div className={`flex items-start gap-3 ${compact ? "mb-2" : "mb-3"}`}>
             <div className={`w-14 h-14 shrink-0 rounded-xl flex items-center justify-center overflow-hidden border border-slate-50 ${isExpired ? "bg-slate-100" : "bg-[#ecf2ff]"}`}>
               {logoUrl && !logoError ? (
                 <img
@@ -153,7 +154,7 @@ const JobCard = ({
             </div>
 
             <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className={`text-[17px] font-semibold transition-colors mb-1 tracking-tight line-clamp-2 min-h-[48px] leading-[1.4] ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
+              <h3 className={`text-[17px] font-semibold transition-colors ${compact ? "mb-0.5" : "mb-1"} tracking-tight line-clamp-2 ${compact ? "min-h-0" : "min-h-[48px]"} leading-[1.4] ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
                 {title}
               </h3>
             </div>
@@ -170,29 +171,26 @@ const JobCard = ({
             </button>
           </div>
 
-          {/* Company Section - Now Below and Left Aligned */}
-          <div className="flex flex-col gap-1 text-[#0F172A]/60 items-start text-left mb-3">
-            <div className="flex items-start gap-1.5">
-              <Building className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-              <p className="text-[13.5px] font-medium text-[#0F172A]/70 line-clamp-1 h-[20px]">{company}</p>
+          {/* Company Section - Now Beside each other */}
+          <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[#0F172A]/60 text-left ${compact ? "mb-2" : "mb-3"}`}>
+            <div className="flex items-center gap-1.5 shrink-0 max-w-[70%]">
+              <Building className="w-3.5 h-3.5 shrink-0" />
+              <p className="text-[13.5px] font-medium text-[#0F172A]/70 line-clamp-1">{company}</p>
             </div>
+            
             {isExpired ? (
-              <div className="flex items-center gap-1.5 ml-0.5">
-                <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
-                  Job Expired
-                </span>
-              </div>
+              <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 whitespace-nowrap">
+                Job Expired
+              </span>
             ) : institutionType && (
-              <div className="flex items-center gap-1.5 ml-0.5">
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                  {institutionType}
-                </span>
-              </div>
+              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100/50 whitespace-nowrap">
+                {institutionType}
+              </span>
             )}
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-[#0F172A]/60 mb-3 min-h-[24px]">
+          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-[#0F172A]/60 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
             <div className="flex items-center gap-1.5 max-w-[120px]">
               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span className="truncate">{location}</span>
@@ -247,7 +245,7 @@ const JobCard = ({
             )}
           </div>
 
-          <div className="flex justify-start mb-3">
+          <div className={`flex justify-start ${compact ? "mb-1.5" : "mb-3"}`}>
             {salary && (
               <div className={`text-[15px] font-bold ${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} tracking-tight`}>
                 {salary === "Not disclosed" ? "Not Disclosed" : `₹${salary.replace(/\.00/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`}
@@ -257,7 +255,7 @@ const JobCard = ({
 
           {/* Tags Section */}
           {tags && tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mb-3">
+            <div className={`flex flex-wrap items-center gap-2 ${compact ? "mb-2" : "mb-3"}`}>
               {tags.slice(0, 3).map((tag, idx) => (
                 <span key={idx} className="bg-[#f0f4f8] text-[#1e293b] px-3 py-0.5 rounded-full text-[11px] font-semibold">
                   {tag}
@@ -271,7 +269,7 @@ const JobCard = ({
             {isExpired ? (
               <button
                 disabled
-                className="w-full h-[40px] rounded-lg bg-slate-50 text-slate-400 font-bold text-[12px] cursor-not-allowed border border-slate-100 uppercase tracking-widest"
+                className="w-full h-[44px] rounded-lg bg-slate-50 text-slate-400 font-bold text-[12px] cursor-not-allowed border border-slate-100 uppercase tracking-widest"
               >
                 Vacancy Closed
               </button>
@@ -280,7 +278,7 @@ const JobCard = ({
                 <button
                   onClick={handleApply}
                   suppressHydrationWarning
-                  className="px-6 h-[40px] rounded-lg bg-[#1e3a8a] text-white font-semibold text-[14px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
+                  className="px-7 h-[44px] rounded-lg bg-[#1e3a8a] text-white font-semibold text-[14px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
                 >
                   Apply Now
                 </button>
@@ -288,7 +286,7 @@ const JobCard = ({
                   href={jobHref} 
                   onClick={(e) => e.stopPropagation()}
                   suppressHydrationWarning
-                  className="px-8 h-[40px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center"
+                  className="px-9 h-[44px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center"
                 >
                   Details
                 </Link>

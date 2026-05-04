@@ -205,7 +205,7 @@ function JobsContent() {
           {/* Job List */}
           <main
             id="jobs-list-container"
-            className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24"
+            className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24 max-w-4xl mx-auto w-full"
           >
             <PaginationFilter
               totalResults={totalResults}
