@@ -5,9 +5,18 @@ import type { FooterData, FooterTopSearch } from "@/lib/globalLayout/getGlobalLa
 
 function toAbsoluteUrl(url?: string): string {
   if (!url) return "#";
+  if (url.startsWith("/") || url.startsWith("#") || url.startsWith("mailto:") || url.startsWith("tel:")) return url;
   if (/^https?:\/\//i.test(url)) return url;
-  if (url.startsWith("/")) return url;
-  return `https://${url}`;
+
+  // Heuristic: If it contains a dot before a slash, it's probably a domain (absolute)
+  // Otherwise, it's probably a relative path that's missing the leading slash.
+  const dotIndex = url.indexOf(".");
+  const slashIndex = url.indexOf("/");
+  if (dotIndex !== -1 && (slashIndex === -1 || dotIndex < slashIndex)) {
+    return `https://${url}`;
+  }
+
+  return `/${url}`;
 }
 
 function toSearchHref(item?: FooterTopSearch | null): string {
@@ -126,7 +135,8 @@ export const Footer = ({
                   
                   // Check if it's truly external or just an absolute internal link
                   const isTrulyExternal = /^https?:\/\//i.test(href) && 
-                    !href.includes("teachnow.in") && 
+                    !href.toLowerCase().includes("teachnow") && 
+                    !href.toLowerCase().includes("jobsvedika") &&
                     !href.includes("localhost");
                     
                   const isExternal = isTrulyExternal || href === "#";
