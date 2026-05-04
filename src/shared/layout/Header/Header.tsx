@@ -588,7 +588,7 @@ const Header = ({
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" ref={navRef}>
       <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Logo Section */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0" onClick={closeAll}>
+        <Link href="/" className="flex items-center gap-3 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
               <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
@@ -661,16 +661,22 @@ const Header = ({
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex lg:hidden items-center gap-1.5">
+        <div className="flex lg:hidden items-center gap-2 sm:gap-3">
           {!isLoggedIn && (
-            <Link href="/auth/login" className="text-[10px] font-bold text-primary px-2 py-1.5 bg-primary/5 rounded-lg whitespace-nowrap">Register / Login</Link>
+            <Link 
+              href="/auth/login" 
+              className="text-[12px] font-bold text-primary px-4 py-2 bg-primary/5 rounded-lg whitespace-nowrap transition-all active:scale-95 border border-primary/10"
+            >
+              Register / Login
+            </Link>
           )}
           <button
-            className="flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-50"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-50 transition-colors border border-gray-100"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle Menu"
             suppressHydrationWarning
           >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
