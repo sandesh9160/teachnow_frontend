@@ -192,11 +192,20 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   </Button>
                )}
 
-               <Link href={`/jobs/${job.slug}`} target="_blank">
-                  <Button className="h-10 px-6 rounded-xl text-xs font-semibold bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-lg shadow-indigo-100 flex items-center gap-2">
+               {job.status === 'approved' ? (
+                  <Link href={`/jobs/${job.slug}`} target="_blank">
+                     <Button className="h-10 px-6 rounded-xl text-xs font-semibold bg-[#312E81] text-white hover:bg-[#1E1B4B] shadow-lg shadow-indigo-100 flex items-center gap-2">
+                        Live Preview <ExternalLink className="w-3.5 h-3.5" />
+                     </Button>
+                  </Link>
+               ) : (
+                  <Button
+                     disabled
+                     className="h-10 px-6 rounded-xl text-xs font-semibold bg-slate-100 text-slate-400 border border-slate-200 flex items-center gap-2 cursor-not-allowed"
+                  >
                      Live Preview <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
-               </Link>
+               )}
                <Button
                   variant="outline"
                   onClick={handleToggleFeatured}
