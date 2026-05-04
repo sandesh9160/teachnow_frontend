@@ -8,7 +8,7 @@ export default function Loading() {
       <div className="bg-white border-b border-slate-100 py-12">
         <div className="mx-auto max-w-7xl px-4">
           <div className="h-10 w-48 bg-slate-100 rounded-lg mb-8 animate-pulse mx-auto" />
-          <div className="max-w-4xl mx-auto h-20 bg-slate-50 rounded-2xl animate-pulse" />
+          <div className="max-w-5xl mx-auto h-20 bg-slate-50 rounded-2xl animate-pulse" />
         </div>
       </div>
 

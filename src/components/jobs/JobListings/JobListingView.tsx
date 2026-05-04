@@ -252,7 +252,7 @@ export default function JobListingView({
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-20 lg:static lg:shrink-0 z-40">
         <div className="mx-auto w-full px-4 py-1 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex flex-col items-center w-full">
-            <div className="w-full max-w-4xl">
+            <div className="w-full max-w-5xl">
               <JobsHeader
                 search={internalSearch}
                 setSearch={(val) => { setInternalSearch(val); }}
@@ -281,7 +281,7 @@ export default function JobListingView({
           </aside>
 
           {/* Jobs List */}
-          <div ref={scrollContainerRef} className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24 max-w-4xl mx-auto w-full">
+          <div ref={scrollContainerRef} className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24 max-w-5xl mx-auto w-full">
             <PaginationFilter
               totalResults={filteredJobs.length}
               resultsPerPage={resultsPerPage}
