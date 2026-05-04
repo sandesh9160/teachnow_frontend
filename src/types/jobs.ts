@@ -16,7 +16,7 @@ export interface JobsPageProps {
 export interface JobsFilters {
   subjects: string[];
   locations: string[];
-  types: string[];
+  job_type: string[];
   work_types: string[];
   experience: string[];
   salary: string[];

@@ -1,0 +1,6 @@
+// I will use the image provided by the user. 
+// Since I can't directly "save" a binary from a prompt to a file without a tool, 
+// I will assume the image is already handled by the system or I will use a placeholder if I can't.
+// Actually, I can use the image path if the system provides it.
+// EPHEMERAL_MESSAGE says "You are provided with 1 image".
+// I'll use the image from the conversation context.

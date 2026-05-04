@@ -44,7 +44,7 @@ export default function JobListingView({
   const [selectedFilters, setSelectedFilters] = useState<JobsFilters>({
     subjects: initialFilters?.subjects || [],
     locations: initialFilters?.locations || [],
-    types: initialFilters?.types || [],
+    job_type: initialFilters?.job_type || [],
     work_types: initialFilters?.work_types || [],
     experience: initialFilters?.experience || [],
     salary: initialFilters?.salary || [],
@@ -124,13 +124,33 @@ export default function JobListingView({
     router.push(`/jobs/${slug}`);
   };
 
-  const handleToggle = (category: keyof JobsFilters, value: string) => {
-    setSelectedFilters((prev: JobsFilters) => ({
-      ...prev,
-      [category]: prev[category].includes(value)
-        ? prev[category].filter((v: string) => v !== value)
-        : [...prev[category], value],
-    }));  
+  const handleToggle = (category: string, value: string) => {
+    setSelectedFilters((prev: JobsFilters) => {
+      const cat = category as keyof JobsFilters;
+      if (!prev[cat]) return prev;
+      return {
+        ...prev,
+        [cat]: prev[cat].includes(value)
+          ? prev[cat].filter((v: string) => v !== value)
+          : [...prev[cat], value],
+      };
+    });  
+    setCurrentPage(1);
+  };
+
+  const clearAll = () => {
+    setSelectedFilters({
+      subjects: [],
+      locations: [],
+      job_type: [],
+      work_types: [],
+      experience: [],
+      salary: [],
+      institution_type: [],
+      gender: [],
+    });
+    setInternalSearch("");
+    setInternalLocation("");
     setCurrentPage(1);
   };
 
@@ -146,8 +166,8 @@ export default function JobListingView({
     const jobType = normalizeType(job.job_type || "");
 
     // Job Type Filter
-    if (selectedFilters.types.length) {
-      const selectedTypes = new Set(selectedFilters.types.map(normalizeType));
+    if (selectedFilters.job_type.length) {
+      const selectedTypes = new Set(selectedFilters.job_type.map(normalizeType));
       if (!selectedTypes.has(jobType)) return false;
     }
 
@@ -255,6 +275,7 @@ export default function JobListingView({
               <JobFilterSidebar
                 selectedFilters={selectedFilters}
                 onToggle={handleToggle}
+                onClearAll={clearAll}
               />
             </FilterCard>
           </aside>
@@ -379,6 +400,7 @@ export default function JobListingView({
           <JobFilterSidebar
             selectedFilters={selectedFilters}
             onToggle={handleToggle}
+            onClearAll={clearAll}
           />
         }
       />

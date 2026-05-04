@@ -7,7 +7,6 @@ import {
   ChevronDown,
   LayoutDashboard,
   LogOut,
-  ChevronRight,
   ArrowUpRight,
 } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -22,6 +21,29 @@ import { normalizeMediaUrl } from "@/services/api/client";
 
 
 // --- Sub-components for better modularity and less repetition ---
+
+const NavItem = ({ item, onClose, level = 0 }: { item: any, onClose: () => void, level?: number }) => (
+  <div className={level > 0 ? "pl-3.5 border-l border-slate-100/80 ml-2 mt-1" : "mt-0.5"}>
+    <Link 
+      href={item.url} 
+      onClick={onClose}
+      className={`block rounded-lg py-1 transition-all duration-200 ${
+        level === 0 
+          ? "text-[14px] font-medium text-slate-600 hover:text-primary px-2" 
+          : "text-[13px] font-normal text-slate-400 hover:text-primary"
+      }`}
+    >
+      {item.title}
+    </Link>
+    {item.children?.length > 0 && (
+      <div className="space-y-0.5">
+        {item.children.map((child: any) => (
+          <NavItem key={child.id} item={child} onClose={onClose} level={level + 1} />
+        ))}
+      </div>
+    )}
+  </div>
+);
 
 const MegaMenu = ({
   label,
@@ -42,8 +64,8 @@ const MegaMenu = ({
 }>) => {
   if (!data?.sections) return null;
 
-  const sidebars = data.sections.filter((s: any) => s.slug === "categories") || [];
-  const panels = data.sections.filter((s: any) => s.slug !== "categories") || [];
+  const sidebars = data.sections.filter((s: any) => String(s.slug || "").toLowerCase() === "categories") || [];
+  const panels = data.sections.filter((s: any) => String(s.slug || "").toLowerCase() !== "categories") || [];
 
   if (isMobile) {
     return (
@@ -51,30 +73,30 @@ const MegaMenu = ({
         <button
           onClick={onToggle}
           suppressHydrationWarning
-          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
+          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-bold text-muted-foreground hover:bg-muted"
         >
           {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
         </button>
         {active && (
           <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
             {sidebars.map((sb: any) => (
-              <div key={sb.title} className="pt-2">
-                <p className="px-3 text-[10px] font-medium text-slate-400 tracking-wide mb-1">Categories</p>
-                {sb.links.map((link: any) => (
-                  <Link key={link.label} href={link.href} onClick={onClose} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
-                    {link.label}
-                  </Link>
+              <div key={sb.id} className="pt-2">
+                <p className="px-3 text-[10px] font-bold text-slate-400 tracking-widest mb-1">CATEGORIES</p>
+                {sb.children.map((child: any) => (
+                  <NavItem key={child.id} item={child} onClose={onClose} />
                 ))}
               </div>
             ))}
             {panels.map((panel: any) => (
-              <div key={panel.title} className="pt-2">
-                <p className="px-3 text-[10px] font-medium text-slate-400 tracking-wide mb-1">{panel.title}</p>
-                {panel.links.map((link: any) => (
-                  <Link key={link.label} href={link.href} onClick={onClose} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
-                    {link.label}
-                  </Link>
-                ))}
+              <div key={panel.id} className="pt-2">
+                <Link href={panel.url} onClick={onClose} className="px-3 text-[10px] font-bold text-slate-400 tracking-widest mb-1 block hover:text-primary transition-colors">
+                  {panel.title.toUpperCase()}
+                </Link>
+                <div className="pl-2">
+                  {panel.children.map((child: any) => (
+                    <NavItem key={child.id} item={child} onClose={onClose} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -88,35 +110,34 @@ const MegaMenu = ({
       <button
         onClick={onToggle}
         suppressHydrationWarning
-        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${active ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted hover:text-foreground ${active ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
       >
         {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
       </button>
       {active && (
-        <div className="absolute left-0 top-full mt-2 w-[800px] rounded-xl border border-border bg-card p-6 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 z-50">
-          <div className="flex gap-10">
+        <div className={`absolute left-0 top-full mt-2 ${sidebars.length > 0 || panels.length > 2 ? "w-[800px]" : "w-max min-w-[280px]"} rounded-xl border border-border bg-card p-8 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 z-50`}>
+          <div className="flex gap-12">
             {sidebars.map((sb: any) => (
-              <div key={sb.title} className="w-56 border-r border-border pr-8">
-                <p className="text-[10px] font-medium text-slate-400 tracking-wide mb-3">{sb.title}</p>
-                <div className="space-y-0.5">
-                  {sb.links.map((link: any) => (
-                    <Link key={link.label} href={link.href} onClick={onClose} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors group">
-                      <span className="truncate">{link.label}</span>
-                      <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
-                    </Link>
+              <div key={sb.id} className="w-60 border-r border-border pr-10">
+                <Link href={sb.url} onClick={onClose} className="text-[11px] font-bold text-slate-400 tracking-[0.15em] mb-6 block hover:text-primary transition-colors">
+                   {sb.title.toUpperCase()}
+                </Link>
+                <div className="space-y-1">
+                  {sb.children.map((child: any) => (
+                    <NavItem key={child.id} item={child} onClose={onClose} />
                   ))}
                 </div>
               </div>
             ))}
-            <div className="flex-1 grid grid-cols-2 gap-x-10 gap-y-8">
+            <div className={`flex-1 grid ${panels.length > 1 ? "grid-cols-2" : "grid-cols-1"} gap-x-12 gap-y-10`}>
               {panels.map((panel: any) => (
-                <div key={panel.title} className="min-w-0">
-                  <p className="text-[10px] font-medium text-slate-400 tracking-wide mb-3">{panel.title}</p>
+                <div key={panel.id} className="min-w-0">
+                  <Link href={panel.url} onClick={onClose} className="text-[11px] font-bold text-slate-400 tracking-[0.15em] mb-6 block hover:text-primary transition-colors">
+                    {panel.title.toUpperCase()}
+                  </Link>
                   <div className="space-y-1">
-                    {panel.links.map((link: any) => (
-                      <Link key={link.label} href={link.href} onClick={onClose} className="block rounded-lg px-2 py-1 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors truncate">
-                        {link.label}
-                      </Link>
+                    {panel.children.map((child: any) => (
+                      <NavItem key={child.id} item={child} onClose={onClose} />
                     ))}
                   </div>
                 </div>
@@ -124,10 +145,10 @@ const MegaMenu = ({
             </div>
           </div>
           {isJobs && (
-            <div className="mt-8 border-t border-border pt-5 flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">Find the perfect teaching opportunity</p>
-              <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline">
-                View All Opportunities <ArrowUpRight className="h-4 w-4" />
+            <div className="mt-10 border-t border-border pt-6 flex items-center justify-between">
+              <p className="text-xs text-muted-foreground font-medium">Find the perfect teaching opportunity</p>
+              <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline group">
+                View All Opportunities <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
           )}
@@ -167,12 +188,10 @@ const SimpleDropdown = ({
         {active && (
           <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
             {items.map((item) => (
-              <Link key={item.label} href={item.href} onClick={onClose} className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
-                {item.label}
-              </Link>
+              <NavItem key={item.id} item={item} onClose={onClose} />
             ))}
             {isJobs && (
-              <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-primary/5">
+              <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5">
                 View All Jobs
               </Link>
             )}
@@ -192,15 +211,15 @@ const SimpleDropdown = ({
         {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
       </button>
       {active && (
-        <div className="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-300 z-50">
-          {items.map((item) => (
-            <Link key={item.label} href={item.href} onClick={onClose} className="block rounded-lg px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-              {item.label}
-            </Link>
-          ))}
+        <div className="absolute left-0 top-full mt-2 w-60 rounded-xl border border-border bg-card p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-300 z-50">
+          <div className="space-y-1">
+            {items.map((item) => (
+              <NavItem key={item.id} item={item} onClose={onClose} />
+            ))}
+          </div>
           {isJobs && (
-            <div className="mt-1 border-t border-border pt-1">
-              <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-bold text-primary hover:bg-primary/5">
+            <div className="mt-2 border-t border-border pt-2">
+              <Link href="/jobs" onClick={onClose} className="block rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5">
                 View All
               </Link>
             </div>
@@ -220,40 +239,22 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
   const slug = String(menu.slug || "").trim().replace(/^\/+|\/+$/g, "");
   const parentSlug = String(parent?.slug || "").trim().toLowerCase();
 
-  // Mapping for static pages to match renamed folders
-  const staticLinkMap: Record<string, string> = {
-    "about": "about-us",
-    "contact": "contact-us",
-    "pricing": "pricing-plans",
-    "free-cv-resume-builder": "ai-resume-builder",
-    "faq": "faqs",
-    "faqs": "faqs",
-  };
+  // Use the slug as the primary route identifier
+  const finalSlug = slug;
 
-  const finalSlug = staticLinkMap[slug.toLowerCase()] || staticLinkMap[rawUrl] || slug;
-
-  // PRIORITY 1: Meaningful Slugs (except root generic ones)
-  // This turns messy search URLs into clean slug routes handled by app/(public)/[slug]/page.tsx
-  if (finalSlug && !["jobs", "categories", "institutes", "institutions", "company", "employer"].includes(finalSlug.toLowerCase())) {
-    return `/${finalSlug}`;
-  }
-
-  // PRIORITY 2: External URLs
   if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
 
-  // PRIORITY 3: Clean /open/ prefixes
-  if (rawUrl.startsWith("open/")) {
-    rawUrl = "/" + rawUrl.replace(/^open\//, "");
-  } else if (rawUrl.startsWith("/open/")) {
-    rawUrl = rawUrl.replace(/^\/open\//, "/");
-  }
+  if (rawUrl.startsWith("open/")) rawUrl = "/" + rawUrl.replace(/^open\//, "");
+  else if (rawUrl.startsWith("/open/")) rawUrl = rawUrl.replace(/^\/open\//, "/");
 
-  // PRIORITY 4: Specialized mapping
+  // Specialized mapping for depth-based routing
   if (parentSlug === "jobs" && finalSlug) return `/jobs/${finalSlug}`;
   if ((parentSlug === "institutes" || parentSlug === "institutions") && finalSlug) return `/institutions/${finalSlug}`;
 
-  if (finalSlug.toLowerCase() === "jobs") return "/jobs";
-  if (finalSlug.toLowerCase() === "institutes" || finalSlug.toLowerCase() === "institutions") return "/institutions";
+  if (finalSlug && !["categories", "institutes", "institutions", "company", "employer"].includes(finalSlug.toLowerCase())) {
+     if (finalSlug.toLowerCase() === "jobs") return "/jobs";
+     return `/${finalSlug}`;
+  }
 
   return rawUrl || "/";
 }
@@ -261,70 +262,88 @@ function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: Nav
 function mapNavigationData(navData: NavigationData | null): any[] {
   if (!navData?.menus) return [];
 
-  const allMenus = Array.isArray(navData.menus) ? navData.menus : [];
+  // 1. Flatten the incoming structure to ensure we have a flat list of every item available
+  const allMenusFlattened: any[] = [];
+  const flatten = (items: any[]) => {
+    if (!Array.isArray(items)) return;
+    items.forEach(item => {
+      allMenusFlattened.push(item);
+      const kids = item.children || item.children_recursive || [];
+      if (kids.length > 0) flatten(kids);
+    });
+  };
+  flatten(navData.menus);
 
-  // Filter for top-level menus only (parent_id is null or 0)
-  return allMenus
-    .filter((m: NavMenu) =>
+  // 2. Synchronize all menu items into a map
+  const menuMap = new Map<number, any>();
+  allMenusFlattened.forEach((m: any) => {
+    const existing = menuMap.get(m.id);
+    const mChildren = m.children || m.children_recursive || [];
+    if (!existing || mChildren.length > 0) {
+      menuMap.set(m.id, { ...m, _children: [...mChildren] });
+    }
+  });
+
+  // 3. Stitch relationships to handle cases where parent_id is set but children array was missing
+  allMenusFlattened.forEach((m: any) => {
+    if (m.parent_id && menuMap.has(m.parent_id)) {
+      const parent = menuMap.get(m.parent_id);
+      if (!parent._children.some((c: any) => c.id === m.id)) {
+        parent._children.push(m);
+      }
+    }
+  });
+
+  // 4. Recursive mapper that pulls from the synchronized menuMap
+  const mapItem = (item: any, parent?: any): any => {
+    const syncedItem = menuMap.get(item.id) || item;
+    
+    const children = (syncedItem._children || [])
+      .filter((c: any) => c.is_active === 1 && c.show_in_nav === 1)
+      .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
+
+    const mappedChildren = children.map((c: any) => mapItem(c, syncedItem));
+    
+    return {
+      ...syncedItem,
+      title: syncedItem.title,
+      url: resolveMenuHref(syncedItem, parent),
+      children: mappedChildren,
+      hasChildren: mappedChildren.length > 0,
+      hasGrandChildren: mappedChildren.some((c: any) => c.hasChildren)
+    };
+  };
+
+  // 5. Final tree assembly from top-level roots
+  return Array.from(menuMap.values())
+    .filter((m: any) =>
       m.is_active === 1 &&
       (!m.parent_id || m.parent_id === null) &&
-      (m.show_in_nav === 1 || m.slug === "jobs" || m.title?.toLowerCase().includes("job"))
+      (m.show_in_nav === 1 || m.slug?.toLowerCase().includes("job") || m.title?.toLowerCase().includes("job"))
     )
     .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-    .map((menu: NavMenu) => {
-      // Handle both backend property names for children
-      const rawChildren = (menu as any).children || menu.children_recursive || [];
-      const children = rawChildren
-        .filter((c: NavMenu) => c.is_active === 1 && c.show_in_nav === 1)
-        .sort((a: NavMenu, b: NavMenu) => (a.display_order || 0) - (b.display_order || 0));
-
-      const hasChildren = children.length > 0;
-      const isJobsMenu = menu.slug === "jobs" || menu.title?.toLowerCase().includes("job");
-      const isInstitutionsMenu = ["institutes", "institutions"].includes(String(menu.slug || "").toLowerCase());
-      const isMega = isJobsMenu || isInstitutionsMenu;
+    .map((root: any) => {
+      const mapped = mapItem(root);
+      const slug = String(root.slug || "").toLowerCase();
+      const title = String(root.title || "").toLowerCase();
+      const isJobsMenu = slug.includes("jobs") || title.includes("job");
+      const isInstitutionsMenu = ["institutes", "institutions"].includes(slug);
+      
+      const isMega = isJobsMenu || isInstitutionsMenu || mapped.hasGrandChildren;
 
       let structure: any = null;
-      if (hasChildren) {
+      if (mapped.hasChildren) {
         if (isMega) {
           structure = {
-            sections: children
-              .map((section: NavMenu) => {
-                const rawGrandChildren = (section as any).children || section.children_recursive || [];
-                const grandChildren = rawGrandChildren
-                  .filter((link: NavMenu) => link.is_active === 1 && link.show_in_nav === 1);
-
-                const linksSource = grandChildren.length > 0 ? grandChildren : [section];
-
-                return {
-                  title: section.title,
-                  slug: section.slug,
-                  links: linksSource.map((link: NavMenu) => ({
-                    label: link.title,
-                    href: resolveMenuHref(link, grandChildren.length > 0 ? menu : section),
-                  })),
-                };
-              })
-              .filter((section: any) => Array.isArray(section.links) && section.links.length > 0),
+            sections: mapped.children
           };
-
-          if (structure.sections.length === 0) {
-            structure = children.map((item: NavMenu) => ({
-              label: item.title,
-              href: resolveMenuHref(item, menu),
-            }));
-          }
         } else {
-          structure = children.map((item: NavMenu) => ({
-            label: item.title,
-            href: resolveMenuHref(item, menu),
-          }));
+          structure = mapped.children;
         }
       }
 
       return {
-        ...menu,
-        url: resolveMenuHref(menu),
-        hasChildren,
+        ...mapped,
         isMega: isMega && !!structure && !Array.isArray(structure),
         isJobs: isJobsMenu,
         structure

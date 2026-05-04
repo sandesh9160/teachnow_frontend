@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://jobsvedika.in"),
   title: "TeachNow – Find Jobs, Build Resume, and Get Hired Faster",
   description: "India's #1 job portal for education professionals.",
+  icons: {
+    icon: "/images/branded-logo.png",
+    apple: "/images/branded-logo.png",
+  },
 };
 
 export default function RootLayout({

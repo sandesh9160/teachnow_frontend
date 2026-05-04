@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useJobs } from "@/hooks/useJobs";
-import { JobsFilters } from "@/types/jobs";
+// import { JobsFilters } from "@/types/jobs";
 
 // Reusable Components
 import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
@@ -12,260 +12,148 @@ import JobPagination from "@/components/jobs/JobPagination/JobPagination";
 import JobFilterSidebar from "@/components/jobs/Filters/JobFilterSidebar/JobFilterSidebar";
 import FilterCard from "@/components/jobs/Filters/shared/FilterCard";
 import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter";
-import { getFilters } from "@/hooks/useHomepage";
+// import { getFilters } from "@/hooks/useHomepage";
 
 import MobileFilters from "@/components/jobs/Filters/MobileFilters";
 
 
 function JobsContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const keywordParam = searchParams?.get("keyword") || "";
   const locationParam = searchParams?.get("location") || "";
 
   const { jobs, similarJobs, loading, error, fetchJobs, meta } = useJobs();
-  const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
-  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
 
   // UI/Filter State
-  const [search, setSearch] = useState("");
-  const [locationSearch, setLocationSearch] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState<JobsFilters>({
-    subjects: [],
-    locations: [],
-    types: [],
-    work_types: [],
-    experience: [],
-    salary: [],
-    institution_type: [],
-    gender: [],
+  const [search, setSearch] = useState(keywordParam);
+  const [locationSearch, setLocationSearch] = useState(locationParam);
+  const [selectedFilters, setSelectedFilters] = useState({
+    institution_type: [] as string[],
+    experience: [] as string[],
+    job_type: [] as string[],
+    gender: [] as string[],
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState("Default");
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
-
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const { categories, locations } = await getFilters();
-        setAvailableSubjects(categories.map((c: any) => c.name));
-        setAvailableLocations(locations.map((l: any) => l.name));
-      } catch (err) {
-        // console.error("Failed to fetch filters", err);
-      }
-    };
-    fetchFilterOptions();
-  }, []);
+  const [isPending, setIsPending] = useState(false);
 
   // Auto-scroll to top on page or filter change
   useEffect(() => {
     if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "instant" });
+      const main = document.getElementById("jobs-list-container");
+      if (main) main.scrollTo({ top: 0, behavior: "smooth" });
+      else window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [currentPage, selectedFilters]);
+  }, [currentPage, selectedFilters, search, locationSearch]);
 
+  // Debounced API call
   useEffect(() => {
-    void fetchJobs({
-      keyword: keywordParam || undefined,
-      location: locationParam || undefined,
-      page: currentPage,
-      limit: resultsPerPage,
-      filters: selectedFilters, // Pass filters to server
-    });
-    if (keywordParam) {
-      setSearch(keywordParam);
-      // Synchronize with subjects if it matches
-      const matchedSubject = availableSubjects.find(s => s.toLowerCase() === keywordParam.toLowerCase());
-      if (matchedSubject && !selectedFilters.subjects.includes(matchedSubject)) {
-        setSelectedFilters(prev => ({
-          ...prev,
-          subjects: [...prev.subjects, matchedSubject]
-        }));
+    const handler = setTimeout(() => {
+      setIsPending(false);
+      const filters: any = {};
+
+      if (selectedFilters.institution_type.length > 0) {
+        filters.institution_type = selectedFilters.institution_type.map(v => v.toLowerCase());
       }
-    }
-    if (locationParam) {
-      setLocationSearch(locationParam);
-      // Synchronize with locations if it matches
-      const matchedLocation = availableLocations.find(l => l.toLowerCase() === locationParam.toLowerCase());
-      if (matchedLocation && !selectedFilters.locations.includes(matchedLocation)) {
-        setSelectedFilters(prev => ({
-          ...prev,
-          locations: [...prev.locations, matchedLocation]
-        }));
+
+      if (selectedFilters.job_type.length > 0) {
+        filters.job_type = selectedFilters.job_type.map(v => v.toLowerCase().replace(" ", "_").replace("-", "_"));
       }
-    }
-  }, [keywordParam, locationParam, currentPage, resultsPerPage, availableSubjects, availableLocations, selectedFilters]);
+
+      if (selectedFilters.gender.length > 0) {
+        filters.gender_type = selectedFilters.gender.map(v => v.toLowerCase());
+      }
+
+      if (selectedFilters.experience.length > 0) {
+        // Experience is tricky for multi-select. If "fresher" is selected, we add experience_type.
+        // If others are selected, we might need multiple ranges or just the min/max of all selected.
+        // For simplicity and to match common backend expectations, we'll pass them as arrays if the backend supports it,
+        // or just pick the first one. 
+        // Based on the previous useJobs.ts, it handles arrays by appending [].
+
+        selectedFilters.experience.forEach(exp => {
+          if (exp === "0-0") {
+            filters.experience_type = "fresher";
+          } else if (exp === "10-50") {
+            if (!filters.experience_min) filters.experience_min = [];
+            filters.experience_min.push(10);
+          } else {
+            const [min, max] = exp.split("-");
+            if (min) {
+              if (!filters.experience_min) filters.experience_min = [];
+              filters.experience_min.push(min);
+            }
+            if (max) {
+              if (!filters.experience_max) filters.experience_max = [];
+              filters.experience_max.push(max);
+            }
+          }
+        });
+      }
+
+      void fetchJobs({
+        keyword: search || undefined,
+        location: locationSearch || undefined,
+        page: currentPage,
+        limit: resultsPerPage,
+        filters: filters,
+      });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [search, locationSearch, selectedFilters, currentPage, resultsPerPage]);
 
   const handleSearch = () => {
     if (!search.trim() && !locationSearch.trim()) {
       setSearchError("Please enter at least a job title or location to search.");
-      // Clear error after 3 seconds
       setTimeout(() => setSearchError(""), 3000);
       return;
     }
     setSearchError("");
-
-    const combined = [search, locationSearch]
-      .filter(Boolean)
-      .join(" ");
-
-    setIsSearching(true);
-    
-    const slug = combined
-      .toLowerCase()
-      .trim()
-      .replaceAll(/[^a-z0-9]+/g, "-")
-      .replaceAll(/^-+|-+$/g, "");
-
-    router.push(`/jobs/${slug}`);
+    setIsPending(true);
+    setCurrentPage(1);
   };
 
   // Handlers
-  const handleToggle = (category: keyof JobsFilters, value: string) => {
-    setSelectedFilters((prev: JobsFilters) => ({
-      ...prev,
-      [category]: prev[category].includes(value)
-        ? prev[category].filter((v: string) => v !== value)
-        : [...prev[category], value],
-    }));
+  const handleToggle = (category: string, value: string) => {
+    setIsPending(true);
+    setSelectedFilters((prev: any) => {
+      const current = prev[category] as string[];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [category]: next };
+    });
     setCurrentPage(1);
   };
 
   const clearAll = () => {
+    setIsPending(true);
     setSelectedFilters({
-      subjects: [],
-      locations: [],
-      types: [],
-      work_types: [],
-      experience: [],
-      salary: [],
       institution_type: [],
+      experience: [],
+      job_type: [],
       gender: [],
     });
     setSearch("");
+    setLocationSearch("");
     setCurrentPage(1);
   };
 
   const activeFilterCount = Object.values(selectedFilters).flat().length;
 
-  // Client-side Filtering Logic (Only used if server doesn't provide meta)
-  const clientFiltered = meta ? jobs : jobs.filter((job) => {
-    if (!job) return false;
-
-    // Search (Keyword) - Checks Title, Company, and Category
-    if (search) {
-      const sLower = search.toLowerCase();
-      const titleMatch = job.title?.toLowerCase().includes(sLower);
-      const companyMatch = job.employer?.company_name?.toLowerCase().includes(sLower);
-      const categoryMatch = (job.category?.name || "").toLowerCase().includes(sLower);
-      
-      if (!(titleMatch || companyMatch || categoryMatch)) return false;
-    }
-
-    // Job Type Filter
-    if (selectedFilters.types.length) {
-      const normalizeType = (value: string) =>
-        String(value)
-          .toLowerCase()
-          .replaceAll(/[_-]/g, " ")
-          .replaceAll(/\s+/g, " ")
-          .trim();
-
-      const jobType = normalizeType(job.job_type || "");
-      const selectedTypes = new Set(selectedFilters.types.map((t) => normalizeType(t)));
-      if (selectedTypes.size > 0 && !selectedTypes.has(jobType)) return false;
-    }
-
-    // Subject/Category Filter
-    if (selectedFilters.subjects.length > 0) {
-      const jobCategory = (job.category?.name || "").toLowerCase();
-      const jobTitle = (job.title || "").toLowerCase();
-      
-      const isMatch = selectedFilters.subjects.some(sub => {
-        const subLower = sub.toLowerCase();
-        // Exact match or includes
-        if (jobCategory.includes(subLower) || jobTitle.includes(subLower)) return true;
-        
-        // Fuzzy word match (check if any word from the filter exists in category/title)
-        const subWords = subLower.split(/\s+/).filter(w => w.length > 2); // only words > 2 chars
-        return subWords.some(word => jobCategory.includes(word) || jobTitle.includes(word));
-      });
-      
-      if (!isMatch) return false;
-    }
-
-    // Location Filter
-    if (selectedFilters.locations.length > 0) {
-      const jobLocation = job.location?.toLowerCase() || "";
-      if (!selectedFilters.locations.some(loc => jobLocation.includes(loc.toLowerCase()))) return false;
-    }
-
-    // Experience Filter (Multi-range support)
-    if (selectedFilters.experience.length > 0) {
-      const exp = Number(job.experience_required ?? Number.NaN);
-      const isMatch = selectedFilters.experience.some(rangeStr => {
-        const [min, max] = rangeStr.split("-").map(Number);
-        return !Number.isNaN(min) && !Number.isNaN(max) && exp >= min && exp <= max;
-      });
-      if (!isMatch) return false;
-    }
-
-    // Salary Filter (Multi-range support)
-    if (selectedFilters.salary.length > 0) {
-      const jobMin = Number(job.salary_min ?? Number.NaN);
-      const jobMax = Number(job.salary_max ?? Number.NaN);
-      const isMatch = selectedFilters.salary.some(rangeStr => {
-        const [minLakh, maxLakh] = rangeStr.split("-").map(Number);
-        if (Number.isNaN(minLakh) || Number.isNaN(maxLakh)) return false;
-        const rangeMin = minLakh * 100000;
-        const rangeMax = maxLakh * 100000;
-        return jobMax >= rangeMin && jobMin <= rangeMax;
-      });
-      if (!isMatch) return false;
-    }
-
-    // Institution Type Filter
-    if (selectedFilters.institution_type.length > 0) {
-      const instType = (job as any).institution_type || (job.employer as any)?.institution_type;
-      if (!instType || !selectedFilters.institution_type.includes(instType)) return false;
-    }
-
-    // Gender Filter
-    if (selectedFilters.gender.length > 0) {
-      const jobGender = (job.gender || "both").toLowerCase();
-      if (!selectedFilters.gender.includes(jobGender)) return false;
-    }
-
-    return true;
-  });
-
-  // Sorting
-  const sorted = meta ? clientFiltered : [...clientFiltered].sort((a, b) => {
-    if (sortBy === "Salary: High to Low") return Number(b.salary_max) - Number(a.salary_max);
-    if (sortBy === "Experience: Low to High") return a.experience_required - b.experience_required;
-    return 0; // Default Latest (as provided by API)
-  });
-
-  const totalPages = meta?.last_page || Math.max(1, Math.ceil(sorted.length / resultsPerPage));
-  const totalResults = meta?.total || sorted.length;
-  
+  const totalPages = meta?.last_page || 1;
+  const totalResults = meta?.total || jobs.length;
   const currentLimit = meta?.per_page || resultsPerPage;
-  const startIndex = meta ? (meta.current_page - 1) * currentLimit : (currentPage - 1) * resultsPerPage;
-  
-  // Final paginated list
-  const paginatedJobs = meta ? sorted : sorted.slice(startIndex, startIndex + resultsPerPage);
-
-
-
-
+  const startIndex = meta ? (meta.current_page - 1) * currentLimit : 0;
 
   return (
     <div className="bg-[#F8FAFC] lg:h-[calc(100vh-5rem)] lg:overflow-hidden flex flex-col">
-      {/* Consistent Breadcrumb Bar */}
+      {/* Search Header */}
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-20 lg:static lg:shrink-0 z-40">
         <div className="mx-auto w-full px-4 py-1 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex flex-col items-center w-full">
@@ -278,7 +166,7 @@ function JobsContent() {
                 onOpenFilters={() => setMobileFiltersOpen(true)}
                 onSearch={handleSearch}
                 activeFilterCount={activeFilterCount}
-                loading={loading || isSearching}
+                loading={loading || isPending}
                 error={searchError}
               />
             </div>
@@ -293,7 +181,7 @@ function JobsContent() {
             <button
               type="button"
               className="ml-3 font-semibold text-primary underline"
-              onClick={() => void fetchJobs({ keyword: keywordParam || undefined, location: locationParam || undefined })}
+              onClick={() => setCurrentPage(prev => prev)} // trigger re-fetch
             >
               Retry
             </button>
@@ -307,14 +195,18 @@ function JobsContent() {
           <aside className="hidden w-72 shrink-0 lg:block h-full py-8 sticky top-0">
             <FilterCard className="h-full overflow-y-auto custom-scrollbar">
               <JobFilterSidebar
-                selectedFilters={selectedFilters}
-                onToggle={handleToggle}
+                selectedFilters={selectedFilters as any}
+                onToggle={handleToggle as any}
+                onClearAll={clearAll}
               />
             </FilterCard>
           </aside>
 
           {/* Job List */}
-          <main className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24">
+          <main
+            id="jobs-list-container"
+            className="flex-1 lg:h-full lg:overflow-y-auto py-8 lg:pr-4 pb-24"
+          >
             <PaginationFilter
               totalResults={totalResults}
               resultsPerPage={currentLimit}
@@ -325,8 +217,8 @@ function JobsContent() {
             />
 
             <JobsGrid
-              jobs={paginatedJobs}
-              loading={loading}
+              jobs={jobs}
+              loading={loading || isPending}
               onClearAll={clearAll}
             />
 
@@ -362,8 +254,9 @@ function JobsContent() {
         resultCount={totalResults}
         filterContent={
           <JobFilterSidebar
-            selectedFilters={selectedFilters}
-            onToggle={handleToggle}
+            selectedFilters={selectedFilters as any}
+            onToggle={handleToggle as any}
+            onClearAll={clearAll}
           />
         }
       />

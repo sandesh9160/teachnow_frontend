@@ -48,8 +48,12 @@ export function useJobs() {
       const limit = opts?.limit ?? 10;
       const filters = opts?.filters ?? {};
       
-      // If we have search params, use the specialized search endpoint
-      let endpoint = (kw || loc) ? "open/search/jobs/search" : "open/jobs";
+      // If we have search params OR filters, use the specialized search endpoint
+      const hasFilters = Object.values(filters).some(v => 
+        Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && v !== "")
+      );
+
+      let endpoint = (kw || loc || hasFilters) ? "open/search/jobs/search" : "open/jobs";
       let query = [];
       if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
       if (loc) query.push(`location=${encodeURIComponent(loc)}`);
@@ -60,7 +64,7 @@ export function useJobs() {
       Object.entries(filters).forEach(([key, values]) => {
         if (Array.isArray(values) && values.length > 0) {
           values.forEach(val => {
-            query.push(`${encodeURIComponent(key)}[]=${encodeURIComponent(String(val))}`);
+            query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(val))}`);
           });
         } else if (values !== undefined && values !== null && values !== "") {
           query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(values))}`);
@@ -71,12 +75,6 @@ export function useJobs() {
       
       const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
       
-      // The backend can return several structures:
-      // 1. { status: true, total_jobs: 26, data: { current_page: 1, data: [...], total: 26, ... } }
-      // 2. { search_jobs: [...], similar_jobs: [...], total_jobs: 26 }
-      // 3. Just the paginated object: { current_page: 1, data: [...], total: 26 }
-      // 4. A flat array of jobs: [...]
-      
       let jobsList: Job[] = [];
       let similarList: Job[] = [];
       let paginationMeta: any = null;
@@ -86,7 +84,7 @@ export function useJobs() {
         // Case A: Explicit search results container
         const source = res.search_jobs;
         jobsList = toArray<any>(source).map(normalizeJob);
-        paginationMeta = (source && typeof source === "object" && "current_page" in source) ? source : res;
+        paginationMeta = (source && typeof source === "object") ? source : res;
       } else if (res?.data && typeof res.data === "object" && !Array.isArray(res.data)) {
         // Case B: Nested in 'data' (standard paginated response)
         const source = res.data;
@@ -111,11 +109,13 @@ export function useJobs() {
 
       // Finalize Meta
       if (paginationMeta) {
+        const total = Number(paginationMeta.total || res?.total_jobs || jobsList.length);
+        const perPage = Number(paginationMeta.per_page || limit || 10);
         setMeta({
-          current_page: Number(paginationMeta.current_page),
-          last_page: Number(paginationMeta.last_page),
-          total: Number(paginationMeta.total || res?.total_jobs || jobsList.length),
-          per_page: Number(paginationMeta.per_page || 10),
+          current_page: Number(paginationMeta.current_page || page || 1),
+          last_page: Number(paginationMeta.last_page || Math.ceil(total / perPage) || 1),
+          total: total,
+          per_page: perPage,
         });
       } else if (res?.total_jobs) {
         setMeta({

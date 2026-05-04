@@ -7,19 +7,21 @@ import CheckboxItem from "../shared/CheckboxItem";
 
 
 interface JobFilterSidebarProps {
-  selectedFilters: JobsFilters;
-  onToggle: (category: keyof JobsFilters, value: string) => void;
+  selectedFilters: Partial<JobsFilters>;
+  onToggle: (category: string, value: string) => void;
+  onClearAll: () => void;
 }
 
 export const JobFilterSidebar = ({
   selectedFilters,
   onToggle,
+  onClearAll,
 }: JobFilterSidebarProps) => {
 
 
   const jobTypeOptions = [
-    { value: "Full-time", label: "Full Time" },
-    { value: "Part-time", label: "Part Time" },
+    { value: "Full Time", label: "Full Time" },
+    { value: "Part Time", label: "Part Time" },
   ];
 
 
@@ -34,34 +36,24 @@ export const JobFilterSidebar = ({
 
   const experienceRanges = [
     { value: "0-0", label: "Fresher" },
-    { value: "0-2", label: "0 - 2" },
-    { value: "2-5", label: "2 - 5" },
-    { value: "5-10", label: "5 - 10" },
-    { value: "10-50", label: "10+" },
+    { value: "0-2", label: "0 - 2 Years" },
+    { value: "2-5", label: "2 - 5 Years" },
+    { value: "5-10", label: "5 - 10 Years" },
+    { value: "10-50", label: "10+ Years" },
   ];
 
   const genderOptions = [
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
-    { value: "both", label: "Any" },
+    { value: "both", label: "Both" },
   ];
-
-  const handleClearAll = () => {
-    Object.keys(selectedFilters).forEach((key) => {
-      if (Array.isArray(selectedFilters[key as keyof JobsFilters])) {
-        // This is a bit tricky with the current onToggle, but usually one would have a bulk action.
-        // For now, I'll just clear the common ones.
-        (selectedFilters[key as keyof JobsFilters] as string[]).forEach(val => onToggle(key as keyof JobsFilters, val));
-      }
-    });
-  };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between px-1">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Filters</h3>
-        <button 
-          onClick={handleClearAll}
+        <button
+          onClick={onClearAll}
           className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
           suppressHydrationWarning={true}
         >
@@ -71,12 +63,12 @@ export const JobFilterSidebar = ({
 
       <div className="space-y-4">
         <FilterSection title="Institution Type">
-          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
+          <div className="flex flex-col gap-y-0.5">
             {institutionTypeOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}
                 label={opt.label}
-                checked={selectedFilters.institution_type?.includes(opt.value) || false}
+                checked={(selectedFilters.institution_type || []).includes(opt.value)}
                 onChange={() => onToggle("institution_type", opt.value)}
               />
             ))}
@@ -84,12 +76,12 @@ export const JobFilterSidebar = ({
         </FilterSection>
 
         <FilterSection title="Experience">
-          <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
+          <div className="flex flex-col gap-y-0.5">
             {experienceRanges.map((range) => (
               <CheckboxItem
                 key={range.value}
                 label={range.label}
-                checked={selectedFilters.experience?.includes(range.value) || false}
+                checked={(selectedFilters.experience || []).includes(range.value)}
                 onChange={() => onToggle("experience", range.value)}
               />
             ))}
@@ -99,25 +91,25 @@ export const JobFilterSidebar = ({
 
 
         <FilterSection title="Job type">
-          <div className="grid grid-cols-3 gap-x-1 gap-y-0.5">
+          <div className="flex flex-col gap-y-0.5">
             {jobTypeOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}
                 label={opt.label}
-                checked={selectedFilters.types?.includes(opt.value) || false}
-                onChange={() => onToggle("types", opt.value)}
+                checked={(selectedFilters.job_type || []).includes(opt.value)}
+                onChange={() => onToggle("job_type", opt.value)}
               />
             ))}
           </div>
         </FilterSection>
 
         <FilterSection title="Gender">
-          <div className="grid grid-cols-2 gap-x-1 gap-y-0.5">
+          <div className="flex flex-col gap-y-0.5">
             {genderOptions.map((opt) => (
               <CheckboxItem
                 key={opt.value}
                 label={opt.label}
-                checked={selectedFilters.gender?.includes(opt.value) || false}
+                checked={(selectedFilters.gender || []).includes(opt.value)}
                 onChange={() => onToggle("gender", opt.value)}
               />
             ))}

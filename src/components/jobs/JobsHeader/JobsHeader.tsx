@@ -103,8 +103,8 @@ export const JobsHeader = ({
             
             {/* Subject/Role Search */}
             <div className="relative flex-[1.4] w-full" ref={roleRef}>
-              <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
-                <Search className="h-5 w-5 text-indigo-400 shrink-0" />
+              <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
+                <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 shrink-0 transition-colors" />
                 <input
                   type="text"
                   placeholder="Job title, subject..."
@@ -124,7 +124,7 @@ export const JobsHeader = ({
                     }
                   }}
                 />
-                {isSuggesting && <Loader2 className="h-3 w-3 animate-spin text-indigo-400/40 shrink-0" />}
+                {isSuggesting && <Loader2 className="h-3 w-3 animate-spin text-blue-600/40 shrink-0" />}
               </div>
 
               {/* Suggestions - Roles */}
@@ -139,7 +139,7 @@ export const JobsHeader = ({
                         setSearch(role);
                         setShowRoleSuggestions(false);
                       }}
-                      className="w-full text-left px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                      className="w-full text-left px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
                     >
                       {role}
                     </button>
@@ -150,8 +150,8 @@ export const JobsHeader = ({
 
             {/* City/Location Search */}
             <div className="relative flex-1 w-full" ref={cityRef}>
-              <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50 rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
-                <MapPin className="h-5 w-5 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
+                <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 shrink-0 transition-colors" />
                 <input
                   type="text"
                   placeholder="City or remote"

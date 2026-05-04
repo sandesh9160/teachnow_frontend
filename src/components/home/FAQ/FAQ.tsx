@@ -15,7 +15,7 @@ export const FAQ = ({ faqs }: FAQProps) => {
     <section className="bg-[#f8faff] py-10 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-14 px-4">
-          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
+          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827]  mb-2">
             Frequently Asked Questions
           </h2>
           <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
@@ -37,8 +37,10 @@ export const FAQ = ({ faqs }: FAQProps) => {
                 <div 
                   className="rich-text text-[14px] leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: faq.answer }}
+                  suppressHydrationWarning={true}
                 />
               </AccordionContent>
+
             </AccordionItem>
           ))}
         </Accordion>

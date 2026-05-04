@@ -161,7 +161,7 @@ async function lookupBySearchFallback(s: string) {
     }
 
     // Detect common filters from the remaining parts
-    const initialFilters: any = { types: [], experience: [], salary: [], institution_type: [] };
+    const initialFilters: any = { job_type: [], experience: [], salary: [], institution_type: [] };
     const finalKeywordParts: string[] = [];
 
     // Range maps for experience and salary
@@ -186,10 +186,10 @@ async function lookupBySearchFallback(s: string) {
         initialFilters.salary.push(combined);
         i++;
       } else if ((p === "full" && nextP === "time") || p === "fulltime") {
-        initialFilters.types.push("Full-time");
+        initialFilters.job_type.push("Full-time");
         if (nextP === "time") i++;
       } else if ((p === "part" && nextP === "time") || p === "parttime") {
-        initialFilters.types.push("Part-time");
+        initialFilters.job_type.push("Part-time");
         if (nextP === "time") i++;
       } else if (p !== "lpa" && p !== "years" && p !== "experience") {
         finalKeywordParts.push(p);
@@ -201,8 +201,8 @@ async function lookupBySearchFallback(s: string) {
     // Build a nice display name that includes detected filters
     const filterLabels = [];
     if (initialFilters.experience?.includes("0-0")) filterLabels.push("Fresher");
-    if (initialFilters.types?.includes("Full-time")) filterLabels.push("Full-time");
-    if (initialFilters.types?.includes("Part-time")) filterLabels.push("Part-time");
+    if (initialFilters.job_type?.includes("Full-time")) filterLabels.push("Full-time");
+    if (initialFilters.job_type?.includes("Part-time")) filterLabels.push("Part-time");
 
     // Prefer cleaner display: "Fresher Mathematics Teacher - Hyderabad"
     const displayName = [
@@ -211,7 +211,7 @@ async function lookupBySearchFallback(s: string) {
       location
     ].filter(Boolean).join(" - ");
 
-    if (keyword || location || initialFilters.types.length > 0 || initialFilters.experience.length > 0) {
+    if (keyword || location || initialFilters.job_type.length > 0 || initialFilters.experience.length > 0) {
       const { jobs, similarJobs } = await fullSearchJobs(keyword, location);
       return {
         type: 'category' as const,

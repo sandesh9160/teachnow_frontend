@@ -6,13 +6,25 @@ import { ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Accordion = AccordionPrimitive.Root;
+const Accordion = React.forwardRef<
+  React.ComponentRef<typeof AccordionPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>
+>(({ ...props }, ref) => (
+  <AccordionPrimitive.Root {...props} ref={ref} suppressHydrationWarning={true} />
+));
+Accordion.displayName = "Accordion";
+
 
 const AccordionItem = React.forwardRef<
   React.ComponentRef<typeof AccordionPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 >(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Item ref={ref} className={className} {...props} />
+  <AccordionPrimitive.Item 
+    ref={ref} 
+    className={className} 
+    {...props} 
+    suppressHydrationWarning={true} 
+  />
 ));
 AccordionItem.displayName = "AccordionItem";
 
@@ -43,6 +55,7 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
+    suppressHydrationWarning={true}
     className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
@@ -53,3 +66,4 @@ const AccordionContent = React.forwardRef<
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
+
