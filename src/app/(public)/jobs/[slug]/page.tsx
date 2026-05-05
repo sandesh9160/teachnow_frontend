@@ -139,7 +139,7 @@ async function lookupBySearchFallback(s: string) {
     let location = "";
     let keywordParts = [...parts];
 
-    // Detect location using dynamic city list (with fuzzy prefix matching for common abbreviations)
+    // Detect location using dynamic city list (with fuzzy matching for misspellings)
     for (const part of parts) {
       const p = part.toLowerCase();
       // Try exact match first
@@ -151,9 +151,30 @@ async function lookupBySearchFallback(s: string) {
 
       // Try prefix match for common shortcuts (at least 3 chars)
       if (p.length >= 3) {
-        const fuzzyMatch = [...knownCities].find(city => city.startsWith(p));
+        const fuzzyMatch = [...knownCities].find(city => city.startsWith(p) || p.startsWith(city));
         if (fuzzyMatch) {
           location = fuzzyMatch;
+          keywordParts = parts.filter(p_ => p_.toLowerCase() !== p);
+          break;
+        }
+      }
+
+      // Try close misspelling match (e.g., "hyderbad" → "hyderabad")
+      if (p.length >= 5) {
+        const closeMatch = [...knownCities].find(city => {
+          if (Math.abs(city.length - p.length) > 2) return false;
+          // Simple similarity: count matching characters in order
+          let matches = 0;
+          let ci = 0;
+          for (let pi = 0; pi < p.length && ci < city.length; pi++) {
+            if (p[pi] === city[ci]) { matches++; ci++; }
+            else if (city[ci + 1] === p[pi]) { ci++; matches++; ci++; } // skipped char in city
+            else { ci++; }
+          }
+          return matches >= Math.min(p.length, city.length) - 2;
+        });
+        if (closeMatch) {
+          location = closeMatch;
           keywordParts = parts.filter(p_ => p_.toLowerCase() !== p);
           break;
         }

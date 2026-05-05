@@ -6,6 +6,15 @@ export interface SearchSuggestions {
   cities: string[];
 }
 
+export interface Location {
+  id: number;
+  name: string;
+  slug: string;
+  country: string;
+  image: string;
+  active_jobs_count: number;
+}
+
 /**
  * Safe array extraction without scanning.
  */
@@ -66,6 +75,20 @@ export async function searchJobs(keyword: string, location: string): Promise<Job
     if (error.status !== 404 && error.status !== 500) {
       //console.error("Error searching jobs:", error);
     }
+    return [];
+  }
+}
+
+/**
+ * Fetch all available locations.
+ * Endpoint: /open/locations
+ */
+export async function getLocations(): Promise<Location[]> {
+  try {
+    const res = await fetchAPI<ApiResponse<Location[]>>("/open/locations");
+    return toArray<Location>(res.data || res);
+  } catch (error) {
+    // console.error("Error fetching locations:", error);
     return [];
   }
 }

@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { Search, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { getSearchSuggestions } from "@/hooks/useSearch";
+import { getSearchSuggestions, getLocations, Location } from "@/hooks/useSearch";
+
 
 interface SearchBarProps {
   // no props needed
@@ -14,17 +15,25 @@ export function SearchBar({ }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [city, setCity] = useState("");
+
   const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
+  const [allLocations, setAllLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const queryRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const fetchAllLocations = async () => {
+      const data = await getLocations();
+      setAllLocations(data);
+    };
+    fetchAllLocations();
+
     const handleClick = (e: MouseEvent) => {
       if (queryRef.current && !queryRef.current.contains(e.target as Node)) setShowQuerySuggestions(false);
       if (cityRef.current && !cityRef.current.contains(e.target as Node)) setShowCitySuggestions(false);
@@ -58,55 +67,62 @@ export function SearchBar({ }: SearchBarProps) {
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Fetch City Suggestions with Debounce
+  // Filter City Suggestions Locally from allLocations
   useEffect(() => {
     if (city.trim().length === 0) {
       setSuggestions(prev => ({ ...prev, cities: [] }));
       return;
     }
-    const fetchSuggestions = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getSearchSuggestions(city);
-        const filteredCities = (data.cities || []).filter(c =>
-          c.toLowerCase().startsWith(city.toLowerCase())
-        );
-        setSuggestions(prev => ({ ...prev, cities: filteredCities }));
-      } catch (err) {
-        // console.error("City suggestions failed:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    const timer = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timer);
-  }, [city]);
+    const filteredCities = allLocations
+      .map(loc => loc.name)
+      .filter(name => name.toLowerCase().includes(city.toLowerCase()));
+
+    setSuggestions(prev => ({ ...prev, cities: filteredCities }));
+  }, [city, allLocations]);
 
   const handleSearch = (searchQuery?: string, searchCity?: string) => {
     const activeQuery = typeof searchQuery === "string" ? searchQuery : query;
     const activeCity = typeof searchCity === "string" ? searchCity : city;
-    const combined = [activeQuery, activeCity].filter(Boolean).join(" ");
 
-    const slug = decodeURIComponent(combined.replaceAll("+", " "))
+    // Auto-confirm if exact match found in allLocations or if list is still loading
+    const isCityValidInternal = !activeCity.trim() || allLocations.length === 0 || allLocations.some(loc => loc.name.toLowerCase() === activeCity.toLowerCase().trim());
+
+    if (activeCity.trim() && !isCityValidInternal) {
+      setCity(""); // Clear the invalid text
+      return;
+    }
+
+    if (!activeQuery.trim() && !activeCity.trim()) return;
+
+    console.log("🚀 [Homepage Search] Redirecting to:", {
+      query: activeQuery,
+      city: activeCity,
+    });
+
+    if (!activeQuery.trim() && !activeCity.trim()) return;
+
+    // Generate SEO-friendly slug
+    const combinedQuery = [activeQuery.trim(), activeCity.trim()]
+      .filter(Boolean)
+      .join(" ");
+    
+    const slug = combinedQuery
       .toLowerCase()
       .trim()
       .replaceAll(/[^a-z0-9]+/g, "-")
       .replaceAll(/^-+|-+$/g, "");
 
     if (!slug) return;
-    console.log("🚀 [Homepage Search] Redirecting to:", {
-      query: activeQuery,
-      city: activeCity,
-      slug: slug
-    });
+
+    console.log("🚀 [Homepage Search] Redirecting to slug:", slug);
     router.push(`/jobs/${slug}`);
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto h-auto">
       <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border-transparent md:border-slate-50">
-        
+
         {/* Subject/Role Search */}
         <div className="relative flex-[1.4] w-full" ref={queryRef}>
           <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
@@ -152,7 +168,7 @@ export function SearchBar({ }: SearchBarProps) {
 
           {/* Query Suggestions */}
           {showQuerySuggestions && query.trim().length > 0 && suggestions.roles.length > 0 && (
-            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border-none overflow-hidden py-2 text-left">
+            <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 bg-white rounded-lg shadow-lg overflow-hidden py-1 text-left">
               {suggestions.roles.slice(0, 5).map((role, index) => (
                 <button
                   key={role}
@@ -161,7 +177,7 @@ export function SearchBar({ }: SearchBarProps) {
                     setQuery(role);
                     setShowQuerySuggestions(false);
                   }}
-                  className={`w-full text-left px-6 py-3 text-sm font-bold transition-colors ${selectedIndex === index ? "bg-slate-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
+                  className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === index ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
                 >
                   {role}
                 </button>
@@ -215,7 +231,7 @@ export function SearchBar({ }: SearchBarProps) {
 
           {/* City Suggestions */}
           {showCitySuggestions && city.trim().length > 0 && suggestions.cities.length > 0 && (
-            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border-none overflow-hidden py-2 text-left">
+            <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 bg-white rounded-lg shadow-lg overflow-hidden py-1 text-left">
               {suggestions.cities.slice(0, 5).map((c, index) => (
                 <button
                   key={c}
@@ -224,7 +240,7 @@ export function SearchBar({ }: SearchBarProps) {
                     setCity(c);
                     setShowCitySuggestions(false);
                   }}
-                  className={`w-full text-left px-6 py-3 text-sm font-bold transition-colors ${selectedIndex === index ? "bg-slate-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
+                  className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === index ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
                 >
                   {c}
                 </button>
@@ -234,12 +250,16 @@ export function SearchBar({ }: SearchBarProps) {
         </div>
 
         <Button
-          className="bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto shadow-xl shadow-indigo-100 flex items-center justify-center gap-3"
+          className={`px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-3 ${
+            (!query.trim() && !city.trim()) || (!!city.trim() && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === city.toLowerCase().trim()))
+              ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+              : "bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white shadow-xl shadow-indigo-100"
+          }`}
           onClick={() => handleSearch()}
-          disabled={isLoading}
+          disabled={isLoading || (!query.trim() && !city.trim()) || (!!city.trim() && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === city.toLowerCase().trim()))}
         >
           <Search className="h-5 w-5" />
-          <span>Search</span>
+          <span>Search Jobs</span>
         </Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useJobs } from "@/hooks/useJobs";
 // import { JobsFilters } from "@/types/jobs";
 
@@ -18,6 +18,7 @@ import MobileFilters from "@/components/jobs/Filters/MobileFilters";
 
 
 function JobsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const keywordParam = searchParams?.get("keyword") || "";
   const locationParam = searchParams?.get("location") || "";
@@ -40,7 +41,7 @@ function JobsContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [isPending, setIsPending] = useState(false);
-  const [searchTrigger, setSearchTrigger] = useState(0);
+  const [searchTrigger] = useState(0);
 
   // Auto-scroll to top on page or filter change
   useEffect(() => {
@@ -66,7 +67,7 @@ function JobsContent() {
       }
 
       if (selectedFilters.gender.length > 0) {
-        filters.gender_type = selectedFilters.gender.map(v => v.toLowerCase());
+        filters.gender = selectedFilters.gender.map(v => v.toLowerCase());
       }
 
       if (selectedFilters.experience.length > 0) {
@@ -96,7 +97,7 @@ function JobsContent() {
         });
       }
 
-      console.log("🔍 [Search API] Fetching jobs:", {
+      console.log(" [Search API] Fetching jobs:", {
         keyword: search || "none",
         location: locationSearch || "none",
         page: currentPage,
@@ -123,9 +124,22 @@ function JobsContent() {
       return;
     }
     setSearchError("");
-    setIsPending(true);
-    setCurrentPage(1);
-    setSearchTrigger(prev => prev + 1);
+    
+    // Generate SEO-friendly slug and redirect
+    const combinedQuery = [search.trim(), locationSearch.trim()]
+      .filter(Boolean)
+      .join(" ");
+    
+    const slug = combinedQuery
+      .toLowerCase()
+      .trim()
+      .replaceAll(/[^a-z0-9]+/g, "-")
+      .replaceAll(/^-+|-+$/g, "");
+
+    if (!slug) return;
+
+    console.log("🚀 [Jobs Page Search] Redirecting to slug:", slug);
+    router.push(`/jobs/${slug}`);
   };
 
   // Handlers

@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { SlidersHorizontal, Search, MapPin, Loader2 } from "lucide-react"; 
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { getSearchSuggestions } from "@/hooks/useSearch";
+import { getSearchSuggestions, getLocations, Location } from "@/hooks/useSearch";
+
 
 interface JobsHeaderProps {
   search: string;
@@ -29,16 +30,27 @@ export const JobsHeader = ({
   error,
 }: JobsHeaderProps) => {
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
+  const [allLocations, setAllLocations] = useState<Location[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
 
   const [showRoleSuggestions, setShowRoleSuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+
 
   const roleRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
 
   // Click Outside
   useEffect(() => {
+    const fetchAllLocations = async () => {
+      const data = await getLocations();
+      setAllLocations(data);
+    };
+    fetchAllLocations();
+
     const handleClick = (e: MouseEvent) => {
       if (roleRef.current && !roleRef.current.contains(e.target as Node)) setShowRoleSuggestions(false);
       if (cityRef.current && !cityRef.current.contains(e.target as Node)) setShowCitySuggestions(false);
@@ -71,29 +83,30 @@ export const JobsHeader = ({
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch Location Suggestions with Debounce
+  // Filter City Suggestions Locally from allLocations
   useEffect(() => {
     if (location.trim().length === 0) {
       setSuggestions(prev => ({ ...prev, cities: [] }));
       return;
     }
-    const fetchSugg = async () => {
-      setIsSuggesting(true);
-      try {
-        const data = await getSearchSuggestions(location);
-        const filteredCities = (data.cities || []).filter(c => 
-          c.toLowerCase().startsWith(location.toLowerCase())
-        );
-        setSuggestions(prev => ({ ...prev, cities: filteredCities }));
-      } catch (err) {
-        // console.error("City suggestions failed:", err);
-      } finally {
-        setIsSuggesting(false);
-      }
-    };
-    const timer = setTimeout(fetchSugg, 300);
-    return () => clearTimeout(timer);
-  }, [location]);
+    
+    const filteredCities = allLocations
+      .map(loc => loc.name)
+      .filter(name => name.toLowerCase().includes(location.toLowerCase()));
+    
+    setSuggestions(prev => ({ ...prev, cities: filteredCities }));
+  }, [location, allLocations]);
+
+  const handleSearchInternal = () => {
+    // Validate city against allLocations
+    const isCityValid = !location.trim() || allLocations.length === 0 || allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim());
+    
+    if (location.trim() && !isCityValid) {
+      setLocation(""); // Clear the invalid text
+      return;
+    }
+    onSearch();
+  };
 
   return (
     <section className="bg-white/50 backdrop-blur-sm relative py-0.5 md:py-1">
@@ -115,12 +128,16 @@ export const JobsHeader = ({
                   onChange={(e) => {
                     setSearch(e.target.value);
                     setShowRoleSuggestions(true);
+                    setSelectedIndex(-1);
                   }}
-                  onFocus={() => setShowRoleSuggestions(true)}
+                  onFocus={() => {
+                    setShowRoleSuggestions(true);
+                    setSelectedIndex(-1);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       setShowRoleSuggestions(false);
-                      onSearch();
+                      handleSearchInternal();
                     }
                   }}
                 />
@@ -129,8 +146,8 @@ export const JobsHeader = ({
 
               {/* Suggestions - Roles */}
               {showRoleSuggestions && suggestions.roles.length > 0 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-xl shadow-3xl border-none overflow-hidden py-2 text-left">
-                  {suggestions.roles.slice(0, 5).map((role) => (
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 bg-white rounded-lg shadow-lg overflow-hidden py-1 text-left">
+                  {suggestions.roles.slice(0, 5).map((role, idx) => (
                     <button
                       type="button"
                       key={role}
@@ -139,7 +156,7 @@ export const JobsHeader = ({
                         setSearch(role);
                         setShowRoleSuggestions(false);
                       }}
-                      className="w-full text-left px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                      className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === idx ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
                     >
                       {role}
                     </button>
@@ -162,12 +179,16 @@ export const JobsHeader = ({
                   onChange={(e) => {
                     setLocation(e.target.value);
                     setShowCitySuggestions(true);
+                    setSelectedIndex(-1);
                   }}
-                  onFocus={() => setShowCitySuggestions(true)}
+                  onFocus={() => {
+                    setShowCitySuggestions(true);
+                    setSelectedIndex(-1);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       setShowCitySuggestions(false);
-                      onSearch();
+                      handleSearchInternal();
                     }
                   }}
                 />
@@ -175,8 +196,8 @@ export const JobsHeader = ({
 
               {/* Suggestions - Cities */}
               {showCitySuggestions && suggestions.cities.length > 0 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-xl shadow-3xl border-none overflow-hidden py-2 text-left">
-                  {suggestions.cities.slice(0, 5).map((city) => (
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 bg-white rounded-lg shadow-lg overflow-hidden py-1 text-left">
+                  {suggestions.cities.slice(0, 5).map((city, idx) => (
                     <button
                       type="button"
                       key={city}
@@ -185,7 +206,7 @@ export const JobsHeader = ({
                         setLocation(city);
                         setShowCitySuggestions(false);
                       }}
-                      className="w-full text-left px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
+                      className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === idx ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
                     >
                       {city}
                     </button>
@@ -195,9 +216,13 @@ export const JobsHeader = ({
             </div>
 
             <Button
-              onClick={onSearch}
-              disabled={loading}
-              className="bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white px-8 py-3 h-auto rounded-xl font-bold text-sm md:text-base transition-all shrink-0 w-full md:w-auto shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
+              onClick={handleSearchInternal}
+              disabled={loading || (!!location && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim()))}
+              className={`px-8 py-3 h-auto rounded-xl font-bold text-sm md:text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-2 ${
+                (loading || (!!location && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim())))
+                ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                : "bg-button-gradient text-white shadow-lg shadow-indigo-100 hover:scale-[1.02] active:scale-[0.98]"
+              }`}
             >
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

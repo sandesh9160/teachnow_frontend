@@ -143,12 +143,6 @@ export function useJobs() {
       
       setJobs(jobsList);
       setSimilarJobs(uniqueSimilar);
-      console.log("📊 [useJobs] Final counts:", {
-        jobsListLength: jobsList.length,
-        similarListLength: uniqueSimilar.length,
-        metaTotal: paginationMeta?.total,
-        metaSet: !!paginationMeta,
-      });
     } catch (e: unknown) {
       setJobs([]);
       setSimilarJobs([]);
