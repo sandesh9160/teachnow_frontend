@@ -39,8 +39,10 @@ interface PostJobClientProps {
     questions?: Question[];
   };
   isEdit?: boolean;
+  userRole?: string;
   profile?: any;
   isProfileComplete?: boolean;
+  session?: any;
 }
 
 export default function PostJobClient({
@@ -49,8 +51,9 @@ export default function PostJobClient({
   isEdit = false,
   userRole = "employer",
   profile,
-  isProfileComplete = true
-}: PostJobClientProps & { userRole?: string }) {
+  isProfileComplete = true,
+  session
+}: PostJobClientProps) {
   const basePath = `/dashboard/${userRole}`;
   const job = isEdit ? initialData?.job : initialData;
   let initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
@@ -355,7 +358,14 @@ export default function PostJobClient({
   return (
     <div className="max-w-3xl mx-auto px-4 py-4 font-sans text-slate-900 pb-20" suppressHydrationWarning>
       <div className="space-y-0.5">
-        <h1 className="text-xl font-bold text-[#1E1B4B]">{isEdit ? "Edit Job" : "Post a New Job"}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold text-[#1E1B4B]">{isEdit ? "Edit Job" : "Post a New Job"}</h1>
+          {(session?.raw?.user_type || session?.raw?.role) && (
+            <span className="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase border border-indigo-100 tracking-wider shadow-sm">
+              {session.raw.user_type || session.raw.role}
+            </span>
+          )}
+        </div>
         <p className="text-slate-400 text-xs">{isEdit ? "Update your job listing requirements" : "Create a job listing in 5 simple steps"}</p>
       </div>
 

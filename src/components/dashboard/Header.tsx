@@ -98,6 +98,11 @@ export function DashboardHeader({
               <div className="px-4 py-3 border-b border-slate-50 bg-slate-50/30">
                 <p className="text-[10px] font-semibold text-slate-400 tracking-wider mb-0.5">Signed in as</p>
                 <p className="text-[13px] font-semibold text-indigo-950 truncate">{user?.name || user?.email}</p>
+                {user?.exactRole && (
+                  <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-tighter mt-0.5">
+                    {user.exactRole}
+                  </p>
+                )}
               </div>
 
               <div className="p-1.5">

@@ -150,6 +150,7 @@ export function sessionUserForHeader(user: ServerSessionUser | null): {
   role: DashboardRole;
   avatar?: string;
   isActive?: boolean;
+  exactRole?: string;
 } | null {
   if (!user) return null;
   return {
@@ -158,6 +159,7 @@ export function sessionUserForHeader(user: ServerSessionUser | null): {
     role: user.role,
     avatar: user.avatar,
     isActive: Boolean(user.raw?.is_active || (user.raw?.user as any)?.is_active),
+    exactRole: String(user.raw?.user_type || user.raw?.role || user.role).replace(/_/g, ' ')
   };
 }
 

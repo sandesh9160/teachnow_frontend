@@ -408,8 +408,8 @@ const DesktopAuth = ({
         </div>
         <div className="hidden xl:block text-left">
           <p className="text-[13px] font-bold text-slate-900 leading-tight">{user?.name}</p>
-          <p className="text-[10px] font-medium text-indigo-500 tracking-wide">
-            {user?.role === "employer" ? "Institution" : "Job Seeker"}
+          <p className="text-[10px] font-bold text-indigo-500 tracking-wide uppercase">
+            {user?.exactRole || (user?.role === "employer" ? "Institution" : user?.role === "recruiter" ? "Recruiter" : "Job Seeker")}
           </p>
         </div>
         <ChevronDown className={`h-4 w-4 text-slate-300 transition-transform duration-300 ${userDropdownOpen ? "rotate-180" : ""}`} />
@@ -422,7 +422,7 @@ const DesktopAuth = ({
             <p className="text-[13px] font-semibold text-slate-700 truncate">{user?.email}</p>
           </div>
 
-          <Link href={user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all">
+          <Link href={user?.role === "employer" ? "/dashboard/employer" : user?.role === "recruiter" ? "/dashboard/recruiter" : "/dashboard/jobseeker"} onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all">
             <LayoutDashboard className="h-4 w-4 opacity-70" /> My Dashboard
           </Link>
 
@@ -469,7 +469,9 @@ const MobileAuth = ({
         </div>
         <div>
           <p className="text-sm font-bold text-gray-900 leading-tight">{user?.name}</p>
-          <p className="text-xs text-gray-500">{user?.role === "employer" ? "Institution" : "Job Seeker"}</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-tight">
+            {user?.exactRole || (user?.role === "employer" ? "Institution" : user?.role === "recruiter" ? "Recruiter" : "Job Seeker")}
+          </p>
         </div>
       </div>
       <Link href={dashboardPath} onClick={closeAll}>
@@ -489,6 +491,7 @@ export type HeaderAuthUser = {
   email: string;
   role: DashboardRole;
   avatar?: string;
+  exactRole?: string;
 };
 
 const Header = ({
@@ -541,7 +544,11 @@ const Header = ({
     return mapNavigationData(navigationData);
   }, [navigationData]);
 
-  const dashboardPath = user?.role === "employer" ? "/dashboard/employer" : "/dashboard/jobseeker";
+  const dashboardPath = user?.role === "employer" 
+    ? "/dashboard/employer" 
+    : user?.role === "recruiter" 
+      ? "/dashboard/recruiter" 
+      : "/dashboard/jobseeker";
 
   // Brand Data: Robust extraction from navigation or footer data
   const footerBrandSection = footerData?.sections?.find((s: any) =>
