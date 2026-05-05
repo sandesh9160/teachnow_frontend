@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { SlidersHorizontal, Search, MapPin, Loader2 } from "lucide-react"; 
+import { SlidersHorizontal, Search, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { getSearchSuggestions, getLocations, Location } from "@/hooks/useSearch";
 
@@ -69,7 +69,7 @@ export const JobsHeader = ({
       setIsSuggesting(true);
       try {
         const data = await getSearchSuggestions(search);
-        const filteredRoles = (data.roles || []).filter(r => 
+        const filteredRoles = (data.roles || []).filter(r =>
           r.toLowerCase().startsWith(search.toLowerCase())
         );
         setSuggestions(prev => ({ ...prev, roles: filteredRoles }));
@@ -89,18 +89,18 @@ export const JobsHeader = ({
       setSuggestions(prev => ({ ...prev, cities: [] }));
       return;
     }
-    
+
     const filteredCities = allLocations
       .map(loc => loc.name)
       .filter(name => name.toLowerCase().includes(location.toLowerCase()));
-    
+
     setSuggestions(prev => ({ ...prev, cities: filteredCities }));
   }, [location, allLocations]);
 
   const handleSearchInternal = () => {
     // Validate city against allLocations
     const isCityValid = !location.trim() || allLocations.length === 0 || allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim());
-    
+
     if (location.trim() && !isCityValid) {
       setLocation(""); // Clear the invalid text
       return;
@@ -112,17 +112,17 @@ export const JobsHeader = ({
     <section className="bg-white/50 backdrop-blur-sm relative py-0.5 md:py-1">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div className="mx-auto w-full">
-          <div className="bg-white rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.06)] flex flex-col md:flex-row items-stretch md:items-center gap-2 p-1.5 md:p-1 transition-all duration-300 border-transparent md:border-slate-50">
-            
+          <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border-transparent md:border-slate-50">
+
             {/* Subject/Role Search */}
             <div className="relative flex-[1.4] w-full" ref={roleRef}>
-              <div className="flex items-center gap-3 px-4 py-2 md:py-1.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
-                <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 shrink-0 transition-colors" />
+              <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+                <Search className="h-4 w-4 text-indigo-400 shrink-0" />
                 <input
                   type="text"
                   placeholder="Job title, subject..."
                   autoComplete="off"
-                  className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-sm md:text-base"
+                  className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
                   suppressHydrationWarning
                   value={search}
                   onChange={(e) => {
@@ -135,13 +135,28 @@ export const JobsHeader = ({
                     setSelectedIndex(-1);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setShowRoleSuggestions(false);
-                      handleSearchInternal();
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev + 1) % (suggestions.roles.length || 1));
                     }
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev - 1 + (suggestions.roles.length || 1)) % (suggestions.roles.length || 1));
+                    }
+                    if (e.key === "Enter") {
+                      if (selectedIndex >= 0) {
+                        const selectedRole = suggestions.roles[selectedIndex];
+                        setSearch(selectedRole);
+                        setShowRoleSuggestions(false);
+                      } else {
+                        setShowRoleSuggestions(false);
+                        handleSearchInternal();
+                      }
+                    }
+                    if (e.key === "Escape") setShowRoleSuggestions(false);
                   }}
                 />
-                {isSuggesting && <Loader2 className="h-3 w-3 animate-spin text-blue-600/40 shrink-0" />}
+                {isSuggesting && <Loader2 className="h-3 w-3 animate-spin text-indigo-400/40 shrink-0" />}
               </div>
 
               {/* Suggestions - Roles */}
@@ -167,13 +182,13 @@ export const JobsHeader = ({
 
             {/* City/Location Search */}
             <div className="relative flex-1 w-full" ref={cityRef}>
-              <div className="flex items-center gap-3 px-4 py-2 md:py-1.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
-                <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 shrink-0 transition-colors" />
+              <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+                <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
                 <input
                   type="text"
                   placeholder="City or remote"
                   autoComplete="off"
-                  className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-sm md:text-base"
+                  className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
                   suppressHydrationWarning
                   value={location}
                   onChange={(e) => {
@@ -186,10 +201,25 @@ export const JobsHeader = ({
                     setSelectedIndex(-1);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setShowCitySuggestions(false);
-                      handleSearchInternal();
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev + 1) % (suggestions.cities.length || 1));
                     }
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedIndex(prev => (prev - 1 + (suggestions.cities.length || 1)) % (suggestions.cities.length || 1));
+                    }
+                    if (e.key === "Enter") {
+                      if (selectedIndex >= 0) {
+                        const selectedCity = suggestions.cities[selectedIndex];
+                        setLocation(selectedCity);
+                        setShowCitySuggestions(false);
+                      } else {
+                        setShowCitySuggestions(false);
+                        handleSearchInternal();
+                      }
+                    }
+                    if (e.key === "Escape") setShowCitySuggestions(false);
                   }}
                 />
               </div>
@@ -218,18 +248,13 @@ export const JobsHeader = ({
             <Button
               onClick={handleSearchInternal}
               disabled={loading || (!!location && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim()))}
-              className={`px-8 py-3 h-auto rounded-xl font-bold text-sm md:text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-2 ${
-                (loading || (!!location && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim())))
-                ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                : "bg-button-gradient text-white shadow-lg shadow-indigo-100 hover:scale-[1.02] active:scale-[0.98]"
-              }`}
+              className={`px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-3 ${(loading || (!!location && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === location.toLowerCase().trim())))
+                  ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
+                  : "bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white shadow-xl shadow-indigo-100"
+                }`}
             >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Search className="h-5 w-5" />
-              )}
-              <span>{loading ? "Searching..." : "Search Jobs"}</span>
+              <Search className="h-5 w-5" />
+              <span>Search Jobs</span>
             </Button>
           </div>
 
