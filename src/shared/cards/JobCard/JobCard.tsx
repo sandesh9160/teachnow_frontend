@@ -75,9 +75,10 @@ const JobCard = ({
       setShowAuthModal(true);
       return;
     }
-    if (user?.role === "employer") {
+    if (user?.role === "employer" || user?.role === "recruiter") {
+      const roleName = user.role === "recruiter" ? "Recruiters" : "Employers";
       toast.error("Access Denied", {
-        description: "Employers cannot apply for jobs.",
+        description: `${roleName} cannot apply for jobs.`,
         style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
       });
       return;
@@ -103,9 +104,10 @@ const JobCard = ({
       return;
     }
 
-    if (user?.role === "employer") {
+    if (user?.role === "employer" || user?.role === "recruiter") {
+      const roleName = user.role === "recruiter" ? "Recruiters" : "Employers";
       toast.error("Access Denied", {
-        description: "Employers cannot bookmark jobs.",
+        description: `${roleName} cannot bookmark jobs.`,
         style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
       });
       return;

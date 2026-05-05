@@ -73,17 +73,17 @@ function formatDeadline(date?: string): string {
   if (!date) return "Ongoing";
   const deadline = new Date(date);
   if (Number.isNaN(deadline.getTime())) return "Ongoing";
-  
+
   const now = new Date();
   if (deadline < now) return "Expired";
-  
+
   const diffTime = deadline.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return "Ends today";
   if (diffDays === 1) return "1 day left";
   if (diffDays <= 7) return `${diffDays} days left`;
-  
+
   return deadline.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -167,7 +167,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
   const getBannerImage = () => {
     if (job.location_image) return normalizeMediaUrl(job.location_image);
-    
+
     const loc = (job.location || "").toLowerCase();
     if (loc.includes("delhi")) return "/images/cities/delhi.jpg";
     if (loc.includes("mumbai")) return "/images/cities/mumbai.jpg";
@@ -177,7 +177,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
     if (loc.includes("chennai")) return "/images/cities/chennai.jpg";
     if (loc.includes("ahmedabad")) return "/images/cities/ahmedabad.jpg";
     if (loc.includes("jaipur")) return "/images/cities/jaipur.jpg";
-    
+
     // Default high-quality school/education themed banner
     return "/images/job-detail-banner.jpg";
   };
@@ -197,10 +197,10 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
       {/* Banner Section */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden bg-slate-100">
-        <img 
-          src={bannerImg} 
-          alt="Banner" 
-          className="w-full h-full object-cover brightness-95" 
+        <img
+          src={bannerImg}
+          alt="Banner"
+          className="w-full h-full object-cover brightness-95"
           onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1541339907198-e08756ebafe1?q=80&w=2070&auto=format&fit=crop"; }}
         />
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-white/60" />
@@ -208,7 +208,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
       <div className="relative w-full px-4 -mt-12 sm:-mt-24 md:-mt-32 pb-16 sm:px-6 lg:px-12 overflow-x-hidden">
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_340px] w-full">
-          
+
           {/* Main Content Area */}
           <div className="space-y-6 min-w-0">
             {/* 1. Header Card */}
@@ -262,7 +262,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     Apply Now
                   </Button>
                 </Link>
-                
+
                 <div className="grid grid-cols-2 w-full sm:flex sm:w-auto gap-3">
                   <Button
                     variant="outline"
@@ -277,8 +277,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     {isBookmarked ? "Saved" : "Save"}
                   </Button>
 
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="h-11 w-full sm:w-auto sm:px-8 rounded-xl font-bold border-slate-200 text-slate-700 text-[12px] px-1"
                     onClick={handleShare}
                   >
@@ -293,7 +293,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
             <section className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
               <div className="p-6 sm:p-10 min-h-[400px]">
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-8 border-b border-slate-50 pb-5">Job Description</h2>
-                <div 
+                <div
                   className="jd-rich-text text-slate-700 text-[15px] sm:text-[16px] leading-[1.8] font-normal"
                   dangerouslySetInnerHTML={{ __html: job.description || "<p>No description provided.</p>" }}
                 />
@@ -397,7 +397,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     const sLogo = sJob.employer?.company_logo;
                     const sName = sJob.employer?.company_name || "Confidential";
                     const sFallback = (sName[0] || sJob.title[0] || "J").toUpperCase();
-                    
+
                     return (
                       <Link
                         key={sJob.id}

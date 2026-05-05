@@ -449,21 +449,22 @@ export default function ApplyJobPage() {
     );
   }
 
-  if (user?.role === "employer") {
+  if (user?.role === "employer" || user?.role === "recruiter") {
+    const isRecruiter = user.role === "recruiter";
     return (
       <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center p-4">
         <div className="bg-white p-10 rounded-3xl border border-amber-200 shadow-xl max-w-md w-full text-center space-y-6">
           <div className="mx-auto w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600">
-            <Building2 className="w-10 h-10" />
+            {isRecruiter ? <User className="w-10 h-10" /> : <Building2 className="w-10 h-10" />}
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Access Restricted</h2>
             <p className="text-sm font-medium text-slate-500 leading-relaxed">
-              Employer accounts cannot apply for jobs. Please log in as a
+              {isRecruiter ? "Recruiter" : "Employer"} accounts cannot apply for jobs. Please log in as a
               <span className="text-primary font-bold"> Job Seeker</span> to submit applications.
             </p>
           </div>
-          <Link href="/dashboard/employer" className="block pt-2">
+          <Link href={isRecruiter ? "/dashboard/recruiter" : "/dashboard/employer"} className="block pt-2">
             <Button variant="hero" className="w-full h-12 rounded-xl font-bold text-base">
               Go to Dashboard
             </Button>
