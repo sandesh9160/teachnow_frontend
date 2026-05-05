@@ -598,7 +598,16 @@ const Header = ({
         <Link href="/" className="flex items-center gap-3 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-              <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+              <img 
+                src={companyLogo} 
+                alt={companyName} 
+                className="h-full w-full object-contain" 
+                width="40" 
+                height="40" 
+                fetchPriority="high" 
+                loading="eager"
+                decoding="sync"
+              />
             </div>
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">

@@ -1,5 +1,6 @@
 "use client";
 
+// import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { SearchBar } from "./SearchBar";
@@ -22,10 +23,16 @@ export const Hero = ({
     <section className="relative w-full bg-[#F7F9FC] overflow-visible">
       {/* Background layer */}
       {imageUrl && (
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-          style={{ backgroundImage: `url(${imageUrl})` }}
-        />
+        <div className="absolute inset-0">
+           <img 
+             src={imageUrl}
+             alt=""
+             className="w-full h-full object-cover object-center"
+             fetchPriority="high"
+             loading="eager"
+             decoding="sync"
+           />
+        </div>
       )}
 
       {/* No overlay to show exact image */}
