@@ -28,13 +28,13 @@ export default function SavedJobsPage() {
     .filter((job: any) => {
       const typeLabel = job.job_type?.replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c: string) => c.toUpperCase()) || "Full Time";
       const isExpired = job.expires_at ? new Date(job.expires_at) < new Date() : false;
-      
+
       const matchesSearch = job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           job.employer?.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        job.employer?.company_name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesLocation = selectedLocation === "All" || job.location === selectedLocation;
       const matchesType = selectedType === "All" || typeLabel === selectedType;
       const matchesStatus = selectedStatus === "All" || (selectedStatus === "Active" ? !isExpired : isExpired);
-      
+
       return matchesSearch && matchesLocation && matchesType && matchesStatus;
     })
     .sort((a: any, b: any) => {
@@ -70,58 +70,58 @@ export default function SavedJobsPage() {
             />
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
           </div>
-          
+
           <div className="md:col-span-3 relative group">
-             <select 
-               value={selectedStatus}
-               onChange={(e) => setSelectedStatus(e.target.value)}
-               className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-4 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
-             >
-               <option value="All">All Status</option>
-               <option value="Active">Active Only</option>
-               <option value="Expired">Expired</option>
-             </select>
-             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
-                <ChevronDown className="w-3.5 h-3.5" />
-             </div>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-4 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active Only</option>
+              <option value="Expired">Expired</option>
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+              <ChevronDown className="w-3.5 h-3.5" />
+            </div>
           </div>
 
           <div className="md:col-span-3 relative group">
-             <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
-             </div>
-             <select 
-               value={selectedLocation}
-               onChange={(e) => setSelectedLocation(e.target.value)}
-               className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-9 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
-             >
-               <option value="All">All Locations</option>
-               {locations.filter(l => l !== "All").map(loc => (
-                 <option key={loc} value={loc}>{loc}</option>
-               ))}
-             </select>
-             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
-                <ChevronDown className="w-3.5 h-3.5" />
-             </div>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <MapPin className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+            </div>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-9 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
+            >
+              <option value="All">All Locations</option>
+              {locations.filter(l => l !== "All").map(loc => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+              <ChevronDown className="w-3.5 h-3.5" />
+            </div>
           </div>
 
           <div className="md:col-span-3 relative group">
-             <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Briefcase className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
-             </div>
-             <select 
-               value={selectedType}
-               onChange={(e) => setSelectedType(e.target.value)}
-               className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-9 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
-             >
-               <option value="All">All Types</option>
-               {types.filter(t => t !== "All").map(t => (
-                 <option key={t} value={t}>{t}</option>
-               ))}
-             </select>
-             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
-                <ChevronDown className="w-3.5 h-3.5" />
-             </div>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <Briefcase className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+            </div>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="w-full h-10 rounded-xl border border-slate-100 bg-white pl-9 pr-10 text-[12px] font-bold text-slate-600 appearance-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/40 cursor-pointer outline-none transition-all"
+            >
+              <option value="All">All Types</option>
+              {types.filter(t => t !== "All").map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+              <ChevronDown className="w-3.5 h-3.5" />
+            </div>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function SavedJobsPage() {
           <p className="text-[11px] text-black opacity-70 max-w-xs mb-8 font-medium leading-relaxed">
             Try adjusting your search or filters to find what you&apos;re looking for.
           </p>
-          <button 
+          <button
             onClick={() => {
               setSearchQuery("");
               setSelectedLocation("All");

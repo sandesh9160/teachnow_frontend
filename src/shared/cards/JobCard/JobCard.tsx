@@ -32,8 +32,8 @@ const JobCard = ({
   experience,
   experienceType,
   compact
-}: JobCardProps & { 
-  expiresAt?: string; 
+}: JobCardProps & {
+  expiresAt?: string;
   savedAt?: string;
   deadline?: string;
   gender?: string;
@@ -134,8 +134,8 @@ const JobCard = ({
       <div
         onClick={() => router.push(jobHref)}
         className={`group relative flex flex-col h-full rounded-xl border bg-white ${compact ? "p-2.5" : "p-3"} transition-all duration-300 cursor-pointer ${isExpired
-            ? "border-slate-100 opacity-75 grayscale-[0.5]"
-            : "border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200"
+          ? "border-slate-100 opacity-75 grayscale-[0.5]"
+          : "border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200"
           }`}>
         <div className="relative z-10 flex flex-col h-full">
           {/* Top Row: Logo, Title, Bookmark */}
@@ -177,7 +177,7 @@ const JobCard = ({
               <Building className="w-3.5 h-3.5 shrink-0" />
               <p className="text-[13.5px] font-medium text-[#0F172A]/70 line-clamp-1">{company}</p>
             </div>
-            
+
             {isExpired ? (
               <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 whitespace-nowrap">
                 Job Expired
@@ -199,12 +199,12 @@ const JobCard = ({
               <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span className="truncate">{type}</span>
             </div>
-            
+
             {experience !== undefined && (
               <div className="flex items-center gap-1.5">
                 <Clock3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span className="whitespace-nowrap">
-                  {Number(experience) === 0 ? "Fresher" : `${experience}+ Years`} 
+                  {Number(experience) === 0 ? "Fresher" : `${experience}+ Years`}
                   {experienceType && <span className="ml-1 text-[10px] opacity-70 uppercase">({experienceType})</span>}
                 </span>
               </div>
@@ -221,18 +221,19 @@ const JobCard = ({
                 return ago.includes("ago") || ago === "Just now" || ago === "Recently" ? `Posted ${ago}` : `Posted on ${ago}`;
               })() : "..."}</span>
             </div>
-            
+
             {deadline && (
               <div className="flex items-center gap-1.5">
                 <Clock3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span className="whitespace-nowrap">Deadline: {new Date(deadline).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
               </div>
             )}
-            
-            {gender && gender !== "both" && (
+
+            {gender && (
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] opacity-70 uppercase">
-                  {gender} only
+                <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="whitespace-nowrap capitalize">
+                  {gender === "both" ? "Male & Female" : `${gender} Only`}
                 </span>
               </div>
             )}
@@ -282,8 +283,8 @@ const JobCard = ({
                 >
                   Apply Now
                 </button>
-                <Link 
-                  href={jobHref} 
+                <Link
+                  href={jobHref}
                   onClick={(e) => e.stopPropagation()}
                   suppressHydrationWarning
                   className="px-9 h-[44px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center"
@@ -292,9 +293,9 @@ const JobCard = ({
                 </Link>
               </>
             )}
+          </div>
         </div>
       </div>
-    </div>
 
       <QuickAuthModal
         open={showAuthModal}

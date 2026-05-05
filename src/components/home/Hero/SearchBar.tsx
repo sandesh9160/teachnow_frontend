@@ -95,16 +95,21 @@ export function SearchBar({ }: SearchBarProps) {
       .replaceAll(/^-+|-+$/g, "");
 
     if (!slug) return;
+    console.log("🚀 [Homepage Search] Redirecting to:", {
+      query: activeQuery,
+      city: activeCity,
+      slug: slug
+    });
     router.push(`/jobs/${slug}`);
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto h-auto">
-      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border border-slate-200 md:border-slate-50">
+      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border-transparent md:border-slate-50">
         
         {/* Subject/Role Search */}
         <div className="relative flex-[1.4] w-full" ref={queryRef}>
-          <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50/80 md:bg-slate-50 border border-slate-100 md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+          <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
             <Search className="h-4 w-4 text-indigo-400 shrink-0" />
             <input
               type="text"
@@ -147,7 +152,7 @@ export function SearchBar({ }: SearchBarProps) {
 
           {/* Query Suggestions */}
           {showQuerySuggestions && query.trim().length > 0 && suggestions.roles.length > 0 && (
-            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border border-slate-100 overflow-hidden py-2 text-left">
+            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border-none overflow-hidden py-2 text-left">
               {suggestions.roles.slice(0, 5).map((role, index) => (
                 <button
                   key={role}
@@ -167,7 +172,7 @@ export function SearchBar({ }: SearchBarProps) {
 
         {/* City/Location Search */}
         <div className="relative flex-1 w-full" ref={cityRef}>
-          <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-50/80 md:bg-slate-50 border border-slate-100 md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
+          <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
             <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
             <input
               type="text"
@@ -210,7 +215,7 @@ export function SearchBar({ }: SearchBarProps) {
 
           {/* City Suggestions */}
           {showCitySuggestions && city.trim().length > 0 && suggestions.cities.length > 0 && (
-            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border border-slate-100 overflow-hidden py-2 text-left">
+            <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-2xl shadow-3xl border-none overflow-hidden py-2 text-left">
               {suggestions.cities.slice(0, 5).map((c, index) => (
                 <button
                   key={c}

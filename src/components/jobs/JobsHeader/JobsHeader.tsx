@@ -99,11 +99,11 @@ export const JobsHeader = ({
     <section className="bg-white/50 backdrop-blur-sm relative py-0.5 md:py-1">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div className="mx-auto w-full">
-          <div className="bg-white rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.06)] flex flex-col md:flex-row items-stretch md:items-center gap-2 p-1.5 md:p-1 transition-all duration-300 border border-slate-200 md:border-slate-50">
+          <div className="bg-white rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.06)] flex flex-col md:flex-row items-stretch md:items-center gap-2 p-1.5 md:p-1 transition-all duration-300 border-transparent md:border-slate-50">
             
             {/* Subject/Role Search */}
             <div className="relative flex-[1.4] w-full" ref={roleRef}>
-              <div className="flex items-center gap-3 px-4 py-2 md:py-1.5 bg-slate-50/80 md:bg-slate-50 border border-slate-100 md:border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
+              <div className="flex items-center gap-3 px-4 py-2 md:py-1.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
                 <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 shrink-0 transition-colors" />
                 <input
                   type="text"
@@ -129,7 +129,7 @@ export const JobsHeader = ({
 
               {/* Suggestions - Roles */}
               {showRoleSuggestions && suggestions.roles.length > 0 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-xl shadow-3xl border border-slate-100 overflow-hidden py-2 text-left">
+                <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-xl shadow-3xl border-none overflow-hidden py-2 text-left">
                   {suggestions.roles.slice(0, 5).map((role) => (
                     <button
                       type="button"
@@ -150,7 +150,7 @@ export const JobsHeader = ({
 
             {/* City/Location Search */}
             <div className="relative flex-1 w-full" ref={cityRef}>
-              <div className="flex items-center gap-3 px-4 py-2 md:py-1.5 bg-slate-50/80 md:bg-slate-50 border border-slate-100 md:border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
+              <div className="flex items-center gap-3 px-4 py-2 md:py-1.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-4 focus-within:ring-blue-600/10 focus-within:border-blue-200 focus-within:bg-white transition-all duration-200">
                 <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 shrink-0 transition-colors" />
                 <input
                   type="text"
@@ -175,7 +175,7 @@ export const JobsHeader = ({
 
               {/* Suggestions - Cities */}
               {showCitySuggestions && suggestions.cities.length > 0 && (
-                <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-xl shadow-3xl border border-slate-100 overflow-hidden py-2 text-left">
+                <div className="absolute left-0 right-0 top-[calc(100%+12px)] z-50 bg-white rounded-xl shadow-3xl border-none overflow-hidden py-2 text-left">
                   {suggestions.cities.slice(0, 5).map((city) => (
                     <button
                       type="button"

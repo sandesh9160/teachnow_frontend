@@ -141,6 +141,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
                     gender={job.gender}
                     experience={job.experience_required}
                     experienceType={job.experience_type}
+                    institutionType={job.employer?.institution_type || job.institution_type}
                   />
                 </div>
               );

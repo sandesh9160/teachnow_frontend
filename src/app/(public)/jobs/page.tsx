@@ -40,6 +40,7 @@ function JobsContent() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
   // Auto-scroll to top on page or filter change
   useEffect(() => {
@@ -95,6 +96,14 @@ function JobsContent() {
         });
       }
 
+      console.log("🔍 [Search API] Fetching jobs:", {
+        keyword: search || "none",
+        location: locationSearch || "none",
+        page: currentPage,
+        limit: resultsPerPage,
+        filters: filters,
+      });
+
       void fetchJobs({
         keyword: search || undefined,
         location: locationSearch || undefined,
@@ -105,7 +114,7 @@ function JobsContent() {
     }, 300);
 
     return () => clearTimeout(handler);
-  }, [search, locationSearch, selectedFilters, currentPage, resultsPerPage]);
+  }, [search, locationSearch, selectedFilters, currentPage, resultsPerPage, searchTrigger]);
 
   const handleSearch = () => {
     if (!search.trim() && !locationSearch.trim()) {
@@ -116,10 +125,12 @@ function JobsContent() {
     setSearchError("");
     setIsPending(true);
     setCurrentPage(1);
+    setSearchTrigger(prev => prev + 1);
   };
 
   // Handlers
   const handleToggle = (category: string, value: string) => {
+    console.log("🖱️ [Filter Click] Toggle:", { category, value });
     setIsPending(true);
     setSelectedFilters((prev: any) => {
       const current = prev[category] as string[];

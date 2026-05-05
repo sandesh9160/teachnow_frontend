@@ -108,6 +108,7 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
             deadline={job.application_deadline}
             gender={job.gender}
             vacancies={job.vacancies}
+            institutionType={job.employer?.institution_type || job.institution_type}
             experience={job.experience_required}
             experienceType={job.experience_type}
           />

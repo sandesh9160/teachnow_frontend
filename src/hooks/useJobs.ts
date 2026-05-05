@@ -60,11 +60,11 @@ export function useJobs() {
       query.push(`page=${page}`);
       query.push(`per_page=${limit}`);
 
-      // Append filters
+      // Append filters — use key[] notation for arrays (required by Laravel/PHP)
       Object.entries(filters).forEach(([key, values]) => {
         if (Array.isArray(values) && values.length > 0) {
           values.forEach(val => {
-            query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(val))}`);
+            query.push(`${encodeURIComponent(key)}[]=${encodeURIComponent(String(val))}`);
           });
         } else if (values !== undefined && values !== null && values !== "") {
           query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(values))}`);
@@ -73,7 +73,15 @@ export function useJobs() {
       
       if (query.length) endpoint += `?${query.join("&")}`;
       
+      console.log("🔍 [useJobs] Final endpoint URL:", endpoint);
       const res = await dashboardServerFetch<any>(endpoint, { method: "GET" });
+      console.log("📦 [useJobs] Raw API response:", {
+        hasSearchJobs: !!res?.search_jobs,
+        searchJobsTotal: res?.search_jobs?.total,
+        searchJobsDataLength: res?.search_jobs?.data?.length,
+        hasData: !!res?.data,
+        topLevelKeys: res ? Object.keys(res) : [],
+      });
       
       let jobsList: Job[] = [];
       let similarList: Job[] = [];
@@ -135,6 +143,12 @@ export function useJobs() {
       
       setJobs(jobsList);
       setSimilarJobs(uniqueSimilar);
+      console.log("📊 [useJobs] Final counts:", {
+        jobsListLength: jobsList.length,
+        similarListLength: uniqueSimilar.length,
+        metaTotal: paginationMeta?.total,
+        metaSet: !!paginationMeta,
+      });
     } catch (e: unknown) {
       setJobs([]);
       setSimilarJobs([]);

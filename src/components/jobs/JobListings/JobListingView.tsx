@@ -138,6 +138,16 @@ export default function JobListingView({
     setCurrentPage(1);
   };
 
+  useEffect(() => {
+    console.log("🧩 [Client Filter] Query/Filters Changed:", {
+      search: internalSearch || "none",
+      location: internalLocation || "none",
+      filters: selectedFilters,
+      sortBy: sortBy,
+      page: currentPage
+    });
+  }, [internalSearch, internalLocation, selectedFilters, sortBy, currentPage]);
+
   const clearAll = () => {
     setSelectedFilters({
       subjects: [],
