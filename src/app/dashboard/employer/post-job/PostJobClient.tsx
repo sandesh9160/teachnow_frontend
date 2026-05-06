@@ -73,6 +73,7 @@ export default function PostJobClient({
   const [isRewriting, setIsRewriting] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [limitReachedField, setLimitReachedField] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: job?.title || "",
@@ -188,43 +189,43 @@ export default function PostJobClient({
     switch (step) {
       case 1:
         if (!formData.title?.toString().trim()) {
-          newErrors.title = "Job Title is required";
+          newErrors.title = "Please provide a Job Title to continue";
         } else if (formData.title.length < 7) {
-          newErrors.title = "Job Title must be at least 7 characters";
+          newErrors.title = "Job Title is too short (minimum 7 characters required)";
         } else if (formData.title.length > 50) {
-          newErrors.title = "Job Title cannot exceed 50 characters";
+          newErrors.title = "Job Title is too long (maximum 50 characters allowed)";
         }
-        if (!formData.category_id) newErrors.category_id = "Subject / Category is required";
-        if (!formData.job_type) newErrors.job_type = "Job Type is required";
-        if (!formData.location) newErrors.location = "City is required";
-        if (!formData.experience_required?.toString().trim()) newErrors.experience_required = "Experience Required is required";
-        if (!formData.experience_type) newErrors.experience_type = "Experience Type is required";
-        if (!formData.gender) newErrors.gender = "Gender preference is required";
+        if (!formData.category_id) newErrors.category_id = "Please select a Subject or Category for this job";
+        if (!formData.job_type) newErrors.job_type = "Please select a Job Type (Full-time or Part-time)";
+        if (!formData.location) newErrors.location = "Please select a City location for this job";
+        if (!formData.experience_required?.toString().trim()) newErrors.experience_required = "Please specify the Experience Required for this role";
+        if (!formData.experience_type) newErrors.experience_type = "Please select whether the role is for Freshers or Experienced candidates";
+        if (!formData.gender) newErrors.gender = "Please specify a Gender Preference (or Select Any / Both)";
         break;
       case 2:
         const jdLength = description.replace(/<[^>]*>/g, '').trim().length;
         if (!description || jdLength < 50)
-          newErrors.description = "Detailed Description (min 50 chars) is required";
+          newErrors.description = "Job Description is too short. Please provide at least 50 characters to help candidates.";
         if (jdLength > 3000)
-          newErrors.description = "Detailed Description cannot exceed 3000 characters";
+          newErrors.description = "Job Description is too long. Please keep it under 3000 characters.";
         break;
       case 4:
         if (!salaryUndisclosed) {
-          if (!formData.salary_min) newErrors.salary_min = "Minimum Salary is required";
-          if (!formData.salary_max) newErrors.salary_max = "Maximum Salary is required";
+          if (!formData.salary_min) newErrors.salary_min = "Please enter the Minimum Salary";
+          if (!formData.salary_max) newErrors.salary_max = "Please enter the Maximum Salary";
           if (formData.salary_min && formData.salary_max && Number(formData.salary_min) > Number(formData.salary_max))
-            newErrors.salary_range = "Max salary should be more than min salary";
+            newErrors.salary_range = "Maximum salary must be greater than or equal to the Minimum salary";
         }
         if (!deadline) {
-          newErrors.deadline = "Application Deadline is required";
+          newErrors.deadline = "Please set an Application Deadline for this job";
         } else {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           if (deadline < today) {
-            newErrors.deadline = "Application deadline cannot be in the past";
+            newErrors.deadline = "The Application Deadline cannot be a date in the past";
           }
         }
-        if (!formData.vacancies || Number(formData.vacancies) <= 0) newErrors.vacancies = "Open Vacancies is required";
+        if (!formData.vacancies || Number(formData.vacancies) <= 0) newErrors.vacancies = "Please specify how many vacancies are available";
         break;
     }
     
@@ -398,6 +399,8 @@ export default function PostJobClient({
           {steps.map((step, idx) => (
             <div key={step.id} className="flex items-center">
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={() => {
                   if (step.id > currentStep) {
                     const currentError = validateStep(currentStep);
@@ -456,14 +459,30 @@ export default function PostJobClient({
                 </Label>
                 <Input 
                   value={formData.title} 
-                  onChange={(e) => updateField("title", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length > 50) {
+                      setLimitReachedField("title");
+                      toast.error("Character limit reached: Maximum 50 characters allowed", { id: "limit-toast" });
+                      updateField("title", val.slice(0, 50));
+                      setTimeout(() => setLimitReachedField(null), 2000);
+                    } else {
+                      updateField("title", val);
+                      if (errors.title) setErrors(prev => {
+                        const n = {...prev};
+                        delete n.title;
+                        return n;
+                      });
+                    }
+                  }} 
                   placeholder="e.g. Mathematics Teacher" 
-                  maxLength={50}
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
-                    errors.title ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    (errors.title || limitReachedField === "title") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )} 
                 />
+                {errors.title && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.title}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.category_id ? "text-red-500" : "text-slate-700")}>
@@ -471,7 +490,15 @@ export default function PostJobClient({
                 </Label>
                 <select 
                   value={formData.category_id} 
-                  onChange={(e) => updateField("category_id", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    updateField("category_id", e.target.value);
+                    if (errors.category_id) setErrors(prev => {
+                      const n = {...prev};
+                      delete n.category_id;
+                      return n;
+                    });
+                  }} 
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.category_id ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -480,6 +507,7 @@ export default function PostJobClient({
                   <option value="">Select subject</option>
                   {metadata.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
+                {errors.category_id && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.category_id}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.job_type ? "text-red-500" : "text-slate-700")}>
@@ -487,7 +515,15 @@ export default function PostJobClient({
                 </Label>
                 <select 
                   value={formData.job_type} 
-                  onChange={(e) => updateField("job_type", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    updateField("job_type", e.target.value);
+                    if (errors.job_type) setErrors(prev => {
+                      const n = {...prev};
+                      delete n.job_type;
+                      return n;
+                    });
+                  }} 
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.job_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -497,6 +533,7 @@ export default function PostJobClient({
                   <option value="full_time">Full-time</option>
                   <option value="part_time">Part-time</option>
                 </select>
+                {errors.job_type && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.job_type}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.location ? "text-red-500" : "text-slate-700")}>
@@ -504,7 +541,15 @@ export default function PostJobClient({
                 </Label>
                 <select 
                   value={formData.location} 
-                  onChange={(e) => updateField("location", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    updateField("location", e.target.value);
+                    if (errors.location) setErrors(prev => {
+                      const n = {...prev};
+                      delete n.location;
+                      return n;
+                    });
+                  }} 
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.location ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -513,6 +558,7 @@ export default function PostJobClient({
                   <option value="">Select city</option>
                   {metadata.locations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
                 </select>
+                {errors.location && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.location}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_required ? "text-red-500" : "text-slate-700")}>
@@ -520,13 +566,30 @@ export default function PostJobClient({
                 </Label>
                 <Input 
                   value={formData.experience_required} 
-                  onChange={(e) => updateField("experience_required", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length > 50) {
+                      setLimitReachedField("experience_required");
+                      toast.error("Character limit reached: Maximum 50 characters allowed", { id: "limit-toast" });
+                      updateField("experience_required", val.slice(0, 50));
+                      setTimeout(() => setLimitReachedField(null), 2000);
+                    } else {
+                      updateField("experience_required", val);
+                      if (errors.experience_required) setErrors(prev => {
+                        const n = {...prev};
+                        delete n.experience_required;
+                        return n;
+                      });
+                    }
+                  }} 
                   placeholder="e.g. 3–5 years" 
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
-                    errors.experience_required ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    (errors.experience_required || limitReachedField === "experience_required") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   )} 
                 />
+                {errors.experience_required && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.experience_required}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_type ? "text-red-500" : "text-slate-700")}>
@@ -534,7 +597,15 @@ export default function PostJobClient({
                 </Label>
                 <select 
                   value={formData.experience_type} 
-                  onChange={(e) => updateField("experience_type", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    updateField("experience_type", e.target.value);
+                    if (errors.experience_type) setErrors(prev => {
+                      const n = {...prev};
+                      delete n.experience_type;
+                      return n;
+                    });
+                  }} 
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -544,6 +615,7 @@ export default function PostJobClient({
                   <option value="fresher">Fresher</option>
                   <option value="experienced">Experienced</option>
                 </select>
+                {errors.experience_type && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.experience_type}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.gender ? "text-red-500" : "text-slate-700")}>
@@ -551,7 +623,15 @@ export default function PostJobClient({
                 </Label>
                 <select 
                   value={formData.gender} 
-                  onChange={(e) => updateField("gender", e.target.value)} 
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    updateField("gender", e.target.value);
+                    if (errors.gender) setErrors(prev => {
+                      const n = {...prev};
+                      delete n.gender;
+                      return n;
+                    });
+                  }} 
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.gender ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -562,6 +642,7 @@ export default function PostJobClient({
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                 </select>
+                {errors.gender && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.gender}</p>}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <Label className="text-[11px] font-bold px-1 text-slate-700">
@@ -569,6 +650,7 @@ export default function PostJobClient({
                 </Label>
                 <Input 
                   value={formData.keywords} 
+                  suppressHydrationWarning
                   onChange={(e) => updateField("keywords", e.target.value)} 
                   placeholder="e.g. physics, optics, laser" 
                   className="h-10 rounded-xl text-xs bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all" 
@@ -585,6 +667,7 @@ export default function PostJobClient({
               <h2 className="text-sm font-bold text-[#1E1B4B]">Job Description</h2>
               <Button
                 type="button"
+                suppressHydrationWarning
                 onClick={handleRewriteJD}
                 disabled={isRewriting}
                 className="h-8 px-5 rounded-lg text-[10px] font-bold bg-[#312E81] hover:bg-[#1E1B4B] text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
@@ -596,9 +679,10 @@ export default function PostJobClient({
             <div className="min-h-[250px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-100 transition-all">
               <TipTapEditor key={editorKey} value={description} onChange={setDescription} minimal={true} />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              {errors.description && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.description}</p>}
               <p className={cn(
-                "text-[10px] font-bold",
+                "text-[10px] font-bold ml-auto",
                 description.replace(/<[^>]*>/g, '').trim().length > 3000 ? "text-red-500" : "text-slate-400"
               )}>
                 {description.replace(/<[^>]*>/g, '').trim().length} / 3000 characters
@@ -615,6 +699,7 @@ export default function PostJobClient({
                   <h2 className="text-sm font-bold text-[#1E1B4B]">Candidate Questions (Optional)</h2>
                   <Button 
                     type="button" 
+                    suppressHydrationWarning
                     onClick={() => addQuestion("boolean")}
                     variant="outline"
                     className="h-8 px-3 rounded-lg text-[10px] font-bold border-slate-100 hover:bg-slate-50 flex items-center gap-1.5"
@@ -639,6 +724,7 @@ export default function PostJobClient({
                           <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Question {i + 1}</label>
                           <Input 
                             value={q.question} 
+                            suppressHydrationWarning
                             onChange={(e) => updateQuestion(i, "question", e.target.value)} 
                             placeholder="e.g. Do you have a valid teaching license?"
                             className="h-9 bg-white border-slate-100 text-xs focus:ring-1 focus:ring-indigo-100" 
@@ -648,6 +734,7 @@ export default function PostJobClient({
                           <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Type</label>
                           <select 
                             value={q.question_type} 
+                            suppressHydrationWarning
                             onChange={(e) => updateQuestion(i, "question_type", e.target.value as any)}
                             className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
                           >
@@ -661,6 +748,7 @@ export default function PostJobClient({
                           {q.question_type === 'boolean' ? (
                             <select 
                               value={q.recruiter_answer} 
+                              suppressHydrationWarning
                               onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
                               className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
                             >
@@ -671,6 +759,7 @@ export default function PostJobClient({
                           ) : (
                             <Input 
                               value={q.recruiter_answer} 
+                              suppressHydrationWarning
                               onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
                               placeholder={q.question_type === 'numeric' ? "e.g. 5" : "Expected keywords..."}
                               className="h-9 bg-white border-slate-100 text-[10px] font-semibold"
@@ -680,6 +769,7 @@ export default function PostJobClient({
                         <div className="flex items-end pb-0.5">
                           <button 
                             onClick={() => removeQuestion(i)} 
+                            suppressHydrationWarning
                             className="p-2 text-slate-300 hover:text-rose-400 transition-colors bg-white md:bg-transparent rounded-lg border border-slate-50 md:border-none shadow-sm md:shadow-none"
                             title="Remove Question"
                           >
@@ -706,7 +796,15 @@ export default function PostJobClient({
                     </Label>
                     <Input 
                       value={formData.salary_min} 
-                      onChange={(e) => updateField("salary_min", e.target.value)} 
+                      suppressHydrationWarning
+                      onChange={(e) => {
+                        updateField("salary_min", e.target.value);
+                        if (errors.salary_min) setErrors(prev => {
+                          const n = {...prev};
+                          delete n.salary_min;
+                          return n;
+                        });
+                      }} 
                       placeholder="Min ₹" 
                       disabled={salaryUndisclosed}
                       className={cn(
@@ -715,6 +813,7 @@ export default function PostJobClient({
                         salaryUndisclosed && "opacity-50 cursor-not-allowed"
                       )} 
                     />
+                    {errors.salary_min && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.salary_min}</p>}
                   </div>
                     <div className="space-y-1.5">
                       <Label className="text-[11px] font-bold px-1 capitalize text-slate-700 transition-colors">
@@ -722,7 +821,16 @@ export default function PostJobClient({
                       </Label>
                     <Input 
                       value={formData.salary_max} 
-                      onChange={(e) => updateField("salary_max", e.target.value)} 
+                      suppressHydrationWarning
+                      onChange={(e) => {
+                        updateField("salary_max", e.target.value);
+                        if (errors.salary_max || errors.salary_range) setErrors(prev => {
+                          const n = {...prev};
+                          delete n.salary_max;
+                          delete n.salary_range;
+                          return n;
+                        });
+                      }} 
                       placeholder="Max ₹" 
                       disabled={salaryUndisclosed}
                       className={cn(
@@ -731,6 +839,7 @@ export default function PostJobClient({
                         salaryUndisclosed && "opacity-50 cursor-not-allowed"
                       )} 
                     />
+                    {(errors.salary_max || errors.salary_range) && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.salary_max || errors.salary_range}</p>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mt-2 px-1">
@@ -756,12 +865,20 @@ export default function PostJobClient({
                     )}>
                       <DatePicker
                         date={deadline}
-                        setDate={setDeadline}
+                        setDate={(date) => {
+                          setDeadline(date);
+                          if (errors.deadline) setErrors(prev => {
+                            const n = {...prev};
+                            delete n.deadline;
+                            return n;
+                          });
+                        }}
                         className="h-10 bg-transparent border-none text-xs"
                         placeholder="Select date"
                         calendarDisabled={{ before: new Date() }}
                       />
                     </div>
+                    {errors.deadline && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.deadline}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.vacancies ? "text-red-500" : "text-slate-700")}>
@@ -770,13 +887,22 @@ export default function PostJobClient({
                     <Input
                       type="number"
                       value={formData.vacancies}
-                      onChange={(e) => updateField("vacancies", e.target.value)}
+                      suppressHydrationWarning
+                      onChange={(e) => {
+                        updateField("vacancies", e.target.value);
+                        if (errors.vacancies) setErrors(prev => {
+                          const n = {...prev};
+                          delete n.vacancies;
+                          return n;
+                        });
+                      }}
                       className={cn(
                         "h-10 text-xs transition-all",
                         errors.vacancies ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                       )}
                       placeholder="e.g. 2"
                     />
+                    {errors.vacancies && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.vacancies}</p>}
                   </div>
                 </div>
               </div>
@@ -850,6 +976,7 @@ export default function PostJobClient({
       <div className={cn("flex items-center justify-between pt-6 border-t border-slate-50 gap-4", !isProfileComplete && "opacity-40 pointer-events-none")}>
         <Button
           variant="outline"
+          suppressHydrationWarning
           onClick={handleBack}
           disabled={currentStep === 1 || loading}
           className={cn(
@@ -864,6 +991,7 @@ export default function PostJobClient({
           {currentStep < 5 ? (
             <Button
               onClick={handleNext}
+              suppressHydrationWarning
               className="h-10 w-full md:w-auto px-10 rounded-xl bg-[#312E81] hover:bg-[#1E1B4B] text-white text-[12.5px] font-bold transition-all shadow-sm"
             >
               Continue
@@ -872,6 +1000,7 @@ export default function PostJobClient({
             <Button
               onClick={handleSubmit}
               disabled={loading}
+              suppressHydrationWarning
               className="h-10 w-full md:w-auto px-10 rounded-xl bg-[#312E81] hover:bg-[#1E1B4B] text-white text-[12.5px] font-bold shadow-md transition-all flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-3.5 h-3.5" />}

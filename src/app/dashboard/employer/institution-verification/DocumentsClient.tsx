@@ -40,8 +40,9 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
    const [selectedDocType, setSelectedDocType] = useState<string>("");
    const [showUploadform, setShowUploadForm] = useState(false);
 
-   const [previewData, setPreviewData] = useState<{ url: string; original: string; name: string } | null>(null);
+   const [previewData, setPreviewData] = useState<{ url: string; original: string; name: string; isPending?: boolean } | null>(null);
    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
    const fetchDocuments = useCallback(async () => {
       try {
@@ -77,7 +78,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
       }
    }, [loading, documents.length]);
 
-   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
@@ -119,10 +120,27 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
          return;
       }
 
+      // Generate local preview URL
+      const objectUrl = URL.createObjectURL(file);
+      setPendingFile(file);
+      setPreviewData({
+         url: objectUrl,
+         original: objectUrl,
+         name: docTypes.find(t => t.value === selectedDocType)?.label || file.name,
+         isPending: true
+      });
+      setIsPreviewLoading(true);
+
+      if (fileInputRef.current) fileInputRef.current.value = "";
+   };
+
+   const handleFinalizeUpload = async () => {
+      if (!pendingFile || !selectedDocType) return;
+
       try {
          setUploading(true);
          const formData = new FormData();
-         formData.append("document_file", file);
+         formData.append("document_file", pendingFile);
          formData.append("document_type", selectedDocType);
 
          const res = await uploadFile<any>("employer/documents/upload", {
@@ -134,6 +152,8 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
             toast.success("Document uploaded!");
             setShowUploadForm(false);
             setSelectedDocType("");
+            setPendingFile(null);
+            setPreviewData(null);
             void fetchDocuments();
          } else {
             toast.error(res?.message || "Upload failed.");
@@ -142,7 +162,6 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
          toast.error("An error occurred.");
       } finally {
          setUploading(false);
-         if (fileInputRef.current) fileInputRef.current.value = "";
       }
    };
 
@@ -161,9 +180,19 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
       setPreviewData({
          url: preview,
          original: fullUrl,
-         name: (doc.document_type || "Document").replace(/_/g, " ")
+         name: (doc.document_type || "Document").replace(/_/g, " "),
+         isPending: false
       });
    };
+
+   // Clean up object URLs to prevent memory leaks
+   useEffect(() => {
+      return () => {
+         if (previewData?.isPending && previewData.url) {
+            URL.revokeObjectURL(previewData.url);
+         }
+      };
+   }, [previewData]);
 
    const docTypes = [
       { value: "institution_registration", label: "Institution Registration Certificate" },
@@ -205,8 +234,8 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
 
    return (
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-8 font-sans">
-         {/* Preview Overlay */}
-         {previewData && (
+         {/* Existing Documents Preview Modal */}
+         {previewData && !previewData.isPending && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-[#1E1B4B]/20 backdrop-blur-sm" onClick={() => setPreviewData(null)} />
                <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh] animate-in fade-in zoom-in duration-300">
@@ -298,40 +327,134 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
 
          {/* Inline Upload Form (Simple) */}
          {showUploadform && (
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 transition-all animate-in slide-in-from-top-4 duration-300">
-               <div className="max-w-2xl mx-auto space-y-4">
-                  <div className="text-center space-y-1 mb-4">
-                     <h3 className="text-base font-semibold text-[#1E1B4B]">Select Document Category</h3>
-                     <p className="text-xs text-slate-500">Choose a type and select your file for verification.</p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                     <select
-                        value={selectedDocType}
-                        onChange={(e) => setSelectedDocType(e.target.value)}
-                        className="flex-1 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-                     >
-                        <option value="">Select Category...</option>
-                        {docTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                     </select>
-                     <Button
-                        onClick={() => !uploading && fileInputRef.current?.click()}
-                        className="h-11 px-8 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm shadow-md shadow-blue-50 flex items-center gap-2 shrink-0"
-                        disabled={uploading}
-                     >
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
-                        {uploading ? "Uploading..." : "Select & Upload"}
-                     </Button>
-                  </div>
-                  <div className="mt-6 p-4 rounded-xl border border-blue-200 bg-blue-50/50 flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                        <AlertCircle className="w-5 h-5 text-blue-600" />
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 transition-all animate-in slide-in-from-top-4 duration-500 overflow-hidden">
+               {pendingFile ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                     {/* Left: Configuration & Details */}
+                     <div className="lg:col-span-5 space-y-6">
+                        <div className="space-y-1">
+                           <h3 className="text-lg font-bold text-[#1E1B4B]">Review & Confirm</h3>
+                           <p className="text-sm text-slate-500">Ensure the document category matches your file.</p>
+                        </div>
+
+                        <div className="p-5 bg-white border border-slate-200 rounded-2xl space-y-5 shadow-sm">
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Document Category</label>
+                              <select
+                                 value={selectedDocType}
+                                 onChange={(e) => setSelectedDocType(e.target.value)}
+                                 className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
+                              >
+                                 <option value="">Select Category...</option>
+                                 {docTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                              </select>
+                           </div>
+
+                           <div className="flex items-center gap-4 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                              <div className="w-12 h-12 rounded-xl bg-white border border-indigo-100 flex items-center justify-center shrink-0 shadow-sm">
+                                 <FileText className="w-6 h-6 text-indigo-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                 <p className="text-sm font-bold text-slate-700 truncate">{pendingFile.name}</p>
+                                 <p className="text-[10px] text-slate-400 font-medium">{(pendingFile.size / (1024 * 1024)).toFixed(2)} MB • Verification Ready</p>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3 pt-2">
+                           <Button
+                              onClick={handleFinalizeUpload}
+                              className="h-12 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm shadow-lg shadow-blue-200 transition-all active:scale-[0.98]"
+                              disabled={uploading}
+                           >
+                              {uploading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <FileUp className="w-5 h-5 mr-2" />}
+                              Confirm 
+                           </Button>
+                           <Button
+                              variant="outline"
+                              onClick={() => { setPendingFile(null); setPreviewData(null); }}
+                              className="h-12 rounded-xl border-slate-200 text-slate-500 font-semibold text-sm hover:bg-slate-100"
+                              disabled={uploading}
+                           >
+                              Change Document
+                           </Button>
+                        </div>
                      </div>
-                     <div>
-                        <p className="text-sm font-bold text-[#1E1B4B]">Upload Documents with Limit not exceed 4 MB</p>
-                        <p className="text-[11px] text-slate-500">Supported: SVG, JPG, PNG, WEBP, PDF</p>
+
+                     {/* Right: Real-time Preview Pane */}
+                     <div className="lg:col-span-7 space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Preview
+                           </span>
+                           <span className="text-[10px] font-bold text-slate-300">SECURE VIEWER</span>
+                        </div>
+                        <div className="relative aspect-[4/5] lg:aspect-auto lg:h-[500px] bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-inner group">
+                           <div className="absolute inset-0 flex items-center justify-center bg-slate-50 group-hover:bg-white transition-colors duration-500">
+                              {pendingFile && previewData?.url ? (
+                                 pendingFile.type.startsWith('image/') ? (
+                                    <img
+                                       src={previewData.url}
+                                       alt="Preview"
+                                       className="max-w-full max-h-full object-contain p-4 drop-shadow-md"
+                                    />
+                                 ) : (
+                                    <iframe
+                                       src={previewData.url}
+                                       className="w-full h-full border-none"
+                                       title="PDF Preview"
+                                    />
+                                 )
+                              ) : (
+                                 <div className="flex flex-col items-center gap-2 text-slate-300">
+                                    <Loader2 className="w-8 h-8 animate-spin" />
+                                    <p className="text-[10px] font-bold uppercase tracking-widest">Preparing Preview...</p>
+                                 </div>
+                              )}
+                           </div>
+                           <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="px-3 py-1.5 bg-slate-900/80 backdrop-blur-md rounded-lg text-[10px] text-white font-bold">
+                                 PREVIEW MODE
+                              </div>
+                           </div>
+                        </div>
                      </div>
                   </div>
-               </div>
+               ) : (
+                  <div className="max-w-2xl mx-auto space-y-4">
+                     <div className="text-center space-y-1 mb-4">
+                        <h3 className="text-base font-semibold text-[#1E1B4B]">Select Document Category</h3>
+                        <p className="text-xs text-slate-500">Choose a type and select your file for verification.</p>
+                     </div>
+                     <div className="flex flex-col sm:flex-row gap-3">
+                        <select
+                           value={selectedDocType}
+                           onChange={(e) => setSelectedDocType(e.target.value)}
+                           className="flex-1 h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all"
+                        >
+                           <option value="">Select Category...</option>
+                           {docTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                        <Button
+                           onClick={() => !uploading && fileInputRef.current?.click()}
+                           className="h-11 px-8 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm shadow-md shadow-blue-50 flex items-center gap-2 shrink-0"
+                           disabled={uploading}
+                        >
+                           {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileUp className="w-4 h-4" />}
+                           {uploading ? "Uploading..." : "Select & Upload"}
+                        </Button>
+                     </div>
+                     <div className="mt-6 p-4 rounded-xl border border-blue-200 bg-blue-50/50 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                           <AlertCircle className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                           <p className="text-sm font-bold text-[#1E1B4B]">Upload Documents with Limit not exceed 4 MB</p>
+                           <p className="text-[11px] text-slate-500">Supported: SVG, JPG, PNG, WEBP, PDF</p>
+                        </div>
+                     </div>
+                  </div>
+               )}
             </div>
          )}
 
