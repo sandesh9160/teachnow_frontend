@@ -29,6 +29,7 @@ export default function RegisterPage() {
   const [otp, setOtp] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [showVerificationError, setShowVerificationError] = useState(false);
 
 
   const {
@@ -105,7 +106,10 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterValues) => {
     if (!emailVerified) {
-      toast.error("Please verify your email address first");
+      setShowVerificationError(true);
+      toast.error("Please verify your email address", { id: "verify-email-toast" });
+      const emailInput = document.getElementById("email_reg");
+      emailInput?.focus();
       return;
     }
     const isEmployer = data.role === "employer";
@@ -229,15 +233,21 @@ export default function RegisterPage() {
                     onChange: () => {
                       setEmailVerified(false);
                       setEmailSent(false);
+                      setShowVerificationError(false);
                     }
                   })} 
                   type="email" 
                   required
                   placeholder={role === "employer" ? "hr@institution.com" : "you@example.com"} 
                   className={cn(
-                    "flex-1 rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
-                    errors.email ? "border-red-500" : "border-border focus:border-primary",
-                    emailVerified && "bg-green-50/50 border-green-500 ring-green-500/20"
+                    "flex-1 rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 transition-all duration-300",
+                    (errors.email || showVerificationError) 
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500/20 ring-red-500/20" 
+                      : emailVerified 
+                        ? "border-green-500 bg-green-50/50 focus:border-green-500 focus:ring-green-500/20" 
+                        : watch("email") 
+                          ? "border-yellow-500 bg-yellow-50/30 focus:border-yellow-500 focus:ring-yellow-500/20" 
+                          : "border-border focus:border-primary focus:ring-primary/20",
                   )}
                   suppressHydrationWarning
                 />
@@ -295,24 +305,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div 
-              onClickCapture={(e) => {
-                if (!emailVerified) {
-                  e.stopPropagation();
-                  toast.error("Please verify your email address first", { id: "verify-email-toast" });
-                  document.getElementById("email_reg")?.focus();
-                  const emailInput = document.getElementById("email_reg");
-                  emailInput?.classList.add("ring-2", "ring-primary/50", "border-primary");
-                  setTimeout(() => {
-                    emailInput?.classList.remove("ring-2", "ring-primary/50", "border-primary");
-                  }, 2000);
-                }
-              }}
-              className={cn(
-                "space-y-3 animate-in fade-in slide-in-from-top-4 duration-500",
-                !emailVerified && "opacity-60 cursor-not-allowed grayscale-[0.5]"
-              )}
-            >
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
               {role === "employer" ? (
                 <div className="space-y-1.5">
                   <label htmlFor="company_name_reg" className="block text-sm font-medium text-foreground">Company Name</label>
@@ -320,7 +313,6 @@ export default function RegisterPage() {
                     id="company_name_reg" 
                     {...register("company_name")} 
                     type="text" 
-                    disabled={!emailVerified}
                     placeholder="Sri Chaitanya Junior College" 
                     className={cn(
                       "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
@@ -343,7 +335,6 @@ export default function RegisterPage() {
                     id="name_reg" 
                     {...register("name")} 
                     type="text" 
-                    disabled={!emailVerified}
                     placeholder="John Doe" 
                     className={cn(
                       "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
@@ -362,24 +353,7 @@ export default function RegisterPage() {
               )}
             </div>
             
-            <div 
-              onClickCapture={(e) => {
-                if (!emailVerified) {
-                  e.stopPropagation();
-                  toast.error("Please verify your email address first", { id: "verify-email-toast" });
-                  document.getElementById("email_reg")?.focus();
-                  const emailInput = document.getElementById("email_reg");
-                  emailInput?.classList.add("ring-2", "ring-primary/50", "border-primary");
-                  setTimeout(() => {
-                    emailInput?.classList.remove("ring-2", "ring-primary/50", "border-primary");
-                  }, 2000);
-                }
-              }}
-              className={cn(
-                "space-y-3 animate-in fade-in slide-in-from-top-2 duration-300",
-                !emailVerified && "opacity-60 cursor-not-allowed grayscale-[0.5]"
-              )}
-            >
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="space-y-1.5">
                 <label htmlFor="pw_reg" className="block text-sm font-medium text-foreground">Password</label>
                 <div className="relative">
@@ -387,7 +361,6 @@ export default function RegisterPage() {
                     id="pw_reg"
                     type={showPassword ? "text" : "password"}
                     {...register("password")}
-                    disabled={!emailVerified}
                     onFocus={() => setPasswordFocused(true)}
                     onBlur={(e) => {
                       register("password").onBlur(e);
@@ -454,7 +427,6 @@ export default function RegisterPage() {
                     id="confirm_pw_reg"
                     type={showConfirmPassword ? "text" : "password"}
                     {...register("confirmPassword")}
-                    disabled={!emailVerified}
                     onPaste={(e) => e.preventDefault()}
                     onCopy={(e) => e.preventDefault()}
                     placeholder="••••••••"
@@ -497,7 +469,6 @@ export default function RegisterPage() {
                     type="checkbox"
                     id="terms"
                     {...register("acceptedTerms")}
-                    disabled={!emailVerified}
                     className="mt-1 h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <label htmlFor="terms" className="text-[11px] text-muted-foreground leading-tight">
@@ -515,7 +486,7 @@ export default function RegisterPage() {
 
               <button
                 type="submit"
-                disabled={authLoading || !emailVerified}
+                disabled={authLoading}
                 className={cn(
                   "w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
                   role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"

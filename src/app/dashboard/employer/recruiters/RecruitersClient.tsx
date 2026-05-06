@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -44,59 +44,14 @@ export default function RecruitersClient({
   initialData,
   isProfileComplete = true
 }: RecruitersClientProps) {
-  const STATUS_OVERRIDES_KEY = "employer_recruiter_status_overrides";
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [recruiters, setRecruiters] = useState<Recruiter[]>(initialData?.data || []);
   const router = useRouter();
 
-  // ✅ SINGLE SOURCE OF TRUTH FOR STATUS
-  const isRecruiterActive = (status: unknown) => {
-    if (typeof status === "boolean") return status;
-    if (typeof status === "number") return status === 1;
-    if (typeof status === "string") {
-      const normalized = status.trim().toLowerCase();
-      return ["1", "true", "active", "enabled", "on", "yes"].includes(normalized);
-    }
-    return false;
-  };
-
-  const getStoredOverrides = (): Record<string, number> => {
-    if (typeof window === "undefined") return {};
-    try {
-      const raw = window.localStorage.getItem(STATUS_OVERRIDES_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  };
-
-  const setStoredOverride = (id: number, status: number) => {
-    if (typeof window === "undefined") return;
-    try {
-      const existing = getStoredOverrides();
-      existing[String(id)] = status;
-      window.localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(existing));
-    } catch {
-      // Ignore storage errors; UI still updates in memory.
-    }
-  };
-
-  useEffect(() => {
-    const incoming = initialData?.data || [];
-    const overrides = getStoredOverrides();
-
-    const merged = incoming.map((item) => {
-      const override = overrides[String(item.id)];
-      if (typeof override === "undefined") return item;
-      return { ...item, is_active: override };
-    });
-
-    setRecruiters(merged);
-  }, [initialData?.data]);
+  const isRecruiterActive = (status: any) => status === 1 || status === true || status === "1";
 
   const handleAddRecruiter = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -140,7 +95,7 @@ export default function RecruitersClient({
         data,
       });
 
-      console.log("Add Recruiter Response:", res);
+
 
       if (res.status === true) {
         toast.success("Recruiter account created!");
@@ -168,7 +123,7 @@ export default function RecruitersClient({
               { method: "DELETE" }
             );
 
-            console.log("Delete Recruiter Response:", res);
+
 
             if (res.status === true) {
               toast.success("Recruiter removed");
@@ -204,41 +159,17 @@ export default function RecruitersClient({
         `employer/recruiter/${id}/toggle`,
         {
           method: "PATCH",
-          data: {
-            is_active: nextStatus,
-            status: nextStatus,
-          },
+          data: { is_active: nextStatus }
         }
       );
 
-      console.log("Toggle Status Response:", res);
-
       if (res.status === true) {
         toast.success(
-          isRecruiterActive(nextStatus)
+          nextStatus === 1
             ? "Recruiter enabled successfully"
             : "Recruiter disabled successfully"
         );
-
-        const payload = (res as any)?.data ?? {};
-        const returnedStatus =
-          payload?.is_active ??
-          payload?.status ??
-          payload?.user?.is_active;
-
-        const finalIsActive =
-          typeof returnedStatus !== "undefined"
-            ? returnedStatus
-            : nextStatus;
-        const normalizedStatus = isRecruiterActive(finalIsActive) ? 1 : 0;
-
-        setStoredOverride(id, normalizedStatus);
-
-        setRecruiters((prev) =>
-          prev.map((item) =>
-            item.id === id ? { ...item, is_active: normalizedStatus } : item
-          )
-        );
+        router.refresh();
       } else {
         toast.error(res.message || "Failed to update status");
       }
@@ -249,10 +180,11 @@ export default function RecruitersClient({
     }
   };
 
-  const filteredUsers = recruiters.filter((u) =>
+  const filteredUsers = (initialData?.data || []).filter((u) =>
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
 
   return (
@@ -424,7 +356,6 @@ export default function RecruitersClient({
                 <p className="text-[11px] text-slate-400 truncate">{u.email}</p>
                 <div className="flex items-center gap-2.5 mt-1">
                   <button
-                    suppressHydrationWarning={true}
                     onClick={() => handleToggleStatus(u.id, u.is_active)}
                     disabled={togglingId === u.id}
                     className={cn(

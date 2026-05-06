@@ -7,16 +7,14 @@ export default async function RecruitersPage() {
     dashboardServerFetch("profile-flag")
   ]);
 
-  console.log("Recruiters Page Initial Load - usersRes:", usersRes);
-  console.log("Recruiters Page Initial Load - profileFlag:", profileFlag);
-
+  console.log("usersRes", usersRes);
   return (
-    <RecruitersClient 
+    <RecruitersClient
       initialData={{
         status: usersRes?.status || false,
         total_users: usersRes?.total_users || 0,
         data: usersRes?.data || []
-      }} 
+      }}
       isProfileComplete={profileFlag?.is_profile_complete === 1}
     />
   );
