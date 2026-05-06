@@ -7,6 +7,9 @@ export default async function RecruitersPage() {
     dashboardServerFetch("profile-flag")
   ]);
 
+  console.log("Recruiters Page Initial Load - usersRes:", usersRes);
+  console.log("Recruiters Page Initial Load - profileFlag:", profileFlag);
+
   return (
     <RecruitersClient 
       initialData={{

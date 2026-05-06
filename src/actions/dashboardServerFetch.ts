@@ -79,7 +79,7 @@ export async function dashboardServerFetch<T = any>(
                 response = await apiInstance.get<T>(`/${cleanEndpoint}`, requestConfig);
         }
 
-        console.log(`[DashboardServerFetch] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`);
+        console.log(`[DashboardServerFetch] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`, response.data);
         return response.data;
     } catch (error: any) {
         const errStatus = error?.response?.status;

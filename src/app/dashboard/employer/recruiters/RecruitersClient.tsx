@@ -40,41 +40,63 @@ interface RecruitersClientProps {
   isProfileComplete?: boolean;
 }
 
-export default function RecruitersClient({ initialData, isProfileComplete = true }: RecruitersClientProps) {
+export default function RecruitersClient({
+  initialData,
+  isProfileComplete = true
+}: RecruitersClientProps) {
+  const STATUS_OVERRIDES_KEY = "employer_recruiter_status_overrides";
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [recruiters, setRecruiters] = useState<Recruiter[]>(initialData?.data || []);
   const router = useRouter();
 
-  // local state to hold the 'optimistic' version of users
-  const [users, setUsers] = useState<Recruiter[]>(initialData?.data || []);
-  // Track IDs that were recently toggled to prevent the server-refresh from flipping them back prematurely
-  const [recentlyToggled, setRecentlyToggled] = useState<Record<number, number>>({});
-
-  // Sync with server data but respect our local optimistic updates
-  useEffect(() => {
-    if (initialData?.data) {
-      setUsers(prev => {
-        return initialData.data.map(serverUser => {
-          const lastToggled = recentlyToggled[serverUser.id];
-          const isRecentlyUpdated = lastToggled && (Date.now() - lastToggled < 3000); // 3 second window
-          
-          if (isRecentlyUpdated) {
-            const localUser = prev.find(u => u.id === serverUser.id);
-            return localUser ? { ...serverUser, is_active: localUser.is_active } : serverUser;
-          }
-          return serverUser;
-        });
-      });
-    }
-  }, [initialData?.data, recentlyToggled]);
-
   // ✅ SINGLE SOURCE OF TRUTH FOR STATUS
-  const isRecruiterActive = (status: any) => {
-    return status == 1 || status === "1" || status === true || String(status).toLowerCase() === "active";
+  const isRecruiterActive = (status: unknown) => {
+    if (typeof status === "boolean") return status;
+    if (typeof status === "number") return status === 1;
+    if (typeof status === "string") {
+      const normalized = status.trim().toLowerCase();
+      return ["1", "true", "active", "enabled", "on", "yes"].includes(normalized);
+    }
+    return false;
   };
+
+  const getStoredOverrides = (): Record<string, number> => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = window.localStorage.getItem(STATUS_OVERRIDES_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const setStoredOverride = (id: number, status: number) => {
+    if (typeof window === "undefined") return;
+    try {
+      const existing = getStoredOverrides();
+      existing[String(id)] = status;
+      window.localStorage.setItem(STATUS_OVERRIDES_KEY, JSON.stringify(existing));
+    } catch {
+      // Ignore storage errors; UI still updates in memory.
+    }
+  };
+
+  useEffect(() => {
+    const incoming = initialData?.data || [];
+    const overrides = getStoredOverrides();
+
+    const merged = incoming.map((item) => {
+      const override = overrides[String(item.id)];
+      if (typeof override === "undefined") return item;
+      return { ...item, is_active: override };
+    });
+
+    setRecruiters(merged);
+  }, [initialData?.data]);
 
   const handleAddRecruiter = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -118,6 +140,8 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
         data,
       });
 
+      console.log("Add Recruiter Response:", res);
+
       if (res.status === true) {
         toast.success("Recruiter account created!");
         setShowAddForm(false);
@@ -139,9 +163,12 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
         label: "Delete",
         onClick: async () => {
           try {
-            const res = await dashboardServerFetch(`employer/users/${id}`, {
-              method: "DELETE",
-            });
+            const res = await dashboardServerFetch(
+              `employer/users/${id}`,
+              { method: "DELETE" }
+            );
+
+            console.log("Delete Recruiter Response:", res);
 
             if (res.status === true) {
               toast.success("Recruiter removed");
@@ -156,64 +183,77 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
       },
       cancel: {
         label: "Keep It",
-        onClick: () => { }
+        onClick: () => {},
       },
-      // sonner specific classes for button colors
-      actionButtonStyle: { backgroundColor: '#ef4444', color: '#fff' },
-      cancelButtonStyle: { backgroundColor: '#3b82f6', color: '#fff' }
+      actionButtonStyle: { backgroundColor: "#ef4444", color: "#fff" },
+      cancelButtonStyle: { backgroundColor: "#3b82f6", color: "#fff" },
     });
   };
 
-  const handleToggleStatus = async (id: number, currentStatus: any) => {
+  const handleToggleStatus = async (
+    id: number,
+    currentStatus: any
+  ) => {
     setTogglingId(id);
+
     const isActive = isRecruiterActive(currentStatus);
     const nextStatus = isActive ? 0 : 1;
 
-    console.log(`[Toggle] ID: ${id}, Current: ${currentStatus}, IsActive: ${isActive}, Next: ${nextStatus}`);
-
     try {
-      const res = await dashboardServerFetch(`employer/recruiter/${id}/toggle`, {
-        method: "PATCH",
-        data: {
-          is_active: nextStatus,
-          status: nextStatus
-        },
-      });
+      const res = await dashboardServerFetch(
+        `employer/recruiter/${id}/toggle`,
+        {
+          method: "PATCH",
+          data: {
+            is_active: nextStatus,
+            status: nextStatus,
+          },
+        }
+      );
 
-      console.log(`[Toggle] Response:`, res);
+      console.log("Toggle Status Response:", res);
 
       if (res.status === true) {
-        const backendStatus = res.data?.is_active !== undefined ? res.data.is_active : nextStatus;
-        const normalized = isRecruiterActive(backendStatus);
+        toast.success(
+          isRecruiterActive(nextStatus)
+            ? "Recruiter enabled successfully"
+            : "Recruiter disabled successfully"
+        );
 
-        console.log(`[Toggle] Success. Updating local state to ${backendStatus}`);
-        
-        // Mark as recently toggled to ignore stale server data for a few seconds
-        setRecentlyToggled(prev => ({ ...prev, [id]: Date.now() }));
-        
-        setUsers(prev => prev.map(u => u.id === id ? { ...u, is_active: backendStatus } : u));
-        
-        toast.success(normalized ? "Recruiter enabled successfully" : "Recruiter disabled successfully");
-        
-        // Background refresh to ensure server consistency
-        router.refresh();
+        const payload = (res as any)?.data ?? {};
+        const returnedStatus =
+          payload?.is_active ??
+          payload?.status ??
+          payload?.user?.is_active;
+
+        const finalIsActive =
+          typeof returnedStatus !== "undefined"
+            ? returnedStatus
+            : nextStatus;
+        const normalizedStatus = isRecruiterActive(finalIsActive) ? 1 : 0;
+
+        setStoredOverride(id, normalizedStatus);
+
+        setRecruiters((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, is_active: normalizedStatus } : item
+          )
+        );
       } else {
         toast.error(res.message || "Failed to update status");
       }
     } catch (error) {
-      console.error(`[Toggle] Error:`, error);
       toast.error("An error occurred while updating status");
     } finally {
       setTogglingId(null);
     }
   };
 
-
-
-  const filteredUsers = users.filter(u =>
+  const filteredUsers = recruiters.filter((u) =>
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 space-y-4 pb-20 font-sans text-slate-700">
@@ -359,7 +399,7 @@ export default function RecruitersClient({ initialData, isProfileComplete = true
         </div>
         <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-indigo-50/50 rounded-xl border border-indigo-100">
           <Users className="w-4 h-4 text-indigo-500" />
-          <span className="text-xs font-medium text-indigo-700 whitespace-nowrap">{users.length} recruiters</span>
+          <span className="text-xs font-medium text-indigo-700 whitespace-nowrap">{filteredUsers.length} recruiters</span>
         </div>
       </div>
 
