@@ -159,7 +159,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                            job.status === 'rejected' ? "bg-rose-50 text-rose-600 border-rose-100" :
                               "bg-amber-50 text-amber-600 border-amber-100"
                      )}>
-                        {job.status === 'approved' ? "Verified Post" : formatTerm(job.status || "Under Review")}
+                        {job.status === 'approved' ? "Verified Job" : formatTerm(job.status || "Under Review")}
                      </span>
                      {job.featured === 1 && job.admin_featured === 1 && (
                         <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm border border-indigo-700">

@@ -424,6 +424,7 @@ export default function RecruitersClient({
                 <p className="text-[11px] text-slate-400 truncate">{u.email}</p>
                 <div className="flex items-center gap-2.5 mt-1">
                   <button
+                    suppressHydrationWarning={true}
                     onClick={() => handleToggleStatus(u.id, u.is_active)}
                     disabled={togglingId === u.id}
                     className={cn(
