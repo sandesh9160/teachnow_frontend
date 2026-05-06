@@ -30,6 +30,7 @@ export default function RegisterPage() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [showVerificationError, setShowVerificationError] = useState(false);
+  const [limitReachedField, setLimitReachedField] = useState<string | null>(null);
 
 
   const {
@@ -53,7 +54,7 @@ export default function RegisterPage() {
     },
   });
 
-  const role = watch("role");
+  const role = watch("role") || "job_seeker";
   const password = watch("password") || "";
 
   const hasMinLength = password.length >= 8;
@@ -146,7 +147,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-4 md:py-6">
+    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-2 md:py-4">
       <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-[1.2fr_1.8fr]">
         {/* Left - Illustration */}
         <div className="hidden flex-col items-center justify-center gap-8 bg-muted/10 p-8 md:flex border-r border-border">
@@ -175,8 +176,8 @@ export default function RegisterPage() {
         </div>
 
         {/* Right - Form */}
-        <div className="p-5 md:p-6 bg-white">
-          <div className="mb-4">
+        <div className="p-4 md:p-5 bg-white">
+          <div className="mb-3">
             {/* Mobile Brand - only visible on small screens */}
             <div className="flex items-center gap-2 mb-4 md:hidden">
               {companyLogo ? (
@@ -198,7 +199,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Role Selection */}
-          <div className="mb-5">
+          <div className="mb-4">
             <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-muted/20 p-1">
               <button
                 type="button"
@@ -221,8 +222,8 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-1.5">
+          <form className="space-y-2" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-1">
               <label htmlFor="email_reg" className="block text-sm font-medium text-foreground">
                 Email Address <span className="text-red-500">*</span>
               </label>
@@ -256,6 +257,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={sendEmail}
                     disabled={sendingEmail || !watch("email") || !!errors.email}
+                    suppressHydrationWarning
                     className={cn(
                       "px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all shadow-sm disabled:opacity-50 shrink-0",
                       role === "job_seeker" ? "bg-primary hover:bg-primary/90" : "bg-secondary hover:bg-secondary/90"
@@ -278,7 +280,7 @@ export default function RegisterPage() {
             </div>
 
             {emailSent && !emailVerified && (
-              <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
                 <label htmlFor="otp_reg" className="block text-sm font-medium text-foreground">Verification OTP</label>
                 <div className="flex gap-2">
                   <input
@@ -305,18 +307,33 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
               {role === "employer" ? (
-                <div className="space-y-1.5">
-                  <label htmlFor="company_name_reg" className="block text-sm font-medium text-foreground">Company Name</label>
+                <div className="space-y-1">
+                  <label htmlFor="company_name_reg" className="block text-sm font-medium text-foreground">
+                    Company Name <span className="text-red-500">*</span>
+                  </label>
                   <input 
                     id="company_name_reg" 
-                    {...register("company_name")} 
+                    {...register("company_name", {
+                      onChange: (e) => {
+                        const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        if (filteredValue.length > 70) {
+                          setLimitReachedField("company_name");
+                          toast.error("Character limit reached: Maximum 70 characters allowed", { id: "limit-toast" });
+                          e.target.value = filteredValue.slice(0, 70);
+                          setTimeout(() => setLimitReachedField(null), 2000);
+                        } else {
+                          e.target.value = filteredValue;
+                        }
+                      }
+                    })} 
                     type="text" 
+                    required
                     placeholder="Sri Chaitanya Junior College" 
                     className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
-                      errors.company_name 
+                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all duration-300",
+                      (errors.company_name || limitReachedField === "company_name") 
                         ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
                         : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                     )}
@@ -329,16 +346,31 @@ export default function RegisterPage() {
                   )}
                 </div>
               ) : (
-                <div className="space-y-1.5">
-                  <label htmlFor="name_reg" className="block text-sm font-medium text-foreground">Full Name</label>
+                <div className="space-y-1">
+                  <label htmlFor="name_reg" className="block text-sm font-medium text-foreground">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
                   <input 
                     id="name_reg" 
-                    {...register("name")} 
+                    {...register("name", {
+                      onChange: (e) => {
+                        const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        if (filteredValue.length > 70) {
+                          setLimitReachedField("name");
+                          toast.error("Character limit reached: Maximum 70 characters allowed", { id: "limit-toast" });
+                          e.target.value = filteredValue.slice(0, 70);
+                          setTimeout(() => setLimitReachedField(null), 2000);
+                        } else {
+                          e.target.value = filteredValue;
+                        }
+                      }
+                    })} 
                     type="text" 
+                    required
                     placeholder="John Doe" 
                     className={cn(
-                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all",
-                      errors.name 
+                      "w-full rounded-xl border bg-white px-4 py-2 text-sm text-foreground focus:outline-none transition-all duration-300",
+                      (errors.name || limitReachedField === "name") 
                         ? "border-red-500 bg-red-50/30 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
                         : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                     )}
@@ -353,8 +385,8 @@ export default function RegisterPage() {
               )}
             </div>
             
-            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="space-y-1.5">
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="space-y-1">
                 <label htmlFor="pw_reg" className="block text-sm font-medium text-foreground">Password</label>
                 <div className="relative">
                   <input
@@ -377,6 +409,7 @@ export default function RegisterPage() {
                   />
                   <div
                     onClick={() => setShowPassword(!showPassword)}
+                    suppressHydrationWarning
                     className="absolute right-3 top-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -390,7 +423,7 @@ export default function RegisterPage() {
 
                 {/* Password Validation UI */}
                 {password && passwordFocused && (
-                  <div className="mt-3.5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex gap-1.5 h-1.5 w-full">
                       <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength ? "bg-green-500" : "bg-border"}`} />
                       <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase ? "bg-green-500" : "bg-border"}`} />
@@ -420,7 +453,7 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label htmlFor="confirm_pw_reg" className="block text-sm font-medium text-foreground">Confirm Password</label>
                 <div className="relative">
                   <input
@@ -438,6 +471,7 @@ export default function RegisterPage() {
                   />
                   <div
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    suppressHydrationWarning
                     className="absolute right-3 top-2.5 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -469,6 +503,7 @@ export default function RegisterPage() {
                     type="checkbox"
                     id="terms"
                     {...register("acceptedTerms")}
+                    suppressHydrationWarning
                     className="mt-1 h-3.5 w-3.5 rounded border-gray-300 text-primary focus:ring-primary"
                   />
                   <label htmlFor="terms" className="text-[11px] text-muted-foreground leading-tight">
@@ -487,6 +522,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={authLoading}
+                suppressHydrationWarning
                 className={cn(
                   "w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all shadow-lg disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed",
                   role === "job_seeker" ? "bg-primary hover:bg-primary/90 shadow-primary/20" : "bg-secondary hover:bg-secondary/90 shadow-secondary/20"
@@ -497,7 +533,7 @@ export default function RegisterPage() {
             </div>
           </form>
 
-          <p className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/auth/login" className="font-semibold text-primary hover:underline">Log in</Link>
           </p>
