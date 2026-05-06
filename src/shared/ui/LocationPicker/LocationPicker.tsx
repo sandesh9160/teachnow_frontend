@@ -167,8 +167,17 @@ export function LocationPicker({
         map?.setZoom(16);
       },
       (error) => {
-        console.error("Geolocation error:", error);
-        toast.error("Could not determine your location. Please check browser permissions.");
+        let message = "Could not determine your location. Please check browser permissions.";
+        if (error.code === error.PERMISSION_DENIED) {
+          message = "Location access denied. Please enable location permissions in your browser settings.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          message = "Location information is unavailable. Try moving to a clearer area.";
+        } else if (error.code === error.TIMEOUT) {
+          message = "Location request timed out. Please try again.";
+        }
+        
+        console.error("Geolocation error:", { code: error.code, message: error.message });
+        toast.error(message);
       },
       { enableHighAccuracy: true }
     );

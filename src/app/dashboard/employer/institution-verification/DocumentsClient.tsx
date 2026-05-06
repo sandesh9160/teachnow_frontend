@@ -238,7 +238,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
          {previewData && !previewData.isPending && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-[#1E1B4B]/20 backdrop-blur-sm" onClick={() => setPreviewData(null)} />
-               <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh] animate-in fade-in zoom-in duration-300">
+               <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]">
                   <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
                      <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
@@ -281,21 +281,26 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
             </div>
          )}
 
-         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
-            <div className="space-y-0.5">
-               <h1 className="text-xl sm:text-2xl font-semibold text-[#1E1B4B]">Institution Verification</h1>
-               <p className="text-sm text-slate-400">Manage and track your institutional credentials</p>
+         <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 shrink-0">
+                  <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+               </div>
+               <div>
+                  <h1 className="text-lg font-bold text-[#1E1B4B] leading-tight">Verification Center</h1>
+                  <p className="text-[11px] text-slate-400 font-medium">Manage institutional credentials</p>
+               </div>
             </div>
 
             <Button
                onClick={() => setShowUploadForm(!showUploadform)}
                className={cn(
-                  "h-10 px-5 rounded-lg font-semibold text-xs transition-all shadow-sm flex items-center gap-2 shrink-0 w-full sm:w-auto justify-center",
-                  showUploadform ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+                  "h-9 px-4 rounded-lg font-bold text-[11px] flex items-center gap-2 shrink-0 transition-none hover:scale-100 active:scale-100",
+                  showUploadform ? "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-100" : "bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-md shadow-blue-100"
                )}
             >
-               {showUploadform ? <X className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
-               {showUploadform ? "Cancel" : "Upload Document"}
+               {showUploadform ? <X className="w-3.5 h-3.5" /> : <PlusCircle className="w-3.5 h-3.5" />}
+               {showUploadform ? "Cancel" : "Upload New"}
             </Button>
          </div>
 
@@ -327,13 +332,13 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
 
          {/* Inline Upload Form (Simple) */}
          {showUploadform && (
-            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 transition-all animate-in slide-in-from-top-4 duration-500 overflow-hidden">
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 overflow-hidden">
                {pendingFile ? (
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                      {/* Left: Configuration & Details */}
                      <div className="lg:col-span-5 space-y-6">
                         <div className="space-y-1">
-                           <h3 className="text-lg font-bold text-[#1E1B4B]">Review & Confirm</h3>
+                           <h3 className="text-lg font-bold text-[#1E1B4B]">Review & Conform</h3>
                            <p className="text-sm text-slate-500">Ensure the document category matches your file.</p>
                         </div>
 
@@ -364,11 +369,11 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                         <div className="flex flex-col gap-3 pt-2">
                            <Button
                               onClick={handleFinalizeUpload}
-                              className="h-12 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm shadow-lg shadow-blue-200 transition-all active:scale-[0.98]"
+                              className="h-12 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm shadow-lg shadow-blue-200"
                               disabled={uploading}
                            >
                               {uploading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <FileUp className="w-5 h-5 mr-2" />}
-                              Confirm 
+                              Conform 
                            </Button>
                            <Button
                               variant="outline"
@@ -385,12 +390,12 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                      <div className="lg:col-span-7 space-y-3">
                         <div className="flex items-center justify-between px-1">
                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Preview
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Live Preview
                            </span>
                            <span className="text-[10px] font-bold text-slate-300">SECURE VIEWER</span>
                         </div>
                         <div className="relative aspect-[4/5] lg:aspect-auto lg:h-[500px] bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-inner group">
-                           <div className="absolute inset-0 flex items-center justify-center bg-slate-50 group-hover:bg-white transition-colors duration-500">
+                           <div className="absolute inset-0 flex items-center justify-center bg-white">
                               {pendingFile && previewData?.url ? (
                                  pendingFile.type.startsWith('image/') ? (
                                     <img
@@ -412,7 +417,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                                  </div>
                               )}
                            </div>
-                           <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <div className="absolute bottom-4 right-4 transition-opacity z-20">
                               <div className="px-3 py-1.5 bg-slate-900/80 backdrop-blur-md rounded-lg text-[10px] text-white font-bold">
                                  PREVIEW MODE
                               </div>
@@ -458,54 +463,69 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
             </div>
          )}
 
-         {/* Required Documents List - Backend Data only */}
-         <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-[#1E1B4B]">Uploaded Documents</h2>
-            <div className="space-y-3">
+         <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+               <h2 className="text-[13px] font-bold text-[#1E1B4B] uppercase tracking-wider">Secure Vault</h2>
+               <span className="text-[10px] font-bold text-slate-300">{documents.length} Records</span>
+            </div>
+            
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
                {loading ? (
-                  <div className="py-20 flex flex-col items-center justify-center gap-3"><Loader2 className="w-8 h-8 animate-spin text-slate-200" /><p className="text-xs text-slate-300">Syncing with vault...</p></div>
+                  <div className="py-20 flex flex-col items-center justify-center gap-3">
+                     <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
+                     <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Syncing Records...</p>
+                  </div>
                ) : documents.length > 0 ? (
-                  documents.map((doc) => {
-                     const isImg = doc.document_file.match(/\.(jpg|jpeg|png|webp|gif|svg)/i);
-                     const thumbUrl = normalizeMediaUrl(doc.document_file);
-                     return (
-                        <div key={doc.id} className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col gap-3 hover:border-indigo-100 transition-all shadow-sm">
-                           <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shrink-0">
-                                 {isImg ? <img src={thumbUrl} alt="Preview" className="w-full h-full object-cover" /> : <FileText className="w-6 h-6 text-slate-300" />}
+                  <div className="divide-y divide-slate-50">
+                     {documents.map((doc) => {
+                        const isImg = doc.document_file.match(/\.(jpg|jpeg|png|webp|gif|svg)/i);
+                        const thumbUrl = normalizeMediaUrl(doc.document_file);
+                        return (
+                           <div key={doc.id} className="p-3 sm:p-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors group">
+                              <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:border-indigo-100 transition-all">
+                                 {isImg ? <img src={thumbUrl} alt="Preview" className="w-full h-full object-cover" /> : <FileText className="w-5 h-5 text-slate-300" />}
                               </div>
-                              <div className="flex-1 min-w-0 space-y-0.5">
-                                 <h4 className="text-[13px] font-semibold text-[#1E1B4B] capitalize leading-none truncate">{doc.document_type.replace(/_/g, " ")}</h4>
-                                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                                    <p className="text-[10px] font-medium text-slate-400 flex items-center gap-1"><Calendar className="w-2.5 h-2.5" /> {new Date(doc.created_at).toLocaleDateString('en-GB')}</p>
+                              
+                              <div className="flex-1 min-w-0">
+                                 <h4 className="text-[13px] font-bold text-[#1E1B4B] capitalize truncate">{doc.document_type.replace(/_/g, " ")}</h4>
+                                 <div className="flex items-center gap-3 mt-0.5">
+                                    <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-tighter">
+                                       <Calendar className="w-3 h-3" /> {new Date(doc.created_at).toLocaleDateString('en-GB')}
+                                    </p>
+                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
                                     <span className={cn(
-                                       "text-[9px] font-bold uppercase tracking-tight",
+                                       "text-[10px] font-bold uppercase tracking-tight",
                                        doc.status === 'approved' ? "text-emerald-600" : (doc.status === 'rejected' ? "text-rose-600" : "text-amber-500")
                                     )}>
-                                       {doc.status || "Pending"}
+                                       {doc.status || "Pending Review"}
                                     </span>
                                  </div>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                 <Button onClick={() => handlePreview(doc)} variant="outline" size="sm" className="h-8 px-3 rounded-lg text-[#1E1B4B] border-slate-200 hover:bg-slate-50 text-[11px] font-semibold flex items-center gap-1.5">
-                                    <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Preview</span>
-                                 </Button>
-                              </div>
+
+                              <Button 
+                                 onClick={() => handlePreview(doc)} 
+                                 variant="outline" 
+                                 size="sm" 
+                                 className="h-8 px-3 rounded-lg bg-white border-slate-200 text-indigo-600 hover:bg-slate-50 text-[11px] font-bold flex items-center gap-2 shadow-sm"
+                              >
+                                 <Eye className="w-3.5 h-3.5" /> <span className="hidden sm:inline">View Details</span>
+                              </Button>
                            </div>
-                        </div>
-                     );
-                  })
+                        );
+                     })}
+                  </div>
                ) : (
-                  <div className="py-32 text-center border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center animate-in fade-in">
-                     <PlusCircle className="w-12 h-12 text-slate-100 mb-4" />
-                     <h3 className="text-sm font-semibold text-slate-400">Vault Currently Empty</h3>
-                     <p className="text-xs text-slate-300 mt-1 max-w-[200px]">Use the upload button at the top to add your first document.</p>
+                  <div className="py-24 text-center flex flex-col items-center justify-center">
+                     <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                        <PlusCircle className="w-8 h-8 text-slate-200" />
+                     </div>
+                     <h3 className="text-sm font-bold text--400 uppercase tracking-widest">Vault Empty</h3>
+                     <p className="text-[11px] text-slate-300 mt-1">Upload institutional documents to start.</p>
                   </div>
                )}
             </div>
          </div>
 
-         {/* Hidden File Input */}
          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".svg,.jpg,.jpeg,.png,.webp,.pdf" disabled={uploading} />
       </div>
    );

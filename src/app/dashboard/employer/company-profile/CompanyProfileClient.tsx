@@ -78,8 +78,8 @@ export default function CompanyProfileClient({
       { key: "company_description", label: "Detailed introduction", tab: "identity" as TabType },
       { key: "email", label: "Official Email", tab: "contact" as TabType },
       { key: "address", label: "Physical Address", tab: "location" as TabType },
-      { key: "city", label: "Settlement / City", tab: "location" as TabType },
-      { key: "country", label: "Nation / Country", tab: "location" as TabType },
+      { key: "city", label: "City", tab: "location" as TabType },
+      { key: "country", label: "Country", tab: "location" as TabType },
     ];
 
     const fieldsToValidate = tab ? allFields.filter(f => f.tab === tab) : allFields;
@@ -652,7 +652,7 @@ export default function CompanyProfileClient({
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.city ? "text-red-500" : "text-slate-500")}>
-                      Settlement / City <span className="text-red-500 ml-0.5">*</span>
+                       City <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Input
                       name="city"
@@ -666,7 +666,7 @@ export default function CompanyProfileClient({
                   </div>
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.country ? "text-red-500" : "text-slate-500")}>
-                      Nation / Country <span className="text-red-500 ml-0.5">*</span>
+                      Country <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <Input
                       name="country"
@@ -688,7 +688,7 @@ export default function CompanyProfileClient({
                         "text-[10px] font-bold px-1 capitalize transition-colors",
                         errors.location ? "text-red-500" : "text-slate-500"
                       )}>
-                        Geospatial Intelligence <span className="text-red-500 ml-0.5">*</span>
+                        Live Location <span className="text-red-500 ml-0.5">*</span>
                       </Label>
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 whitespace-nowrap shadow-xs">Live Engine</span>
@@ -929,7 +929,7 @@ export default function CompanyProfileClient({
               <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
                 <MapPin className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-semibold text-black tracking-tight">Institutional Location</h3>
+              <h3 className="text-base font-semibold text-black tracking-tight">Institute Location</h3>
             </div>
 
             <div className="space-y-4">
