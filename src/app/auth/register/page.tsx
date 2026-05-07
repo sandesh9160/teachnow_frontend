@@ -147,7 +147,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-2 md:py-4">
+    <div className="flex flex-1 items-start md:items-center justify-center bg-white px-4 pt-8 pb-10 md:py-12">
       <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-[1.2fr_1.8fr]">
         {/* Left - Illustration */}
         <div className="hidden flex-col items-center justify-center gap-8 bg-muted/10 p-8 md:flex border-r border-border">

@@ -101,7 +101,7 @@ function LoginContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4 py-4 md:py-6">
+    <div className="flex flex-1 items-start md:items-center justify-center bg-white px-4 pt-8 pb-10 md:py-12">
       <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-2">
 
         {/* LEFT PANEL — White + brand */}

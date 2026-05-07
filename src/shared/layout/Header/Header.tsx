@@ -595,9 +595,9 @@ const Header = ({
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" ref={navRef}>
       <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Logo Section */}
-        <Link href="/" className="flex items-center gap-3 group shrink-0" onClick={closeAll}>
+        <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
               <img 
                 src={companyLogo} 
                 alt={companyName} 
@@ -610,11 +610,11 @@ const Header = ({
               />
             </div>
           ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-lg sm:text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">
               {companyName[0] || "T"}
             </div>
           )}
-          <span className="font-display text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none">
+          <span className="font-display text-base sm:text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none block">
             {brandSecondaryPart}
             {brandPrimaryPart ? (
               <span className="text-primary">{companyName.includes(" ") ? " " : ""}{brandPrimaryPart}</span>
@@ -676,16 +676,15 @@ const Header = ({
           />
         </div>
 
-        {/* Mobile Toggle */}
-        <div className="flex lg:hidden items-center gap-2 sm:gap-3">
-          {!isLoggedIn && (
-            <Link 
-              href="/auth/login" 
-              className="text-[12px] font-bold text-primary px-4 py-2 bg-primary/5 rounded-lg whitespace-nowrap transition-all active:scale-95 border border-primary/10"
-            >
-              Register / Login
-            </Link>
-          )}
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-3">
+            {!isLoggedIn && (
+              <Link 
+                href="/auth/login" 
+                className="text-[11px] sm:text-[12px] font-bold text-primary px-2 sm:px-4 py-2 bg-primary/5 rounded-lg whitespace-nowrap transition-all active:scale-95 border border-primary/10"
+              >
+                Register / Login
+              </Link>
+            )}
           <button
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-50 transition-colors border border-gray-100"
             onClick={() => setMobileOpen(!mobileOpen)}

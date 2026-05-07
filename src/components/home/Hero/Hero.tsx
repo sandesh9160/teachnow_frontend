@@ -24,14 +24,14 @@ export const Hero = ({
       {/* Background layer */}
       {imageUrl && (
         <div className="absolute inset-0">
-           <img 
-             src={imageUrl}
-             alt=""
-             className="w-full h-full object-cover object-center"
-             fetchPriority="high"
-             loading="eager"
-             decoding="sync"
-           />
+          <img
+            src={imageUrl}
+            alt=""
+            className="w-full h-full object-cover object-center"
+            fetchPriority="high"
+            loading="eager"
+            decoding="sync"
+          />
         </div>
       )}
 
