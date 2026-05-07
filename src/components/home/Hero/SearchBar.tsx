@@ -85,25 +85,25 @@ export function SearchBar({ }: SearchBarProps) {
     const activeQuery = typeof searchQuery === "string" ? searchQuery : query;
     const activeCity = typeof searchCity === "string" ? searchCity : city;
 
-    // Auto-confirm if exact match found in allLocations or if list is still loading
-    const isCityValidInternal = !activeCity.trim() || allLocations.length === 0 || allLocations.some(loc => loc.name.toLowerCase() === activeCity.toLowerCase().trim());
+    // Validate city against the locations list
+    const isCityValid = !activeCity.trim() || allLocations.length === 0 || allLocations.some(loc => loc.name.toLowerCase() === activeCity.toLowerCase().trim());
 
-    if (activeCity.trim() && !isCityValidInternal) {
-      setCity(""); // Clear the invalid text
+    let finalQuery = activeQuery.trim();
+    let finalCity = activeCity.trim();
+
+    // If city is invalid, we ignore it for the search but keep the text in the input
+    if (finalCity && !isCityValid) {
+      finalCity = "";
+    }
+
+    // If both are empty, just go to the main jobs page
+    if (!finalQuery && !finalCity) {
+      router.push("/jobs");
       return;
     }
 
-    if (!activeQuery.trim() && !activeCity.trim()) return;
-
-    console.log("🚀 [Homepage Search] Redirecting to:", {
-      query: activeQuery,
-      city: activeCity,
-    });
-
-    if (!activeQuery.trim() && !activeCity.trim()) return;
-
     // Generate SEO-friendly slug
-    const combinedQuery = [activeQuery.trim(), activeCity.trim()]
+    const combinedQuery = [finalQuery, finalCity]
       .filter(Boolean)
       .join(" ");
     
@@ -113,9 +113,11 @@ export function SearchBar({ }: SearchBarProps) {
       .replaceAll(/[^a-z0-9]+/g, "-")
       .replaceAll(/^-+|-+$/g, "");
 
-    if (!slug) return;
+    if (!slug) {
+      router.push("/jobs");
+      return;
+    }
 
-    console.log("🚀 [Homepage Search] Redirecting to slug:", slug);
     router.push(`/jobs/${slug}`);
   };
 
@@ -250,13 +252,9 @@ export function SearchBar({ }: SearchBarProps) {
         </div>
 
         <Button
-          className={`px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-3 ${
-            (!query.trim() && !city.trim()) || (!!city.trim() && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === city.toLowerCase().trim()))
-              ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-              : "bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white shadow-xl shadow-indigo-100"
-          }`}
+          className="px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-3 bg-button-gradient hover:scale-[1.02] active:scale-[0.98] text-white shadow-xl shadow-indigo-100 disabled:opacity-70"
           onClick={() => handleSearch()}
-          disabled={isLoading || (!query.trim() && !city.trim()) || (!!city.trim() && allLocations.length > 0 && !allLocations.some(loc => loc.name.toLowerCase() === city.toLowerCase().trim()))}
+          disabled={isLoading}
         >
           <Search className="h-5 w-5" />
           <span>Search Jobs</span>

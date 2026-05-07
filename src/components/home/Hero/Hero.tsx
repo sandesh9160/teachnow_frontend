@@ -37,7 +37,7 @@ export const Hero = ({
 
       {/* No overlay to show exact image */}
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-12 pb-20 sm:pt-16 sm:pb-24 text-center">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-6 pb-16 sm:pt-16 sm:pb-24 text-center">
         <div className="mx-auto max-w-5xl">
           <h1 className="font-display text-5xl sm:text-6xl lg:text-[72px] font-extrabold text-[#1a202c] leading-[1.1] tracking-tight">
             Find Teaching Jobs at <br />
@@ -81,7 +81,7 @@ export const Hero = ({
         </div>
 
         {/* Search Bar Section */}
-        <div className="mt-10 max-w-5xl mx-auto relative z-20">
+        <div className="mt-6 md:mt-10 max-w-5xl mx-auto relative z-20">
           <SearchBar />
 
           {/* Popular Searches */}
