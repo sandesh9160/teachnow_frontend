@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Institution, Job } from "@/types/homepage";
 import { normalizeMediaUrl } from "@/services/api/client";
 import {
@@ -16,8 +17,7 @@ import {
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { sanitizeSlug } from "@/lib/utils";
 import { Button } from "@/shared/ui/Buttons/Buttons";
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 
@@ -33,13 +33,7 @@ export default function InstitutionDetailsView({
   similarCompanies 
 }: Readonly<InstitutionDetailsViewProps>) {
   const router = useRouter();
-  const [isLoaded, setIsLoaded] = useState(false);
-
   const [mapLoading, setMapLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const companyLogo = normalizeMediaUrl(company?.company_logo);
   const logoFallback = (company?.company_name?.[0] || "I").toUpperCase();
@@ -52,7 +46,7 @@ export default function InstitutionDetailsView({
   const jobsCount = companyJobs.length;
 
   return (
-    <div className={`min-h-screen bg-[#F8FAFC] pb-20 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
       {/* Breadcrumb Bar */}
       <div className="bg-white border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
@@ -68,7 +62,7 @@ export default function InstitutionDetailsView({
               {/* Institution Logo */}
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#F1F5F9] border border-slate-100 p-2">
                 {companyLogo ? (
-                  <img src={companyLogo} alt={company.company_name} className="h-full w-full object-contain" />
+                  <Image src={companyLogo} alt={company.company_name} width={80} height={80} className="h-full w-full object-contain" priority />
                 ) : (
                   <span className="text-4xl font-black text-slate-300">{logoFallback}</span>
                 )}
@@ -239,7 +233,7 @@ export default function InstitutionDetailsView({
                   >
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-all">
                       {normalizeMediaUrl(c.company_logo) ? (
-                        <img src={normalizeMediaUrl(c.company_logo)} alt="Logo" className="h-full w-full object-contain p-2" />
+                        <Image src={normalizeMediaUrl(c.company_logo)} alt="Logo" width={44} height={44} className="h-full w-full object-contain p-2" loading="lazy" />
                       ) : (
                         <span className="text-sm font-black text-slate-300">{(c.company_name?.[0] || "I").toUpperCase()}</span>
                       )}

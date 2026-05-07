@@ -2,6 +2,7 @@
 
 import { Clock, Calendar } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { normalizeMediaUrl } from "@/services/api/client";
 
 interface BlogCardProps {
@@ -24,9 +25,10 @@ const BlogCard = ({ title, excerpt, readTime, date, slug, image }: BlogCardProps
     >
       <div className="h-44 overflow-hidden relative">
         {image ? (
-          <img 
+          <Image 
             src={imageUrl} 
             alt={title} 
+            fill
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" 
             loading="lazy" 
           />

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NavigationData, Menu as NavMenu } from "@/types/homepage";
 import type { DashboardRole } from "@/types/session";
@@ -396,9 +397,11 @@ const DesktopAuth = ({
       >
         <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display">
           {avatarSrc && !avatarError ? (
-            <img
+            <Image
               src={avatarSrc}
               alt={user.name}
+              width={32}
+              height={32}
               className="h-full w-full object-cover"
               onError={() => setAvatarError(true)}
             />
@@ -598,15 +601,14 @@ const Header = ({
         <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-              <img 
+              <Image 
                 src={companyLogo} 
                 alt={companyName} 
                 className="h-full w-full object-contain" 
-                width="40" 
-                height="40" 
+                width={40} 
+                height={40} 
+                priority 
                 fetchPriority="high" 
-                loading="eager"
-                decoding="sync"
               />
             </div>
           ) : (

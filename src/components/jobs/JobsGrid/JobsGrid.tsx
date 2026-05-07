@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import Image from "next/image";
 import JobCard from "@/shared/cards/JobCard/JobCard";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
@@ -22,9 +23,11 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
         <div className="flex flex-col items-center justify-center py-10 animate-in fade-in duration-700">
           <div className="relative">
             <div className="h-24 w-24 rounded-[22%] bg-white flex items-center justify-center p-2 animate-pulse shadow-2xl shadow-blue-900/10 border border-slate-100">
-              <img
+              <Image
                 src="/images/branded-logo.png"
                 alt="TeachNow Logo"
+                width={96}
+                height={96}
                 className="h-full w-full object-contain"
               />
             </div>

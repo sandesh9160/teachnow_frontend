@@ -3,11 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: '**.example.com' },
-      { protocol: 'http', hostname: 'localhost' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'via.placeholder.com' },
-      { protocol: 'https', hostname: '**.jobsvedika.in' },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
     ],
   },
   turbopack: {}, // ✅ just enable Turbopack

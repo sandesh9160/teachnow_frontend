@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import AutoScrollCarousel from "@/shared/ui/Carousel/AutoScrollCarousel";
 import { City } from "@/types/homepage";
 import { normalizeMediaUrl } from "@/services/api/client";
@@ -46,10 +47,12 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
                 className="group relative shrink-0 w-[300px] h-[200px] overflow-hidden rounded-[20px] shadow-lg transition-all duration-500"
               >
                 {imageUrl ? (
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={city.name}
+                    fill
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="h-full w-full bg-slate-100 flex items-center justify-center font-bold text-slate-300">

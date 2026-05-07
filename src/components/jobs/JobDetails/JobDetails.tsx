@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import {
@@ -197,11 +198,15 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
       {/* Banner Section */}
       <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden bg-slate-100">
-        <img
+        <Image
           src={bannerImg}
-          alt="Banner"
+          alt="Job Banner"
+          fill
           className="w-full h-full object-cover brightness-95"
-          onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1541339907198-e08756ebafe1?q=80&w=2070&auto=format&fit=crop"; }}
+          priority
+          fetchPriority="high"
+          sizes="100vw"
+          onError={(e) => { (e.target as any).src = "https://images.unsplash.com/photo-1541339907198-e08756ebafe1?q=80&w=2070&auto=format&fit=crop"; }}
         />
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-white/60" />
       </div>
@@ -217,7 +222,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                 {/* Logo Box */}
                 <div className="flex h-14 w-14 sm:h-22 sm:w-22 shrink-0 items-center justify-center rounded-xl bg-[#ecf2ff] p-2 sm:p-3 text-primary text-lg sm:text-2xl font-bold border border-[#dbeafe]">
                   {employerLogo ? (
-                    <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
+                    <Image src={normalizeMediaUrl(employerLogo)} alt={employerName} width={88} height={88} className="h-full w-full object-contain" />
                   ) : (
                     <span>{logoFallback}</span>
                   )}
@@ -357,7 +362,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   <div className="flex items-center gap-4">
                     <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
                       {employerLogo ? (
-                        <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
+                        <Image src={normalizeMediaUrl(employerLogo)} alt={employerName} width={56} height={56} className="h-full w-full object-contain" />
                       ) : (
                         logoFallback
                       )}
@@ -407,7 +412,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                         <div className="flex items-start gap-3 mb-3 sm:mb-4">
                           <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg bg-[#ecf2ff] flex items-center justify-center text-primary font-bold text-base sm:text-lg shrink-0 border border-[#dbeafe] overflow-hidden">
                             {sLogo ? (
-                              <img src={normalizeMediaUrl(sLogo)} alt={sName} className="h-full w-full object-contain" />
+                              <Image src={normalizeMediaUrl(sLogo)} alt={sName} width={44} height={44} className="h-full w-full object-contain" />
                             ) : (
                               <span>{sFallback}</span>
                             )}
@@ -510,7 +515,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                 <div className="flex items-center gap-4">
                   <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-xl border border-white/30 shrink-0">
                     {employerLogo ? (
-                      <img src={normalizeMediaUrl(employerLogo)} alt={employerName} className="h-full w-full object-contain" />
+                      <Image src={normalizeMediaUrl(employerLogo)} alt={employerName} width={56} height={56} className="h-full w-full object-contain" />
                     ) : (
                       logoFallback
                     )}

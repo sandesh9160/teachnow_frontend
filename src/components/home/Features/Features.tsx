@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
@@ -24,10 +25,12 @@ export const Features = () => {
           {/* For Job Seekers */}
           <div className="group relative rounded-[16px] border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full">
             <div className="h-48 sm:h-56 overflow-hidden relative">
-              <img
+              <Image
                 src={teacherClassroomImg}
                 alt="Teacher in classroom"
+                fill
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
               />
             </div>
             
@@ -67,10 +70,12 @@ export const Features = () => {
           {/* For Employers */}
           <div className="group relative rounded-[16px] border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full">
             <div className="h-48 sm:h-56 overflow-hidden relative">
-              <img
+              <Image
                 src={employerHiringImg}
                 alt="Employer hiring"
+                fill
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
               />
             </div>
             

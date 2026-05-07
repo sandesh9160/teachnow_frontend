@@ -1,6 +1,6 @@
 "use client";
 
-// import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { SearchBar } from "./SearchBar";
@@ -20,17 +20,18 @@ export const Hero = ({
   const ctaItems = (cta ?? []).filter((item) => item?.is_active === undefined || item.is_active === 1);
 
   return (
-    <section className="relative w-full bg-[#F7F9FC] overflow-visible">
+    <section className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] md:min-h-[600px] flex items-center justify-center">
       {/* Background layer */}
       {imageUrl && (
         <div className="absolute inset-0">
-          <img
+          <Image
             src={imageUrl}
-            alt=""
-            className="w-full h-full object-cover object-center"
+            alt="Hero Background"
+            fill
+            className="object-cover object-center"
+            priority
             fetchPriority="high"
-            loading="eager"
-            decoding="sync"
+            sizes="100vw"
           />
         </div>
       )}
@@ -67,9 +68,11 @@ export const Hero = ({
               >
                 <Link href={item.button_link}>
                   {item.background_image && (
-                    <img
+                    <Image
                       src={normalizeMediaUrl(item.background_image)}
                       alt=""
+                      width={24}
+                      height={24}
                       className="h-6 w-6 object-contain shrink-0"
                     />
                   )}

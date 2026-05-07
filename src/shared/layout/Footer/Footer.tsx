@@ -1,5 +1,6 @@
 import { GraduationCap } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { normalizeMediaUrl } from "@/services/api/client";
 import type { FooterData, FooterTopSearch } from "@/lib/globalLayout/getGlobalLayoutData";
 
@@ -103,10 +104,13 @@ export const Footer = ({
           <div className="space-y-4">
             <Link href="/" className="mb-4 flex items-center gap-2">
               {companyLogo ? (
-                <img
+                <Image
                   src={companyLogo}
                   alt={companyName}
+                  width={32}
+                  height={32}
                   className="h-8 w-8 object-contain rounded-lg"
+                  loading="lazy"
                 />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
@@ -151,10 +155,13 @@ export const Footer = ({
                           rel={href === "#" ? undefined : "noreferrer"}
                         >
                           {link.icon ? (
-                            <img
+                            <Image
                               src={normalizeMediaUrl(link.icon)}
                               alt={link.title || "link icon"}
+                              width={16}
+                              height={16}
                               className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
+                              loading="lazy"
                             />
                           ) : null}
                           <span>{link.title}</span>
@@ -165,10 +172,13 @@ export const Footer = ({
                           className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
                         >
                           {link.icon ? (
-                            <img
+                            <Image
                               src={normalizeMediaUrl(link.icon)}
                               alt={link.title || "link icon"}
+                              width={16}
+                              height={16}
                               className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
+                              loading="lazy"
                             />
                           ) : null}
                           <span>{link.title}</span>

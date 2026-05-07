@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { ArrowRight } from "lucide-react";
 
@@ -51,10 +52,13 @@ export const JobSeekerSteps = () => {
               className="group relative rounded-[20px] bg-[#f8faff] p-5 md:p-6 transition-all duration-500 flex flex-col items-center text-center border border-slate-200 shadow-sm hover:border-blue-200 hover:shadow-md"
             >
               <div className="mb-4 h-28 w-full flex items-center justify-center">
-                <img
+                <Image
                   src={s.img}
                   alt={s.title}
+                  width={200}
+                  height={112}
                   className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
                 />
               </div>
 
