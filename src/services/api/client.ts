@@ -31,7 +31,6 @@ export type FetchOptions = {
     body?: any;
     headers?: Record<string, string>;
     cache?: RequestCache;
-    revalidate?: number | false;
     silentStatusCodes?: number[];
     auth?: boolean; // ✅ Include cookies & CSRF for auth
 };

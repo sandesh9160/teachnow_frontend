@@ -40,7 +40,6 @@ export type HeroCTAData = {
   popular_searches?: { name: string; slug: string }[];
 };
 
-const REVALIDATE_SECONDS = 60;
 
 function normalizeHeroCTA(raw: any): HeroCTAData {
   const hero = raw?.hero
@@ -71,9 +70,7 @@ function normalizeHeroCTA(raw: any): HeroCTAData {
 
 async function fetchNavigation(): Promise<NavigationData | null> {
   try {
-    const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation", {
-      revalidate: REVALIDATE_SECONDS,
-    });
+    const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation");
     const rawResponse = res as any;
     const data = res.data ?? rawResponse;
 
@@ -94,9 +91,7 @@ async function fetchNavigation(): Promise<NavigationData | null> {
 
 async function fetchFooter(): Promise<FooterData | null> {
   try {
-    const res = await fetchAPI<ApiResponse<FooterData>>("/open/home/footer", {
-      revalidate: REVALIDATE_SECONDS,
-    });
+    const res = await fetchAPI<ApiResponse<FooterData>>("/open/home/footer");
     const data = res.data || (res as any);
     const normalized: FooterData = {
       sections: Array.isArray(data?.sections) ? data.sections : [],
@@ -124,9 +119,7 @@ async function fetchFooter(): Promise<FooterData | null> {
 
 async function fetchHeroCTA(): Promise<HeroCTAData | null> {
   try {
-    const res = await fetchAPI<ApiResponse<any>>("/open/home/hero-section", {
-      revalidate: REVALIDATE_SECONDS,
-    });
+    const res = await fetchAPI<ApiResponse<any>>("/open/home/hero-section");
     const data = res.data || (res as any);
     return normalizeHeroCTA(data);
   } catch {

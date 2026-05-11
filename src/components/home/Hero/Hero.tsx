@@ -39,10 +39,16 @@ export const Hero = ({
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 pt-6 pb-16 sm:pt-16 sm:pb-24 text-center">
         <div className="mx-auto max-w-5xl">
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-[72px] font-extrabold text-[#1a202c] leading-[1.1] tracking-tight">
-            Find Teaching Jobs at <br />
-            Schools, Colleges & <br />
-            <span className="text-indigo-600">Institutes</span>
+          <h1 className="font-display text-5xl sm:text-6xl lg:text-[72px] font-extrabold text-[#1a202c] leading-[1.1] tracking-tight whitespace-pre-line">
+            {hero?.title ? (
+              hero.title
+            ) : (
+              <>
+                Find Teaching Jobs at <br />
+                Schools, Colleges & <br />
+                <span className="text-indigo-600">Institutes</span>
+              </>
+            )}
           </h1>
           <p className="mt-5 text-slate-500 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto font-medium leading-relaxed">
             {hero?.subtitle ?? "Discover thousands of teaching opportunities across India. Connect with top schools, universities, and edtech companies."}

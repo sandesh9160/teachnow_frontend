@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCategoryJobs } from "@/lib/jobs/api";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 
-export const revalidate = 300;
+
 
 type Props = {
   readonly params: Promise<{ slug: string }>;
