@@ -13,7 +13,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NavigationData, Menu as NavMenu } from "@/types/homepage";
+import { NavigationData } from "@/types/homepage";
 import type { DashboardRole } from "@/types/session";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import type { FooterData } from "@/lib/globalLayout/getGlobalLayoutData";
@@ -188,7 +188,7 @@ const SimpleDropdown = ({
         </button>
         {active && (
           <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
-            {items.map((item) => (
+            {items.map((item: any) => (
               <NavItem key={item.id} item={item} onClose={onClose} />
             ))}
             {isJobs && (
@@ -214,7 +214,7 @@ const SimpleDropdown = ({
       {active && (
         <div className="absolute left-0 top-full mt-2 w-60 rounded-xl border border-border bg-card p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-300 z-50">
           <div className="space-y-1">
-            {items.map((item) => (
+            {items.map((item: any) => (
               <NavItem key={item.id} item={item} onClose={onClose} />
             ))}
           </div>
@@ -508,7 +508,7 @@ const Header = ({
 
         {/* Navigation Links (Centered) */}
         <nav aria-label="Main Navigation" className="hidden items-center gap-0.5 xl:gap-1 lg:flex">
-          {mappedMenus.map((menu) => {
+          {mappedMenus.map((menu: any) => {
             if (menu.isMega && menu.structure) {
               return (
                 <MegaMenu
@@ -583,7 +583,7 @@ const Header = ({
       {mobileOpen && (
         <div className="border-t border-gray-50 bg-white px-2 pb-6 lg:hidden animate-in fade-in slide-in-from-top-4 duration-300 max-h-[90vh] overflow-y-auto">
           <div className="pt-4 flex flex-col gap-0.5">
-            {mappedMenus.map((menu) => {
+            {mappedMenus.map((menu: any) => {
               if (menu.isMega && menu.structure) {
                 return (
                   <MegaMenu

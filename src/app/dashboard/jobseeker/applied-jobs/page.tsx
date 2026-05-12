@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useApplications } from "@/hooks/useApplications";
-import { Loader2, Briefcase, Building2, MapPin, ExternalLink, Clock } from "lucide-react";
+import { Briefcase, Building2, MapPin, ExternalLink, Clock } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import Image from "next/image";
 
 import { normalizeMediaUrl } from "@/services/api/client";
 
