@@ -159,13 +159,14 @@ const JobCard = ({
             </div>
 
             <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className={`text-[17px] font-semibold transition-colors ${compact ? "mb-0.5" : "mb-1"} tracking-tight line-clamp-2 ${compact ? "min-h-0" : "min-h-[48px]"} leading-[1.4] ${isExpired ? "text-slate-500" : "text-black group-hover:text-blue-600"}`}>
+              <h3 className={`text-[17px] font-bold transition-colors ${compact ? "mb-0.5" : "mb-1"} tracking-tight line-clamp-2 ${compact ? "min-h-0" : "min-h-[48px]"} leading-[1.4] ${isExpired ? "text-slate-500" : "text-slate-900 group-hover:text-blue-700"}`}>
                 {title}
               </h3>
             </div>
 
             <button
               onClick={handleSave}
+              aria-label={saved ? "Remove from bookmarks" : "Add to bookmarks"}
               suppressHydrationWarning
               className="flex shrink-0 items-center justify-center w-8 h-8 transition-all active:scale-90"
             >
@@ -177,10 +178,10 @@ const JobCard = ({
           </div>
 
           {/* Company Section - Now Beside each other */}
-          <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[#0F172A]/60 text-left ${compact ? "mb-2" : "mb-3"}`}>
+          <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-600 text-left ${compact ? "mb-2" : "mb-3"}`}>
             <div className="flex items-center gap-1.5 shrink-0 max-w-[70%]">
-              <Building className="w-3.5 h-3.5 shrink-0" />
-              <p className="text-[13.5px] font-medium text-[#0F172A]/70 line-clamp-1">{company}</p>
+              <Building className="w-3.5 h-3.5 shrink-0 text-slate-500" />
+              <p className="text-[13.5px] font-bold text-slate-700 line-clamp-1">{company}</p>
             </div>
 
             {isExpired ? (
@@ -195,9 +196,9 @@ const JobCard = ({
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-[#0F172A]/60 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
+          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-bold text-slate-600 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
             <div className="flex items-center gap-1.5 max-w-[120px]">
-              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <span className="truncate">{location}</span>
             </div>
             <div className="flex items-center gap-1.5 max-w-[100px]">

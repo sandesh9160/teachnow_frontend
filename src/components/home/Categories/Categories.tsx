@@ -35,15 +35,14 @@ const CategoryIcon = ({ iconPath, id, name }: { iconPath: string | null | undefi
   }
 
   return (
-    <div className="relative w-full h-full group-hover:scale-110 transition-transform duration-300 overflow-hidden rounded-xl">
       <Image
         src={fullUrl}
-        alt="Category icon"
-        fill
-        className="object-cover"
+        alt={`${name} icon`}
+        width={48}
+        height={48}
+        className="object-cover group-hover:scale-110 transition-transform duration-300"
         onError={() => setError(true)}
       />
-    </div>
   );
 };
 
@@ -63,6 +62,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
       <Link
         key={cat.id}
         href={href}
+        aria-label={`View jobs in ${cat.name}`}
         className="group relative flex flex-col shrink-0 w-[180px] h-[165px] items-center justify-center rounded-[20px] border border-primary/20 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
       >
         {/* Icon box - matching the light blue aesthetic of the reference */}
@@ -75,7 +75,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
           <h3 className="text-[16px] font-semibold text-[#111827] group-hover:text-blue-700 transition-colors leading-tight line-clamp-2">
             {cat.name}
           </h3>
-          <p className="text-[12px] font-medium text-[#64748b]">
+          <p className="text-[12px] font-bold text-slate-600">
             {cat.active_jobs_count ?? cat.jobs_count ?? 0} {(cat.active_jobs_count ?? cat.jobs_count) === 1 ? "Job" : "Jobs"} Available
           </p>
         </div>
@@ -92,13 +92,13 @@ export const Categories = ({ categories }: CategoriesProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Popular Categories
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Explore teaching roles by category
           </p>
         </div>
 
         {/* Carousel - Centered and Styled */}
-        <AutoScrollCarousel speed={0.5} isContinuous={true} className="pb-10">
+        <AutoScrollCarousel speed={80} isContinuous={true} className="pb-10">
           {carouselItems}
         </AutoScrollCarousel>
 

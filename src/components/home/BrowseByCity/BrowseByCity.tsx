@@ -26,18 +26,19 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
       <Link
         key={city.id}
         href={`/${city.name.toLowerCase()}-jobs`}
+        aria-label={`View teaching jobs in ${city.name}`}
         className="group relative shrink-0 w-[300px] h-[200px] overflow-hidden rounded-[20px] shadow-lg transition-all duration-500"
       >
         {imageUrl ? (
           <Image
             src={imageUrl}
-            alt={city.name}
+            alt={`Teaching jobs in ${city.name}`}
             width={300}
             height={200}
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
-          <div className="h-full w-full bg-slate-100 flex items-center justify-center font-bold text-slate-300">
+          <div className="h-full w-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">
             {city.name}
           </div>
         )}
@@ -46,7 +47,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
         
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <h3 className="text-xl font-bold text-white tracking-tight leading-tight mb-1">{city.name}</h3>
-          <p className="text-sm font-medium text-white/90">
+          <p className="text-sm font-bold text-white/95">
             {city.active_jobs_count ?? city.jobs_count ?? 0} Teaching Jobs
           </p>
         </div>
@@ -69,7 +70,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
         </div>
       </div>
       <div className="max-w-none w-full px-2">
-        <AutoScrollCarousel speed={0.6} className="!gap-4 md:!gap-4">
+        <AutoScrollCarousel speed={100} className="!gap-4 md:!gap-4">
           {carouselItems}
         </AutoScrollCarousel>
       </div>

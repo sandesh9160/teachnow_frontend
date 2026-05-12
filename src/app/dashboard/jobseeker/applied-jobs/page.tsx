@@ -99,7 +99,7 @@ export default function AppliedJobsPage() {
       {/* Page Header - Compact */}
       <div className="space-y-0">
         <h1 className="text-[22px] font-bold text-black">My Applications</h1>
-        <p className="text-[12px] text-black opacity-70 font-medium">Manage your progress</p>
+        <p className="text-[12px] text-slate-600 font-medium">Manage your progress</p>
       </div>
 
       {/* Stats row - Ultra Compact */}
@@ -112,15 +112,34 @@ export default function AppliedJobsPage() {
         ].map((s, idx) => (
           <div key={idx} className="bg-white border border-slate-100 rounded-xl p-3 shadow-sm flex flex-col items-center justify-center text-center">
             <span className="text-lg font-bold text-black leading-tight">{s.value}</span>
-            <span className="text-[10px] font-semibold text-black opacity-60 capitalize">{s.label}</span>
+            <span className="text-[10px] font-bold text-slate-500 capitalize">{s.label}</span>
           </div>
         ))}
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-200 mb-2" />
-          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic animate-pulse">Loading...</p>
+        <div className="space-y-4">
+          <div className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+            <div className="divide-y divide-slate-50">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="flex gap-4 items-center">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 shrink-0" />
+                      <div className="space-y-2">
+                        <div className="h-4 w-48 bg-slate-100 rounded" />
+                        <div className="h-3 w-32 bg-slate-50 rounded" />
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="h-6 w-20 bg-slate-50 rounded-full" />
+                      <div className="h-6 w-12 bg-slate-50 rounded" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : applications.length > 0 ? (
         <div className="space-y-4">
@@ -132,10 +151,12 @@ export default function AppliedJobsPage() {
                     <div className="flex gap-4 items-center">
                       <div className="w-10 h-10 rounded-lg bg-[#E8F1FF] flex items-center justify-center shrink-0 border border-[#BFDBFE] overflow-hidden">
                         {app.job?.employer?.company_logo ? (
-                          <img
+                          <Image
                             src={normalizeMediaUrl(app.job.employer.company_logo)}
-                            alt=""
-                            className="w-full h-full object-contain p-1.5"
+                            alt={app.job.employer.company_name || "Company Logo"}
+                            width={40}
+                            height={40}
+                            className="object-contain"
                           />
                         ) : (
                           <span className="text-[#0046B5] font-bold text-sm uppercase">
@@ -146,7 +167,7 @@ export default function AppliedJobsPage() {
 
                       <div className="min-w-0">
                         <h3 className="text-[13px] font-bold text-black truncate leading-none mb-1">{app.job?.title || "Position Title"}</h3>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-black opacity-70">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-slate-600 font-medium">
                           <div className="flex items-center gap-1 min-w-0">
                             <Building2 className="w-2.5 h-2.5 shrink-0 opacity-40" />
                             <span className="text-[10.5px] font-medium truncate">{app.job?.employer?.company_name || app.company_name || "Enterprise"}</span>
@@ -169,9 +190,10 @@ export default function AppliedJobsPage() {
                       </span>
                       <Link
                         href={`/dashboard/jobseeker/applied-jobs/${app.id}`}
-                        className="flex items-center gap-1 text-[12px] font-bold text-black hover:text-[#0046B5] transition-colors"
+                        aria-label={`View details for ${app.job?.title || 'application'}`}
+                        className="flex items-center gap-1 text-[12px] font-bold text-slate-700 hover:text-[#0046B5] transition-colors"
                       >
-                        View <ExternalLink className="w-3 h-3 opacity-40" />
+                        View <ExternalLink className="w-3 h-3 opacity-60" />
                       </Link>
                     </div>
                   </div>

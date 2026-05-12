@@ -27,7 +27,7 @@ export const Hero = ({
         <div className="absolute inset-0 z-0">
           <Image
             src={imageUrl}
-            alt=""
+            alt="Find Teaching Jobs at Schools, Colleges & Institutes"
             fill
             priority
             fetchPriority="high"

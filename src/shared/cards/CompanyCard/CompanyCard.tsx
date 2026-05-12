@@ -11,6 +11,7 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
   return (
     <Link
       href={`/institutions/${cleanSlug}`}
+      aria-label={`View profile for ${name}`}
       className="group relative flex flex-col items-center text-center h-[190px] rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-500"
     >
       {/* Box Logo Section */}
@@ -18,7 +19,7 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
         {logo ? (
           <Image 
             src={logo} 
-            alt={name} 
+            alt={`${name} logo`} 
             width={56} 
             height={56} 
             className="h-full w-full object-contain overflow-hidden" 
@@ -35,19 +36,19 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
         <h3 className="text-[17px] font-semibold text-black leading-tight mb-1 line-clamp-2">
           {name}
         </h3>
-        <p className="text-[13px] font-medium text-slate-400 line-clamp-1">
+        <p className="text-[13px] font-bold text-slate-600 line-clamp-1">
           {type || "Institution"}
         </p>
       </div>
 
       {/* Metadata Row - Single Centered Line */}
-      <div className="flex items-center justify-center gap-4 text-[13px] font-medium text-slate-500 w-full mt-auto">
+      <div className="flex items-center justify-center gap-4 text-[13px] font-bold text-slate-600 w-full mt-auto">
         <div className="flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+          <MapPin className="w-3.5 h-3.5 text-slate-500" />
           <span>{city || location || "Remote"}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-slate-400" />
+          <Users className="w-3.5 h-3.5 text-slate-500" />
           <span>{openJobs} jobs</span>
         </div>
       </div>

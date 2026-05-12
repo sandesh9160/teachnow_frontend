@@ -31,44 +31,51 @@ export const metadata: Metadata = {
   },
 };
 
+import { Suspense } from "react";
+import Loading from "./loading";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <RootLayoutInner>{children}</RootLayoutInner>;
-}
-
-async function RootLayoutInner({ children }: Readonly<{ children: React.ReactNode }>) {
-  // We keep navigation and session here as they are critical for the shell (Header)
-  // Footer and HeroCTA can be fetched where needed to avoid blocking the shell, 
-  // but since they are cached, we can still fetch them here if the shell components need them.
-  const [{ navigation, footer, heroCTA }, session] = await Promise.all([
-    getGlobalLayoutData(),
-    getSessionProfile(),
-  ]);
-  const authUser = sessionUserForHeader(session);
-
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans">
         <Providers>
-          <LayoutDataProvider
-            navigationData={navigation}
-            footerData={footer}
-            heroCTA={heroCTA}
-          >
-            <LayoutWrapper
-              navigationData={navigation}
-              footerData={footer}
-              heroCTA={heroCTA}
-              authUser={authUser}
-            >
-              {children}
-            </LayoutWrapper>
-          </LayoutDataProvider>
+          <Suspense fallback={<Loading />}>
+            <RootLayoutContent>{children}</RootLayoutContent>
+          </Suspense>
         </Providers>
       </body>
     </html>
   );
-}
+}
+
+async function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Parallel fetch critical layout data and session
+  const [{ navigation, footer, heroCTA }, session] = await Promise.all([
+    getGlobalLayoutData(),
+    getSessionProfile(),
+  ]);
+  
+  const authUser = sessionUserForHeader(session);
+
+  return (
+    <LayoutDataProvider
+      navigationData={navigation}
+      footerData={footer}
+      heroCTA={heroCTA}
+    >
+      <LayoutWrapper
+        navigationData={navigation}
+        footerData={footer}
+        heroCTA={heroCTA}
+        authUser={authUser}
+      >
+        {children}
+      </LayoutWrapper>
+    </LayoutDataProvider>
+  );
+}
+

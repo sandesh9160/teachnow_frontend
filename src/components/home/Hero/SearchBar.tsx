@@ -163,6 +163,7 @@ export function SearchBar({ }: SearchBarProps) {
                 if (e.key === "Escape") setShowQuerySuggestions(false);
               }}
               placeholder="Job title, subject..."
+              aria-label="Search by job title or subject"
               autoComplete="off"
               className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
             />
@@ -226,6 +227,7 @@ export function SearchBar({ }: SearchBarProps) {
                 if (e.key === "Escape") setShowCitySuggestions(false);
               }}
               placeholder="City or remote"
+              aria-label="Search by city or location"
               autoComplete="off"
               className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
             />

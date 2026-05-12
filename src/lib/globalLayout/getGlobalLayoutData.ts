@@ -77,6 +77,90 @@ async function serverFetch<T>(endpoint: string, revalidate = 3600): Promise<T | 
   }
 }
 
+/**
+ * Navigation Mapping Utilities (Server-side)
+ */
+
+function resolveMenuHref(menu: any, parent?: any): string {
+  if (!menu) return "#";
+  let rawUrl = String(menu.url || "").trim();
+  const slug = String(menu.slug || "").trim().replace(/^\/+|\/+$/g, "");
+  const parentSlug = String(parent?.slug || "").trim().toLowerCase();
+
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  if (rawUrl.startsWith("open/")) rawUrl = "/" + rawUrl.replace(/^open\//, "");
+  else if (rawUrl.startsWith("/open/")) rawUrl = rawUrl.replace(/^\/open\//, "/");
+
+  if (parentSlug === "jobs" && slug) return `/jobs/${slug}`;
+  if ((parentSlug === "institutes" || parentSlug === "institutions") && slug) return `/institutions/${slug}`;
+
+  if (slug && !["categories", "institutes", "institutions", "company", "employer"].includes(slug.toLowerCase())) {
+     if (slug.toLowerCase() === "jobs") return "/jobs";
+     return `/${slug}`;
+  }
+  return rawUrl || "/";
+}
+
+function mapNavigationData(navData: NavigationData | null): any[] {
+  if (!navData?.menus) return [];
+  const allMenusFlattened: any[] = [];
+  const flatten = (items: any[]) => {
+    if (!Array.isArray(items)) return;
+    items.forEach(item => {
+      allMenusFlattened.push(item);
+      const kids = item.children || item.children_recursive || [];
+      if (kids.length > 0) flatten(kids);
+    });
+  };
+  flatten(navData.menus);
+
+  const menuMap = new Map<number, any>();
+  allMenusFlattened.forEach((m: any) => {
+    const mChildren = m.children || m.children_recursive || [];
+    menuMap.set(m.id, { ...m, _children: [...mChildren] });
+  });
+
+  const mapItem = (item: any, parent?: any): any => {
+    const syncedItem = menuMap.get(item.id) || item;
+    const children = (syncedItem._children || [])
+      .filter((c: any) => c.is_active === 1 && c.show_in_nav === 1)
+      .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
+
+    const mappedChildren = children.map((c: any) => mapItem(c, syncedItem));
+    return {
+      ...syncedItem,
+      url: resolveMenuHref(syncedItem, parent),
+      children: mappedChildren,
+      hasChildren: mappedChildren.length > 0,
+      hasGrandChildren: mappedChildren.some((c: any) => c.hasChildren)
+    };
+  };
+
+  return Array.from(menuMap.values())
+    .filter((m: any) => m.is_active === 1 && (!m.parent_id || m.parent_id === null) && (m.show_in_nav === 1 || m.slug?.toLowerCase().includes("job") || m.title?.toLowerCase().includes("job")))
+    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+    .map((root: any) => {
+      const mapped = mapItem(root);
+      const slug = String(root.slug || "").toLowerCase();
+      const title = String(root.title || "").toLowerCase();
+      const isJobsMenu = slug.includes("jobs") || title.includes("job");
+      const isInstitutionsMenu = ["institutes", "institutions"].includes(slug);
+      const isMega = isJobsMenu || isInstitutionsMenu || mapped.hasGrandChildren;
+
+      let structure: any = null;
+      if (mapped.hasChildren) {
+        structure = isMega ? { sections: mapped.children } : mapped.children;
+      }
+
+      return {
+        ...mapped,
+        isMega: isMega && !!structure && !Array.isArray(structure),
+        isJobs: isJobsMenu,
+        structure
+      };
+    });
+}
+
 function normalizeHeroCTA(raw: any): HeroCTAData {
   const hero = raw?.hero
     ? {
@@ -103,18 +187,23 @@ function normalizeHeroCTA(raw: any): HeroCTAData {
   return { hero, cta, popular_searches };
 }
 
-async function fetchNavigation(): Promise<NavigationData | null> {
+async function fetchNavigation(): Promise<any | null> {
   const res = await serverFetch<ApiResponse<NavigationData>>("/open/home/navigation");
   if (!res) return null;
   
   const rawResponse = res as any;
   const data = res.data ?? rawResponse;
   const menus = Array.isArray(data) ? data : (data?.menus || []);
-
-  return {
+  
+  const navData = {
     ...(typeof data === 'object' && !Array.isArray(data) ? data : {}),
     menus,
     company_logos: data?.company_logos || rawResponse?.company_logos || [],
+  };
+
+  return {
+    ...navData,
+    mappedMenus: mapNavigationData(navData)
   };
 }
 

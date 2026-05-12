@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 
 export const revalidate = 60; // Revalidate every 60 seconds
@@ -12,7 +13,8 @@ import Categories from "@/components/home/Categories/Categories";
 import { 
   FeaturedJobsSkeleton, 
   FeaturedInstitutionsSkeleton, 
-  BrowseByCitySkeleton 
+  BrowseByCitySkeleton,
+  CategoriesSkeleton
 } from "@/components/home/HomeSkeletons";
 
 // Dynamic Components (Deferred)
@@ -46,68 +48,110 @@ import { getBlogs } from "@/hooks/useBlogs";
 
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
-// Types
-import {
-  Job,
-  Institution,
-  City,
-  Blog,
-  Stats,
-  TestimonialData,
-  FAQData,
-  Category
-} from "@/types/homepage";
+
+// Async Data Wrappers for Streaming
+async function CategoriesSection() {
+  const categories = await getCategories();
+  if (!categories || categories.length === 0) return null;
+  return <Categories categories={categories} />;
+}
+
+async function FeaturedInstitutionsSection() {
+  const institutions = await getFeaturedInstitutions();
+  if (!institutions || institutions.length === 0) return null;
+  return <FeaturedInstitutions institutions={institutions} />;
+}
+
+async function FeaturedJobsSection() {
+  const jobs = await getFeaturedJobs();
+  if (!jobs || jobs.length === 0) return null;
+  return <FeaturedJobs jobs={jobs} />;
+}
+
+async function BrowseByCitySection() {
+  const [cities, stats] = await Promise.all([getTopCities(), getStats()]);
+  if (!cities || cities.length === 0) return null;
+  return <BrowseByCity cities={cities} totalJobs={stats?.total_jobs} />;
+}
+
+async function StatsSection() {
+  const stats = await getStats();
+  if (!stats) return null;
+  return <HeroStats stats={stats} />;
+}
+
+async function TestimonialsSection() {
+  const testimonials = await getTestimonials();
+  if (!testimonials || testimonials.length === 0) return null;
+  return <Testimonial testimonials={testimonials} />;
+}
+
+async function FAQSection() {
+  const faqs = await getFAQs();
+  if (!faqs || faqs.length === 0) return null;
+  return <Faq faqs={faqs} />;
+}
+
+async function BlogsSection() {
+  const blogs = await getBlogs();
+  if (!blogs || blogs.length === 0) return null;
+  return <BlogSections blogs={blogs} />;
+}
 
 export default async function HomePage() {
-  // Safety defaults for all data sections
-  let jobs: Job[] = [];
-  let institutions: Institution[] = [];
-  let cities: City[] = [];
-  let blogs: Blog[] = [];
-  let testimonials: TestimonialData[] = [];
-  let faqs: FAQData[] = [];
-  let categories: Category[] = [];
-  let stats: Stats | null = null;
   const { heroCTA } = await getGlobalLayoutData();
   const hero = heroCTA?.hero ?? null;
   const cta = heroCTA?.cta ?? [];
 
-  try {
-    const results = await Promise.all([
-      getFeaturedJobs(),
-      getFeaturedInstitutions(),
-      getTopCities(),
-      getBlogs(),
-      getStats(),
-      getTestimonials(),
-      getFAQs(),
-      getCategories(),
-    ]);
-
-    // Safely assign results back to variables
-    [jobs, institutions, cities, blogs, stats, testimonials, faqs, categories] = results;
-  } catch (error) {
-    //console.error("Critical error in HomePage data collection:", error);
-    // Page will still render with initialized empty arrays/nulls above
-  }
-
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Hero renders immediately as it uses layout-level cached data */}
       <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
-      {categories && categories.length > 0 && <Categories categories={categories} />}
+      
+      <Suspense fallback={<CategoriesSkeleton />}>
+        <CategoriesSection />
+      </Suspense>
 
-      {institutions && institutions.length > 0 && <FeaturedInstitutions institutions={institutions} />}
-      {cities && cities.length > 0 && <BrowseByCity cities={cities} totalJobs={stats?.total_jobs} />}
-      {jobs && jobs.length > 0 && <FeaturedJobs jobs={jobs} />}
-      {stats && <HeroStats stats={stats} />}
+      <Suspense fallback={<FeaturedInstitutionsSkeleton />}>
+        <FeaturedInstitutionsSection />
+      </Suspense>
 
-      <JobSeekerSteps />
-      <Features />
-      <EmployerSteps />
+      <Suspense fallback={<BrowseByCitySkeleton />}>
+        <BrowseByCitySection />
+      </Suspense>
 
-      {testimonials && testimonials.length > 0 && <Testimonial testimonials={testimonials} />}
-      {faqs && faqs.length > 0 && <Faq faqs={faqs} />}
-      {blogs && blogs.length > 0 && <BlogSections blogs={blogs} />}
+      <Suspense fallback={<FeaturedJobsSkeleton />}>
+        <FeaturedJobsSection />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <StatsSection />
+      </Suspense>
+
+      {/* Static-data sections still deferred for better FCP/LCP focus */}
+      <Suspense fallback={null}>
+        <JobSeekerSteps />
+      </Suspense>
+      
+      <Suspense fallback={null}>
+        <Features />
+      </Suspense>
+      
+      <Suspense fallback={null}>
+        <EmployerSteps />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <TestimonialsSection />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <FAQSection />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <BlogsSection />
+      </Suspense>
     </div>
   );
 }

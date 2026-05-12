@@ -22,11 +22,24 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
 
   useEffect(() => {
     checkScroll();
-    const timer = setTimeout(checkScroll, 1000);
-    window.addEventListener('resize', checkScroll, { passive: true });
+    
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheckScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkScroll, 100);
+    };
+
+    const companiesEl = companiesRef.current;
+    if (companiesEl) {
+      companiesEl.addEventListener('scroll', debouncedCheckScroll, { passive: true });
+    }
+    
+    window.addEventListener('resize', debouncedCheckScroll, { passive: true });
+    
     return () => {
-      window.removeEventListener('resize', checkScroll);
-      clearTimeout(timer);
+      if (companiesEl) companiesEl.removeEventListener('scroll', debouncedCheckScroll);
+      window.removeEventListener('resize', debouncedCheckScroll);
+      clearTimeout(timeoutId);
     };
   }, [institutions]);
 
@@ -58,6 +71,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={institutions.length <= 1}
+            aria-label="Scroll institutions left"
             className={`absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
               canScrollLeft 
                 ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
@@ -75,6 +89,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={institutions.length <= 1}
+            aria-label="Scroll institutions right"
             className={`absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
               canScrollRight 
                 ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
@@ -86,7 +101,6 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
 
           <div 
             ref={companiesRef} 
-            onScroll={checkScroll}
             className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-[calc(50%-120px)] md:px-12 snap-x snap-mandatory" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >

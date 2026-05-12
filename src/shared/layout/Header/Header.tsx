@@ -231,127 +231,6 @@ const SimpleDropdown = ({
   );
 };
 
-// --- Helpers for Menu Mapping ---
-
-function resolveMenuHref(menu: Partial<NavMenu> | null | undefined, parent?: NavMenu | null): string {
-  if (!menu) return "#";
-
-  let rawUrl = String(menu.url || "").trim();
-  const slug = String(menu.slug || "").trim().replace(/^\/+|\/+$/g, "");
-  const parentSlug = String(parent?.slug || "").trim().toLowerCase();
-
-  // Use the slug as the primary route identifier
-  const finalSlug = slug;
-
-  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
-
-  if (rawUrl.startsWith("open/")) rawUrl = "/" + rawUrl.replace(/^open\//, "");
-  else if (rawUrl.startsWith("/open/")) rawUrl = rawUrl.replace(/^\/open\//, "/");
-
-  // Specialized mapping for depth-based routing
-  if (parentSlug === "jobs" && finalSlug) return `/jobs/${finalSlug}`;
-  if ((parentSlug === "institutes" || parentSlug === "institutions") && finalSlug) return `/institutions/${finalSlug}`;
-
-  if (finalSlug && !["categories", "institutes", "institutions", "company", "employer"].includes(finalSlug.toLowerCase())) {
-     if (finalSlug.toLowerCase() === "jobs") return "/jobs";
-     return `/${finalSlug}`;
-  }
-
-  return rawUrl || "/";
-}
-
-function mapNavigationData(navData: NavigationData | null): any[] {
-  if (!navData?.menus) return [];
-
-  // 1. Flatten the incoming structure to ensure we have a flat list of every item available
-  const allMenusFlattened: any[] = [];
-  const flatten = (items: any[]) => {
-    if (!Array.isArray(items)) return;
-    items.forEach(item => {
-      allMenusFlattened.push(item);
-      const kids = item.children || item.children_recursive || [];
-      if (kids.length > 0) flatten(kids);
-    });
-  };
-  flatten(navData.menus);
-
-  // 2. Synchronize all menu items into a map
-  const menuMap = new Map<number, any>();
-  allMenusFlattened.forEach((m: any) => {
-    const existing = menuMap.get(m.id);
-    const mChildren = m.children || m.children_recursive || [];
-    if (!existing || mChildren.length > 0) {
-      menuMap.set(m.id, { ...m, _children: [...mChildren] });
-    }
-  });
-
-  // 3. Stitch relationships to handle cases where parent_id is set but children array was missing
-  allMenusFlattened.forEach((m: any) => {
-    if (m.parent_id && menuMap.has(m.parent_id)) {
-      const parent = menuMap.get(m.parent_id);
-      if (!parent._children.some((c: any) => c.id === m.id)) {
-        parent._children.push(m);
-      }
-    }
-  });
-
-  // 4. Recursive mapper that pulls from the synchronized menuMap
-  const mapItem = (item: any, parent?: any): any => {
-    const syncedItem = menuMap.get(item.id) || item;
-    
-    const children = (syncedItem._children || [])
-      .filter((c: any) => c.is_active === 1 && c.show_in_nav === 1)
-      .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0));
-
-    const mappedChildren = children.map((c: any) => mapItem(c, syncedItem));
-    
-    return {
-      ...syncedItem,
-      title: syncedItem.title,
-      url: resolveMenuHref(syncedItem, parent),
-      children: mappedChildren,
-      hasChildren: mappedChildren.length > 0,
-      hasGrandChildren: mappedChildren.some((c: any) => c.hasChildren)
-    };
-  };
-
-  // 5. Final tree assembly from top-level roots
-  return Array.from(menuMap.values())
-    .filter((m: any) =>
-      m.is_active === 1 &&
-      (!m.parent_id || m.parent_id === null) &&
-      (m.show_in_nav === 1 || m.slug?.toLowerCase().includes("job") || m.title?.toLowerCase().includes("job"))
-    )
-    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-    .map((root: any) => {
-      const mapped = mapItem(root);
-      const slug = String(root.slug || "").toLowerCase();
-      const title = String(root.title || "").toLowerCase();
-      const isJobsMenu = slug.includes("jobs") || title.includes("job");
-      const isInstitutionsMenu = ["institutes", "institutions"].includes(slug);
-      
-      const isMega = isJobsMenu || isInstitutionsMenu || mapped.hasGrandChildren;
-
-      let structure: any = null;
-      if (mapped.hasChildren) {
-        if (isMega) {
-          structure = {
-            sections: mapped.children
-          };
-        } else {
-          structure = mapped.children;
-        }
-      }
-
-      return {
-        ...mapped,
-        isMega: isMega && !!structure && !Array.isArray(structure),
-        isJobs: isJobsMenu,
-        structure
-      };
-    });
-}
-
 // --- Auth Sections extracted for better maintainability and lower complexity ---
 
 const DesktopAuth = ({
@@ -388,13 +267,18 @@ const DesktopAuth = ({
     <div className="relative" ref={userDropdownRef}>
       <button
         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+        aria-label="Toggle user account menu"
+        aria-haspopup="true"
+        aria-expanded={userDropdownOpen}
         className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-slate-50 transition-all group"
       >
-        <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display">
+        <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display relative">
           {avatarSrc && !avatarError ? (
-            <img
+            <Image
               src={avatarSrc}
-              alt={user.name}
+              alt={user.name || "User avatar"}
+              width={32}
+              height={32}
               className="h-full w-full object-cover"
               onError={() => setAvatarError(true)}
             />
@@ -528,60 +412,73 @@ const Header = ({
     setMobileOpen(false);
   };
 
-  // --- Dynamic Data Mapping with Fallbacks ---
-  const mappedMenus = useMemo(() => {
-    return mapNavigationData(navigationData);
-  }, [navigationData]);
+  // --- Dynamic Data Mapping with Fallbacks (Memoized) ---
+  const mappedMenus = useMemo(() => (navigationData as any)?.mappedMenus || [], [navigationData]);
 
-  const dashboardPath = user?.role === "employer" 
-    ? "/dashboard/employer" 
-    : user?.role === "recruiter" 
-      ? "/dashboard/recruiter" 
-      : "/dashboard/jobseeker";
+  const dashboardPath = useMemo(() => 
+    user?.role === "employer" 
+      ? "/dashboard/employer" 
+      : user?.role === "recruiter" 
+        ? "/dashboard/recruiter" 
+        : "/dashboard/jobseeker"
+  , [user?.role]);
 
-  // Brand Data: Robust extraction from navigation or footer data
-  const footerBrandSection = footerData?.sections?.find((s: any) =>
-    String(s?.title || "").toLowerCase().includes("teach")
-  );
-  const footerBrandLink = (footerBrandSection?.links?.find((l: any) => Boolean(l?.icon)) || footerBrandSection?.links?.[0]) as any;
+  // Brand Data: Robust extraction from navigation or footer data (Memoized)
+  const { companyName, companyLogo, brandPrimaryPart, brandSecondaryPart } = useMemo(() => {
+    const footerBrandSection = footerData?.sections?.find((s: any) =>
+      String(s?.title || "").toLowerCase().includes("teach")
+    );
+    const footerBrandLink = (footerBrandSection?.links?.find((l: any) => Boolean(l?.icon)) || footerBrandSection?.links?.[0]) as any;
 
-  const rawCompany =
-    (navigationData as any)?.companies?.list?.[0] ||
-    (navigationData as any)?.companies ||
-    (navigationData as any)?.company ||
-    (navigationData as any)?.brand ||
-    navigationData ||
-    (footerData as any)?.company ||
-    (footerData as any)?.brand ||
-    footerBrandSection ||
-    footerData;
+    const rawCompany =
+      (navigationData as any)?.companies?.list?.[0] ||
+      (navigationData as any)?.companies ||
+      (navigationData as any)?.company ||
+      (navigationData as any)?.brand ||
+      navigationData ||
+      (footerData as any)?.company ||
+      (footerData as any)?.brand ||
+      footerBrandSection ||
+      footerData;
 
-  const companyName = rawCompany?.company_name || rawCompany?.name || rawCompany?.title || footerBrandLink?.title || "TeachNow";
-  const rawLogo =
-    rawCompany?.company_logo ||
-    rawCompany?.logo ||
-    rawCompany?.brand_logo ||
-    rawCompany?.icon ||
-    footerBrandLink?.icon ||
-    footerBrandLink?.logo;
+    const name = rawCompany?.company_name || rawCompany?.name || rawCompany?.title || footerBrandLink?.title || "TeachNow";
+    const rawLogo =
+      rawCompany?.company_logo ||
+      rawCompany?.logo ||
+      rawCompany?.brand_logo ||
+      rawCompany?.icon ||
+      footerBrandLink?.icon ||
+      footerBrandLink?.logo;
 
-  const companyLogo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
+    const logo = rawLogo ? normalizeMediaUrl(rawLogo) : null;
 
-  // Custom logic for TeachNow branding or multi-word branding
-  let brandSecondaryPart = "";
-  let brandPrimaryPart = "";
+    let secondary = "";
+    let primary = "";
 
-  if (companyName.toLowerCase() === "teachnow") {
-    brandSecondaryPart = "Teach";
-    brandPrimaryPart = "Now";
-  } else {
-    const brandNameParts = companyName.split(" ").filter(Boolean);
-    brandSecondaryPart = brandNameParts.length > 1 ? brandNameParts.slice(0, -1).join(" ") : companyName;
-    brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
-  }
+    if (name.toLowerCase() === "teachnow") {
+      secondary = "Teach";
+      primary = "Now";
+    } else {
+      const parts = name.split(" ").filter(Boolean);
+      secondary = parts.length > 1 ? parts.slice(0, -1).join(" ") : name;
+      primary = parts.length > 1 ? parts.at(-1) || "" : "";
+    }
+
+    return { 
+      companyName: name, 
+      companyLogo: logo, 
+      brandPrimaryPart: primary, 
+      brandSecondaryPart: secondary 
+    };
+  }, [navigationData, footerData]);
+
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" ref={navRef}>
+    <header 
+      className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" 
+      ref={navRef}
+      suppressHydrationWarning
+    >
       <div className="flex h-20 w-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group shrink-0" onClick={closeAll}>
@@ -610,7 +507,7 @@ const Header = ({
         </Link>
 
         {/* Navigation Links (Centered) */}
-        <nav className="hidden items-center gap-0.5 xl:gap-1 lg:flex">
+        <nav aria-label="Main Navigation" className="hidden items-center gap-0.5 xl:gap-1 lg:flex">
           {mappedMenus.map((menu) => {
             if (menu.isMega && menu.structure) {
               return (

@@ -23,11 +23,24 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
 
   useEffect(() => {
     checkScroll();
-    const timer = setTimeout(checkScroll, 1000);
-    window.addEventListener('resize', checkScroll, { passive: true });
+    
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheckScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkScroll, 100);
+    };
+
+    const jobsEl = jobsRef.current;
+    if (jobsEl) {
+      jobsEl.addEventListener('scroll', debouncedCheckScroll, { passive: true });
+    }
+    
+    window.addEventListener('resize', debouncedCheckScroll, { passive: true });
+    
     return () => {
-      window.removeEventListener('resize', checkScroll);
-      clearTimeout(timer);
+      if (jobsEl) jobsEl.removeEventListener('scroll', debouncedCheckScroll);
+      window.removeEventListener('resize', debouncedCheckScroll);
+      clearTimeout(timeoutId);
     };
   }, [jobs]);
 
@@ -75,6 +88,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={jobs.length <= 1}
+            aria-label="Scroll jobs left"
             className={`absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
                 ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
@@ -91,6 +105,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               setTimeout(checkScroll, 500);
             }}
             disabled={jobs.length <= 1}
+            aria-label="Scroll jobs right"
             className={`absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
                 ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
                 : "bg-white border-slate-200 text-slate-400 opacity-60"
@@ -101,7 +116,6 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
 
           <div
             ref={jobsRef}
-            onScroll={checkScroll}
             className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8 px-[calc(50%-150px)] md:px-12 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >

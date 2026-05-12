@@ -4,7 +4,7 @@
 
 export function JobCardSkeleton({ compact }: { compact?: boolean }) {
   return (
-    <div className={`flex flex-col h-full rounded-xl border border-slate-200 bg-white ${compact ? "p-2.5" : "p-4"} animate-pulse`}>
+    <div className={`flex flex-col h-full rounded-xl border border-slate-200 bg-white ${compact ? "p-2.5" : "p-4"}`}>
       <div className={`flex items-start gap-4 ${compact ? "mb-2" : "mb-4"}`}>
         {/* Logo Skeleton */}
         <div className="w-14 h-14 shrink-0 rounded-xl bg-slate-100" />
