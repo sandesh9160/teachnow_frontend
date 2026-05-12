@@ -1,20 +1,34 @@
 import nextDynamic from "next/dynamic";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // Revalidate every 60 seconds
 
 // Components
 import Hero from "@/components/home/Hero/Hero";
 import HeroStats from "@/components/home/HeroStats/Herostats";
 import Categories from "@/components/home/Categories/Categories";
-import FeaturedInstitutions from "@/components/home/FeaturedInstitutions/FeaturedInstitutions";
-import FeaturedJobs from "@/components/home/FeaturedJobs/FeaturedJobs";
-import JobSeekerSteps from "@/components/home/Steps/JobSeekerSteps";
-import EmployerSteps from "@/components/home/Steps/EmployerSteps";
-import Features from "@/components/home/Features/Features";
-import BrowseByCity from "@/components/home/BrowseByCity/BrowseByCity";
-import Faq from "@/components/home/FAQ/FAQ";
 
-// Lazy
+// Dynamic Components (Deferred)
+// Home Skeletons
+import { 
+  FeaturedJobsSkeleton, 
+  FeaturedInstitutionsSkeleton, 
+  BrowseByCitySkeleton 
+} from "@/components/home/HomeSkeletons";
+
+// Dynamic Components (Deferred)
+const FeaturedInstitutions = nextDynamic(() => import("@/components/home/FeaturedInstitutions/FeaturedInstitutions"), {
+  loading: () => <FeaturedInstitutionsSkeleton />
+});
+const FeaturedJobs = nextDynamic(() => import("@/components/home/FeaturedJobs/FeaturedJobs"), {
+  loading: () => <FeaturedJobsSkeleton />
+});
+const JobSeekerSteps = nextDynamic(() => import("@/components/home/Steps/JobSeekerSteps"));
+const EmployerSteps = nextDynamic(() => import("@/components/home/Steps/EmployerSteps"));
+const Features = nextDynamic(() => import("@/components/home/Features/Features"));
+const BrowseByCity = nextDynamic(() => import("@/components/home/BrowseByCity/BrowseByCity"), {
+  loading: () => <BrowseByCitySkeleton />
+});
+const Faq = nextDynamic(() => import("@/components/home/FAQ/FAQ"));
 const Testimonial = nextDynamic(() => import("@/components/home/Testimonial/Testimonial"));
 const BlogSections = nextDynamic(() => import("@/components/home/BlogSections/BlogSections"));
 
@@ -78,7 +92,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen">
       <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
       {categories && categories.length > 0 && <Categories categories={categories} />}
 
@@ -94,6 +108,6 @@ export default async function HomePage() {
       {testimonials && testimonials.length > 0 && <Testimonial testimonials={testimonials} />}
       {faqs && faqs.length > 0 && <Faq faqs={faqs} />}
       {blogs && blogs.length > 0 && <BlogSections blogs={blogs} />}
-    </main>
+    </div>
   );
 }

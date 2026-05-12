@@ -1,6 +1,4 @@
-"use client";
-
-// import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { SearchBar } from "./SearchBar";
@@ -20,26 +18,32 @@ export const Hero = ({
   const ctaItems = (cta ?? []).filter((item) => item?.is_active === undefined || item.is_active === 1);
 
   return (
-    <section className="relative w-full bg-[#F7F9FC] overflow-visible">
+    <section 
+      id="main-hero" 
+      className="relative w-full min-h-[500px] lg:min-h-[600px] flex items-center bg-[#F7F9FC] overflow-visible"
+    >
       {/* Background layer */}
       {imageUrl && (
-        <div className="absolute inset-0">
-          <img
+        <div className="absolute inset-0 z-0">
+          <Image
             src={imageUrl}
             alt=""
-            className="w-full h-full object-cover object-center"
+            fill
+            priority
             fetchPriority="high"
-            loading="eager"
-            decoding="sync"
+            sizes="100vw"
+            className="object-cover object-center"
           />
         </div>
       )}
 
-      {/* No overlay to show exact image */}
-
-      <div className="relative z-10 max-w-6xl mx-auto px-4 pt-6 pb-16 sm:pt-16 sm:pb-24 text-center">
+      {/* Relative container to stay above background */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 pt-6 pb-16 sm:pt-16 sm:pb-24 text-center">
         <div className="mx-auto max-w-5xl">
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-[72px] font-extrabold text-[#1a202c] leading-[1.1] tracking-tight whitespace-pre-line">
+          <h1 
+            id="hero-heading"
+            className="font-display text-5xl sm:text-6xl lg:text-[72px] font-extrabold text-[#1a202c] leading-[1.1] tracking-tight whitespace-pre-line"
+          >
             {hero?.title ? (
               hero.title
             ) : (
@@ -59,6 +63,7 @@ export const Hero = ({
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           {ctaItems.map((item, index) => {
             const isBlue = index % 2 === 0;
+            const btnIconUrl = item.background_image ? normalizeMediaUrl(item.background_image) : null;
 
             return (
               <Button
@@ -72,10 +77,12 @@ export const Hero = ({
                 }
               >
                 <Link href={item.button_link}>
-                  {item.background_image && (
-                    <img
-                      src={normalizeMediaUrl(item.background_image)}
+                  {btnIconUrl && (
+                    <Image
+                      src={btnIconUrl}
                       alt=""
+                      width={24}
+                      height={24}
                       className="h-6 w-6 object-contain shrink-0"
                     />
                   )}
@@ -112,3 +119,4 @@ export const Hero = ({
 };
 
 export default Hero;
+

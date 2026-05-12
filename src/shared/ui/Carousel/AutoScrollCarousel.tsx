@@ -22,18 +22,30 @@ const AutoScrollCarousel = ({
   const [isPaused, setIsPaused] = useState(false);
   const animRef = useRef<number | null>(null);
   const manualPauseRef = useRef<NodeJS.Timeout | null>(null);
-  const childCount = children?.length ?? 0;
+
+  const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || childCount === 0) return;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(el);
 
     const scroll = () => {
-      // Auto-scroll logic: only move if NOT paused (pause happens during manual scroll or hover)
-      if (!isPaused && el && el.scrollWidth > el.clientWidth) {
-        el.scrollLeft += speed;
+      // Auto-scroll logic: only move if NOT paused and IS in view
+      if (!isPaused && isInView && el) {
+        const currentScroll = el.scrollLeft;
+        const oneSetWidth = el.scrollWidth / 2;
         
-        const oneSetWidth = el.scrollWidth / 4;
+        el.scrollLeft = currentScroll + speed;
+        
         if (el.scrollLeft >= oneSetWidth) {
           el.scrollLeft -= oneSetWidth;
         }
@@ -45,8 +57,9 @@ const AutoScrollCarousel = ({
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
       if (manualPauseRef.current) clearTimeout(manualPauseRef.current);
+      observer.disconnect();
     };
-  }, [isPaused, speed, childCount, isContinuous]);
+  }, [isPaused, speed, isInView]);
 
   const handleManualScroll = (direction: 'left' | 'right') => {
     const el = scrollRef.current;
@@ -110,9 +123,8 @@ const AutoScrollCarousel = ({
       >
         {children}
         {children}
-        {children}
-        {children}
       </section>
+
     </div>
   );
 };

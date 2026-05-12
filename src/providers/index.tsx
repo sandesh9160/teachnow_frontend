@@ -19,7 +19,7 @@ export function Providers({ children }: Readonly<{ children: ReactNode }>) {
           {children}
           <Toaster />
         </TooltipProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {process.env.NODE_ENV !== "production" && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     </ThemeProvider>
   );

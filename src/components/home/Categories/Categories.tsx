@@ -1,8 +1,8 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
 import { GraduationCap, BookOpen, Briefcase, Headphones, Atom, UserCheck } from "lucide-react";
 import AutoScrollCarousel from "@/shared/ui/Carousel/AutoScrollCarousel";
 import { CategoriesProps } from "@/types/components";
@@ -40,7 +40,6 @@ const CategoryIcon = ({ iconPath, id, name }: { iconPath: string | null | undefi
         src={fullUrl}
         alt="Category icon"
         fill
-        unoptimized
         className="object-cover"
         onError={() => setError(true)}
       />
@@ -50,11 +49,39 @@ const CategoryIcon = ({ iconPath, id, name }: { iconPath: string | null | undefi
 
 export const Categories = ({ categories }: CategoriesProps) => {
 
-  const uniqueCategories = Array.from(
+  const uniqueCategories = useMemo(() => Array.from(
     new Map(
       (Array.isArray(categories) ? categories : []).map((cat) => [cat.id, cat])
     ).values()
-  );
+  ), [categories]);
+
+  const carouselItems = useMemo(() => uniqueCategories.map((cat) => {
+    const cleanSlug = cat.slug ? cat.slug.replaceAll(/^[:/]+/g, "") : cat.name.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
+    const href = `/${cleanSlug}`;
+
+    return (
+      <Link
+        key={cat.id}
+        href={href}
+        className="group relative flex flex-col shrink-0 w-[180px] h-[165px] items-center justify-center rounded-[20px] border border-primary/20 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
+      >
+        {/* Icon box - matching the light blue aesthetic of the reference */}
+        <div className="relative z-10 shrink-0 flex h-12 w-12 mb-3 items-center justify-center rounded-[16px] bg-[#ecf2ff] text-[#1e3a8a] transition-all duration-300 group-hover:bg-[#1e3a8a] group-hover:text-white">
+          <CategoryIcon iconPath={cat.icon} id={cat.id} name={cat.name} />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 space-y-0.5">
+          <h3 className="text-[16px] font-semibold text-[#111827] group-hover:text-blue-700 transition-colors leading-tight line-clamp-2">
+            {cat.name}
+          </h3>
+          <p className="text-[12px] font-medium text-[#64748b]">
+            {cat.active_jobs_count ?? cat.jobs_count ?? 0} {(cat.active_jobs_count ?? cat.jobs_count) === 1 ? "Job" : "Jobs"} Available
+          </p>
+        </div>
+      </Link>
+    );
+  }), [uniqueCategories]);
 
   return (
     <section className="pt-20 pb-12 bg-white overflow-hidden relative">
@@ -72,33 +99,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
 
         {/* Carousel - Centered and Styled */}
         <AutoScrollCarousel speed={0.5} isContinuous={true} className="pb-10">
-          {uniqueCategories.map((cat) => {
-            const cleanSlug = cat.slug ? cat.slug.replaceAll(/^[:/]+/g, "") : cat.name.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
-            const href = `/${cleanSlug}`;
-
-            return (
-              <Link
-                key={cat.id}
-                href={href}
-                className="group relative flex flex-col shrink-0 w-[180px] h-[165px] items-center justify-center rounded-[20px] border border-primary/20 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
-              >
-                {/* Icon box - matching the light blue aesthetic of the reference */}
-                <div className="relative z-10 shrink-0 flex h-12 w-12 mb-3 items-center justify-center rounded-[16px] bg-[#ecf2ff] text-[#1e3a8a] transition-all duration-300 group-hover:bg-[#1e3a8a] group-hover:text-white">
-                  <CategoryIcon iconPath={cat.icon} id={cat.id} name={cat.name} />
-                </div>
-
-                {/* Content */}
-                <div className="relative z-10 space-y-0.5">
-                  <h3 className="text-[16px] font-semibold text-[#111827] group-hover:text-blue-700 transition-colors leading-tight line-clamp-2">
-                    {cat.name}
-                  </h3>
-                  <p className="text-[12px] font-medium text-[#64748b]">
-                    {cat.active_jobs_count ?? cat.jobs_count ?? 0} {(cat.active_jobs_count ?? cat.jobs_count) === 1 ? "Job" : "Jobs"} Available
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
+          {carouselItems}
         </AutoScrollCarousel>
 
       </div>

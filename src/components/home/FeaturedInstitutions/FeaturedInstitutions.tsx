@@ -22,11 +22,11 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
 
   useEffect(() => {
     checkScroll();
-    const timeout = setTimeout(checkScroll, 500);
-    window.addEventListener('resize', checkScroll);
+    const timer = setTimeout(checkScroll, 1000);
+    window.addEventListener('resize', checkScroll, { passive: true });
     return () => {
       window.removeEventListener('resize', checkScroll);
-      clearTimeout(timeout);
+      clearTimeout(timer);
     };
   }, [institutions]);
 

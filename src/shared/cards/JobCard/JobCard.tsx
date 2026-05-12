@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { MapPin, Clock3, Bookmark, Building, Users } from "lucide-react";
@@ -144,9 +145,11 @@ const JobCard = ({
           <div className={`flex items-start gap-3 ${compact ? "mb-2" : "mb-3"}`}>
             <div className={`w-14 h-14 shrink-0 rounded-xl flex items-center justify-center overflow-hidden border border-slate-50 ${isExpired ? "bg-slate-100" : "bg-[#ecf2ff]"}`}>
               {logoUrl && !logoError ? (
-                <img
+                <Image
                   src={logoUrl}
                   alt={company}
+                  width={56}
+                  height={56}
                   className="h-full w-full object-contain"
                   onError={() => setLogoError(true)}
                 />

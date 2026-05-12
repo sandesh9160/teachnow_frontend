@@ -22,18 +22,12 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
   };
 
   useEffect(() => {
-    // Extensive check sequence to ensure layout is settled
     checkScroll();
-    const t1 = setTimeout(checkScroll, 100);
-    const t2 = setTimeout(checkScroll, 500);
-    const t3 = setTimeout(checkScroll, 1000);
-
-    window.addEventListener('resize', checkScroll);
+    const timer = setTimeout(checkScroll, 1000);
+    window.addEventListener('resize', checkScroll, { passive: true });
     return () => {
       window.removeEventListener('resize', checkScroll);
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+      clearTimeout(timer);
     };
   }, [jobs]);
 

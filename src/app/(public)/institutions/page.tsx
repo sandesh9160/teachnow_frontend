@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 // import { Button } from "@/shared/ui/Buttons/Buttons";
-import { Search, MapPin, Briefcase, X, Loader2 } from "lucide-react";
+import { Search, MapPin, Briefcase, X} from "lucide-react";
 import { getCompanies } from "@/hooks/useCompanies";
 import { Institution } from "@/types/homepage";
+import { CompanyCardSkeleton } from "@/shared/cards/CompanyCard/CompanyCardSkeleton";
 
 export default function InstitutionsPage() {
   const [search, setSearch] = useState("");
@@ -62,8 +63,10 @@ export default function InstitutionsPage() {
 
       <div className="container py-8">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <CompanyCardSkeleton key={i} />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">

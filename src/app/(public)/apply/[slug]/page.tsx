@@ -40,6 +40,7 @@ import { Job } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import QuickAuthModal from "@/components/auth/QuickAuthModal";
 import Link from "next/link";
+import { ApplySkeleton } from "@/components/jobs/ApplySkeleton";
 
 // We'll define dynamic steps inside the component
 // const STEPS = ["Review Job", "Your Details", "Resume", "Submit"];
@@ -435,18 +436,15 @@ export default function ApplyJobPage() {
 
 
 
-  if (!mounted || sessionLoading) return null;
+
+
+  if (!mounted || sessionLoading) {
+    return <ApplySkeleton />;
+  }
 
   // Block the apply page entirely for unauthenticated users — redirect handled by effect above
   if (!isLoggedIn) {
-    return (
-      <div className="bg-[#F8FAFC] min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-          <p className="text-sm font-bold text-slate-400 tracking-widest uppercase">Redirecting to Login...</p>
-        </div>
-      </div>
-    );
+    return <ApplySkeleton />;
   }
 
   if (user?.role === "employer" || user?.role === "recruiter") {

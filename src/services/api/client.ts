@@ -120,20 +120,40 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
     const method = options.method ?? "GET";
     const silentCodes = options.silentStatusCodes ?? [404];
 
-    // //console.log(`[Frontend Client] ${method} ${endpoint}`, { auth: options.auth });
+    // Server-side optimization: Use native fetch for Data Cache support
+    if (typeof window === "undefined") {
+        const url = `${BASE_URL}${normalizeEndpoint(endpoint)}`;
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    ...(options.headers || {}),
+                },
+                body: options.body ? JSON.stringify(options.body) : undefined,
+                // Default revalidate to 1 hour for public data if not specified
+                next: { revalidate: options.cache === "no-store" ? 0 : 3600 },
+            });
 
+            if (!res.ok && !silentCodes.includes(res.status)) {
+                // Return empty/safe data for handled status codes
+                if (silentCodes.includes(res.status)) return {} as T;
+            }
+
+            const data = await res.json();
+            return data as T;
+        } catch (error: any) {
+            if (options.silentStatusCodes?.includes(500)) return {} as T;
+            throw error;
+        }
+    }
+
+    // Client-side: Keep Axios for withCredentials, CSRF, and interceptors
     try {
-        // Sanctum CSRF preflight for browser-side mutations
         if (method !== "GET") {
-            //console.log(`[API] CSRF preflight for ${method} ${endpoint}`);
             await getCsrfCookie();
         }
-
-        if (typeof document !== "undefined") {
-            //console.log("[API] Current Document Cookies:", document.cookie);
-        }
-
-        //console.log(`[API] ${method} ${endpoint}`, options.body ? { body: options.body } : "");
 
         const res = await api.request<T>({
             url: normalizeEndpoint(endpoint),
@@ -142,7 +162,6 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
             headers: options.headers ?? {},
             withCredentials: true,
         });
-        //console.log(`[API] Success ${method} ${endpoint}`, res.data);
         return res.data;
     } catch (error: any) {
         const status = error?.response?.status;
@@ -152,14 +171,13 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
             data: error?.response?.data,
         };
 
-        // 401 Handling is now centralized in the axios interceptor above
-
         if (!silentCodes.includes(finalError?.status)) {
-            //console.error("fetchAPI error:", finalError);
+            // console.error("fetchAPI error:", finalError);
         }
         throw finalError;
     }
 }
+
 
 // -----------------------------
 // Sanctum CSRF helper

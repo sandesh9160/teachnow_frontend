@@ -10,6 +10,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavigationData, Menu as NavMenu } from "@/types/homepage";
@@ -354,14 +355,12 @@ function mapNavigationData(navData: NavigationData | null): any[] {
 // --- Auth Sections extracted for better maintainability and lower complexity ---
 
 const DesktopAuth = ({
-  mounted,
   isLoggedIn,
   user,
   userDropdownOpen,
   setUserDropdownOpen,
   userDropdownRef,
 }: Readonly<{
-  mounted: boolean;
   isLoggedIn: boolean;
   user: any;
   userDropdownOpen: boolean;
@@ -369,8 +368,6 @@ const DesktopAuth = ({
   userDropdownRef: React.RefObject<HTMLDivElement | null>;
 }>) => {
   const [avatarError, setAvatarError] = useState(false);
-
-  if (!mounted) return <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-100" />;
 
   if (!isLoggedIn) {
     return (
@@ -392,7 +389,6 @@ const DesktopAuth = ({
       <button
         onClick={() => setUserDropdownOpen(!userDropdownOpen)}
         className="flex items-center gap-3 p-1.5 pr-2.5 rounded-xl hover:bg-slate-50 transition-all group"
-        suppressHydrationWarning
       >
         <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/10 group-hover:scale-105 transition-transform overflow-hidden font-display">
           {avatarSrc && !avatarError ? (
@@ -438,20 +434,16 @@ const DesktopAuth = ({
 };
 
 const MobileAuth = ({
-  mounted,
   isLoggedIn,
   user,
   dashboardPath,
   closeAll
 }: Readonly<{
-  mounted: boolean;
   isLoggedIn: boolean;
   user: any;
   dashboardPath: string;
   closeAll: () => void;
 }>) => {
-  if (!mounted) return <div className="h-10 w-full animate-pulse rounded-lg bg-gray-100" />;
-
   if (!isLoggedIn) {
     return (
       <div className="mt-4 flex flex-col gap-3 p-2">
@@ -503,7 +495,7 @@ const Header = ({
   footerData: FooterData | null;
   authUser: HeaderAuthUser | null;
 }>) => {
-  const [mounted, setMounted] = useState(false);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -512,9 +504,6 @@ const Header = ({
   const pathname = usePathname();
   const isLoggedIn = !!authUser;
   const user = authUser;
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -598,15 +587,13 @@ const Header = ({
         <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-              <img 
+              <Image 
                 src={companyLogo} 
                 alt={companyName} 
                 className="h-full w-full object-contain" 
-                width="40" 
-                height="40" 
-                fetchPriority="high" 
-                loading="eager"
-                decoding="sync"
+                width={40} 
+                height={40} 
+                priority
               />
             </div>
           ) : (
@@ -667,7 +654,6 @@ const Header = ({
         {/* Action Belt (Right) */}
         <div className="hidden items-center gap-4 lg:flex">
           <DesktopAuth
-            mounted={mounted}
             isLoggedIn={isLoggedIn}
             user={user}
             userDropdownOpen={userDropdownOpen}
@@ -742,7 +728,6 @@ const Header = ({
             })}
 
             <MobileAuth
-              mounted={mounted}
               isLoggedIn={isLoggedIn}
               user={user}
               dashboardPath={dashboardPath}

@@ -150,15 +150,20 @@ async function resolveSlug(slug: string) {
   const s = sanitizeSlug(slug);
   if (!s) return null;
 
-  // 1. Job
-  const job = await lookupByJob(s, slug);
-  if (job) return { type: 'job' as const, data: job.data, officialSlug: job.data.slug || String(job.data.id) };
+  // 1 & 2. Try Job and Institute in parallel (the most common high-priority hits)
+  const [jobResult, instResult] = await Promise.all([
+    lookupByJob(s, slug),
+    lookupByInstitute(s)
+  ]);
 
-  // 2. Institute
-  const inst = await lookupByInstitute(s);
-  if (inst) return { type: 'institute' as const, data: inst.data, officialSlug: inst.data.company.slug || String(inst.data.company.id) };
+  if (jobResult) {
+    return { type: 'job' as const, data: jobResult.data, officialSlug: jobResult.data.slug || String(jobResult.data.id) };
+  }
+  if (instResult) {
+    return { type: 'institute' as const, data: instResult.data, officialSlug: instResult.data.company.slug || String(instResult.data.company.id) };
+  }
 
-  // 3. Category
+  // 3. Category (often contains common teaching terms)
   const cat = await lookupByCategory(s);
   if (cat) return { type: 'category' as const, data: cat.data, officialSlug: cat.data.name.toLowerCase().replace(/\s+/g, '-') };
 

@@ -17,7 +17,7 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { sanitizeSlug } from "@/lib/utils";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 
@@ -33,13 +33,8 @@ export default function InstitutionDetailsView({
   similarCompanies 
 }: Readonly<InstitutionDetailsViewProps>) {
   const router = useRouter();
-  const [isLoaded, setIsLoaded] = useState(false);
 
   const [mapLoading, setMapLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
 
   const companyLogo = normalizeMediaUrl(company?.company_logo);
   const logoFallback = (company?.company_name?.[0] || "I").toUpperCase();
@@ -52,7 +47,7 @@ export default function InstitutionDetailsView({
   const jobsCount = companyJobs.length;
 
   return (
-    <div className={`min-h-screen bg-[#F8FAFC] pb-20 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
       {/* Breadcrumb Bar */}
       <div className="bg-white border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">

@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+import { BASE_URL, IMAGE_BASE_URL } from "@/services/api/config";
 import type {
   ApiResponse,
   NavigationData,
@@ -40,6 +40,42 @@ export type HeroCTAData = {
   popular_searches?: { name: string; slug: string }[];
 };
 
+/**
+ * Utility: Normalize Media URL (Server-side optimized)
+ */
+function normalizeMediaUrl(path?: string | null): string {
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const cleanBase = IMAGE_BASE_URL.endsWith("/")
+    ? IMAGE_BASE_URL.slice(0, -1)
+    : IMAGE_BASE_URL;
+  const cleanPath = path.replace(/^\/+/, "");
+
+  return `${cleanBase}/${cleanPath}`;
+}
+
+/**
+ * Native Fetch Wrapper for Server Components
+ * Leverages Next.js Data Cache
+ */
+async function serverFetch<T>(endpoint: string, revalidate = 3600): Promise<T | null> {
+  const url = `${BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  try {
+    const res = await fetch(url, {
+      next: { revalidate },
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    return null;
+  }
+}
 
 function normalizeHeroCTA(raw: any): HeroCTAData {
   const hero = raw?.hero
@@ -49,7 +85,6 @@ function normalizeHeroCTA(raw: any): HeroCTAData {
     }
     : null;
 
-  // API is expected to return `cta: [{ ... }]`
   const rawCta = raw?.cta;
   let ctaItems: any[] = [];
   if (Array.isArray(rawCta)) {
@@ -69,85 +104,64 @@ function normalizeHeroCTA(raw: any): HeroCTAData {
 }
 
 async function fetchNavigation(): Promise<NavigationData | null> {
-  try {
-    const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation");
-    const rawResponse = res as any;
-    const data = res.data ?? rawResponse;
+  const res = await serverFetch<ApiResponse<NavigationData>>("/open/home/navigation");
+  if (!res) return null;
+  
+  const rawResponse = res as any;
+  const data = res.data ?? rawResponse;
+  const menus = Array.isArray(data) ? data : (data?.menus || []);
 
-    // If data is an array, it's the list of menus
-    // If data is an object, it might contain a menus property
-    const menus = Array.isArray(data) ? data : (data?.menus || []);
-
-    return {
-      ...(typeof data === 'object' && !Array.isArray(data) ? data : {}),
-      menus,
-      company_logos: data?.company_logos || rawResponse?.company_logos || [],
-    };
-  } catch (error) {
-    // console.error("[fetchNavigation] Error:", error);
-    return null;
-  }
+  return {
+    ...(typeof data === 'object' && !Array.isArray(data) ? data : {}),
+    menus,
+    company_logos: data?.company_logos || rawResponse?.company_logos || [],
+  };
 }
 
 async function fetchFooter(): Promise<FooterData | null> {
-  try {
-    const res = await fetchAPI<ApiResponse<FooterData>>("/open/home/footer");
-    const data = res.data || (res as any);
-    const normalized: FooterData = {
-      sections: Array.isArray(data?.sections) ? data.sections : [],
-      top_searches: Array.isArray(data?.top_searches) ? data.top_searches : [],
-      company_logos: data?.company_logos || (res as any)?.company_logos || [],
-      company: data?.company || (res as any)?.company || null,
-    };
+  const res = await serverFetch<ApiResponse<FooterData>>("/open/home/footer");
+  if (!res) return null;
 
-    // Normalize icon URLs
-    normalized.sections = normalized.sections.map((s) => ({
-      ...s,
-      links: Array.isArray(s.links)
-        ? s.links.map((l) => ({
-          ...l,
-          icon: l?.icon ? normalizeMediaUrl(l.icon) : l?.icon ?? null,
-        }))
-        : [],
-    }));
+  const data = res.data || (res as any);
+  const normalized: FooterData = {
+    sections: Array.isArray(data?.sections) ? data.sections : [],
+    top_searches: Array.isArray(data?.top_searches) ? data.top_searches : [],
+    company_logos: data?.company_logos || (res as any)?.company_logos || [],
+    company: data?.company || (res as any)?.company || null,
+  };
 
-    return normalized;
-  } catch {
-    return null;
-  }
+  normalized.sections = normalized.sections.map((s) => ({
+    ...s,
+    links: Array.isArray(s.links)
+      ? s.links.map((l) => ({
+        ...l,
+        icon: l?.icon ? normalizeMediaUrl(l.icon) : l?.icon ?? null,
+      }))
+      : [],
+  }));
+
+  return normalized;
 }
 
 async function fetchHeroCTA(): Promise<HeroCTAData | null> {
-  try {
-    const res = await fetchAPI<ApiResponse<any>>("/open/home/hero-section");
-    const data = res.data || (res as any);
-    return normalizeHeroCTA(data);
-  } catch {
-    return null;
-  }
+  const res = await serverFetch<ApiResponse<any>>("/open/home/hero-section");
+  if (!res) return null;
+  const data = res.data || (res as any);
+  return normalizeHeroCTA(data);
 }
 
 const getGlobalLayoutDataCached = cache(async () => {
-  try {
-    const [navigation, footer, heroCTA] = await Promise.all([
-      fetchNavigation(),
-      fetchFooter(),
-      fetchHeroCTA(),
-    ]);
+  const [navigation, footer, heroCTA] = await Promise.all([
+    fetchNavigation(),
+    fetchFooter(),
+    fetchHeroCTA(),
+  ]);
 
-    return {
-      navigation,
-      footer,
-      heroCTA,
-    };
-  } catch (error) {
-    //console.error("[LayoutData] Global fetch failed:", error);
-    return {
-      navigation: null,
-      footer: null,
-      heroCTA: null,
-    };
-  }
+  return {
+    navigation,
+    footer,
+    heroCTA,
+  };
 });
 
 export async function getGlobalLayoutData(): Promise<{
@@ -157,4 +171,5 @@ export async function getGlobalLayoutData(): Promise<{
 }> {
   return getGlobalLayoutDataCached();
 }
+
 

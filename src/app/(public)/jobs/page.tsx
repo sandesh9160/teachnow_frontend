@@ -289,9 +289,11 @@ function JobsContent() {
   );
 }
 
+import { JobsSkeleton } from "@/components/jobs/JobsSkeleton";
+
 export default function JobsPage() {
   return (
-    <Suspense fallback={<div className="container py-20 text-center">Loading jobs...</div>}>
+    <Suspense fallback={<JobsSkeleton />}>
       <JobsContent />
     </Suspense>
   );

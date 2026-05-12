@@ -59,10 +59,18 @@ export default function SessionTimeoutHandler() {
     // Initial start of the timer
     resetTimer();
 
-    // Attach listeners to all events
-    const eventHandler = () => resetTimer();
+    // Attach listeners to all events with a simple throttle
+    let lastActivity = Date.now();
+    const eventHandler = () => {
+      const now = Date.now();
+      if (now - lastActivity > 500) {
+        lastActivity = now;
+        resetTimer();
+      }
+    };
+    
     events.forEach((event) => {
-      window.addEventListener(event, eventHandler);
+      window.addEventListener(event, eventHandler, { passive: true });
     });
 
     return () => {
