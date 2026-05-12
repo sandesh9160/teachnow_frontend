@@ -31,9 +31,12 @@ export const Hero = ({
             fill
             priority
             fetchPriority="high"
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
             className="object-cover object-center"
+            quality={90}
           />
+          {/* Subtle overlay to ensure text readability and prevent layout jitter during load */}
+          <div className="absolute inset-0 bg-slate-50/10 backdrop-blur-[1px]" />
         </div>
       )}
 

@@ -61,3 +61,17 @@ export const BrowseByCitySkeleton = () => (
     </div>
   </section>
 );
+export const HeroStatsSkeleton = () => (
+  <section className="py-12 bg-white border-y border-slate-100">
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="text-center space-y-2">
+            <div className="h-8 w-24 bg-slate-100 rounded-lg mx-auto animate-pulse" />
+            <div className="h-4 w-32 bg-slate-50 rounded mx-auto animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);

@@ -11,10 +11,11 @@ import Categories from "@/components/home/Categories/Categories";
 // Dynamic Components (Deferred)
 // Home Skeletons
 import { 
-  FeaturedJobsSkeleton, 
+  FeaturedJobsSkeleton,
   FeaturedInstitutionsSkeleton, 
   BrowseByCitySkeleton,
-  CategoriesSkeleton
+  CategoriesSkeleton,
+  HeroStatsSkeleton
 } from "@/components/home/HomeSkeletons";
 
 // Dynamic Components (Deferred)
@@ -124,7 +125,7 @@ export default async function HomePage() {
         <FeaturedJobsSection />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<HeroStatsSkeleton />}>
         <StatsSection />
       </Suspense>
 

@@ -60,6 +60,7 @@ async function RootLayoutContent({ children }: Readonly<{ children: React.ReactN
   ]);
   
   const authUser = sessionUserForHeader(session);
+  const heroImageUrl = heroCTA?.hero?.background_image;
 
   return (
     <LayoutDataProvider
@@ -67,6 +68,21 @@ async function RootLayoutContent({ children }: Readonly<{ children: React.ReactN
       footerData={footer}
       heroCTA={heroCTA}
     >
+      {/* 
+        PRELOAD LCP IMAGE: This is a critical performance optimization.
+        By preloading the hero image in the root layout, we ensure it starts 
+        downloading as soon as the HTML is parsed, reducing LCP significantly.
+      */}
+      {heroImageUrl && (
+        <link
+          rel="preload"
+          as="image"
+          href={heroImageUrl}
+          imageSrcSet={undefined}
+          imageSizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
+        />
+      )}
+
       <LayoutWrapper
         navigationData={navigation}
         footerData={footer}
