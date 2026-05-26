@@ -19,6 +19,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { NoJSStyles } from "@/shared/ui/NoJS";
 
 
 interface InstitutionDetailsViewProps {
@@ -131,9 +132,6 @@ export default function InstitutionDetailsView({
                 </p>
               </section>
             )}
-
-
-
 
             {/* Open Jobs at Institution */}
             <section id="open-jobs" className="space-y-6">
@@ -258,10 +256,11 @@ export default function InstitutionDetailsView({
                 <h3 className="text-base font-semibold text-[#1a202c] mb-6 tracking-tight">Institution Location</h3>
                 <div className="relative aspect-square w-full rounded-xl border border-slate-100 overflow-hidden bg-slate-50">
                   {mapLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50">
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50 js-map-spinner">
                       <div className="h-10 w-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-3" />
                     </div>
                   )}
+                  <NoJSStyles styles=".js-map-spinner { display: none !important; }" framerMotion={false} />
                   <iframe
                     src={`https://www.google.com/maps?q=${encodeURIComponent(company.address || company.company_name + " " + (company.city || ""))}&output=embed`}
                     width="100%"

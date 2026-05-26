@@ -70,6 +70,18 @@ async function lookupByJob(s: string, rawSlug: string) {
  * 2. Institute Strategy
  */
 async function lookupByInstitute(s: string) {
+  // Guard: If the slug represents a search/category/location landing page rather than a school,
+  // skip the institution backend lookups to avoid slow redundant 404 queries.
+  if (
+    s === "jobs" ||
+    s.endsWith("-jobs") ||
+    s.startsWith("jobs-in-") ||
+    s.includes("-jobs-in-") ||
+    ["fresher", "part-time", "full-time", "contract", "internship"].some(k => s.startsWith(k + "-jobs"))
+  ) {
+    return null;
+  }
+
   try {
     const profile = await getCompanyProfileWithJobs(s);
     if (!profile) return null;

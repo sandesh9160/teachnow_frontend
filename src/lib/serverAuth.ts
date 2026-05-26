@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import type { DashboardRole } from "@/types/session";
 import { cookies } from "next/headers";
 
+import { cache } from "react";
+
 export type ServerSessionUser = {
   id: number;
   email: string;
@@ -88,16 +90,18 @@ function toSessionUser(data: Record<string, unknown>): ServerSessionUser | null 
 /**
  * Current session from cookie-backed API. Tries the role-specific profile first if known.
  */
-export async function getSessionProfile(): Promise<ServerSessionUser | null> {
+export const getSessionProfile = cache(async (): Promise<ServerSessionUser | null> => {
   const role = await getRole();
-  const endpoints = ["auth/profile"];
+  
+  // FAIL-FAST: If no role exists in the userData cookie, the user is a guest. Exit immediately!
+  if (!role) {
+    return null;
+  }
 
-  if (role === "job_seeker") endpoints.unshift("jobseeker/profile");
-  else if (role === "employer") endpoints.unshift("employer/profile");
-  else if (role === "recruiter") endpoints.unshift("recruiter/profile");
-
-  // Also include the others as fallback
-  const allEndpoints = Array.from(new Set([...endpoints, "jobseeker/profile", "employer/profile", "recruiter/profile", "auth/profile"]));
+  const allEndpoints = ["auth/profile"];
+  if (role === "job_seeker") allEndpoints.unshift("jobseeker/profile");
+  else if (role === "employer") allEndpoints.unshift("employer/profile");
+  else if (role === "recruiter") allEndpoints.unshift("recruiter/profile");
 
   for (const ep of allEndpoints) {
     try {
@@ -142,7 +146,7 @@ export async function getSessionProfile(): Promise<ServerSessionUser | null> {
   }
 
   return null;
-}
+});
 
 export function sessionUserForHeader(user: ServerSessionUser | null): {
   name: string;

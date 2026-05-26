@@ -33,6 +33,7 @@ export type FetchOptions = {
     cache?: RequestCache;
     silentStatusCodes?: number[];
     auth?: boolean; // ✅ Include cookies & CSRF for auth
+    signal?: AbortSignal;
 };
 
 const BACKEND_ROOT = new URL(BASE_URL).origin;
@@ -134,6 +135,7 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
                 body: options.body ? JSON.stringify(options.body) : undefined,
                 // Default revalidate to 1 hour for public data if not specified
                 next: { revalidate: options.cache === "no-store" ? 0 : 3600 },
+                signal: options.signal,
             });
 
             if (!res.ok && !silentCodes.includes(res.status)) {
@@ -161,6 +163,7 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
             data: options.body,
             headers: options.headers ?? {},
             withCredentials: true,
+            signal: options.signal,
         });
         return res.data;
     } catch (error: any) {

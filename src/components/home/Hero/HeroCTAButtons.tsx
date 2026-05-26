@@ -1,24 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
-import { getHeroCTAData } from "@/lib/globalLayout/getGlobalLayoutData";
-import { normalizeMediaUrl } from "@/services/api/client";
+import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 export default async function HeroCTAButtons() {
-  const heroCTA = await getHeroCTAData();
+  const { heroCTA } = await getGlobalLayoutData();
   const ctaItems = (heroCTA?.cta ?? []).filter(
-    (item) => item?.is_active === undefined || item.is_active === 1
+    (item: any) => item?.is_active === undefined || item.is_active === 1
   );
 
   if (ctaItems.length === 0) return null;
 
   return (
     <div className="mt-8 mb-4 flex flex-col sm:flex-row gap-4 justify-center">
-      {ctaItems.map((item, index) => {
+      {ctaItems.map((item: any, index: number) => {
         const isBlue = index % 2 === 0;
-        const btnIconUrl = item.background_image
-          ? normalizeMediaUrl(item.background_image)
-          : null;
+        const btnIconUrl = item.background_image || null;
 
         return (
           <Button

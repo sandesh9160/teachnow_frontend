@@ -32,7 +32,7 @@ export function useTestimonials(role: string = "job_seeker") {
     try {
       setLoading(true);
       setError(null);
-      const res = await dashboardServerFetch<any>(`${endpointBase}?t=${Date.now()}`, { method: "GET" });
+      const res = await dashboardServerFetch<any>(endpointBase, { method: "GET" });
       
       // Attempt to find the array in common property names
       const data = Array.isArray(res?.data) 

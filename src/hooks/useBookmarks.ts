@@ -11,6 +11,21 @@ let globalFetched = false;
 let fetchPromise: Promise<void> | null = null;
 const listeners = new Set<(bookmarks: Bookmark[]) => void>();
 
+function isJobSeeker(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const cookies = document.cookie.split(';');
+    const userDataCookie = cookies.find(c => c.trim().startsWith('userData='));
+    if (!userDataCookie) return false;
+    const raw = decodeURIComponent(userDataCookie.split('=')[1]);
+    const parsed = JSON.parse(raw);
+    const type = String(parsed?.user_type ?? parsed?.role ?? "").toLowerCase();
+    return type.includes("jobseeker") || type.includes("job_seeker");
+  } catch {
+    return false;
+  }
+}
+
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>(globalBookmarks);
   const [loading, setLoading] = useState(globalLoading);
@@ -18,8 +33,8 @@ export function useBookmarks() {
 
   useEffect(() => {
     listeners.add(setBookmarks);
-    // Auto-fetch if not already fetched
-    if (!globalFetched && !fetchPromise) {
+    // Auto-fetch ONLY if the logged-in user is a job seeker
+    if (isJobSeeker() && !globalFetched && !fetchPromise) {
       void fetchBookmarks();
     }
     return () => {
@@ -33,6 +48,10 @@ export function useBookmarks() {
   };
 
   const fetchBookmarks = useCallback(async (force = false) => {
+    if (!isJobSeeker()) {
+      notify([]);
+      return;
+    }
     if (globalFetched && !force) return;
     if (fetchPromise && !force) return fetchPromise;
 

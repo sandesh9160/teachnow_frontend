@@ -18,6 +18,8 @@ import type { DashboardRole } from "@/types/session";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import type { FooterData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { normalizeMediaUrl } from "@/services/api/client";
+import { useClientSession } from "@/hooks/useClientSession";
+
 
 
 
@@ -386,8 +388,11 @@ const Header = ({
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
-  const isLoggedIn = !!authUser;
-  const user = authUser;
+
+  const { user: clientUser } = useClientSession();
+  const user = authUser || clientUser;
+  const isLoggedIn = !!user;
+
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

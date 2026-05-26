@@ -59,42 +59,69 @@ export const JobsHeader = ({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Fetch Job Title Suggestions with Debounce
+  // Fetch Job Title Suggestions with Debounce and AbortController
   useEffect(() => {
     if (search.trim().length === 0) {
       setSuggestions(prev => ({ ...prev, roles: [] }));
       return;
     }
+
+    const controller = new AbortController();
+
     const fetchSugg = async () => {
       setIsSuggesting(true);
       try {
-        const data = await getSearchSuggestions(search);
+        const data = await getSearchSuggestions(search, controller.signal);
         const filteredRoles = (data.roles || []).filter(r =>
           r.toLowerCase().startsWith(search.toLowerCase())
         );
         setSuggestions(prev => ({ ...prev, roles: filteredRoles }));
-      } catch (err) {
-        // console.error("Role suggestions failed:", err);
+      } catch (err: any) {
+        if (err.name !== "AbortError" && err.name !== "CanceledError" && err.code !== "ERR_CANCELED") {
+          // console.error("Role suggestions failed:", err);
+        }
       } finally {
-        setIsSuggesting(false);
+        if (!controller.signal.aborted) {
+          setIsSuggesting(false);
+        }
       }
     };
+
     const timer = setTimeout(fetchSugg, 300);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [search]);
 
-  // Filter City Suggestions Locally from allLocations
+  // Fetch City Suggestions from API with Debounce and AbortController
   useEffect(() => {
     if (location.trim().length === 0) {
       setSuggestions(prev => ({ ...prev, cities: [] }));
       return;
     }
 
-    const filteredCities = allLocations
-      .map(loc => loc.name)
-      .filter(name => name.toLowerCase().includes(location.toLowerCase()));
+    const controller = new AbortController();
 
-    setSuggestions(prev => ({ ...prev, cities: filteredCities }));
+    const fetchCitySugg = async () => {
+      try {
+        const data = await getSearchSuggestions(location, controller.signal);
+        const filteredCities = (data.cities || []).filter(name =>
+          name.toLowerCase().includes(location.toLowerCase())
+        );
+        setSuggestions(prev => ({ ...prev, cities: filteredCities }));
+      } catch (err: any) {
+        if (err.name !== "AbortError" && err.name !== "CanceledError" && err.code !== "ERR_CANCELED") {
+          // console.error("City suggestions failed:", err);
+        }
+      }
+    };
+
+    const timer = setTimeout(fetchCitySugg, 300);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [location, allLocations]);
 
   const handleSearchInternal = () => {

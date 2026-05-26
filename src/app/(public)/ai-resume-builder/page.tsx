@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { 
   Sparkles, 
@@ -9,15 +7,14 @@ import {
   Palette, 
   ArrowRight, 
   Download,
-  Loader2,
 } from "lucide-react";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import Link from "next/link";
-
 import Image from "next/image";
-
-import { useEffect, useState } from "react";
 import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+
+// Incremental Static Regeneration (ISR): Cache for 1 hour, refresh in background
+export const revalidate = 3600;
 
 interface CVTemplate {
   id: number;
@@ -25,29 +22,29 @@ interface CVTemplate {
   preview_image: string;
 }
 
-export default function AIResumeBuilderPage() {
-  const [templates, setTemplates] = useState<CVTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+async function getCVTemplates(): Promise<CVTemplate[]> {
+  try {
+    const response = await fetchAPI<{ status: boolean; data: CVTemplate[] }>("/open/cv-templates");
+    if (response?.status && Array.isArray(response?.data)) {
+      return response.data;
+    }
+  } catch (error) {
+    console.error("Failed to fetch templates on server:", error);
+  }
+  return [];
+}
+
+export default async function AIResumeBuilderPage() {
+  let templates: CVTemplate[] = [];
+  try {
+    templates = await getCVTemplates();
+  } catch (error) {
+    console.error("Failed to load templates:", error);
+  }
 
   const breadcrumbItems = [
     { label: "AI Resume Builder", isCurrent: true },
   ];
-
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const response = await fetchAPI<{ status: boolean; data: CVTemplate[] }>("/open/cv-templates");
-        if (response.status) {
-          setTemplates(response.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch templates:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadTemplates();
-  }, []);
 
   const features = [
     { 
@@ -113,8 +110,10 @@ export default function AIResumeBuilderPage() {
                         <Sparkles className="h-4 w-4 mr-2" /> Create My Resume
                       </Button>
                     </Link>
-                    <Button suppressHydrationWarning variant="outline" size="lg" className="rounded-xl px-8 font-bold text-slate-700 bg-white border-slate-200 hover:bg-slate-50" onClick={() => document.getElementById('templates-section')?.scrollIntoView({ behavior: 'smooth' })}>
-                      Browse Templates
+                    <Button suppressHydrationWarning variant="outline" size="lg" className="rounded-xl px-8 font-bold text-slate-700 bg-white border-slate-200 hover:bg-slate-50" asChild>
+                      <a href="#templates-section">
+                        Browse Templates
+                      </a>
                     </Button>
                   </div>
                   <p className="text-xs text-slate-500 font-medium">
@@ -134,7 +133,7 @@ export default function AIResumeBuilderPage() {
                     priority
                     unoptimized
                     className="object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
-                  />
+                   />
                    {/* Glowing Orbs */}
                    <div className="absolute top-10 right-10 w-24 h-24 bg-blue-500/10 blur-3xl rounded-full" />
                    <div className="absolute bottom-10 left-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full" />
@@ -152,33 +151,26 @@ export default function AIResumeBuilderPage() {
             Choose a Resume Template
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 min-h-[300px]">
-            {loading ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-primary opacity-20" />
-                <p className="mt-4 text-sm text-slate-400 font-medium">Fetching professional templates...</p>
-              </div>
-            ) : (
-              templates.map((t) => (
-                <Link key={t.id} href="/auth/login" className="flex flex-col group">
-                  <div className="aspect-[1/1.414] rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-4 group-hover:shadow-xl transition-all duration-300 relative">
-                    <Image 
-                      src={normalizeMediaUrl(t.preview_image)} 
-                      alt={t.name} 
-                      fill
-                      unoptimized
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500" 
-                    />
-                  </div>
-                  <div className="flex items-center justify-between px-1">
-                    <h3 className="text-sm font-bold text-slate-700 truncate mr-2" title={t.name}>{t.name}</h3>
-                    <Button suppressHydrationWarning variant="outline" size="sm" className="text-[10px] h-7 px-3 font-bold rounded-lg border-slate-200 bg-white hover:bg-slate-50 shrink-0">
-                      Use Template
-                    </Button>
-                  </div>
-                </Link>
-              ))
-            )}
-            {!loading && templates.length === 0 && (
+            {templates.map((t) => (
+              <Link key={t.id} href="/auth/login" className="flex flex-col group">
+                <div className="aspect-[1/1.414] rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-4 group-hover:shadow-xl transition-all duration-300 relative">
+                  <Image 
+                    src={normalizeMediaUrl(t.preview_image)} 
+                    alt={t.name} 
+                    fill
+                    unoptimized
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500" 
+                  />
+                </div>
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-sm font-bold text-slate-700 truncate mr-2" title={t.name}>{t.name}</h3>
+                  <Button suppressHydrationWarning variant="outline" size="sm" className="text-[10px] h-7 px-3 font-bold rounded-lg border-slate-200 bg-white hover:bg-slate-50 shrink-0">
+                    Use Template
+                  </Button>
+                </div>
+              </Link>
+            ))}
+            {templates.length === 0 && (
               <div className="col-span-full text-center py-20 border border-dashed border-slate-200 rounded-3xl">
                 <p className="text-slate-400">No templates available at the moment.</p>
               </div>
@@ -217,8 +209,10 @@ export default function AIResumeBuilderPage() {
             Join thousands of job seekers who landed their dream jobs with our AI-powered resume builder.
           </p>
           <div className="flex flex-wrap gap-4 justify-center pt-4">
-            <Button suppressHydrationWarning variant="hero" size="lg" className="rounded-xl px-10 font-bold bg-[#2D38B1] hover:bg-[#1E278E] shadow-xl shadow-blue-100">
-              <Sparkles className="h-4 w-4 mr-2" /> Create Resume
+            <Button suppressHydrationWarning variant="hero" size="lg" className="rounded-xl px-10 font-bold bg-[#2D38B1] hover:bg-[#1E278E] shadow-xl shadow-blue-100" asChild>
+              <Link href="/auth/login">
+                <Sparkles className="h-4 w-4 mr-2" /> Create Resume
+              </Link>
             </Button>
             <Link href="/jobs">
               <Button suppressHydrationWarning variant="outline" size="lg" className="rounded-xl px-10 font-bold text-slate-700 bg-white border-slate-200">

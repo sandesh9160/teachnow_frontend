@@ -269,6 +269,7 @@ export default function JobsClientManager({
             <JobsGrid
               jobs={sortedJobs}
               loading={isLoading}
+              onClearAll={clearAll}
             />
 
             {similarJobs.length > 0 && (

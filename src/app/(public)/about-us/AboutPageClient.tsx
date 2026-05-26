@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { NoJSStyles } from "@/shared/ui/NoJS";
 
 interface AboutUsSection {
   id: number;
@@ -16,12 +17,14 @@ interface AboutUsSection {
 export default function AboutPageClient({ sections }: { sections: AboutUsSection[] }) {
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
+      <NoJSStyles />
+
       {/* --- Page Header --- */}
       <header className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center">
         <motion.h1 
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight"
+          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight motion-h1"
         >
           About <span className="text-primary">TeachNow</span>
         </motion.h1>
@@ -32,7 +35,7 @@ export default function AboutPageClient({ sections }: { sections: AboutUsSection
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 sm:p-12 md:p-16"
+          className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 sm:p-12 md:p-16 motion-div"
         >
           {sections.length === 0 ? (
             <div className="text-center py-12">

@@ -3,7 +3,7 @@ import { getCompanyBySlugWithJobs, getCompanies } from "@/hooks/useCompanies";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
 import { Institution } from "@/types/homepage";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900; // Cache for 15 minutes, refresh in background
 
 /**
  * Modern Institution Detail Page wrapper.

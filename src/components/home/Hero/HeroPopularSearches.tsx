@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getHeroCTAData } from "@/lib/globalLayout/getGlobalLayoutData";
+import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 export default async function HeroPopularSearches() {
-  const heroCTA = await getHeroCTAData();
+  const { heroCTA } = await getGlobalLayoutData();
   const popularSearches = heroCTA?.popular_searches ?? [];
 
   if (popularSearches.length === 0) return null;
@@ -10,7 +10,7 @@ export default async function HeroPopularSearches() {
   return (
     <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
       <span className="text-slate-500 font-semibold text-[14px] mr-1">Popular Searches:</span>
-      {popularSearches.map((search) => (
+      {popularSearches.map((search: any) => (
         <Link
           key={search.slug}
           href={`/jobs/${search.slug}`}

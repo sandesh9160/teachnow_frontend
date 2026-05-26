@@ -1,28 +1,19 @@
-"use client";
-import { useState, useEffect } from "react";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { getPrivacyPolicy } from "@/hooks/useHomepage";
-import { Loader2 } from "lucide-react";
 import { PolicyData } from "@/types/homepage";
 
-export default function PrivacyPolicyPage() {
-  const [sections, setSections] = useState<PolicyData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const breadcrumbItems = [{ label: "Privacy Policy", isCurrent: true }];
+// Incremental Static Regeneration (ISR): Cache for 1/2 hour, refresh in background
+export const revalidate = 1800;
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await getPrivacyPolicy();
-        setSections(data);
-      } catch (error) {
-        console.error("Failed to load privacy policy:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+export default async function PrivacyPolicyPage() {
+  const breadcrumbItems = [{ label: "Privacy Policy", isCurrent: true }];
+  let sections: PolicyData[] = [];
+
+  try {
+    sections = await getPrivacyPolicy();
+  } catch (error) {
+    console.error("Failed to load privacy policy:", error);
+  }
 
   const lastUpdated = sections.length > 0 
     ? new Date(Math.max(...sections.map(s => new Date(s.updated_at).getTime()))).toLocaleDateString('en-US', {
@@ -31,22 +22,6 @@ export default function PrivacyPolicyPage() {
         year: 'numeric'
       })
     : "March 30, 2026";
-
-  if (loading) {
-    return (
-      <div className="bg-[#F8FAFC] min-h-screen">
-        <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-          <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-            <Breadcrumb items={breadcrumbItems} />
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-          <p className="text-slate-400 font-bold text-xs tracking-widest uppercase animate-pulse">Loading Policy</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
@@ -64,7 +39,7 @@ export default function PrivacyPolicyPage() {
               Privacy <span className="text-primary italic">Policy</span>
             </h1>
             <p className="mt-5 text-sm text-slate-400 uppercase tracking-widest font-bold">
-              Last updated: {loading ? "..." : lastUpdated}
+              Last updated: {lastUpdated}
             </p>
           </div>
         </div>

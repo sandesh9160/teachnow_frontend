@@ -35,8 +35,8 @@ export const Hero = ({
             className="object-cover object-center"
             quality={90}
           />
-          {/* Subtle overlay to ensure text readability and prevent layout jitter during load */}
-          <div className="absolute inset-0 bg-slate-50/10 backdrop-blur-[1px]" />
+          {/* Subtle overlay to ensure text readability */}
+          <div className="absolute inset-0 bg-slate-900/[0.04]" />
         </div>
       )}
 

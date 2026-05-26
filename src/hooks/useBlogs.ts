@@ -1,4 +1,5 @@
 import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+import { cache } from "react";
 import { Blog, ApiResponse } from "@/types/homepage";
 
 /* -------------------- HELPERS -------------------- */
@@ -33,7 +34,7 @@ function toArray<T>(data: any): T[] {
  * One function = One API.
  * Endpoint: /open/blogs
  */
-export async function getBlogs(filters: Record<string, any> = {}): Promise<Blog[]> {
+export const getBlogs = cache(async (filters: Record<string, any> = {}): Promise<Blog[]> => {
   try {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
@@ -49,7 +50,7 @@ export async function getBlogs(filters: Record<string, any> = {}): Promise<Blog[
     //console.error("Error in getBlogs:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch a single blog by its ID or SLUG.
@@ -82,7 +83,7 @@ export const getBlogBySlug = getBlogById;
  * Fetch latest blogs.
  * Endpoint: /open/blogs/latest
  */
-export async function getLatestBlogs(): Promise<Blog[]> {
+export const getLatestBlogs = cache(async (): Promise<Blog[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/blogs/latest");
     const data = res.data || res;
@@ -91,4 +92,4 @@ export async function getLatestBlogs(): Promise<Blog[]> {
     //console.error("Error in getLatestBlogs:", error);
     return [];
   }
-}
+});

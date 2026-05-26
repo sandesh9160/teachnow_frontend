@@ -1,5 +1,4 @@
-import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-import { normalizeMediaUrl } from "@/services/api/client";
+import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
 import { Institution, Job, ApiResponse } from "@/types/homepage";
 
 /* -------------------- HELPERS -------------------- */
@@ -61,7 +60,7 @@ export async function getCompanies(filters: Record<string, any> = {}): Promise<I
 
   try {
     const endpoint = `open/home/featured-companies${params.toString() ? "?" + params.toString() : ""}`;
-    const res = await dashboardServerFetch<ApiResponse<any>>(endpoint, { method: "GET" });
+    const res = await fetchAPI<ApiResponse<any>>(endpoint, { method: "GET" });
     const data = res.data || res;
     return toArray<Institution>(data).map(normalizeInstitution);
   } catch (err: any) {
@@ -84,13 +83,13 @@ export async function getCompanyProfileWithJobs(
 
   try {
     // 1. Try standard profile endpoint
-    let res = await dashboardServerFetch<ApiResponse<any>>(
+    let res = await fetchAPI<ApiResponse<any>>(
       `open/company/${encodeURIComponent(slug)}/profile`, { method: "GET" }
     );
 
     // 2. Fallback: Try direct company endpoint (some IDs use this instead of profile/jobs)
     if (!res || (!(res as any).data && !(res as any).company_name && !(res as any).name)) {
-      res = await dashboardServerFetch<ApiResponse<any>>(
+      res = await fetchAPI<ApiResponse<any>>(
         `open/company/${encodeURIComponent(slug)}`, { method: "GET" }
       );
     }

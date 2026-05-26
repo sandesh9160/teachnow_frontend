@@ -28,9 +28,9 @@ function toArray<T>(data: any): T[] {
  * Fetch search suggestions.
  * Endpoint: /search/suggestions?keyword=
  */
-export async function getSearchSuggestions(query: string): Promise<SearchSuggestions> {
+export async function getSearchSuggestions(query: string, signal?: AbortSignal): Promise<SearchSuggestions> {
   try {
-    const res = await fetchAPI<ApiResponse<any>>(`/open/search/suggestions?keyword=${encodeURIComponent(query)}`);
+    const res = await fetchAPI<ApiResponse<any>>(`/open/search/suggestions?keyword=${encodeURIComponent(query)}`, { signal });
     const data = res.data;
 
     // The backend now returns { status: true, data: { suggestions: string[], locations: string[] } }
@@ -79,16 +79,24 @@ export async function searchJobs(keyword: string, location: string): Promise<Job
   }
 }
 
+let locationsPromise: Promise<Location[]> | null = null;
+
 /**
  * Fetch all available locations.
  * Endpoint: /open/locations
  */
 export async function getLocations(): Promise<Location[]> {
-  try {
-    const res = await fetchAPI<ApiResponse<Location[]>>("/open/locations");
-    return toArray<Location>(res.data || res);
-  } catch (error) {
-    // console.error("Error fetching locations:", error);
-    return [];
-  }
+  if (locationsPromise) return locationsPromise;
+
+  locationsPromise = (async () => {
+    try {
+      const res = await fetchAPI<ApiResponse<Location[]>>("/open/locations");
+      return toArray<Location>(res.data || res);
+    } catch (error) {
+      locationsPromise = null; // reset on error so we can retry
+      return [];
+    }
+  })();
+
+  return locationsPromise;
 }

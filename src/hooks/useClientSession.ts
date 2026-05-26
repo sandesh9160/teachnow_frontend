@@ -65,15 +65,28 @@ export function getSharedClientSession(): Promise<ClientSessionUser | null> {
   sessionPromise = (async () => {
     // 1. Try cookie first (fastest and usually contains personal f_name like "Kiran")
     const cookieUser = tryUserDataCookie();
-    if (cookieUser) {
-      const mapped = mapPayload(cookieUser);
-      if (mapped && mapped.name !== "User" && !mapped.name.includes("@")) {
-        return mapped;
-      }
+    
+    // FAIL-FAST: If no cookie exists, they are a guest user. Exit immediately!
+    if (!cookieUser) {
+      return null;
     }
 
-    // 2. Fallback to API probes if cookie is missing or has generic name
-    const tryEndpoints = ["recruiter/profile", "recruiter/company-profile", "employer/profile", "employer/company-profile", "jobseeker/profile", "auth/profile"];
+    const mappedCookie = mapPayload(cookieUser);
+    if (mappedCookie && mappedCookie.name !== "User" && !mappedCookie.name.includes("@")) {
+      return mappedCookie;
+    }
+
+    // 2. Resolve only the role-specific endpoint based on the cookie's user_type
+    const role = normalizeRole(cookieUser.user_type ?? cookieUser.role);
+    const tryEndpoints: string[] = [];
+    if (role === "recruiter") {
+      tryEndpoints.push("recruiter/profile", "auth/profile");
+    } else if (role === "employer") {
+      tryEndpoints.push("employer/profile", "auth/profile");
+    } else {
+      tryEndpoints.push("jobseeker/profile", "auth/profile");
+    }
+
     for (const ep of tryEndpoints) {
       try {
         const res = await dashboardServerFetch<unknown>(ep, { method: "GET" });

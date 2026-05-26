@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 interface JobsGridProps {
   jobs: Job[];
   loading: boolean;
-  onClearAll: () => void;
+  onClearAll?: () => void;
 }
 
 export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
@@ -55,9 +55,11 @@ export const JobsGrid = ({ jobs, loading, onClearAll }: JobsGridProps) => {
         <p className="mt-2 text-muted-foreground max-w-sm mx-auto">
           We couldn't find any jobs matching your current filters. Try adjusting your preferences or starting fresh.
         </p>
-        <Button variant="outline" size="sm" className="mt-8 px-8" onClick={onClearAll}>
-          Clear All Filters
-        </Button>
+        {onClearAll && (
+          <Button variant="outline" size="sm" className="mt-8 px-8" onClick={onClearAll}>
+            Clear All Filters
+          </Button>
+        )}
       </div>
     );
   }

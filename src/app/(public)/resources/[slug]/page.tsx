@@ -1,16 +1,10 @@
-"use client";
-
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { Badge } from "@/shared/ui/Badge/Badge";
-import { Button } from "@/shared/ui/Buttons/Buttons";
-import { useClientSession } from "@/hooks/useClientSession";
+import { getResourceBySlug, getResources } from "@/hooks/useHomepage";
 import { normalizeMediaUrl } from "@/services/api/client";
 import {
   FileText,
-  Download,
   BookOpen,
   Lightbulb,
   CheckCircle2,
@@ -20,13 +14,11 @@ import {
   ChevronRight,
   Share2
 } from "lucide-react";
-import { toast } from "sonner";
-import QuickAuthModal from "@/components/auth/QuickAuthModal";
-import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
-
 import { ResourceData } from "@/types/homepage";
-import { useResource } from "@/hooks/useResource";
-import { motion } from "framer-motion";
+import ResourceDetailClient from "./ResourceDetailClient";
+
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 
 /* -------------------- HELPERS -------------------- */
 
@@ -43,85 +35,49 @@ function formatDate(dateStr: string) {
   return new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 }
 
-/* -------------------- COMPONENT -------------------- */
+interface ResourcePageProps {
+  readonly params: Promise<{ slug: string }>;
+}
 
-export default function ResourceDetailPage() {
-  const params = useParams();
-  const slug = params?.slug as string;
+export default async function ResourceDetailPage({ params }: ResourcePageProps) {
+  const { slug } = await params;
+  
+  let resource: ResourceData | null = null;
+  let related: ResourceData[] = [];
+  let error: string | null = null;
 
-  const router = useRouter();
-  const { resource, related, loading: resourceLoading, error } = useResource(slug);
-  const { isLoggedIn, loading: sessionLoading } = useClientSession();
-
-  const [showAuth, setShowAuth] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const performDownload = async (resourceId: number, pdfUrl: string) => {
-    try {
-      setIsDownloading(true);
-      const res = await dashboardServerFetch<any>(`jobseeker/resources/${resourceId}/download`, {
-        method: "GET"
-      });
-
-      const downloadUrl = res?.data?.download_url || res?.download_url || pdfUrl;
-
-      if (downloadUrl) {
-        window.open(normalizeMediaUrl(downloadUrl), "_blank", "noopener,noreferrer");
-        toast.success("Download started!");
-      } else {
-        toast.error("Download link not available.");
-      }
-    } catch (err) {
-      window.open(normalizeMediaUrl(pdfUrl), "_blank", "noopener,noreferrer");
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    if (!isLoggedIn) {
-      setShowAuth(true);
-      return;
-    }
-
-    if (resource?.id && resource?.pdf) {
-      void performDownload(resource.id, resource.pdf);
+  try {
+    const found = await getResourceBySlug(slug);
+    if (!found?.resource) {
+      error = "Resource not found.";
     } else {
-      toast.error("Resource file not found.");
+      resource = found.resource;
+      if (found.similar_resources?.length) {
+        related = found.similar_resources.slice(0, 3);
+      } else {
+        const allResources = await getResources();
+        related = (allResources?.data || [])
+          .filter((item: ResourceData) => item.slug !== slug)
+          .slice(0, 3);
+      }
     }
-  };
-
-  if (resourceLoading || sessionLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-8 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
-            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-          <p className="text-slate-500 font-medium tracking-tight">Preparing your resource...</p>
-        </div>
-      </div>
-    );
+  } catch (err) {
+    error = "Failed to load this resource.";
   }
 
   if (error || !resource) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white border border-slate-200 p-8 rounded-2xl max-w-sm shadow-xl shadow-slate-200/50"
-        >
+      <div className="min-h-screen flex items-center justify-center p-8 text-center bg-slate-50/50">
+        <div className="bg-white border border-slate-200 p-8 rounded-2xl max-w-sm shadow-xl shadow-slate-200/50 animate-in fade-in zoom-in duration-300">
           <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lightbulb className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Oops!</h2>
           <p className="text-slate-500 mb-6">{error || "Resource unavailable."}</p>
-          <Button variant="outline" className="w-full" onClick={() => router.push('/resources')}>
+          <Link href="/resources" className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-6 font-semibold text-slate-700 hover:bg-slate-50 w-full transition-all">
             Browse All Resources
-          </Button>
-        </motion.div>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -193,11 +149,7 @@ export default function ResourceDetailPage() {
 
             {/* Preview Image Card - Pushed to right end */}
             <div className="lg:w-[480px] shrink-0">
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="relative"
-              >
+              <div className="relative animate-in fade-in slide-in-from-right duration-500">
                 <div className="relative aspect-[16/10] bg-white rounded-xl overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-100 p-1.5">
                   {coverImage ? (
                     <img
@@ -206,13 +158,12 @@ export default function ResourceDetailPage() {
                       className="w-full h-full object-cover rounded-lg bg-slate-50"
                     />
                   ) : (
-                    <div className="w-full h-full bg-slate-50 flex items-center justify-center
-                     rounded-lg">
+                    <div className="w-full h-full bg-slate-50 flex items-center justify-center rounded-lg">
                       <FileText className="w-12 h-12 text-slate-200" />
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
@@ -235,10 +186,7 @@ export default function ResourceDetailPage() {
               </div>
 
               <div
-                className="rich-text prose prose-slate prose-sm max-w-none 
-                prose-headings:text-slate-900 prose-headings:font-semibold 
-                prose-p:text-slate-500 prose-p:leading-relaxed 
-                prose-li:text-slate-500 prose-li:leading-relaxed"
+                className="rich-text prose prose-slate prose-sm max-w-none prose-headings:text-slate-900 prose-headings:font-semibold prose-p:text-slate-500 prose-p:leading-relaxed prose-li:text-slate-500 prose-li:leading-relaxed"
                 dangerouslySetInnerHTML={{
                   __html: resource.description || "<p>Explore the comprehensive details of this resource below.</p>",
                 }}
@@ -246,13 +194,7 @@ export default function ResourceDetailPage() {
             </div>
 
             <div className="lg:hidden">
-              <Button
-                className="w-full h-12 rounded-lg font-semibold shadow-lg shadow-primary/20"
-                onClick={handleDownload}
-                disabled={isDownloading}
-              >
-                {isDownloading ? "Processing..." : "Download Now"}
-              </Button>
+              <ResourceDetailClient resource={resource} isMobileButton={true} />
             </div>
           </main>
 
@@ -281,26 +223,7 @@ export default function ResourceDetailPage() {
                     ))}
                 </div>
 
-                <Button
-                  className="w-full h-12 rounded-lg font-semibold shadow-md shadow-primary/10 hover:shadow-primary/20 transition-all"
-                  onClick={handleDownload}
-                  disabled={isDownloading}
-                >
-                  {isDownloading ? (
-                    "Processing..."
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Free
-                    </>
-                  )}
-                </Button>
-
-                {!isLoggedIn && (
-                  <p className="mt-3 text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                    Sign in required
-                  </p>
-                )}
+                <ResourceDetailClient resource={resource} />
               </div>
 
               {related.length > 0 && (
@@ -346,18 +269,6 @@ export default function ResourceDetailPage() {
           </aside>
         </div>
       </div>
-
-      <QuickAuthModal
-        open={showAuth}
-        onClose={() => setShowAuth(false)}
-        title="Access Resource"
-        submitText="Sign in to Download"
-        onSuccess={() => {
-          if (resource?.id && resource?.pdf) {
-            void performDownload(resource.id, resource.pdf);
-          }
-        }}
-      />
     </div>
   );
 }

@@ -1,9 +1,9 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { getFAQs } from "@/hooks/useHomepage";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/shared/ui/Accordion/Accordion";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+import FAQClient from "./FAQClient";
+
+// Incremental Static Regeneration (ISR): Cache for 1/2 hour, refresh in background
+export const revalidate = 1800;
 
 interface FAQItem {
   id: number;
@@ -11,24 +11,8 @@ interface FAQItem {
   answer: string;
 }
 
-export default function FAQPage() {
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchFaqs = async () => {
-      try {
-        const data = await getFAQs();
-        setFaqs(data || []);
-      } catch (err) {
-        //console.error("Failed to load FAQs:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchFaqs();
-  }, []);
-
+export default async function FAQPage() {
+  const faqs = (await getFAQs()) as FAQItem[];
   const breadcrumbItems = [{ label: "FAQs", isCurrent: true }];
 
   return (
@@ -56,42 +40,31 @@ export default function FAQPage() {
 
       <div className="w-full px-4 py-8 sm:px-6 lg:px-12">
         <div className="max-w-3xl mx-auto">
-          {loading && (
-            <div className="space-y-3 animate-pulse">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="h-14 bg-white rounded-xl border border-slate-100" />
-              ))}
-            </div>
-          )}
+          {/* 1. Progressive Fallback: Render static cards (visible to No-JS users and SEO crawlers by default) */}
+          <div id="faq-static-list" className="space-y-3">
+            {faqs.map((faq, i) => (
+              <div 
+                key={faq.id || i} 
+                className="rounded-xl border border-slate-200 bg-white px-5 sm:px-6 py-5 shadow-sm"
+              >
+                <h3 className="text-[15px] sm:text-base font-bold text-slate-900 mb-3">
+                  {faq.question}
+                </h3>
+                <div 
+                  className="rich-text text-sm leading-relaxed max-w-none text-slate-600 border-t border-slate-100 pt-3"
+                  dangerouslySetInnerHTML={{ __html: faq.answer }}
+                />
+              </div>
+            ))}
+            {faqs.length === 0 && (
+              <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
+                <p className="text-slate-400 text-sm font-medium">No FAQs available at the moment.</p>
+              </div>
+            )}
+          </div>
 
-          {!loading && faqs.length > 0 && (
-            <Accordion type="single" collapsible className="space-y-3">
-              {faqs.map((faq, i) => (
-                <AccordionItem 
-                  key={faq.id || i} 
-                  value={`faq-${i}`} 
-                  className="rounded-xl border border-slate-200 bg-white px-5 sm:px-6 overflow-hidden shadow-sm transition-all duration-300 hover:border-slate-300"
-                >
-                  <AccordionTrigger className="text-[15px] sm:text-base font-medium text-slate-900 hover:text-slate-900 py-5 text-left no-underline [&[data-state=open]>svg]:rotate-180 transition-all group-hover:no-underline">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-5">
-                    <div 
-                      className="rich-text text-sm leading-relaxed max-w-none"
-                      dangerouslySetInnerHTML={{ __html: faq.answer }}
-                    />
-                  </AccordionContent>
-
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-
-          {!loading && faqs.length === 0 && (
-            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
-              <p className="text-slate-400 text-sm font-medium">No FAQs available at the moment.</p>
-            </div>
-          )}
+          {/* 2. Interactive Enhancer: Renders animated accordion and hides static list when JS hydrates */}
+          <FAQClient faqs={faqs} />
         </div>
       </div>
     </div>

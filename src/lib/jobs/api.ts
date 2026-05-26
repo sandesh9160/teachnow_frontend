@@ -74,7 +74,7 @@ export async function fullSearchJobs(
     if (category_id) params.set("category_id", category_id.toString());
 
     const query = params.toString();
-    const res = await fetchAPI<ApiResponse<any>>(`/open/search/jobs/search?${query}${query ? "&" : ""}t=${Date.now()}`);
+    const res = await fetchAPI<ApiResponse<any>>(`/open/search/jobs/search${query ? "?" + query : ""}`);
     const raw = (res.data ?? res);
     
     const mainJobs = toArray<Job>(raw?.search_jobs || raw).map(normalizeJob);
@@ -96,4 +96,105 @@ export async function searchJobs(
 ): Promise<Job[]> {
   const result = await fullSearchJobs(keyword, location, category_id);
   return result.jobs;
+}
+
+export async function fetchJobsPaginated(opts?: { 
+  keyword?: string; 
+  location?: string;
+  page?: number;
+  limit?: number;
+  filters?: Partial<any>;
+}): Promise<{ jobs: Job[]; meta?: { total: number; last_page: number; current_page: number; per_page: number }; similarJobs?: Job[]; error?: string }> {
+  try {
+    const kw = opts?.keyword?.trim() ?? "";
+    const loc = opts?.location?.trim() ?? "";
+    const page = opts?.page ?? 1;
+    const limit = opts?.limit ?? 10;
+    const filters = opts?.filters ?? {};
+    
+    // If we have search params OR filters, use the specialized search endpoint
+    const hasFilters = Object.values(filters).some(v => 
+      Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && v !== "")
+    );
+
+    let endpoint = (kw || loc || hasFilters) ? "/open/search/jobs/search" : "/open/jobs";
+    let query = [];
+    if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
+    if (loc) query.push(`location=${encodeURIComponent(loc)}`);
+    query.push(`page=${page}`);
+    query.push(`per_page=${limit}`);
+
+    // Append filters — use key[] notation for arrays (required by Laravel/PHP)
+    Object.entries(filters).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach(val => {
+          query.push(`${encodeURIComponent(key)}[]=${encodeURIComponent(String(val))}`);
+        });
+      } else if (values !== undefined && values !== null && values !== "") {
+        query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(values))}`);
+      }
+    });
+    
+    const queryString = query.length ? `?${query.join("&")}` : "";
+    const res = await fetchAPI<any>(`${endpoint}${queryString}`);
+    
+    let jobsList: Job[] = [];
+    let similarList: Job[] = [];
+    let paginationMeta: any = null;
+
+    if (res?.search_jobs) {
+      const source = res.search_jobs;
+      jobsList = toArray<any>(source.data || source).map(normalizeJob);
+      paginationMeta = (source && typeof source === "object") ? source : res;
+    } else if (res?.data && typeof res.data === "object" && !Array.isArray(res.data)) {
+      const source = res.data;
+      jobsList = toArray<any>(source.data || source).map(normalizeJob);
+      paginationMeta = ("current_page" in source) ? source : null;
+    } else if (res?.data && Array.isArray(res.data)) {
+      jobsList = res.data.map(normalizeJob);
+      paginationMeta = ("current_page" in res) ? res : null;
+    } else if (Array.isArray(res)) {
+      jobsList = res.map(normalizeJob);
+    } else if (res && typeof res === "object") {
+      jobsList = toArray<any>(res.data || res).map(normalizeJob);
+      paginationMeta = ("current_page" in res) ? res : null;
+    }
+
+    const similarSource = res?.similar_jobs || res?.data?.similar_jobs;
+    similarList = toArray<any>(similarSource).map(normalizeJob);
+
+    let metaResult: any = undefined;
+    if (paginationMeta) {
+      const total = Number(paginationMeta.total || res?.total_jobs || jobsList.length);
+      const perPage = Number(paginationMeta.per_page || limit || 10);
+      metaResult = {
+        current_page: Number(paginationMeta.current_page || page || 1),
+        last_page: Number(paginationMeta.last_page || Math.ceil(total / perPage) || 1),
+        total: total,
+        per_page: perPage,
+      };
+    } else if (res?.total_jobs) {
+      metaResult = {
+        current_page: 1,
+        last_page: 1,
+        total: Number(res.total_jobs),
+        per_page: Number(res.total_jobs),
+      };
+    }
+
+    const uniqueSimilar = similarList.filter(
+      sj => !jobsList.some(j => String(j.id) === String(sj.id))
+    );
+
+    return {
+      jobs: jobsList,
+      meta: metaResult,
+      similarJobs: uniqueSimilar
+    };
+  } catch (err: any) {
+    return {
+      jobs: [],
+      error: err instanceof Error ? err.message : "Failed to load jobs"
+    };
+  }
 }

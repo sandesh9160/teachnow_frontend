@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { EmployerSteps } from "@/components/home/Steps/EmployerSteps";

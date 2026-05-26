@@ -7,7 +7,6 @@ import "./globals.css";
 import { LayoutWrapper } from "./LayoutWrapper";
 import { LayoutDataProvider } from "@/providers/LayoutDataProvider";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
-import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,9 +30,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { Suspense } from "react";
-import Loading from "./loading";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,9 +39,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans">
         <Providers>
-          <Suspense fallback={<Loading />}>
-            <RootLayoutContent>{children}</RootLayoutContent>
-          </Suspense>
+          <RootLayoutContent>{children}</RootLayoutContent>
         </Providers>
       </body>
     </html>
@@ -53,13 +47,8 @@ export default function RootLayout({
 }
 
 async function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
-  // Parallel fetch critical layout data and session
-  const [{ navigation, footer, heroCTA }, session] = await Promise.all([
-    getGlobalLayoutData(),
-    getSessionProfile(),
-  ]);
-  
-  const authUser = sessionUserForHeader(session);
+  // Fetch critical layout data
+  const { navigation, footer, heroCTA } = await getGlobalLayoutData();
   const heroImageUrl = heroCTA?.hero?.background_image;
 
   return (
@@ -68,30 +57,16 @@ async function RootLayoutContent({ children }: Readonly<{ children: React.ReactN
       footerData={footer}
       heroCTA={heroCTA}
     >
-      {/* 
-        PRELOAD LCP IMAGE: This is a critical performance optimization.
-        By preloading the hero image in the root layout, we ensure it starts 
-        downloading as soon as the HTML is parsed, reducing LCP significantly.
-      */}
-      {heroImageUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={heroImageUrl}
-          imageSrcSet={undefined}
-          imageSizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
-        />
-      )}
 
       <LayoutWrapper
         navigationData={navigation}
         footerData={footer}
         heroCTA={heroCTA}
-        authUser={authUser}
       >
         {children}
       </LayoutWrapper>
     </LayoutDataProvider>
   );
 }
+
 

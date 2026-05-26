@@ -121,6 +121,18 @@ async function lookupByJob(s: string) {
 }
 
 async function lookupByInstitution(s: string) {
+  // Guard: If the slug represents a search/category landing page rather than a school,
+  // skip the institution backend lookups to avoid slow redundant 404 queries.
+  if (
+    s === "jobs" ||
+    s.endsWith("-jobs") ||
+    s.startsWith("jobs-in-") ||
+    s.includes("-jobs-in-") ||
+    ["fresher", "part-time", "full-time", "contract", "internship"].some(k => s.startsWith(k + "-jobs"))
+  ) {
+    return null;
+  }
+
   try {
     const company = await getCompanyBySlug(s);
     if (company) return { type: 'institution' as const, data: company };

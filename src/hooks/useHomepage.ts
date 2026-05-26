@@ -1,4 +1,5 @@
 import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
+import { cache } from "react";
 import { Pagination } from "@/types/homepage";
 import {
   Job,
@@ -75,7 +76,7 @@ export function toArray<T>(data: any): T[] {
  * Fetch featured jobs.
  * Endpoint: /open/home/featured-jobs
  */
-export async function getFeaturedJobs(): Promise<Job[]> {
+export const getFeaturedJobs = cache(async (): Promise<Job[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/featured-jobs");
     const data = res.data || res;
@@ -84,13 +85,13 @@ export async function getFeaturedJobs(): Promise<Job[]> {
     //console.error("Error in getFeaturedJobs hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch all open jobs.
  * Endpoint: /open/jobs
  */
-export async function getAllJobs(): Promise<Job[]> {
+export const getAllJobs = cache(async (): Promise<Job[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/jobs");
     const data = res.data || res;
@@ -99,13 +100,13 @@ export async function getAllJobs(): Promise<Job[]> {
     //console.error("Error in getAllJobs hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch featured institutions.
  * Endpoint: /open/home/featured-companies
  */
-export async function getFeaturedInstitutions(): Promise<Institution[]> {
+export const getFeaturedInstitutions = cache(async (): Promise<Institution[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/featured-companies");
     const data = res.data || res;
@@ -114,13 +115,13 @@ export async function getFeaturedInstitutions(): Promise<Institution[]> {
     //console.error("Error in getFeaturedInstitutions hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch top locations.
  * Endpoint: /open/locations
  */
-export async function getTopCities(): Promise<City[]> {
+export const getTopCities = cache(async (): Promise<City[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/locations");
     const data = res.data || res;
@@ -129,13 +130,13 @@ export async function getTopCities(): Promise<City[]> {
     //console.error("Error in getTopCities hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch job categories.
  * Endpoint: /open/categories
  */
-export async function getCategories(): Promise<Category[]> {
+export const getCategories = cache(async (): Promise<Category[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/categories");
     const data = res.data || res;
@@ -144,16 +145,16 @@ export async function getCategories(): Promise<Category[]> {
     //console.error("Error in getCategories hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch combined filter payload.
  * Endpoint: /open/filters
  */
-export async function getFilters(): Promise<{
+export const getFilters = cache(async (): Promise<{
   categories: any[];
   locations: any[];
-}> {
+}> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/filters");
     const data = res.data || (res as any);
@@ -166,13 +167,13 @@ export async function getFilters(): Promise<{
     //console.error("Error fetching filters:", error);
     return { categories: [], locations: [] };
   }
-}
+});
 
 /**
  * Fetch Hero section.
  * Endpoint: /open/home/hero-section
  */
-export async function getHeroSection(): Promise<HeroResponse | null> {
+export const getHeroSection = cache(async (): Promise<HeroResponse | null> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/hero-section");
     const data = res.data || res;
@@ -209,13 +210,13 @@ export async function getHeroSection(): Promise<HeroResponse | null> {
     //console.error("Error fetching Hero Section API:", error);
     return null;
   }
-}
+});
 
 /**
  * Fetch Stats section.
  * Endpoint: /open/home/stats
  */
-export async function getStats(): Promise<Stats | null> {
+export const getStats = cache(async (): Promise<Stats | null> => {
   try {
     const res = await fetchAPI<ApiResponse<Stats>>("/open/home/stats");
     return res.data || (res as any).stats || null;
@@ -223,13 +224,13 @@ export async function getStats(): Promise<Stats | null> {
     //console.error("Error fetching Stats API:", error);
     return null;
   }
-}
+});
 
 /**
  * Fetch Testimonials.
  * Endpoint: /open/home/testimonials
  */
-export async function getTestimonials(): Promise<TestimonialData[]> {
+export const getTestimonials = cache(async (): Promise<TestimonialData[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/testimonials");
     const data = res.data || res;
@@ -238,13 +239,13 @@ export async function getTestimonials(): Promise<TestimonialData[]> {
     //console.error("Error in getTestimonials hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch FAQs.
  * Endpoint: /open/home/faqs
  */
-export async function getFAQs(): Promise<any[]> {
+export const getFAQs = cache(async (): Promise<any[]> => {
   try {
     const res = await fetchAPI<ApiResponse<any>>("/open/home/faqs");
     const data = res.data || res;
@@ -253,7 +254,7 @@ export async function getFAQs(): Promise<any[]> {
     //console.error("Error in getFAQs hook:", error);
     return [];
   }
-}
+});
 
 /**
  * Fetch About Us content.
@@ -276,7 +277,7 @@ export async function getAboutUs(): Promise<any[]> {
  * Fetch Navigation.
  * Endpoint: /open/home/navigation
  */
-export async function getNavigation(): Promise<NavigationData | null> {
+export const getNavigation = cache(async (): Promise<NavigationData | null> => {
   try {
     const res = await fetchAPI<ApiResponse<NavigationData>>("/open/home/navigation");
     const rawResponse = res as any;
@@ -294,7 +295,7 @@ export async function getNavigation(): Promise<NavigationData | null> {
     }
     return null;
   }
-}
+});
 
 /**
  * Fetch Footer.

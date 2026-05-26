@@ -1,12 +1,9 @@
 import Image from "next/image";
-import { getHeroCTAData } from "@/lib/globalLayout/getGlobalLayoutData";
-import { normalizeMediaUrl } from "@/services/api/client";
+import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 export default async function HeroBackground() {
-  const heroCTA = await getHeroCTAData();
-  const imageUrl = heroCTA?.hero?.background_image
-    ? normalizeMediaUrl(heroCTA.hero.background_image)
-    : null;
+  const { heroCTA } = await getGlobalLayoutData();
+  const imageUrl = heroCTA?.hero?.background_image || null;
 
   if (!imageUrl) return null;
 
