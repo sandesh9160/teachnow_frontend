@@ -13,7 +13,8 @@ import {
   Search,
   X,
   User,
-  Eye
+  Eye,
+  Pencil
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -50,6 +51,80 @@ export default function RecruitersClient({
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
+
+  // Edit Recruiter States
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingRecruiter, setEditingRecruiter] = useState<Recruiter | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+
+  const handleOpenEditModal = (recruiter: Recruiter) => {
+    setEditingRecruiter(recruiter);
+    setEditName(recruiter.name);
+    setEditEmail(recruiter.email);
+    setEditPassword("");
+    setEditErrors({});
+    setShowEditModal(true);
+  };
+
+  const handleEditRecruiter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRecruiter) return;
+    setEditLoading(true);
+    setEditErrors({});
+
+    const newErrors: Record<string, string> = {};
+    if (!editName.trim()) {
+      newErrors.name = "Full name is required";
+    }
+    if (!editEmail.trim()) {
+      newErrors.email = "Email address is required";
+    } else if (!/\S+@\S+\.\S+/.test(editEmail)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setEditErrors(newErrors);
+      toast.error(Object.values(newErrors)[0]);
+      setEditLoading(false);
+      return;
+    }
+
+    const payload: any = {
+      name: editName.trim(),
+      email: editEmail.trim(),
+    };
+    if (editPassword) {
+      payload.password = editPassword;
+    }
+
+    try {
+      const res = await dashboardServerFetch(
+        `employer/recruiter/${editingRecruiter.id}/update`,
+        {
+          method: "POST",
+          data: payload,
+        }
+      );
+
+      if (res.status === true) {
+        toast.success("Recruiter details updated successfully!");
+        setShowEditModal(false);
+        setEditingRecruiter(null);
+        setEditPassword("");
+        router.refresh();
+      } else {
+        toast.error(res.message || "Failed to update recruiter.");
+      }
+    } catch (error) {
+      toast.error("Error occurred while updating recruiter.");
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const isRecruiterActive = (status: any) => status === 1 || status === true || status === "1";
 
@@ -358,6 +433,7 @@ export default function RecruitersClient({
                   <button
                     onClick={() => handleToggleStatus(u.id, u.is_active)}
                     disabled={togglingId === u.id}
+                    suppressHydrationWarning={true}
                     className={cn(
                       "relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50",
                       isRecruiterActive(u.is_active) ? "bg-emerald-500" : "bg-slate-300"
@@ -386,6 +462,15 @@ export default function RecruitersClient({
                     <Eye className="w-4 h-4" />
                   </Button>
                 </Link>
+                <Button 
+                  onClick={() => handleOpenEditModal(u)}
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-9 w-9 rounded-xl text-amber-500 hover:bg-amber-50 transition-all p-0 border border-transparent hover:border-amber-100 active:scale-95 inline-flex items-center justify-center" 
+                  title="Edit"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
                 <Button onClick={() => handleDelete(u.id)} variant="ghost" size="sm" className="h-9 w-9 rounded-xl text-red-500 hover:bg-red-50 transition-all p-0 border border-transparent hover:border-red-100 active:scale-95 inline-flex items-center justify-center" title="Remove">
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -404,6 +489,97 @@ export default function RecruitersClient({
           )}
         </div>
       </div>
+
+      {/* Edit Recruiter Modal */}
+      {showEditModal && editingRecruiter && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-primary/10 shadow-2xl overflow-hidden max-w-md w-full animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between bg-primary/5 p-4 border-b border-primary/10">
+              <div className="flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-primary" />
+                <h3 className="text-sm font-semibold text-slate-900 leading-none">Edit Recruiter Details</h3>
+              </div>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                className="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditRecruiter} className="p-5 space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-slate-400 ml-0.5">Full Name</Label>
+                <div className="relative group">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                  <Input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Name"
+                    className={cn(
+                      "h-11 pl-10 pr-4 rounded-xl border border-slate-200 text-sm font-medium transition-all focus:ring-1 focus:ring-primary/10",
+                      editErrors.name ? "border-red-500 bg-red-50/50 focus:ring-red-500/20" : ""
+                    )}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-slate-400 ml-0.5">Work Email</Label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                  <Input
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="email@institution.com"
+                    className={cn(
+                      "h-11 pl-10 pr-4 rounded-xl border border-slate-200 text-sm font-medium transition-all focus:ring-1 focus:ring-primary/10",
+                      editErrors.email ? "border-red-500 bg-red-50/50 focus:ring-red-500/20" : ""
+                    )}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-slate-400 ml-0.5">New Password (optional)</Label>
+                <div className="relative group">
+                  <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                  <Input
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="Leave blank to keep current"
+                    className="h-11 pl-10 pr-4 rounded-xl border border-slate-200 text-sm font-medium transition-all focus:ring-1 focus:ring-primary/10"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2 border-t border-slate-50 mt-5">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setShowEditModal(false)}
+                  className="h-10 px-5 rounded-xl text-xs font-medium hover:bg-slate-100 text-slate-500"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={editLoading}
+                  className="h-10 px-8 rounded-xl text-xs font-semibold shadow-md shadow-primary/20 hover:scale-[1.01]"
+                >
+                  {editLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

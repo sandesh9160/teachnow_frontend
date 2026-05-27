@@ -43,21 +43,20 @@ export default async function JobsPage({ searchParams }: PageProps) {
   
   const experiences = toArray(params.experience);
   if (experiences.length > 0) {
+    let maxUpperBound = -1;
     experiences.forEach((exp) => {
       if (exp === "0-0") {
-        backendFilters.experience_type = "fresher";
+        maxUpperBound = Math.max(maxUpperBound, 0);
       } else {
         const parts = exp.split("-");
-        if (parts[0]) {
-          if (!backendFilters.experience_min) backendFilters.experience_min = [];
-          backendFilters.experience_min.push(Number(parts[0]));
-        }
         if (parts[1]) {
-          if (!backendFilters.experience_max) backendFilters.experience_max = [];
-          backendFilters.experience_max.push(Number(parts[1]));
+          maxUpperBound = Math.max(maxUpperBound, Number(parts[1]));
         }
       }
     });
+    if (maxUpperBound >= 0) {
+      backendFilters.experience = maxUpperBound;
+    }
   }
 
   const institutionTypes = toArray(params.institution_type);

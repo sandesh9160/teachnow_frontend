@@ -24,25 +24,32 @@ const CategoryIcon = ({ iconPath, id, name }: { iconPath: string | null | undefi
   const lowerName = name.toLowerCase();
   let FallbackIcon = genericIcons[id % genericIcons.length];
 
-  if (lowerName.includes("physics") || lowerName.includes("chemistry")) FallbackIcon = Atom;
-  if (lowerName.includes("english") || lowerName.includes("language")) FallbackIcon = BookOpen;
-  if (lowerName.includes("online") || lowerName.includes("tutor")) FallbackIcon = Headphones;
-  if (lowerName.includes("computer") || lowerName.includes("science")) FallbackIcon = Briefcase;
-  if (lowerName.includes("math")) FallbackIcon = GraduationCap;
+  if (lowerName.includes("physics") || lowerName.includes("chemistry") || lowerName.includes("science") || lowerName.includes("biology")) FallbackIcon = Atom;
+  if (lowerName.includes("english") || lowerName.includes("language") || lowerName.includes("history") || lowerName.includes("social")) FallbackIcon = BookOpen;
+  if (lowerName.includes("online") || lowerName.includes("tutor") || lowerName.includes("elearning")) FallbackIcon = Headphones;
+  if (lowerName.includes("computer") || lowerName.includes("science") || lowerName.includes("coding") || lowerName.includes("it")) FallbackIcon = Briefcase;
+  if (lowerName.includes("math") || lowerName.includes("algebra") || lowerName.includes("geometry") || lowerName.includes("mathematics")) FallbackIcon = GraduationCap;
 
   if (!fullUrl || error) {
-    return <FallbackIcon className="h-7 w-7" />;
+    return (
+      <div className="relative z-10 shrink-0 flex h-12 w-12 mb-3 items-center justify-center rounded-[16px] bg-[#ecf2ff] text-[#1e3a8a] transition-all duration-300 group-hover:bg-[#1e3a8a] group-hover:text-white overflow-hidden">
+        <FallbackIcon className="h-7 w-7" />
+      </div>
+    );
   }
 
   return (
+    <div className="relative z-10 shrink-0 flex h-12 w-12 mb-3 items-center justify-center rounded-[16px] transition-all duration-300 overflow-hidden">
       <Image
         src={fullUrl}
         alt={`${name} icon`}
         width={48}
         height={48}
-        className="object-cover group-hover:scale-110 transition-transform duration-300"
+        unoptimized
+        className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
         onError={() => setError(true)}
       />
+    </div>
   );
 };
 
@@ -65,10 +72,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
         aria-label={`View jobs in ${cat.name}`}
         className="group relative flex flex-col shrink-0 w-[180px] h-[165px] items-center justify-center rounded-[20px] border border-primary/20 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
       >
-        {/* Icon box - matching the light blue aesthetic of the reference */}
-        <div className="relative z-10 shrink-0 flex h-12 w-12 mb-3 items-center justify-center rounded-[16px] bg-[#ecf2ff] text-[#1e3a8a] transition-all duration-300 group-hover:bg-[#1e3a8a] group-hover:text-white">
-          <CategoryIcon iconPath={cat.icon} id={cat.id} name={cat.name} />
-        </div>
+        <CategoryIcon iconPath={cat.icon} id={cat.id} name={cat.name} />
 
         {/* Content */}
         <div className="relative z-10 space-y-0.5">

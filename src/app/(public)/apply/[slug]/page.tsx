@@ -37,6 +37,7 @@ import { useResumes } from "@/hooks/useResumes";
 import { useCV } from "@/hooks/useCV";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { Job } from "@/types/homepage";
+import { useAppliedJobs } from "@/hooks/useAppliedJobs";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import QuickAuthModal from "@/components/auth/QuickAuthModal";
 import Link from "next/link";
@@ -52,6 +53,7 @@ export default function ApplyJobPage() {
   const router = useRouter();
   const { isLoggedIn, user, loading: sessionLoading } = useClientSession();
   const { apply } = useApplications();
+  const { addAppliedJobId } = useAppliedJobs();
   const { resumes, fetchResumes, generatedResumes } = useResumes({ enabled: isLoggedIn });
   const { fetchTemplates, templates: cvTemplates, generateCVWithJob, fetchGeneratedCVs, resumeLimit } = useCV();
   const { bookmarks, fetchBookmarks, toggleBookmark, loading: bookmarksHookLoading } = useBookmarks();
@@ -384,6 +386,7 @@ export default function ApplyJobPage() {
         const isAlreadyApplied = response.message?.toLowerCase().includes("already applied");
         
         if (isAlreadyApplied) {
+          addAppliedJobId(jobDetails.id);
           window.scrollTo({ top: 0, behavior: 'smooth' });
           toast.warning("You've already applied!", {
             description: "No need to worry, your application for this position is already under review.",
@@ -407,6 +410,7 @@ export default function ApplyJobPage() {
         return;
       }
 
+      addAppliedJobId(jobDetails.id);
       setSubmitted(true);
       toast.success("Application Submitted Successfully", {
         description: "Your application has been received. Good luck!",

@@ -94,24 +94,20 @@ export function JobsPageClient({
       }
 
       if (selectedFilters.experience.length > 0) {
+        let maxUpperBound = -1;
         selectedFilters.experience.forEach(exp => {
           if (exp === "0-0") {
-            filters.experience_type = "fresher";
-          } else if (exp === "10-50") {
-            if (!filters.experience_min) filters.experience_min = [];
-            filters.experience_min.push(10);
+            maxUpperBound = Math.max(maxUpperBound, 0);
           } else {
-            const [min, max] = exp.split("-");
-            if (min) {
-              if (!filters.experience_min) filters.experience_min = [];
-              filters.experience_min.push(min);
-            }
-            if (max) {
-              if (!filters.experience_max) filters.experience_max = [];
-              filters.experience_max.push(max);
+            const parts = exp.split("-");
+            if (parts[1]) {
+              maxUpperBound = Math.max(maxUpperBound, Number(parts[1]));
             }
           }
         });
+        if (maxUpperBound >= 0) {
+          filters.experience = maxUpperBound;
+        }
       }
 
       void fetchJobs({

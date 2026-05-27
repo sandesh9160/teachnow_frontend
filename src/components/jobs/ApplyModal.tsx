@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
 import { useApplications } from "@/hooks/useApplications";
+import { useAppliedJobs } from "@/hooks/useAppliedJobs";
 import type { ApplicationAnswer } from "@/types/application";
 import {
   X,
@@ -56,6 +57,7 @@ const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyM
   const router = useRouter();
   const { isLoggedIn, user } = useClientSession();
   const { apply, loading: applyLoading } = useApplications();
+  const { addAppliedJobId } = useAppliedJobs();
   const [step, setStep] = useState(0);
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -102,6 +104,7 @@ const ApplyModal = ({ open, onClose, jobId, coverLetterQuestionId, job }: ApplyM
         });
       }
       await apply(jobId, answers);
+      addAppliedJobId(jobId);
       setSubmitted(true);
       toast.success("Application Submitted Successfully", {
         description: `Your application for ${job.title} at ${job.company} has been submitted.`,

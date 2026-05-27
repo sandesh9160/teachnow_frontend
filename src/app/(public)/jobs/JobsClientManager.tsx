@@ -39,6 +39,7 @@ export default function JobsClientManager({
   });
 
   const [jobsList, setJobsList] = useState<Job[]>(initialJobs);
+  const [similarJobsList, setSimilarJobsList] = useState<Job[]>(similarJobs);
   const [totalResults, setTotalResults] = useState(initialTotalResults);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
 
@@ -83,21 +84,20 @@ export default function JobsClientManager({
       }
       
       if (selectedFilters.experience?.length) {
+        let maxUpperBound = -1;
         selectedFilters.experience.forEach((exp: string) => {
           if (exp === "0-0") {
-            backendFilters.experience_type = "fresher";
+            maxUpperBound = Math.max(maxUpperBound, 0);
           } else {
             const parts = exp.split("-");
-            if (parts[0]) {
-              if (!backendFilters.experience_min) backendFilters.experience_min = [];
-              backendFilters.experience_min.push(Number(parts[0]));
-            }
             if (parts[1]) {
-              if (!backendFilters.experience_max) backendFilters.experience_max = [];
-              backendFilters.experience_max.push(Number(parts[1]));
+              maxUpperBound = Math.max(maxUpperBound, Number(parts[1]));
             }
           }
         });
+        if (maxUpperBound >= 0) {
+          backendFilters.experience = maxUpperBound;
+        }
       }
 
       if (selectedFilters.institution_type?.length) {
@@ -109,7 +109,7 @@ export default function JobsClientManager({
       }
 
       try {
-        const { jobs, meta, error: fetchErr } = await fetchJobsPaginated({
+        const { jobs, similarJobs: similar, meta, error: fetchErr } = await fetchJobsPaginated({
           page: currentPage,
           limit: resultsPerPage,
           filters: backendFilters,
@@ -123,6 +123,7 @@ export default function JobsClientManager({
           setError(fetchErr);
         } else {
           setJobsList(jobs || []);
+          setSimilarJobsList(similar || []);
           if (meta) {
             setTotalResults(meta.total);
             setTotalPages(meta.last_page);
@@ -272,13 +273,13 @@ export default function JobsClientManager({
               onClearAll={clearAll}
             />
 
-            {similarJobs.length > 0 && (
+            {similarJobsList.length > 0 && (
               <div className="mt-16">
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-foreground font-display">Similar Jobs</h2>
                 </div>
                 <JobsGrid
-                  jobs={similarJobs}
+                  jobs={similarJobsList}
                   loading={false}
                 />
               </div>

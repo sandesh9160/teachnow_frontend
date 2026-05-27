@@ -16,6 +16,7 @@ import { normalizeMediaUrl } from "@/services/api/client";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
+import { useAppliedJobs } from "@/hooks/useAppliedJobs";
 import QuickAuthModal from "@/components/auth/QuickAuthModal";
 
 type JobDetailsProps = Readonly<{
@@ -99,6 +100,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   // const [activeTab, setActiveTab] = useState("description");
   const { isLoggedIn, user } = useClientSession();
   const { bookmarks, fetchBookmarks, toggleBookmark } = useBookmarks();
+  const { isApplied } = useAppliedJobs();
+  const hasApplied = isLoggedIn && user?.role === "job_seeker" && isApplied(job.id);
   const [bookmarkBusy, setBookmarkBusy] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -257,11 +260,21 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
               {/* Action Buttons Row */}
               <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
-                <Link href={`/apply/${jobSegment}`} className="w-full sm:w-auto">
-                  <Button className="h-11 w-full sm:px-10 rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[14px]">
-                    Apply Now
+                {hasApplied ? (
+                  <Button
+                    disabled
+                    className="h-11 w-full sm:w-auto sm:px-10 rounded-xl font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 text-[14px] cursor-not-allowed flex items-center justify-center gap-1.5"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Already Applied
                   </Button>
-                </Link>
+                ) : (
+                  <Link href={`/apply/${jobSegment}`} className="w-full sm:w-auto">
+                    <Button className="h-11 w-full sm:px-10 rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[14px]">
+                      Apply Now
+                    </Button>
+                  </Link>
+                )}
 
                 <div className="grid grid-cols-2 w-full sm:flex sm:w-auto gap-3">
                   <Button
@@ -309,11 +322,21 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   <p className="text-xl sm:text-2xl font-bold text-slate-900 leading-none">{salaryRange}</p>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Link href={`/apply/${jobSegment}`} className="w-full">
-                    <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
-                      Apply Now
+                  {hasApplied ? (
+                    <Button
+                      disabled
+                      className="h-12 w-full rounded-xl font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 text-[15px] cursor-not-allowed flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      Already Applied
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link href={`/apply/${jobSegment}`} className="w-full">
+                      <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
+                        Apply Now
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="outline"
                     className={cn(
@@ -462,11 +485,21 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 leading-none">{salaryRange}</p>
               </div>
               <div className="flex flex-col gap-3">
-                <Link href={`/apply/${jobSegment}`} className="w-full">
-                  <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
-                    Apply Now
+                {hasApplied ? (
+                  <Button
+                    disabled
+                    className="h-12 w-full rounded-xl font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 text-[15px] cursor-not-allowed flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Already Applied
                   </Button>
-                </Link>
+                ) : (
+                  <Link href={`/apply/${jobSegment}`} className="w-full">
+                    <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
+                      Apply Now
+                    </Button>
+                  </Link>
+                )}
                 <Button
                   variant="outline"
                   className={cn(

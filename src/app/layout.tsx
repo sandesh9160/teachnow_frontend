@@ -49,7 +49,7 @@ export default function RootLayout({
 async function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
   // Fetch critical layout data
   const { navigation, footer, heroCTA } = await getGlobalLayoutData();
-  const heroImageUrl = heroCTA?.hero?.background_image;
+
 
   return (
     <LayoutDataProvider

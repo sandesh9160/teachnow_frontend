@@ -5,9 +5,9 @@ import {
   Menu,
   X,
   ChevronDown,
+  ChevronRight,
   LayoutDashboard,
-  LogOut,
-  ArrowUpRight,
+  LogOut
 } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
@@ -19,8 +19,6 @@ import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import type { FooterData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { normalizeMediaUrl } from "@/services/api/client";
 import { useClientSession } from "@/hooks/useClientSession";
-
-
 
 
 // --- Sub-components for better modularity and less repetition ---
@@ -102,6 +100,13 @@ const MegaMenu = ({
                 </div>
               </div>
             ))}
+            {isJobs && (
+              <div className="pt-4 mt-2 border-t border-slate-100 pl-3">
+                <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-1.5 text-[14px] font-bold text-[#1e3a8a] font-display hover:text-blue-800 transition-colors group">
+                  View All Jobs <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </>
@@ -148,10 +153,9 @@ const MegaMenu = ({
             </div>
           </div>
           {isJobs && (
-            <div className="mt-10 border-t border-border pt-6 flex items-center justify-between">
-              <p className="text-xs text-muted-foreground font-medium">Find the perfect teaching opportunity</p>
-              <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline group">
-                View All Opportunities <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <div className="mt-8 border-t border-border pt-5">
+              <Link href="/jobs" onClick={onClose} className="inline-flex items-center gap-1.5 text-[15px] font-bold text-[#1e3a8a] font-display hover:text-blue-800 transition-colors group">
+                View All Jobs <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
           )}
@@ -524,6 +528,7 @@ const Header = ({
                   onToggle={() => toggleDropdown(menu.slug)}
                   onClose={closeAll}
                   isMobile={false}
+                  isJobs={menu.isJobs || menu.slug === "jobs" || menu.title?.toLowerCase().includes("job")}
                 />
               );
             }
@@ -599,7 +604,7 @@ const Header = ({
                     onToggle={() => toggleDropdown(menu.slug)}
                     onClose={closeAll}
                     isMobile={true}
-                    isJobs={menu.isJobs}
+                    isJobs={menu.isJobs || menu.slug === "jobs" || menu.title?.toLowerCase().includes("job")}
                   />
                 );
               }
