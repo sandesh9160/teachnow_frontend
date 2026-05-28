@@ -236,6 +236,19 @@ async function lookupBySearch(s: string) {
 
     if (keyword || location || initialFilters.job_type.length > 0 || initialFilters.experience.length > 0) {
       const { jobs, similarJobs } = await fullSearchJobs(keyword, location);
+
+      const isSearchLandingPage =
+        s.endsWith("-jobs") ||
+        s.startsWith("jobs-in-") ||
+        s.includes("-jobs-in-") ||
+        ["fresher", "part-time", "full-time", "contract", "internship"].some(k => s.startsWith(k + "-jobs"));
+
+      // Only allow the search fallback if it's a structured search landing page 
+      // OR if the slug is at least 3 characters long and returned actual jobs
+      if (!isSearchLandingPage && (s.length < 3 || jobs.length === 0)) {
+        return null;
+      }
+
       return {
         type: 'search' as const,
         data: { jobs, similarJobs, name: displayName || "Search Results", keyword, location, initialFilters }

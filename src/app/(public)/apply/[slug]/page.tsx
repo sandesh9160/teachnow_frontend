@@ -178,19 +178,36 @@ export default function ApplyJobPage() {
           );
 
           if (profile) {
+            const getField = (keys: string[], defaultVal: any = "") => {
+              for (const k of keys) {
+                if (profile[k] !== undefined && profile[k] !== null && profile[k] !== "") return profile[k];
+                if (res?.data?.[k] !== undefined && res?.data?.[k] !== null && res?.data?.[k] !== "") return res.data[k];
+                if (res?.data?.job_seeker?.[k] !== undefined && res?.data?.job_seeker?.[k] !== null && res?.data?.job_seeker?.[k] !== "") return res.data.job_seeker[k];
+                if (res?.[k] !== undefined && res?.[k] !== null && res?.[k] !== "") return res[k];
+              }
+              return defaultVal;
+            };
+
+            const expVal = getField(["experience_years", "experience"], "0");
+            const phoneVal = getField(["phone", "mobile", "phone_number"]);
+            const locVal = getField(["location", "city", "current_location"]);
+            const bioVal = getField(["bio", "about", "summary"]);
+            const dobVal = getField(["dob", "date_of_birth"]);
+            const webVal = getField(["portfolio_website", "website", "portfolio"]);
+
             setCandidate((prev) => ({
               ...prev,
-              name: profile.user?.name || profile.name || prev.name || user?.name || "",
-              email: profile.user?.email || profile.email || prev.email || user?.email || "",
-              phone: profile.phone || prev.phone || "",
-              experience: profile.experience_years ? String(profile.experience_years) : (prev.experience || ""),
-              location: profile.location || prev.location || "",
-              dob: profile.dob || prev.dob || "",
-              portfolio_website: profile.portfolio_website || prev.portfolio_website || "",
-              bio: profile.bio || prev.bio || "",
-              skills: Array.isArray(profile.skills) ? profile.skills : prev.skills,
-              educations: Array.isArray(profile.educations) ? profile.educations : prev.educations,
-              experiences: Array.isArray(profile.experiences) ? profile.experiences : prev.experiences,
+              name: profile.user?.name || profile.name || res?.data?.user?.name || res?.data?.name || prev.name || user?.name || "",
+              email: profile.user?.email || profile.email || res?.data?.user?.email || res?.data?.email || prev.email || user?.email || "",
+              phone: phoneVal || prev.phone || "",
+              experience: expVal ? String(expVal) : (prev.experience || ""),
+              location: locVal || prev.location || "",
+              dob: dobVal ? String(dobVal).split("T")[0] : (prev.dob || ""),
+              portfolio_website: webVal || prev.portfolio_website || "",
+              bio: bioVal || prev.bio || "",
+              skills: Array.isArray(profile.skills) ? profile.skills : (Array.isArray(res?.data?.skills) ? res.data.skills : prev.skills),
+              educations: Array.isArray(profile.educations) ? profile.educations : (Array.isArray(res?.data?.educations) ? res.data.educations : prev.educations),
+              experiences: Array.isArray(profile.experiences) ? profile.experiences : (Array.isArray(res?.data?.experiences) ? res.data.experiences : prev.experiences),
             }));
           }
         }
@@ -349,7 +366,6 @@ export default function ApplyJobPage() {
       });
       return;
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       // Collect all answers
       const answers: { question_id: number; candidate_answer: string }[] = [];
@@ -379,6 +395,28 @@ export default function ApplyJobPage() {
 
       setIsSubmitting(true);
 
+      // Save/Update candidate profile details (e.g. experience_years, name, phone, location)
+      try {
+        const { dashboardServerFetch } = await import("@/actions/dashboardServerFetch");
+        const profilePayload = {
+          name: candidate.name,
+          phone: candidate.phone,
+          experience_years: Number(candidate.experience) || 0,
+          location: candidate.location,
+          dob: candidate.dob,
+          portfolio_website: candidate.portfolio_website,
+          bio: candidate.bio,
+          skills: (candidate.skills || []).map((s: any) => typeof s === 'object' ? (s.name || s.title || "") : String(s)).filter(Boolean),
+        };
+        console.log("DEBUG: Updating jobseeker profile before applying:", profilePayload);
+        await dashboardServerFetch("jobseeker/profile", {
+          method: "PUT",
+          data: profilePayload,
+        });
+      } catch (profileError) {
+        console.error("WARNING: Failed to update jobseeker profile before applying:", profileError);
+      }
+
       const response = await apply(jobDetails.id, answers, finalResumeId, resumeType);
       console.log("DEBUG: Application successful response:", response);
 
@@ -387,7 +425,6 @@ export default function ApplyJobPage() {
         
         if (isAlreadyApplied) {
           addAppliedJobId(jobDetails.id);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
           toast.warning("You've already applied!", {
             description: "No need to worry, your application for this position is already under review.",
             style: {
@@ -686,7 +723,7 @@ export default function ApplyJobPage() {
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(0)}>
-                  Cancel
+                  Back
                 </Button>
                 <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
                   if (!candidate.name.trim()) { toast.error("Full Name is required"); return; }
@@ -940,7 +977,7 @@ export default function ApplyJobPage() {
 
               <div className="flex gap-3 pt-6">
                 <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(1)}>
-                  Cancel
+                  Back
                 </Button>
                 <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
                   if (!selectedResumeId && resumes.length > 0) {
@@ -1244,7 +1281,7 @@ export default function ApplyJobPage() {
               </div>
 
               <div className="flex gap-3 pt-6">
-                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(step - 1)}>
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => router.back()}>
                   Cancel
                 </Button>
                 <Button variant="hero" className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={handleSubmit} disabled={isSubmitting}>
