@@ -17,7 +17,6 @@ export default async function HeroBackground() {
         className="object-cover object-center"
         quality={75}
       />
-      <div className="absolute inset-0 bg-slate-50/20" aria-hidden />
     </div>
   );
 }

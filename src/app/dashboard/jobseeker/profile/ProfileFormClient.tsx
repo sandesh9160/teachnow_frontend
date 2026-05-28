@@ -664,7 +664,7 @@ export default function ProfileFormClient({
   const ProfileHeader = ({ isEdit = false }: { isEdit?: boolean }) => (
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden relative">
       <div className="h-20 bg-indigo-500 bg-linear-to-r from-indigo-500 to-blue-400" />
-      <div className="px-5 pb-5 relative">
+      <div className="px-4 sm:px-5 pb-4 sm:pb-5 relative">
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 -mt-10 mb-4">
           <div
             className={`w-20 h-20 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative ${isEdit ? 'cursor-pointer group' : ''}`}
@@ -719,19 +719,19 @@ export default function ProfileFormClient({
 
   const renderProfileView = () => (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 pb-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between gap-3 mb-1 px-4 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1 px-4 sm:px-0">
         <div>
           <h1 className="text-lg font-bold text-black tracking-tight">My Profile</h1>
           <p className="text-black/40 text-[11px] font-medium">Your professional identity on TeachNow</p>
         </div>
-        <Button onClick={() => setMode("edit")} className="bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 h-8 text-[12px] font-semibold shadow-xs">
+        <Button onClick={() => setMode("edit")} className="w-full sm:w-auto justify-center bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 h-8 text-[12px] font-semibold shadow-xs">
           <Edit2 className="w-3 h-3 mr-1.5" /> Edit Profile
         </Button>
       </div>
 
       <ProfileHeader />
 
-      <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs space-y-4">
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-100 shadow-xs space-y-4">
         <h3 className="text-[12px] font-semibold text-slate-900 border-b border-slate-50 pb-2 flex items-center gap-2">
           <Search className="w-3.5 h-3.5 text-indigo-500" /> Job Preferences
         </h3>
@@ -760,22 +760,22 @@ export default function ProfileFormClient({
       </div>
 
       {profileData.bio && (
-        <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-xs">
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-100 shadow-xs">
           <h3 className="text-[12px] font-semibold text-black mb-2.5 flex items-center gap-2">
             <UserCircle className="w-3.5 h-3.5 text-indigo-500" /> About Me
           </h3>
-          <p className="text-black/70 leading-relaxed whitespace-pre-wrap text-[14px] font-medium">{profileData.bio}</p>
+          <p className="text-black/70 leading-relaxed whitespace-pre-wrap text-[14px] font-medium break-words">{profileData.bio}</p>
           {profileData.portfolio_website && (
-            <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-black/40" />
-              <a href={profileData.portfolio_website} target="_blank" className="text-[13px] text-indigo-600 font-semibold hover:underline">{profileData.portfolio_website}</a>
+            <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2 min-w-0">
+              <Globe className="w-3.5 h-3.5 text-black/40 shrink-0" />
+              <a href={profileData.portfolio_website} target="_blank" className="text-[13px] text-indigo-600 font-semibold hover:underline truncate block max-w-full">{profileData.portfolio_website}</a>
             </div>
           )}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[13px] font-bold text-black flex items-center gap-2">
               <Briefcase className="w-4 h-4 text-black/30" /> Experience
@@ -790,13 +790,13 @@ export default function ProfileFormClient({
           <div className="space-y-8">
             {localExpList.filter(e => !(e as any).is_deleted).length > 0 ? (
               localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
-                <div key={exp.id} className="border-l-2 border-slate-50 pl-5">
-                  <h4 className="text-[14px] font-bold text-black leading-tight">{exp.job_title}</h4>
-                  <p className="text-indigo-600 font-medium text-[13px] mt-1">{exp.company_name}{exp.location ? `, ${exp.location}` : ''}</p>
+                <div key={exp.id} className="border-l-2 border-slate-50 pl-4 sm:pl-5">
+                  <h4 className="text-[14px] font-bold text-black leading-tight break-words">{exp.job_title}</h4>
+                  <p className="text-indigo-600 font-medium text-[13px] mt-1 break-words">{exp.company_name}{exp.location ? `, ${exp.location}` : ''}</p>
                   <p className="text-black/40 text-[11px] font-semibold mt-1">
                     {exp.start_date?.split("-")[0]} — {exp.is_current ? "Present" : exp.end_date?.split("-")[0] || "—"}
                   </p>
-                  {exp.description && <p className="text-black/50 text-[12px] mt-2 leading-relaxed">{exp.description}</p>}
+                  {exp.description && <p className="text-black/50 text-[12px] mt-2 leading-relaxed break-words">{exp.description}</p>}
                 </div>
               ))
             ) : (
@@ -805,7 +805,7 @@ export default function ProfileFormClient({
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-xs">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-xs">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[13px] font-bold text-black flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-black/30" /> Education
@@ -820,16 +820,16 @@ export default function ProfileFormClient({
           <div className="space-y-8">
             {localEduList.filter(e => !(e as any).is_deleted).length > 0 ? (
               localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
-                <div key={edu.id} className="border-l-2 border-slate-50 pl-5">
-                  <h4 className="text-[14px] font-bold text-black leading-tight">{edu.degree}</h4>
-                  <p className="text-black/80 font-medium text-[13px] mt-1 space-x-1">
-                    <span>{edu.institution}</span>
+                <div key={edu.id} className="border-l-2 border-slate-50 pl-4 sm:pl-5">
+                  <h4 className="text-[14px] font-bold text-black leading-tight break-words">{edu.degree}</h4>
+                  <p className="text-black/80 font-medium text-[13px] mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                    <span className="break-words">{edu.institution}</span>
                     <span className="text-slate-300">·</span>
                     <span className="text-black/40 font-semibold">{edu.start_date?.split("-")[0]} — {edu.is_current ? "Present" : edu.end_date?.split("-")[0]}</span>
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
-                    {edu.field_of_study && <p className="text-[10px] text-indigo-600 font-bold tracking-widest">{edu.field_of_study}</p>}
-                    {edu.grade && <span className="text-[11px] font-bold text-emerald-600">{edu.grade}</span>}
+                    {edu.field_of_study && <p className="text-[10px] text-indigo-600 font-bold tracking-widest break-words">{edu.field_of_study}</p>}
+                    {edu.grade && <span className="text-[11px] font-bold text-emerald-600 break-words">{edu.grade}</span>}
                   </div>
                 </div>
               ))
@@ -840,7 +840,7 @@ export default function ProfileFormClient({
         </div>
       </div>
 
-      <div className="bg-white p-7 rounded-xl border border-slate-100 shadow-xs space-y-8 mt-6">
+      <div className="bg-white p-4 sm:p-7 rounded-xl border border-slate-100 shadow-xs space-y-8 mt-6">
         <div>
           <h3 className="text-[13px] font-bold text-black mb-5 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-black/30" /> Skills
@@ -862,9 +862,9 @@ export default function ProfileFormClient({
             <div className="space-y-4">
               {profileData.certifications.map((cert: any, i: number) => (
                 <div key={i} className="flex flex-col">
-                  <p className="text-black font-semibold text-[13px]">{typeof cert === 'string' ? cert : cert.name}</p>
+                  <p className="text-black font-semibold text-[13px] break-words">{typeof cert === 'string' ? cert : cert.name}</p>
                   {(cert.issuer || cert.issued_at || cert.expires_at) && (
-                    <p className="text-black/60 text-[11px] font-medium mt-0.5">
+                    <p className="text-black/60 text-[11px] font-medium mt-0.5 break-words">
                       {cert.issuer || ''}
                       {cert.issued_at && cert.issued_at.includes("-") ? ` · Issued: ${cert.issued_at.split("-")[0]}` : (cert.issued_at ? ` · Issued: ${cert.issued_at}` : '')}
                       {cert.expires_at && cert.expires_at.includes("-") ? ` · Expires: ${cert.expires_at.split("-")[0]}` : (cert.expires_at ? ` · Expires: ${cert.expires_at}` : '')}
@@ -897,7 +897,7 @@ export default function ProfileFormClient({
       <ProfileHeader isEdit />
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 space-y-8">
+        <div className="p-4 sm:p-6 space-y-8">
           <section className="space-y-6">
             <h3 className="text-[13px] font-semibold text-black border-b border-slate-50 pb-2">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1111,25 +1111,25 @@ export default function ProfileFormClient({
 
             <div className="divide-y divide-slate-50">
               {localExpList.filter(e => !(e as any).is_deleted).map((exp) => (
-                <div key={exp.id} className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-slate-50">
-                  <div className="flex gap-3 items-center">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500"><Briefcase className="w-4 h-4" /></div>
-                    <div>
-                      <h4 className="font-semibold text-slate-800 text-[13px]">{exp.job_title}</h4>
-                      <p className="text-[11px] font-medium text-slate-500">
-                        {exp.company_name} 
-                        <span className="mx-1.5 text-slate-300">·</span>
+                <div key={exp.id} className="flex items-start justify-between py-3 px-2 rounded-lg hover:bg-slate-50 gap-2">
+                  <div className="flex gap-3 items-start min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0"><Briefcase className="w-4 h-4" /></div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-semibold text-slate-800 text-[13px] break-words">{exp.job_title}</h4>
+                      <p className="text-[11px] font-medium text-slate-500 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                        <span className="break-words">{exp.company_name}</span> 
+                        <span className="text-slate-300">·</span>
                         <span className="text-slate-400 font-semibold">{exp.start_date?.split("-")[0]} — {exp.is_current ? "Present" : exp.end_date?.split("-")[0] || "—"}</span>
                         {exp.location && (
                           <>
-                            <span className="mx-1.5 text-slate-300">·</span>
-                            <span className="text-indigo-600 font-bold">{exp.location}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-indigo-600 font-bold break-words">{exp.location}</span>
                           </>
                         )}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button type="button" onClick={() => handleExpEdit(exp)} className="p-2 text-indigo-600 hover:bg-white rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button type="button" onClick={() => handleExpDelete(exp.id)} className="p-2 text-red-500 hover:bg-white rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
@@ -1150,7 +1150,7 @@ export default function ProfileFormClient({
             </div>
 
             {showEduForm && (
-              <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100/50 space-y-5">
+              <div className="bg-emerald-50/50 p-4 sm:p-5 rounded-xl border border-emerald-100/50 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className={cn("text-[13px] font-semibold transition-colors", eduErrors.degree ? "text-red-500" : "text-slate-700")}>Degree <span className="text-red-500">*</span></Label>
@@ -1278,25 +1278,25 @@ export default function ProfileFormClient({
 
             <div className="divide-y divide-slate-50 mb-6">
               {localEduList.filter(e => !(e as any).is_deleted).map((edu) => (
-                <div key={edu.id} className="flex items-center justify-between py-3 px-2 rounded-lg hover:bg-slate-50">
-                  <div className="flex gap-3 items-center">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500"><GraduationCap className="w-4 h-4" /></div>
-                    <div>
-                      <h4 className="font-semibold text-slate-800 text-[13px]">{edu.degree}</h4>
-                      <p className="text-[11px] font-medium text-slate-500">
-                        {edu.institution}
-                        <span className="mx-1.5 text-slate-300">·</span>
+                <div key={edu.id} className="flex items-start justify-between py-3 px-2 rounded-lg hover:bg-slate-50 gap-2">
+                  <div className="flex gap-3 items-start min-w-0 flex-1">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0"><GraduationCap className="w-4 h-4" /></div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-semibold text-slate-800 text-[13px] break-words">{edu.degree}</h4>
+                      <p className="text-[11px] font-medium text-slate-500 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                        <span className="break-words">{edu.institution}</span>
+                        <span className="text-slate-300">·</span>
                         <span className="text-slate-400 font-semibold">{edu.start_date?.split("-")[0]} — {edu.is_current ? "Present" : edu.end_date?.split("-")[0] || "—"}</span>
                         {edu.grade && (
                           <>
-                            <span className="mx-1.5 text-slate-300">·</span>
-                            <span className="text-emerald-600 font-bold">{edu.grade}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-emerald-600 font-bold break-words">{edu.grade}</span>
                           </>
                         )}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <button type="button" onClick={() => handleEduEdit(edu)} className="p-2 text-indigo-600 hover:bg-white rounded-lg"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button type="button" onClick={() => handleEduDelete(edu.id)} className="p-2 text-red-500 hover:bg-white rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
@@ -1431,18 +1431,18 @@ export default function ProfileFormClient({
                       className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
                     />
                   </div>
-                  <Button type="button" onClick={handleAddCertification} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
+                  <Button type="button" onClick={handleAddCertification} className="w-full h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px] sm:col-span-2 md:col-span-1">Add</Button>
                 </div>
 
                 <div className="flex flex-wrap gap-3 mt-4">
                   {profileData.certifications.map((c: any, idx: number) => (
-                    <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl min-w-[220px] relative group pointer-events-auto">
+                    <div key={idx} className="flex flex-col p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl w-full sm:w-auto sm:min-w-[220px] relative group pointer-events-auto">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="font-semibold text-emerald-900 text-[13px]">{typeof c === 'string' ? c : c.name}</p>
+                        <p className="font-semibold text-emerald-900 text-[13px] break-words">{typeof c === 'string' ? c : c.name}</p>
                         <button type="button" onClick={() => setProfileData(p => ({ ...p, certifications: p.certifications.filter((_: any, i: number) => i !== idx) }))} className="p-1 text-emerald-300 hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
                       </div>
                       {(c.issuer || c.issued_at || c.expires_at) && (
-                        <p className="text-[10px] font-semibold text-emerald-600/70 mt-2">
+                        <p className="text-[10px] font-semibold text-emerald-600/70 mt-2 break-words">
                           {c.issuer || ''}
                           {c.issued_at && c.issued_at.includes("-") ? ` · Issued: ${c.issued_at.split("-")[0]}` : (c.issued_at ? ` · Issued: ${c.issued_at}` : '')}
                           {c.expires_at && c.expires_at.includes("-") ? ` · Expires: ${c.expires_at.split("-")[0]}` : (c.expires_at ? ` · Expires: ${c.expires_at}` : '')}
@@ -1457,9 +1457,9 @@ export default function ProfileFormClient({
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 px-4 sm:px-0">
-        <Button variant="outline" onClick={() => setMode("view")} className="px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
-        <Button onClick={handleSubmit} disabled={saving} className="px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 px-4 sm:px-0">
+        <Button variant="outline" onClick={() => setMode("view")} className="w-full sm:w-auto px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
+        <Button onClick={handleSubmit} disabled={saving} className="w-full sm:w-auto px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
           Save Final Profile
         </Button>
       </div>
