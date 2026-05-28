@@ -5,7 +5,6 @@ import { Search, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { getSearchSuggestions, getLocations, Location } from "@/hooks/useSearch";
-import { toast } from "sonner";
 
 
 interface SearchBarProps {

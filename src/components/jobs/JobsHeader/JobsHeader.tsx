@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { SlidersHorizontal, Search, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { getSearchSuggestions, getLocations, Location } from "@/hooks/useSearch";
-import { toast } from "sonner";
+
 
 
 interface JobsHeaderProps {
