@@ -11,6 +11,22 @@ import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
 import { getFilters } from "@/hooks/useHomepage";
 import { sanitizeSlug } from "@/lib/utils";
 
+function isStaticOrIconRoute(slug: string): boolean {
+  if (!slug) return true;
+  const s = slug.toLowerCase();
+  return (
+    s.includes(".") ||
+    s === "favicon" ||
+    s.startsWith("favicon-") ||
+    s === "favicon.ico" ||
+    s === "icon" ||
+    s.startsWith("icon-") ||
+    s.startsWith("apple-touch-") ||
+    s === "robots.txt" ||
+    s === "sitemap.xml"
+  );
+}
+
 
 export const dynamic = 'force-dynamic';
 
@@ -262,7 +278,7 @@ async function lookupBySearch(s: string) {
 
 async function resolveSlug(slug: string) {
   // Ignore static files/icons early
-  if (slug.includes('.') || slug === "favicon.ico") return null;
+  if (isStaticOrIconRoute(slug)) return null;
 
   const s = sanitizeSlug(slug);
   if (!s) return null;
@@ -303,6 +319,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params;
+  if (isStaticOrIconRoute(slug)) {
+    return { title: "TeachNow" };
+  }
   const s = sanitizeSlug(slug);
 
   // Quick metadata lookups (minimizing redundant strategy execution)
@@ -317,6 +336,10 @@ export async function generateMetadata({
 
 export default async function PublicSlugPage({ params }: { readonly params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  if (isStaticOrIconRoute(slug)) {
+    return notFound();
+  }
 
   // 0. Handlers for static page aliases and URL cleaning
   const staticAliases: Record<string, string> = {
