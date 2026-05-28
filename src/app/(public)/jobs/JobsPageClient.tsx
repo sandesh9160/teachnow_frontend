@@ -94,20 +94,7 @@ export function JobsPageClient({
       }
 
       if (selectedFilters.experience.length > 0) {
-        let maxUpperBound = -1;
-        selectedFilters.experience.forEach(exp => {
-          if (exp === "0-0") {
-            maxUpperBound = Math.max(maxUpperBound, 0);
-          } else {
-            const parts = exp.split("-");
-            if (parts[1]) {
-              maxUpperBound = Math.max(maxUpperBound, Number(parts[1]));
-            }
-          }
-        });
-        if (maxUpperBound >= 0) {
-          filters.experience = maxUpperBound;
-        }
+        filters.experience = selectedFilters.experience.map(Number);
       }
 
       void fetchJobs({

@@ -14,6 +14,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       position="top-center"
       className="toaster group"
       richColors
+      closeButton
       toastOptions={{
         classNames: {
           toast:
@@ -23,6 +24,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton: "group-[.toast]:bg-slate-100 group-[.toast]:text-slate-600 group-[.toast]:font-bold group-[.toast]:rounded-xl hover:group-[.toast]:bg-slate-200 transition-all",
           success: "group-[.toast]:!bg-emerald-50 group-[.toast]:!text-emerald-900 group-[.toast]:!border-emerald-200 dark:group-[.toast]:!bg-emerald-950 dark:group-[.toast]:!text-emerald-100 dark:group-[.toast]:!border-emerald-800",
           error: "group-[.toast]:!bg-rose-50 group-[.toast]:!text-rose-900 group-[.toast]:!border-rose-200 dark:group-[.toast]:!bg-rose-950 dark:group-[.toast]:!text-rose-100 dark:group-[.toast]:!border-rose-800",
+          closeButton:
+            "group-[.toast]:!left-auto group-[.toast]:!right-2 group-[.toast]:!top-1/2 group-[.toast]:!-translate-y-1/2 group-[.toast]:!translate-x-0",
         },
       }}
       {...props}

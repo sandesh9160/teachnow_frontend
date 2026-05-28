@@ -35,11 +35,10 @@ export const JobFilterSidebar = ({
   ];
 
   const experienceRanges = [
-    { value: "0-0", label: "Fresher" },
-    { value: "0-2", label: "0 - 2 Years" },
-    { value: "2-5", label: "2 - 5 Years" },
-    { value: "5-10", label: "5 - 10 Years" },
-    { value: "10-50", label: "10+ Years" },
+    { value: "0", label: "Fresher" },
+    { value: "2", label: "2+ Years" },
+    { value: "5", label: "5+ Years" },
+    { value: "10", label: "10+ Years" },
   ];
 
   const genderOptions = [

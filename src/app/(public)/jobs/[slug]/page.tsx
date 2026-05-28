@@ -207,11 +207,18 @@ async function lookupBySearchFallback(s: string) {
       const combined = nextP ? `${p}-${nextP}` : "";
 
       if (p === "fresher") {
-        initialFilters.experience.push("0-0");
+        initialFilters.experience.push("0");
       } else if (expRanges.has(p)) {
-        initialFilters.experience.push(p);
+        if (p === "0-0") initialFilters.experience.push("0");
+        else if (p === "0-2" || p === "2-5") initialFilters.experience.push("2");
+        else if (p === "5-10") initialFilters.experience.push("5");
+        else if (p === "10-50") initialFilters.experience.push("10");
       } else if (expRanges.has(combined)) {
-        initialFilters.experience.push(combined);
+        const matched = combined;
+        if (matched === "0-0") initialFilters.experience.push("0");
+        else if (matched === "0-2" || matched === "2-5") initialFilters.experience.push("2");
+        else if (matched === "5-10") initialFilters.experience.push("5");
+        else if (matched === "10-50") initialFilters.experience.push("10");
         i++;
       } else if (salRanges.has(p)) {
         initialFilters.salary.push(p);
@@ -233,7 +240,10 @@ async function lookupBySearchFallback(s: string) {
 
     // Build a nice display name that includes detected filters
     const filterLabels = [];
-    if (initialFilters.experience?.includes("0-0")) filterLabels.push("Fresher");
+    if (initialFilters.experience?.includes("0") || initialFilters.experience?.includes("0-0")) filterLabels.push("Fresher");
+    if (initialFilters.experience?.includes("2")) filterLabels.push("2+ Years");
+    if (initialFilters.experience?.includes("5")) filterLabels.push("5+ Years");
+    if (initialFilters.experience?.includes("10")) filterLabels.push("10+ Years");
     if (initialFilters.job_type?.includes("Full-time")) filterLabels.push("Full-time");
     if (initialFilters.job_type?.includes("Part-time")) filterLabels.push("Part-time");
 

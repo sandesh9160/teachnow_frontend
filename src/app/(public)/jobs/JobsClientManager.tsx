@@ -84,20 +84,7 @@ export default function JobsClientManager({
       }
       
       if (selectedFilters.experience?.length) {
-        let maxUpperBound = -1;
-        selectedFilters.experience.forEach((exp: string) => {
-          if (exp === "0-0") {
-            maxUpperBound = Math.max(maxUpperBound, 0);
-          } else {
-            const parts = exp.split("-");
-            if (parts[1]) {
-              maxUpperBound = Math.max(maxUpperBound, Number(parts[1]));
-            }
-          }
-        });
-        if (maxUpperBound >= 0) {
-          backendFilters.experience = maxUpperBound;
-        }
+        backendFilters.experience = selectedFilters.experience.map(Number);
       }
 
       if (selectedFilters.institution_type?.length) {

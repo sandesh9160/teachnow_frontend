@@ -5,6 +5,7 @@ import { Search, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { getSearchSuggestions, getLocations, Location } from "@/hooks/useSearch";
+import { toast } from "sonner";
 
 
 interface SearchBarProps {
@@ -23,6 +24,8 @@ export function SearchBar({ }: SearchBarProps) {
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [allLocations, setAllLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+
 
   const queryRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
@@ -107,32 +110,48 @@ export function SearchBar({ }: SearchBarProps) {
     };
   }, [city, allLocations]);
 
+  // Clear invalid city on blur — must be selected from dropdown only
+  const handleCityBlur = () => {
+    if (city.trim() && allLocations.length > 0) {
+      const isValid = allLocations.some(
+        loc => loc.name.toLowerCase() === city.toLowerCase().trim()
+      );
+      if (!isValid) {
+        setCity("");
+      }
+    }
+  };
+
   const handleSearch = (searchQuery?: string, searchCity?: string) => {
     const activeQuery = typeof searchQuery === "string" ? searchQuery : query;
     const activeCity = typeof searchCity === "string" ? searchCity : city;
 
-    // Validate city against the locations list
-    const isCityValid = !activeCity.trim() || allLocations.length === 0 || allLocations.some(loc => loc.name.toLowerCase() === activeCity.toLowerCase().trim());
-
-    let finalQuery = activeQuery.trim();
-    let finalCity = activeCity.trim();
-
-    // If city is invalid, we ignore it for the search but keep the text in the input
-    if (finalCity && !isCityValid) {
-      finalCity = "";
+    // At least one of title or city is required
+    if (!activeQuery.trim() && !activeCity.trim()) {
+      toast.error("Please enter a job title or select a city", {
+        id: "search-validation",
+        duration: 4000,
+        closeButton: true,
+      });
+      return;
     }
 
-    // If both are empty, just go to the main jobs page
-    if (!finalQuery && !finalCity) {
+    // Validate city against the locations list
+    const isCityValid =
+      !activeCity.trim() ||
+      allLocations.length === 0 ||
+      allLocations.some(loc => loc.name.toLowerCase() === activeCity.toLowerCase().trim());
+
+    let finalQuery = activeQuery.trim();
+    let finalCity = isCityValid ? activeCity.trim() : "";
+
+    const combinedQuery = [finalQuery, finalCity].filter(Boolean).join(" ");
+
+    if (!combinedQuery) {
       router.push("/jobs");
       return;
     }
 
-    // Generate SEO-friendly slug
-    const combinedQuery = [finalQuery, finalCity]
-      .filter(Boolean)
-      .join(" ");
-    
     const slug = combinedQuery
       .toLowerCase()
       .trim()
@@ -149,12 +168,12 @@ export function SearchBar({ }: SearchBarProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto h-auto">
-      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border-transparent md:border-slate-50">
+      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border border-slate-200 hover:border-indigo-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
 
         {/* Subject/Role Search */}
         <div className="relative flex-[1.4] w-full" ref={queryRef}>
-          <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
-            <Search className="h-4 w-4 text-indigo-400 shrink-0" />
+          <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all bg-slate-50/80 md:bg-slate-50 border border-transparent focus-within:border-indigo-200">
+            <Search className="h-4 w-4 shrink-0 text-indigo-400" />
             <input
               type="text"
               id="query-search-input"
@@ -191,7 +210,7 @@ export function SearchBar({ }: SearchBarProps) {
               placeholder="Job title, subject..."
               aria-label="Search by job title or subject"
               autoComplete="off"
-              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
+              className="w-full bg-transparent font-semibold focus:outline-none text-[15px] text-slate-800 placeholder:text-slate-400"
             />
           </div>
 
@@ -206,7 +225,9 @@ export function SearchBar({ }: SearchBarProps) {
                     setQuery(role);
                     setShowQuerySuggestions(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === index ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
+                  className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${
+                    selectedIndex === index ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"
+                  }`}
                 >
                   {role}
                 </button>
@@ -215,10 +236,10 @@ export function SearchBar({ }: SearchBarProps) {
           )}
         </div>
 
-        {/* City/Location Search */}
+        {/* City/Location Search — dropdown only */}
         <div className="relative flex-1 w-full" ref={cityRef}>
-          <div className="flex items-center gap-3 px-6 py-2.5 bg-slate-50/80 md:bg-slate-50 border-transparent md:border-transparent rounded-xl group focus-within:ring-2 focus-within:ring-indigo-500/10 transition-all">
-            <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all bg-slate-50/80 md:bg-slate-50 border border-transparent focus-within:border-indigo-200">
+            <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
             <input
               type="text"
               id="city-search-input"
@@ -232,6 +253,7 @@ export function SearchBar({ }: SearchBarProps) {
                 setShowCitySuggestions(true);
                 setSelectedIndex(-1);
               }}
+              onBlur={handleCityBlur}
               onKeyDown={(e) => {
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
@@ -252,10 +274,10 @@ export function SearchBar({ }: SearchBarProps) {
                 }
                 if (e.key === "Escape") setShowCitySuggestions(false);
               }}
-              placeholder="City or remote"
+              placeholder="Select city"
               aria-label="Search by city or location"
               autoComplete="off"
-              className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
+              className="w-full bg-transparent font-semibold focus:outline-none text-[15px] text-slate-800 placeholder:text-slate-400"
             />
           </div>
 
@@ -270,7 +292,9 @@ export function SearchBar({ }: SearchBarProps) {
                     setCity(c);
                     setShowCitySuggestions(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === index ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"}`}
+                  className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${
+                    selectedIndex === index ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"
+                  }`}
                 >
                   {c}
                 </button>
@@ -288,6 +312,7 @@ export function SearchBar({ }: SearchBarProps) {
           <span>Search Jobs</span>
         </Button>
       </div>
+
     </div>
   );
 }

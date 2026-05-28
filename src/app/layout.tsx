@@ -25,8 +25,11 @@ export const metadata: Metadata = {
   title: "TeachNow – Find Jobs, Build Resume, and Get Hired Faster",
   description: "India's #1 job portal for education professionals.",
   icons: {
-    icon: "/images/branded-logo.png",
-    apple: "/images/branded-logo.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 

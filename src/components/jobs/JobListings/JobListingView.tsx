@@ -208,9 +208,14 @@ export default function JobListingView({
     // Experience Filter (Multi-range support)
     if (selectedFilters.experience.length > 0) {
       const exp = Number(job.experience_required ?? Number.NaN);
-      const isMatch = selectedFilters.experience.some(rangeStr => {
-        const [min, max] = rangeStr.split("-").map(Number);
-        return !Number.isNaN(min) && !Number.isNaN(max) && exp >= min && exp <= max;
+      if (Number.isNaN(exp)) return false;
+      const isMatch = selectedFilters.experience.some(val => {
+        const expNum = Number(val);
+        if (expNum === 0) return exp === 0;
+        if (expNum === 2) return exp >= 1 && exp < 5;
+        if (expNum === 5) return exp >= 5 && exp < 10;
+        if (expNum === 10) return exp >= 10;
+        return false;
       });
       if (!isMatch) return false;
     }

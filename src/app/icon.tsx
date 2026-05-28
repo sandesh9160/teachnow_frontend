@@ -7,6 +7,7 @@ export const size = {
 
 export const contentType = "image/png";
 
+// Fallback icon — actual favicon is served from /public/favicon.svg via layout.tsx metadata
 export default function Icon() {
   return new ImageResponse(
     (
@@ -17,11 +18,11 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #1d4ed8, #4338ca)",
-          borderRadius: 8,
+          background: "linear-gradient(135deg, #4338ca 0%, #7c3aed 100%)",
+          borderRadius: 7,
           color: "white",
-          fontSize: 18,
-          fontWeight: 700,
+          fontSize: 16,
+          fontWeight: 800,
         }}
       >
         T
