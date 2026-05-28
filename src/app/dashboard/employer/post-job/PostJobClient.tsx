@@ -198,6 +198,7 @@ export default function PostJobClient({
         if (!formData.category_id) newErrors.category_id = "Please select a Subject or Category for this job";
         if (!formData.job_type) newErrors.job_type = "Please select a Job Type (Full-time or Part-time)";
         if (!formData.location) newErrors.location = "Please select a City location for this job";
+  
         if (!formData.experience_required?.toString().trim()) newErrors.experience_required = "Please specify the Experience Required for this role";
         if (!formData.experience_type) newErrors.experience_type = "Please select whether the role is for Freshers or Experienced candidates";
         if (!formData.gender) newErrors.gender = "Please specify a Gender Preference (or Select Any / Both)";
@@ -583,7 +584,7 @@ export default function PostJobClient({
                       });
                     }
                   }} 
-                  placeholder="e.g. 3–5 years" 
+                  placeholder="e.g. 5 years" 
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
                     (errors.experience_required || limitReachedField === "experience_required") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
