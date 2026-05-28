@@ -144,39 +144,105 @@ async function lookupByLocation(s: string) {
  */
 async function lookupBySearch(s: string) {
   try {
+    const parts = s.split("-");
+
+    // Fetch dynamic locations to avoid hardcoded City limitations
     const { locations } = await getFilters();
     const knownCities = new Set(locations.map(l => l.name?.toLowerCase()).filter(Boolean));
 
-    const parts = s.split("-");
-    let keyword = "";
     let location = "";
+    let keywordParts = [...parts];
 
-    // If there is only one part, check if it's a known city
-    if (parts.length === 1) {
-      if (knownCities.has(parts[0].toLowerCase())) {
-        location = parts[0];
-      } else {
-        keyword = parts[0];
+    // Detect location using dynamic city list (with fuzzy matching for misspellings)
+    for (const part of parts) {
+      const p = part.toLowerCase();
+      // Try exact match first
+      if (knownCities.has(p)) {
+        location = part;
+        keywordParts = parts.filter(p_ => p_.toLowerCase() !== p);
+        break;
       }
-    } else {
-      // If there are multiple parts, check if the last part is a known city
-      const lastPart = parts[parts.length - 1];
-      if (knownCities.has(lastPart.toLowerCase())) {
-        location = lastPart;
-        keyword = parts.slice(0, -1).join(" ");
-      } else {
-        keyword = parts.join(" ");
+
+      // Try prefix match for common shortcuts (at least 3 chars)
+      if (p.length >= 3) {
+        const fuzzyMatch = [...knownCities].find(city => city.startsWith(p) || p.startsWith(city));
+        if (fuzzyMatch) {
+          location = fuzzyMatch;
+          keywordParts = parts.filter(p_ => p_.toLowerCase() !== p);
+          break;
+        }
       }
     }
 
-    if (!keyword && !location) return null;
+    // Detect common filters from the remaining parts
+    const initialFilters: any = { job_type: [], experience: [], salary: [], institution_type: [] };
+    const finalKeywordParts: string[] = [];
 
-    const { jobs, similarJobs } = await fullSearchJobs(keyword || "", location || "");
-    if (!jobs || (jobs.length === 0 && similarJobs.length === 0)) return null;
+    // Range maps for experience and salary
+    const expRanges = new Set(["0-0", "0-2", "2-5", "5-10", "10-50"]);
+    const salRanges = new Set(["0-5", "5-10", "10-15"]);
 
-    const name = [keyword, location].filter(Boolean).join(" in ") || "Search Results";
-    return { type: 'search' as const, data: { jobs, similarJobs, name, keyword, location } };
+    for (let i = 0; i < keywordParts.length; i++) {
+      const p = keywordParts[i].toLowerCase();
+      const nextP = keywordParts[i + 1]?.toLowerCase();
+      const combined = nextP ? `${p}-${nextP}` : "";
+
+      if (p === "fresher") {
+        initialFilters.experience.push("0");
+      } else if (expRanges.has(p)) {
+        if (p === "0-0") initialFilters.experience.push("0");
+        else if (p === "0-2" || p === "2-5") initialFilters.experience.push("2");
+        else if (p === "5-10") initialFilters.experience.push("5");
+        else if (p === "10-50") initialFilters.experience.push("10");
+      } else if (expRanges.has(combined)) {
+        const matched = combined;
+        if (matched === "0-0") initialFilters.experience.push("0");
+        else if (matched === "0-2" || matched === "2-5") initialFilters.experience.push("2");
+        else if (matched === "5-10") initialFilters.experience.push("5");
+        else if (matched === "10-50") initialFilters.experience.push("10");
+        i++;
+      } else if (salRanges.has(p)) {
+        initialFilters.salary.push(p);
+      } else if (salRanges.has(combined)) {
+        initialFilters.salary.push(combined);
+        i++;
+      } else if ((p === "full" && nextP === "time") || p === "fulltime") {
+        initialFilters.job_type.push("Full-time");
+        if (nextP === "time") i++;
+      } else if ((p === "part" && nextP === "time") || p === "parttime") {
+        initialFilters.job_type.push("Part-time");
+        if (nextP === "time") i++;
+      } else if (p !== "lpa" && p !== "years" && p !== "experience") {
+        finalKeywordParts.push(p);
+      }
+    }
+
+    const keyword = finalKeywordParts.filter(p => !["jobs", "job", "in"].includes(p)).join(" ").trim();
+
+    // Build a nice display name that includes detected filters
+    const filterLabels = [];
+    if (initialFilters.experience?.includes("0") || initialFilters.experience?.includes("0-0")) filterLabels.push("Fresher");
+    if (initialFilters.experience?.includes("2")) filterLabels.push("2+ Years");
+    if (initialFilters.experience?.includes("5")) filterLabels.push("5+ Years");
+    if (initialFilters.experience?.includes("10")) filterLabels.push("10+ Years");
+    if (initialFilters.job_type?.includes("Full-time")) filterLabels.push("Full-time");
+    if (initialFilters.job_type?.includes("Part-time")) filterLabels.push("Part-time");
+
+    const displayName = [
+      keyword,
+      filterLabels.length > 0 ? filterLabels.join(" ") : "",
+      location
+    ].filter(Boolean).join(" - ");
+
+    if (keyword || location || initialFilters.job_type.length > 0 || initialFilters.experience.length > 0) {
+      const { jobs, similarJobs } = await fullSearchJobs(keyword, location);
+      return {
+        type: 'search' as const,
+        data: { jobs, similarJobs, name: displayName || "Search Results", keyword, location, initialFilters }
+      };
+    }
   } catch { return null; }
+  return null;
 }
 
 /* -------------------- ORCHESTRATOR -------------------- */
@@ -314,6 +380,7 @@ export default async function PublicSlugPage({ params }: { readonly params: Prom
         pageName={resolved.data.name}
         initialKeyword={resolved.data.keyword}
         initialLocation={resolved.data.location}
+        initialFilters={resolved.data.initialFilters}
       />
     );
   }

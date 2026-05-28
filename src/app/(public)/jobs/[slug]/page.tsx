@@ -48,6 +48,33 @@ async function lookupByNavigation(s: string) {
         apiUrl = apiUrl.replace(/([?&])title=/g, "$1keyword=");
       }
 
+      // Fetch dynamic locations to check if the search is for a known city/location
+      const { locations } = await getFilters();
+      const knownCities = new Set(locations.map(l => l.name?.toLowerCase()).filter(Boolean));
+
+      let resolvedLocation = "";
+      let resolvedKeyword = match.title;
+
+      if (apiUrl.includes("?")) {
+        const [path, searchStr] = apiUrl.split("?");
+        const params = new URLSearchParams(searchStr);
+
+        const kwVal = params.get("keyword") || params.get("title");
+        if (kwVal && knownCities.has(kwVal.toLowerCase().trim())) {
+          params.set("location", kwVal.trim());
+          params.delete("keyword");
+          params.delete("title");
+          resolvedLocation = kwVal.trim();
+          resolvedKeyword = ""; // Clear keyword for city search
+        } else {
+          resolvedLocation = params.get("location") || "";
+          if (resolvedLocation) {
+            resolvedKeyword = ""; // Clear keyword if location is already set
+          }
+        }
+        apiUrl = path + "?" + params.toString();
+      }
+
       const res = await fetchAPI<ApiResponse<any>>(apiUrl);
       const data = res.data || res;
       
@@ -59,7 +86,8 @@ async function lookupByNavigation(s: string) {
         data: mainJobs, 
         similarJobs: similarJobs,
         name: match.title, 
-        keyword: match.title 
+        keyword: resolvedKeyword,
+        location: resolvedLocation
       };
     }
   } catch (err) {
@@ -236,7 +264,7 @@ async function lookupBySearchFallback(s: string) {
       }
     }
 
-    const keyword = finalKeywordParts.filter(p => !["jobs", "job"].includes(p)).join(" ").trim();
+    const keyword = finalKeywordParts.filter(p => !["jobs", "job", "in"].includes(p)).join(" ").trim();
 
     // Build a nice display name that includes detected filters
     const filterLabels = [];
