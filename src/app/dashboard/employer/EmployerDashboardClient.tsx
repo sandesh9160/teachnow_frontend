@@ -348,7 +348,7 @@ export default function EmployerDashboardClient({
 
          {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group max-w-6xl">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full">
                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
 
                <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6 flex-1">
@@ -373,7 +373,7 @@ export default function EmployerDashboardClient({
                   {/* Middle: Credits Grid (Allocation & Balance) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 lg:max-w-2xl">
                      {/* Active Allocation Box */}
-                     <div className="bg-slate-50/50 border border-slate-100/50 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
+                     <div className="bg-slate-50/50 border border-slate-200 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
                         <div className="flex items-center justify-between mb-2">
                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Allocation</span>
                            <div className="flex items-center gap-1 px-1 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
@@ -391,10 +391,10 @@ export default function EmployerDashboardClient({
                               <p className="text-lg font-bold text-slate-900 leading-none">{featTotal}</p>
                            </div>
                         </div>
-                     </div>
+                      </div>
 
                      {/* Remaining Balance Box */}
-                     <div className="bg-indigo-50/30 border border-indigo-100/30 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
+                     <div className="bg-indigo-50/30 border border-indigo-200/60 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
                         <div className="flex items-center justify-between mb-2">
                            <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Remaining Balance</span>
                            <span className="text-[7px] font-bold text-indigo-600 uppercase bg-indigo-100/50 px-1 py-0.5 rounded">Available</span>
@@ -423,10 +423,10 @@ export default function EmployerDashboardClient({
          )}
 
          {/* Stats Grid - Live Data Only */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {stats.map((stat, i) => (
                <div key={i} className={cn(
-                  "relative h-28 rounded-[16px] p-4 flex flex-col justify-between overflow-hidden shadow-sm",
+                  "relative h-28 rounded-2xl p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-black/5",
                   "bg-gradient-to-br", stat.gradient, stat.textColor
                )}>
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -443,22 +443,27 @@ export default function EmployerDashboardClient({
          </div>
 
          {/* Promotion Hub - Full Width Sophisticated Design with Toggle */}
-         <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group p-6">
+         <div className={cn(
+            "rounded-2xl border shadow-sm overflow-hidden flex flex-col group p-6 transition-all duration-500",
+            isFeatured 
+               ? "border-indigo-400 bg-indigo-50/15 ring-1 ring-indigo-400/20" 
+               : "border-slate-300 bg-white"
+         )}>
             <div className="flex items-center justify-between mb-5">
                <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                     <h2 className="text-[14px] font-semibold text-slate-500 tracking-tight">Promotion Hub</h2>
+                     <h2 className="text-[14px] font-bold text-slate-800 tracking-tight">Promotion Hub</h2>
                      {isFeatured && (
                         <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-[10px] font-bold animate-in zoom-in duration-500">Live Status</span>
                      )}
                   </div>
-                  <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+                  <p className="text-[12px] text-slate-600 font-medium leading-relaxed">
                      Feature your institution on the homepage to reach a wider audience of top-tier education professionals.
                   </p>
                </div>
                <div className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-inner shrink-0",
-                  isFeatured ? "bg-indigo-600 text-white shadow-indigo-100 scale-105" : "bg-slate-50 text-slate-300"
+                  isFeatured ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200/50 scale-105" : "bg-slate-100 text-slate-400"
                )}>
                   <Zap className={cn("w-5 h-5", isFeatured && "animate-pulse")} />
                </div>
@@ -466,20 +471,20 @@ export default function EmployerDashboardClient({
 
             <div className={cn(
                "p-4 rounded-xl border transition-all duration-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4",
-               isFeatured ? "bg-indigo-50/30 border-indigo-100" : "bg-slate-50/50 border-slate-100"
+               isFeatured ? "bg-white border-indigo-200 shadow-sm" : "bg-slate-50 border-slate-200"
             )}>
                <div className="flex items-center gap-3.5">
                   <div className={cn(
                      "w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-300",
-                     isFeatured ? "bg-indigo-600 border-indigo-500 text-white shadow-sm" : "bg-white border-slate-100 text-slate-200"
+                     isFeatured ? "bg-indigo-600 border-indigo-500 text-white shadow-sm" : "bg-white border-slate-200 text-slate-400"
                   )}>
-                     {isFeatured ? <Check className="w-3.5 h-3.5" /> : <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />}
+                     {isFeatured ? <Check className="w-3.5 h-3.5" /> : <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />}
                   </div>
                   <div className="space-y-0.5">
                      <span className="text-[13px] font-bold text-slate-900 block leading-none">Home Page Visibility</span>
                      {(() => {
                         const date = dashboardData?.company_featured_until || dashboardData?.featured_until || dashboardData?.employer?.featured_until;
-                        if (!date) return <p className="text-[11px] text-slate-400 font-medium tracking-tight">Status: Standard Placement</p>;
+                        if (!date) return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Status: Standard Placement</p>;
 
                         const isExpired = new Date(date) < new Date();
                         const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -487,27 +492,27 @@ export default function EmployerDashboardClient({
                         if (isFeatured && !isExpired) {
                            return <p className="text-[11px] text-indigo-600 font-bold flex items-center gap-1"><Zap className="w-2.5 h-2.5" /> Active until {formattedDate}</p>;
                         }
-                        return <p className="text-[11px] text-slate-400 font-medium tracking-tight">Featured status ended on {formattedDate}</p>;
+                        return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Featured status ended on {formattedDate}</p>;
                      })()}
                   </div>
                </div>
 
                <div className="flex items-center gap-3">
-                  <span className={cn("text-[11px] font-bold uppercase tracking-wider transition-colors", isFeatured ? "text-indigo-600" : "text-slate-400")}>
+                  <span className={cn("text-[11px] font-extrabold uppercase tracking-wider transition-colors", isFeatured ? "text-indigo-600 animate-pulse" : "text-slate-500")}>
                      {isFeatured ? "Featured" : "Standard"}
                   </span>
                   <button
                      onClick={handleToggleFeatured}
                      disabled={loadingFeature}
                      className={cn(
-                        "relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none shadow-inner",
-                        isFeatured ? "bg-indigo-600" : "bg-slate-200",
+                        "relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none shadow-inner border border-slate-200",
+                        isFeatured ? "bg-indigo-600 border-indigo-500" : "bg-slate-200",
                         loadingFeature && "opacity-50 cursor-not-allowed"
                      )}
                   >
                      <span
                         className={cn(
-                           "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-sm",
+                           "inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-sm border border-slate-200",
                            isFeatured ? "translate-x-6" : "translate-x-1"
                         )}
                      />
@@ -524,42 +529,46 @@ export default function EmployerDashboardClient({
          {/* Tables Grid: Recent Data */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Recent Applicants Column */}
-            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
-               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
                   <h2 className="text-[14px] font-semibold text-black">Recent candidates</h2>
                </div>
 
-               <div className="divide-y divide-slate-50">
+               <div className="divide-y divide-slate-100">
                   {dashboardData?.latest_applications && dashboardData.latest_applications.length > 0 ? (
-                     dashboardData.latest_applications.slice(0, 5).map((app, idx) => (
-                        <div key={`${app.id}-${idx}`} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                           <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
-                              <ApplicationAvatar
-                                 src={app.job_seeker.profile_photo}
-                                 alt={app.job_seeker.user.name}
-                                 initials={app.job_seeker.user.name.split(' ').map(n => n[0]).join('')}
-                              />
-                           </div>
+                     dashboardData.latest_applications.slice(0, 5).map((app, idx) => {
+                        const seekerName = app.job_seeker?.user?.name || "Applicant";
+                        const seekerInitials = seekerName.split(' ').map(n => n[0] || '').join('').slice(0, 2) || "A";
+                        return (
+                           <div key={`${app.id}-${idx}`} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                              <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
+                                 <ApplicationAvatar
+                                    src={app.job_seeker?.profile_photo || null}
+                                    alt={seekerName}
+                                    initials={seekerInitials}
+                                 />
+                              </div>
 
-                           <div className="flex-1 min-w-0">
-                              <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
-                                 {app.job_seeker.user.name}
-                              </h4>
-                              <p className="text-[11px] text-[#1E1B4B]">
-                                 Applied for {app.job.title}
-                              </p>
-                           </div>
+                              <div className="flex-1 min-w-0">
+                                 <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
+                                    {seekerName}
+                                 </h4>
+                                 <p className="text-[11px] text-[#1E1B4B]">
+                                    Applied for {app.job?.title || "Job"}
+                                 </p>
+                              </div>
 
-                           <div className="flex items-center gap-3 shrink-0">
-                              <span className="text-[10px] text-black opacity-40 hidden sm:block">
-                                 {new Date(app.created_at).toLocaleDateString('en-GB')}
-                              </span>
-                              <Button variant="outline" size="sm" className={cn("h-6 px-2.5 rounded-md border text-[10px] font-medium capitalize", getStatusStyles(app.status))}>
-                                 {app.status}
-                              </Button>
+                              <div className="flex items-center gap-3 shrink-0">
+                                 <span className="text-[10px] text-black opacity-40 hidden sm:block">
+                                    {new Date(app.created_at).toLocaleDateString('en-GB')}
+                                 </span>
+                                 <Button variant="outline" size="sm" className={cn("h-6 px-2.5 rounded-md border text-[10px] font-medium capitalize", getStatusStyles(app.status))}>
+                                    {app.status}
+                                 </Button>
+                              </div>
                            </div>
-                        </div>
-                     ))
+                        );
+                     })
                   ) : (
                      <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
                         <Users className="w-10 h-10 mb-2" />
@@ -570,12 +579,12 @@ export default function EmployerDashboardClient({
             </div>
 
             {/* Recent Job Posts Column */}
-            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
-               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
                   <h2 className="text-[14px] font-semibold text-black">Active vacancies</h2>
                </div>
 
-               <div className="divide-y divide-slate-50">
+               <div className="divide-y divide-slate-100">
                   {dashboardData?.latest_jobs && dashboardData.latest_jobs.length > 0 ? (
                      dashboardData.latest_jobs.slice(0, 5).map((job, idx) => (
                         <div key={`${job.id}-${idx}`} className="px-4 py-3 flex gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
@@ -646,8 +655,8 @@ export default function EmployerDashboardClient({
          {/* Management Intelligence: Team & Subscriptions Side-by-Side */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
             {/* Hiring Team Table */}
-            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
-               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
                   <div className="flex items-center gap-2">
                      <Users className="w-4 h-4 text-indigo-600" />
                      <h2 className="text-[14px] font-semibold text-black">Hiring Team</h2>
@@ -656,7 +665,7 @@ export default function EmployerDashboardClient({
                      {dashboardData?.total_recruiters || 0} Members
                   </span>
                </div>
-               <div className="divide-y divide-slate-50">
+               <div className="divide-y divide-slate-100">
                   {dashboardData?.recruiters?.data && dashboardData.recruiters.data.length > 0 ? (
                      dashboardData.recruiters.data.map((recruiter, idx) => (
                         <div key={`${recruiter.id}-${idx}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
@@ -686,8 +695,8 @@ export default function EmployerDashboardClient({
             </div>
 
             {/* Subscription Lifecycle History */}
-            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col group">
-               <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group">
+               <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
                   <div className="flex items-center gap-2">
                      <Clock className="w-4 h-4 text-amber-600" />
                      <h2 className="text-[14px] font-semibold text-black">Subscription Timeline</h2>
@@ -698,7 +707,7 @@ export default function EmployerDashboardClient({
                      </span>
                   )}
                </div>
-               <div className="divide-y divide-slate-50">
+               <div className="divide-y divide-slate-100">
                   {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (
                      dashboardData.subscription_history.map((item, idx) => (
                         <div key={idx} className="px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
