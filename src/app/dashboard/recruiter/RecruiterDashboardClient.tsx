@@ -120,8 +120,8 @@ export default function RecruiterDashboardClient({
    ];
 
    return (
-      <div className="max-w-7xl mx-auto px-4 py-4 space-y-6 font-sans text-black pb-12">
-         
+      <div className="max-w-7xl mx-auto px-3 py-3 space-y-4 font-sans text-black pb-12">
+
          {/* Page Header - Clean & Balanced */}
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-0.5">
@@ -145,10 +145,10 @@ export default function RecruiterDashboardClient({
          {credits && (
             <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-8 group">
                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
-               
+
                <div className="relative z-10 flex gap-4 md:items-center shrink-0">
                   <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
-                     <CreditCard className="w-6 h-6" />
+                     <CreditCard className="w-4 h-4" />
                   </div>
                   <div>
                      <p className="text-[10px] font-medium text-black/40 capitalize mb-0.5">Current membership</p>
@@ -225,7 +225,7 @@ export default function RecruiterDashboardClient({
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner">
                      <stat.icon className="w-7 h-7 opacity-80" />
                   </div>
-                  
+
                   <div className="relative z-10 space-y-0.5">
                      <p className="text-[16px] font-medium opacity-80">{stat.label}</p>
                      <h3 className="text-4xl font-semibold">{stat.value}</h3>
@@ -236,7 +236,7 @@ export default function RecruiterDashboardClient({
 
          {/* Main Workspace Areas */}
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Recent Applicants */}
             <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm flex flex-col">
                <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
@@ -274,8 +274,8 @@ export default function RecruiterDashboardClient({
                               <span className={cn(
                                  "px-2.5 py-0.5 rounded-lg text-[10px] font-medium border capitalize",
                                  app.status === 'applied' ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
-                                 app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" :
-                                 "bg-slate-50 text-black/40 border-slate-100"
+                                    app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" :
+                                       "bg-slate-50 text-black/40 border-slate-100"
                               )}>
                                  {app.status}
                               </span>

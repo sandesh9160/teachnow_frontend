@@ -348,7 +348,7 @@ export default function EmployerDashboardClient({
 
          {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full">
+            <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full">
                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
 
                <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6 flex-1">
@@ -426,7 +426,7 @@ export default function EmployerDashboardClient({
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {stats.map((stat, i) => (
                <div key={i} className={cn(
-                  "relative h-28 rounded-2xl p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-black/5",
+                  "relative h-20 rounded-2xl p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-black/5",
                   "bg-gradient-to-br", stat.gradient, stat.textColor
                )}>
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -444,7 +444,7 @@ export default function EmployerDashboardClient({
 
          {/* Promotion Hub - Full Width Sophisticated Design with Toggle */}
          <div className={cn(
-            "rounded-2xl border shadow-sm overflow-hidden flex flex-col group p-6 transition-all duration-500",
+            "rounded-2xl border shadow-sm overflow-hidden flex flex-col group p-4 transition-all duration-500",
             isFeatured 
                ? "border-indigo-400 bg-indigo-50/15 ring-1 ring-indigo-400/20" 
                : "border-slate-300 bg-white"
