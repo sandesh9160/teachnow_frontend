@@ -76,13 +76,13 @@ export async function fullSearchJobs(
     const query = params.toString();
     const res = await fetchAPI<ApiResponse<any>>(`/open/search/jobs/search${query ? "?" + query : ""}`);
     const raw = (res.data ?? res);
-    
+
     const mainJobs = toArray<Job>(raw?.search_jobs || raw).map(normalizeJob);
     const similarJobs = toArray<Job>(raw?.similar_jobs).map(normalizeJob);
 
-    return { 
-      jobs: mainJobs, 
-      similarJobs: similarJobs.filter(sj => !mainJobs.some(j => String(j.id) === String(sj.id))) 
+    return {
+      jobs: mainJobs,
+      similarJobs: similarJobs.filter(sj => !mainJobs.some(j => String(j.id) === String(sj.id)))
     };
   } catch (err: unknown) {
     return { jobs: [], similarJobs: [] };
@@ -98,8 +98,8 @@ export async function searchJobs(
   return result.jobs;
 }
 
-export async function fetchJobsPaginated(opts?: { 
-  keyword?: string; 
+export async function fetchJobsPaginated(opts?: {
+  keyword?: string;
   location?: string;
   page?: number;
   limit?: number;
@@ -111,13 +111,14 @@ export async function fetchJobsPaginated(opts?: {
     const page = opts?.page ?? 1;
     const limit = opts?.limit ?? 10;
     const filters = opts?.filters ?? {};
-    
+
     // If we have search params OR filters, use the specialized search endpoint
-    const hasFilters = Object.values(filters).some(v => 
+    const hasFilters = Object.values(filters).some(v =>
       Array.isArray(v) ? v.length > 0 : (v !== undefined && v !== null && v !== "")
     );
 
     let endpoint = (kw || loc || hasFilters) ? "/open/search/jobs/search" : "/open/jobs";
+    console.log("endpoint : ", endpoint);
     let query = [];
     if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
     if (loc) query.push(`location=${encodeURIComponent(loc)}`);
@@ -134,10 +135,11 @@ export async function fetchJobsPaginated(opts?: {
         query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(values))}`);
       }
     });
-    
+
     const queryString = query.length ? `?${query.join("&")}` : "";
+    console.log("endpoint final: ", endpoint + queryString);
     const res = await fetchAPI<any>(`${endpoint}${queryString}`);
-    
+
     let jobsList: Job[] = [];
     let similarList: Job[] = [];
     let paginationMeta: any = null;

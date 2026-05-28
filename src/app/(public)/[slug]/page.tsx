@@ -8,6 +8,7 @@ import JobListingView from "@/components/jobs/JobListings/JobListingView";
 import { getJobBySlug, getCategoryJobs, fullSearchJobs } from "@/lib/jobs/api";
 import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
 // import { getLocationJobs } from "@/hooks/useHomepage";
+import { getFilters } from "@/hooks/useHomepage";
 import { sanitizeSlug } from "@/lib/utils";
 
 
@@ -118,6 +119,15 @@ async function lookupByCategory(s: string) {
 async function lookupByLocation(s: string) {
   try {
     const locationSlug = normalizeLocationSlug(s);
+    
+    // Fetch dynamic locations to verify if the slug is a known city/location
+    const { locations } = await getFilters();
+    const knownCities = new Set(locations.map(l => l.name?.toLowerCase()).filter(Boolean));
+
+    if (!knownCities.has(locationSlug.toLowerCase())) {
+      return null;
+    }
+
     const { jobs: locationJobs, similarJobs } = await fullSearchJobs("", locationSlug);
     if (locationJobs.length === 0 && similarJobs.length === 0) return null;
 
@@ -129,20 +139,36 @@ async function lookupByLocation(s: string) {
   } catch { return null; }
 }
 
-function parseSearchSlug(s: string) {
-  const parts = s.split("-");
-  return {
-    keyword: parts.slice(0, -1).join(" "),
-    location: parts.slice(-1).join(" ")
-  };
-}
-
 /**
  * 5. Search Fallback Strategy
  */
 async function lookupBySearch(s: string) {
   try {
-    const { keyword, location } = parseSearchSlug(s);
+    const { locations } = await getFilters();
+    const knownCities = new Set(locations.map(l => l.name?.toLowerCase()).filter(Boolean));
+
+    const parts = s.split("-");
+    let keyword = "";
+    let location = "";
+
+    // If there is only one part, check if it's a known city
+    if (parts.length === 1) {
+      if (knownCities.has(parts[0].toLowerCase())) {
+        location = parts[0];
+      } else {
+        keyword = parts[0];
+      }
+    } else {
+      // If there are multiple parts, check if the last part is a known city
+      const lastPart = parts[parts.length - 1];
+      if (knownCities.has(lastPart.toLowerCase())) {
+        location = lastPart;
+        keyword = parts.slice(0, -1).join(" ");
+      } else {
+        keyword = parts.join(" ");
+      }
+    }
+
     if (!keyword && !location) return null;
 
     const { jobs, similarJobs } = await fullSearchJobs(keyword || "", location || "");
