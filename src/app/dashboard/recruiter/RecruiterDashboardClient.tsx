@@ -262,6 +262,11 @@ export default function RecruiterDashboardClient({
                               <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors truncate">
                                  {app.job_seeker?.user?.name || "Applicant"}
                               </h4>
+                              {app.job_seeker?.experience_years != null ? (
+                                 <p className="text-[10px] text-slate-500 mt-0.5">
+                                    {app.job_seeker.experience_years} yr experience
+                                 </p>
+                              ) : null}
                               <p className="text-[11px] font-medium text-black/40 truncate">
                                  {app.job?.title}
                               </p>

@@ -200,7 +200,7 @@ export default function ApplyJobPage() {
               name: profile.user?.name || profile.name || res?.data?.user?.name || res?.data?.name || prev.name || user?.name || "",
               email: profile.user?.email || profile.email || res?.data?.user?.email || res?.data?.email || prev.email || user?.email || "",
               phone: phoneVal || prev.phone || "",
-              experience: expVal ? String(expVal) : (prev.experience || ""),
+              experience: expVal !== undefined && expVal !== null ? String(expVal) : (prev.experience || ""),
               location: locVal || prev.location || "",
               dob: dobVal ? String(dobVal).split("T")[0] : (prev.dob || ""),
               portfolio_website: webVal || prev.portfolio_website || "",
