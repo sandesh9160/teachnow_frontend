@@ -120,7 +120,9 @@ export async function fetchJobsPaginated(opts?: {
     let endpoint = (kw || loc || hasFilters) ? "/open/search/jobs/search" : "/open/jobs";
     console.log("endpoint : ", endpoint);
     let query = [];
-    if (kw) query.push(`keyword=${encodeURIComponent(kw)}`);
+    if (kw) {
+      query.push(`keyword=${encodeURIComponent(kw)}`);
+    }
     if (loc) query.push(`location=${encodeURIComponent(loc)}`);
     query.push(`page=${page}`);
     query.push(`per_page=${limit}`);
