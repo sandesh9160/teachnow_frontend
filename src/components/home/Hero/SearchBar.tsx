@@ -20,6 +20,7 @@ export function SearchBar({ }: SearchBarProps) {
   const [showQuerySuggestions, setShowQuerySuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [emptySearchError, setEmptySearchError] = useState(false);
 
   const [suggestions, setSuggestions] = useState<{ roles: string[]; cities: string[] }>({ roles: [], cities: [] });
   const [allLocations, setAllLocations] = useState<Location[]>([]);
@@ -93,7 +94,7 @@ export function SearchBar({ }: SearchBarProps) {
       try {
         const data = await getSearchSuggestions(city, controller.signal);
         const filteredCities = (data.cities || []).filter(name =>
-          name.toLowerCase().includes(city.toLowerCase())
+          name.toLowerCase().startsWith(city.toLowerCase())
         );
         setSuggestions(prev => ({ ...prev, cities: filteredCities }));
       } catch (err: any) {
@@ -126,24 +127,26 @@ export function SearchBar({ }: SearchBarProps) {
     const activeQuery = typeof searchQuery === "string" ? searchQuery : query;
     const activeCity = typeof searchCity === "string" ? searchCity : city;
 
-    // At least one of title or city is required
-    if (!activeQuery.trim() && !activeCity.trim()) {
-      toast.error("Please enter a job title or select a city", {
-        id: "search-validation",
-        duration: 4000,
-        closeButton: true,
-      });
-      return;
-    }
-
-    // Validate city against the locations list
+    // Validate city against the locations list — clear silently if invalid
     const isCityValid =
       !activeCity.trim() ||
       allLocations.length === 0 ||
       allLocations.some(loc => loc.name.toLowerCase() === activeCity.toLowerCase().trim());
 
+    let finalCity = activeCity.trim();
+    if (finalCity && !isCityValid) {
+      setCity("");
+      finalCity = "";
+    }
+
     let finalQuery = activeQuery.trim();
-    let finalCity = isCityValid ? activeCity.trim() : "";
+
+    // At least one of title or city is required
+    if (!finalQuery && !finalCity) {
+      setEmptySearchError(true);
+      return;
+    }
+    setEmptySearchError(false);
 
     const combinedQuery = [finalQuery, finalCity].filter(Boolean).join(" ");
 
@@ -172,14 +175,19 @@ export function SearchBar({ }: SearchBarProps) {
 
         {/* Subject/Role Search */}
         <div className="relative flex-[1.4] w-full" ref={queryRef}>
-          <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all bg-slate-50/80 md:bg-slate-50 border border-transparent focus-within:border-indigo-200">
-            <Search className="h-4 w-4 shrink-0 text-indigo-400" />
+          <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all border ${
+            emptySearchError 
+              ? "bg-slate-50/80 md:bg-slate-50 border-red-400 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100" 
+              : "bg-slate-50/80 md:bg-slate-50 border-transparent focus-within:border-indigo-200"
+          }`}>
+            <Search className={`h-4 w-4 shrink-0 ${emptySearchError ? "text-red-400" : "text-indigo-400"}`} />
             <input
               type="text"
               id="query-search-input"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
+                setEmptySearchError(false);
                 setShowQuerySuggestions(true);
                 setSelectedIndex(-1);
               }}
@@ -237,8 +245,8 @@ export function SearchBar({ }: SearchBarProps) {
         </div>
 
         {/* City/Location Search — dropdown only */}
-        <div className="relative flex-1 w-full" ref={cityRef}>
-          <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all bg-slate-50/80 md:bg-slate-50 border border-transparent focus-within:border-indigo-200">
+        <div className="relative flex-1 w-full flex flex-col items-stretch" ref={cityRef}>
+          <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all border bg-slate-50/80 md:bg-slate-50 border-transparent focus-within:border-indigo-200">
             <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
             <input
               type="text"
@@ -246,6 +254,7 @@ export function SearchBar({ }: SearchBarProps) {
               value={city}
               onChange={(e) => {
                 setCity(e.target.value);
+                setEmptySearchError(false);
                 setShowCitySuggestions(true);
                 setSelectedIndex(-1);
               }}
@@ -312,6 +321,15 @@ export function SearchBar({ }: SearchBarProps) {
           <span>Search Jobs</span>
         </Button>
       </div>
+
+      {emptySearchError && (
+        <div className="mt-2 px-2 animate-in fade-in slide-in-from-top-1 duration-200">
+          <p className="text-[13px] font-semibold text-red-500 flex items-center gap-1.5">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-red-500" />
+            Please enter a job title or select a city
+          </p>
+        </div>
+      )}
 
     </div>
   );

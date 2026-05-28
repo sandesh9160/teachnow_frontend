@@ -127,10 +127,13 @@ export default function JobsClientManager({
       }
     };
 
-    fetchJobs();
+    const handler = setTimeout(() => {
+      fetchJobs();
+    }, 300);
 
     return () => {
       active = false;
+      clearTimeout(handler);
     };
   }, [currentPage, selectedFilters, resultsPerPage, search, locationSearch]);
 
