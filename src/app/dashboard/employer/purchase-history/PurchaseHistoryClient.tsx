@@ -221,6 +221,33 @@ export default function PurchaseHistoryClient() {
     fetchHistory();
   }, [fetchHistory]);
 
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<number | null>(null);
+
+  const handleDownloadInvoice = async (invoiceId: number, pdfPath: string, invoiceNumber: string) => {
+    if (!pdfPath) return;
+    try {
+      setDownloadingInvoiceId(invoiceId);
+      const downloadUrl = `/api/download-invoice?path=${encodeURIComponent(pdfPath)}&filename=${encodeURIComponent(`invoice_${invoiceNumber}.pdf`)}`;
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', `invoice_${invoiceNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Failed to download invoice:", error);
+      // Fallback: open in new tab if direct download fails or gets CORS issue
+      window.open(getFullUrl(pdfPath), '_blank');
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
@@ -629,9 +656,6 @@ export default function PurchaseHistoryClient() {
                     )}>
                       {payment.payment_status === 'success' ? 'Paid' : payment.payment_status.charAt(0).toUpperCase() + payment.payment_status.slice(1)}
                     </span>
-                    <button className="p-1 text-slate-300 hover:text-slate-600 transition-colors">
-                      <Download className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               )) : (
@@ -684,11 +708,17 @@ export default function PurchaseHistoryClient() {
                       </td>
                       <td className="px-5 py-4 text-center">
                         <button
-                          onClick={() => invoice.pdf_path && window.open(getFullUrl(invoice.pdf_path), '_blank')}
-                          className="p-2 text-slate-400 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all"
+                          disabled={downloadingInvoiceId === invoice.id}
+                          onClick={() => handleDownloadInvoice(invoice.id, invoice.pdf_path, invoice.invoice_number)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-100 bg-blue-50/50 text-[#00359E] hover:bg-[#00359E] hover:text-white hover:border-[#00359E] text-[12px] font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Download Invoice"
                         >
-                          <Download className="w-4 h-4" />
+                          {downloadingInvoiceId === invoice.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-[#00359E]" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
+                          <span>{downloadingInvoiceId === invoice.id ? "Downloading..." : "Download"}</span>
                         </button>
                       </td>
                     </tr>
@@ -709,7 +739,7 @@ export default function PurchaseHistoryClient() {
               {invoices.length > 0 ? invoices.map((invoice) => (
                 <div key={invoice.id} className="p-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors">
                   <div className="text-slate-400 shrink-0">
-                    <CreditCard className="w-5 h-5" />
+                    <FileText className="w-5 h-5 text-blue-600" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -723,11 +753,17 @@ export default function PurchaseHistoryClient() {
                       Paid
                     </span>
                     <button
-                      onClick={() => invoice.pdf_path && window.open(getFullUrl(invoice.pdf_path), '_blank')}
-                      className="p-1 text-slate-300 hover:text-slate-600 transition-colors"
+                      disabled={downloadingInvoiceId === invoice.id}
+                      onClick={() => handleDownloadInvoice(invoice.id, invoice.pdf_path, invoice.invoice_number)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-100 bg-blue-50 text-[#00359E] hover:bg-[#00359E] hover:text-white hover:border-[#00359E] text-[11px] font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Download Invoice"
                     >
-                      <Download className="w-4 h-4" />
+                      {downloadingInvoiceId === invoice.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[#00359E]" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5" />
+                      )}
+                      <span>{downloadingInvoiceId === invoice.id ? "..." : "Download"}</span>
                     </button>
                   </div>
                 </div>

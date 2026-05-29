@@ -1,10 +1,9 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useState, useMemo } from "react";
 import Header from "@/shared/layout/Header/Header";
 import Footer from "@/shared/layout/Footer/Footer";
-import { useMemo } from "react";
 
 function ScrollToTop() {
   const pathname = usePathname();
@@ -33,11 +32,19 @@ export function LayoutWrapper({
   heroCTA: any;
 }) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Define routes where global header/footer should be hidden
   const isDashboard = useMemo(() => pathname?.startsWith("/dashboard"), [pathname]);
 
-  if (isDashboard) {
+  // Prevent hydration mismatch by rendering a consistent layout during initial hydration
+  const showDashboard = mounted && isDashboard;
+
+  if (showDashboard) {
     return (
       <>
         <Suspense fallback={null}>
@@ -58,6 +65,5 @@ export function LayoutWrapper({
       <Footer footerData={footerData} heroCTA={heroCTA} navigationData={navigationData} />
     </>
   );
-
 }
 
