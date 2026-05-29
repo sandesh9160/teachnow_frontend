@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -11,6 +11,7 @@ import {
   Loader2,
   ShieldCheck,
   Search,
+  AlertCircle,
   X,
   User,
   Eye,
@@ -52,14 +53,35 @@ export default function RecruitersClient({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
-  // Edit Recruiter States
+  // Edit Recruiter Modal States
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingRecruiter, setEditingRecruiter] = useState<Recruiter | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
-  const [editPassword, setEditPassword] = useState("");
-  const [editLoading, setEditLoading] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPassword, setEditPassword] = useState('');
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Profile verification status (0 = pending, 1 = approved, 2 = rejected)
+  const [verificationStatus, setVerificationStatus] = useState<number | null>(null);
+
+  // Fetch profile verification status
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await dashboardServerFetch('employer/profile');
+        if (res.status && res.data) {
+           const emp = res.data.employer || res.data;
+           const val = emp.is_profile_verified !== undefined ? Number(emp.is_profile_verified) : 0;
+           setVerificationStatus(val);
+        }
+      } catch (e) {
+        console.error('Error fetching profile verification', e);
+      }
+    };
+    fetchProfile();
+  }, []);
+
 
   const handleOpenEditModal = (recruiter: Recruiter) => {
     setEditingRecruiter(recruiter);
@@ -267,67 +289,66 @@ export default function RecruitersClient({
       {/* Responsive Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div className="space-y-1">
-          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Recruiters</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Recruiters</h1>
+            {verificationStatus === 1 && (
+              <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border border-emerald-100 shadow-xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verified
+              </div>
+            )}
+            {verificationStatus === 0 && (
+              <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border border-amber-100 shadow-xs">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600" /> Verification Pending
+              </div>
+            )}
+            {verificationStatus === 2 && (
+              <div className="flex items-center gap-1 bg-rose-50 text-rose-700 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border border-rose-100 shadow-xs">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> Verification Rejected
+              </div>
+            )}
+          </div>
           <p className="text-xs font-medium text-slate-400">Manage recruiter access and permissions</p>
         </div>
+        {verificationStatus === 0 && (
+          <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 animate-pulse" />
+            <p className="text-[13px] font-semibold text-amber-700">Your profile verification is pending. You will be able to add recruiters once approved.</p>
+          </div>
+        )}
+
+        {verificationStatus === 2 && (
+          <div className="flex items-center gap-3 px-5 py-4 bg-rose-50 border border-rose-200 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+            <p className="text-[13px] font-semibold text-rose-700">Your profile verification was rejected. Please contact support or update your profile to add recruiters.</p>
+          </div>
+        )}
+
+        {verificationStatus === 1 && !isProfileComplete && (
+          <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+            <p className="text-[13px] font-semibold text-amber-700">Your profile is incomplete. Please complete your profile details.</p>
+          </div>
+        )}
 
         <Button
           onClick={() => {
-            if (!isProfileComplete) {
-              toast("Finish Your Profile", {
-                id: "recruiters-profile-warning",
-                description: "You need to finish your profile before you can add team members.",
-                style: {
-                  background: '#FFFBEB',
-                  border: '1px solid #FCD34D',
-                  color: '#92400E',
-                },
-                action: {
-                  label: "Finish Now",
-                  onClick: () => window.location.href = "/dashboard/employer/company-profile"
-                },
-                actionButtonStyle: {
-                  backgroundColor: '#2563EB',
-                  color: '#fff',
-                }
-              });
+            if (verificationStatus !== 1) {
               return;
             }
             setShowAddForm(!showAddForm);
           }}
+          disabled={verificationStatus !== 1}
           size="sm"
           className={cn(
             "h-10 w-full sm:w-auto px-5 rounded-xl text-xs font-medium transition-all shadow-sm flex items-center justify-center",
-            showAddForm ? "bg-slate-100 text-slate-500 hover:bg-slate-200 border shadow-none" : "shadow-primary/20"
+            showAddForm ? "bg-slate-100 text-slate-500 hover:bg-slate-200 border shadow-none" : "shadow-primary/20",
+            verificationStatus !== 1 && "opacity-50 cursor-not-allowed"
           )}
         >
           {showAddForm ? <X className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
           {showAddForm ? "Cancel" : "Add recruiter"}
         </Button>
       </div>
-
-      {!isProfileComplete && (
-        <div className="p-4 bg-[#FFFBEB] rounded-xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#F59E0B] shrink-0 shadow-sm">
-              <UserPlus className="w-4.5 h-4.5" />
-            </div>
-            <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-[#92400E]">Finish Your Profile</h3>
-              <p className="text-[11px] text-[#92400E]/80 font-medium">
-                You need to finish your profile before you can add team members.
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={() => window.location.href = "/dashboard/employer/company-profile"}
-            size="sm"
-            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[11px] font-bold px-5 h-8 rounded-lg whitespace-nowrap shadow-sm"
-          >
-            Finish Now
-          </Button>
-        </div>
-      )}
 
       {/* Add Recruiter Form */}
       {showAddForm && (

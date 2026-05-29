@@ -122,6 +122,7 @@ export default function PurchaseHistoryClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [upgradingPlanId, setUpgradingPlanId] = useState<number | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<number | null>(null);
 
   const { isProcessing, purchasePlan } = useRazorpay({
     onSuccess: () => {
@@ -167,13 +168,22 @@ export default function PurchaseHistoryClient() {
       setLoading(true);
       setError(null);
 
-      // Fetch plans from /open/plans (same as public pricing page) for consistent data
-      const [historyRes, plansRes] = await Promise.all([
+      // Fetch plans and profile verification status
+      const [historyRes, plansRes, profileRes] = await Promise.all([
         dashboardServerFetch<ApiResponse>("employer/payments-history"),
         fetchAPI<{ status: boolean; data: Plan[] }>("/open/plans"),
+        dashboardServerFetch<{ status: boolean; data: { is_profile_verified?: number } }>("employer/profile"),
       ]);
 
       console.log("Employer Payments History Response:", historyRes);
+
+      if (profileRes && profileRes.status && profileRes.data) {
+        const emp = (profileRes.data as any).employer || profileRes.data;
+        const val = emp.is_profile_verified !== undefined ? Number(emp.is_profile_verified) : 0;
+        setVerificationStatus(val);
+      } else {
+        setVerificationStatus(0);
+      }
 
       if (historyRes.status) {
         // Always use /open/plans data for the plan cards (authoritative source)
@@ -259,7 +269,24 @@ export default function PurchaseHistoryClient() {
       {/* Header & Sub Usage */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-0.5">
-          <h2 className="text-2xl font-semibold text-[#0F172A]">Billing</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-semibold text-[#0F172A]">Billing</h2>
+            {verificationStatus === 1 && (
+              <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[11px] font-semibold border border-emerald-100 shadow-xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Verified
+              </div>
+            )}
+            {verificationStatus === 0 && (
+              <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-[11px] font-semibold border border-amber-100 shadow-xs">
+                <Clock className="w-3.5 h-3.5 text-amber-600" /> Verification Pending
+              </div>
+            )}
+            {verificationStatus === 2 && (
+              <div className="flex items-center gap-1 bg-rose-50 text-rose-700 px-3 py-1 rounded-full text-[11px] font-semibold border border-rose-100 shadow-xs">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> Verification Rejected
+              </div>
+            )}
+          </div>
           <p className="text-slate-500 text-sm">Manage your subscription and invoices</p>
         </div>
 
@@ -268,6 +295,21 @@ export default function PurchaseHistoryClient() {
           </div>
         )}
       </div>
+
+      {/* Verification Banners */}
+      {verificationStatus === 0 && (
+        <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 animate-pulse" />
+          <p className="text-[13px] font-semibold text-amber-700">Your profile verification is pending. Plan purchases will be enabled once approved.</p>
+        </div>
+      )}
+
+      {verificationStatus === 2 && (
+        <div className="flex items-center gap-3 px-5 py-4 bg-rose-50 border border-rose-200 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+          <p className="text-[13px] font-semibold text-rose-700">Your profile verification was rejected. Plan purchases are disabled.</p>
+        </div>
+      )}
 
       {/* Pricing Grid / Purchase History Plans */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
@@ -355,25 +397,40 @@ export default function PurchaseHistoryClient() {
               </div>
 
               <div className="mt-8">
-                <button
-                  onClick={() => handleUpgrade(plan)}
-                  disabled={upgradingPlanId === plan.id || isProcessing}
-                  className={cn(
-                    "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 group border shadow-sm",
-                    isCurrent
-                      ? "bg-[#1E3A8A] text-white border-[#1E3A8A] hover:bg-[#1E3A8A]/90"
-                      : "bg-white text-[#1E3A8A] border-blue-100 hover:bg-blue-50/50",
-                    (upgradingPlanId === plan.id || isProcessing) && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  {upgradingPlanId === plan.id ? (
-                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
-                  ) : isCurrent ? (
-                    "✓ Current Plan"
-                  ) : (
-                    <>Purchase Plan <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></>
-                  )}
-                </button>
+                {isCurrent ? (
+                  <button
+                    disabled={true}
+                    className="w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 border shadow-sm cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200"
+                    title="This is your current active subscription"
+                  >
+                    ✓ Current Plan
+                  </button>
+                ) : (
+                  <button
+                    disabled={verificationStatus !== 1 || isProcessing || upgradingPlanId !== null}
+                    onClick={() => handleUpgrade(plan)}
+                    className={cn(
+                      "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 border shadow-sm",
+                      verificationStatus === 1
+                        ? "bg-[#00359E] hover:bg-[#002B80] text-white border-transparent cursor-pointer active:scale-95 shadow-lg shadow-blue-900/10"
+                        : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                    )}
+                    title={
+                      verificationStatus === 1
+                        ? `Purchase ${plan.name}`
+                        : "Please verify your profile to purchase plans"
+                    }
+                  >
+                    {upgradingPlanId === plan.id ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Purchase Plan"
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           );

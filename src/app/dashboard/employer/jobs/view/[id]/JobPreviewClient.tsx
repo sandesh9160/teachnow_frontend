@@ -117,15 +117,15 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
    };
 
    const DetailItem = ({ label, value, icon: Icon, colorClass }: any) => (
-      <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-50 bg-white shadow-xs transition-all hover:bg-slate-50/50 group">
+      <div className="flex items-center gap-3 p-3 rounded-2xl border border-slate-200 bg-white shadow-xs transition-all hover:bg-slate-50/50 group">
          <div className={cn(
             "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105",
-            colorClass || "bg-indigo-50/50 text-indigo-500 border-indigo-100/50"
+            colorClass || "bg-indigo-50/50 text-indigo-500 border-indigo-200"
          )}>
             <Icon className="w-4.5 h-4.5" />
          </div>
          <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-slate-600 mb-0.5">{label}</p>
+            <p className="text-[11px] font-semibold text-slate-900 mb-0.5">{label}</p>
             <p className="text-[13px] font-semibold text-slate-900">{value}</p>
          </div>
       </div>
@@ -135,19 +135,19 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
       <div className="max-w-6xl mx-auto px-4 py-4 space-y-5 pb-20 font-sans text-slate-800">
 
          {/* Compact Header */}
-         <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all hover:border-indigo-100/50">
+         <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all hover:border-indigo-200">
             <div className="space-y-3">
                <button
                   onClick={() => window.history.back()}
-                  className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-indigo-600 transition-all active:scale-95"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 active:scale-95"
                >
-                  <ChevronLeft className="w-3.5 h-3.5" /> All Jobs
+                  <ChevronLeft className="w-3.5 h-3.5" /> Back
                </button>
 
                <div className="space-y-2">
                   <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 leading-tight">{job.title}</h1>
                   <div className="flex flex-wrap items-center gap-2">
-                     <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
+                     <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-900 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200">
                         <MapPin className="w-3.5 h-3.5 text-indigo-400" /> {job.location}
                      </span>
                      <span className="text-[12px] font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100/50">
@@ -177,7 +177,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
 
             <div className="flex flex-wrap items-center gap-2">
                <Link href={`/dashboard/employer/jobs/view/${job.id}/applicants`}>
-                  <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 transition-all flex items-center gap-2">
+                  <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-2">
                      <Users className="w-4 h-4 text-indigo-500" /> View Applicants
                   </Button>
                </Link>
@@ -185,7 +185,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   <Button
                      onClick={() => handleAction('republish')}
                      disabled={loadingAction === 'republish'}
-                     className="h-10 px-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm"
+                     className="h-10 px-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 flex items-center gap-2 shadow-sm"
                   >
                      {loadingAction === 'republish' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                      Republish Job
@@ -211,16 +211,16 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   onClick={handleToggleFeatured}
                   disabled={!!loadingAction}
                   className={cn(
-                     "h-10 px-5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2",
-                     job.featured === 1
-                        ? "bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100"
-                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                     "h-10 px-5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm",
+                      job.featured === 1
+                         ? "bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50"
+                         : "bg-white text-[#312E81] border border-[#312E81] hover:bg-indigo-50"
                   )}
                >
                   {loadingAction === 'toggle-feature' ? (
                      <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                     <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                     <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
                   )}
                   {job.featured === 1 ? "Featured" : "Feature on Home"}
                </Button>
@@ -231,43 +231,43 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
 
             {/* Main Description */}
             <div className="lg:col-span-2 space-y-5">
-               <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+               <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
                   <div className="p-6 space-y-6">
-                     <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                     <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
                            <FileText className="w-4 h-4" />
                         </div>
                         <h2 className="text-sm font-semibold text-slate-900">About the Role</h2>
                      </div>
 
                      <div
-                        className="prose prose-sm max-w-none text-slate-600 leading-relaxed font-medium tiptap-preview px-1"
+                        className="prose prose-sm max-w-none text-slate-900 leading-relaxed font-medium tiptap-preview px-1"
                         dangerouslySetInnerHTML={{ __html: job.description }}
                      />
                   </div>
 
                   {questions && questions.length > 0 && (
-                     <div className="bg-slate-50/20 p-6 space-y-5 border-t border-slate-50">
+                     <div className="bg-slate-50/20 p-6 space-y-5 border-t border-slate-200">
                         <div className="flex items-center gap-3">
-                           <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                              <Target className="w-4 h-4" />
+                           <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
+                              <Target className="w-4.5 h-4.5" />
                            </div>
                            <h2 className="text-sm font-semibold text-slate-900">Candidate Questions</h2>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                            {questions.map((q, idx) => (
-                              <div key={idx} className="p-4 rounded-2xl border border-slate-100 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-indigo-100/50">
+                              <div key={idx} className="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-indigo-200">
                                  <div className="flex items-center gap-4">
-                                    <span className="w-6 h-6 rounded-lg flex items-center justify-center bg-slate-50 text-[11px] font-semibold text-slate-400 border border-slate-100 shrink-0">
+                                    <span className="w-6 h-6 rounded-lg flex items-center justify-center bg-slate-50 text-[11px] font-semibold text-slate-900 border border-slate-200 shrink-0">
                                        {idx + 1}
                                     </span>
                                     <p className="text-[13px] font-semibold text-slate-800">
                                        {q.question}
                                     </p>
                                  </div>
-                                 <div className="flex items-center gap-5 border-l border-slate-100 pl-5 shrink-0">
+                                 <div className="flex items-center gap-5 border-l border-slate-200 pl-5 shrink-0">
                                     <div className="space-y-0.5 text-right">
-                                       <p className="text-[9px] font-medium text-slate-400 tracking-wider">Expected Answer</p>
+                                       <p className="text-[9px] font-medium text-slate-900 tracking-wider">Expected Answer</p>
                                        <span className="text-[12px] font-semibold text-indigo-600">{q.recruiter_answer}</span>
                                     </div>
                                  </div>
@@ -286,13 +286,13 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                      label="Subject"
                      value={job.category?.name || "General"}
                      icon={Layers}
-                     colorClass="bg-blue-50 text-blue-600 border-blue-100/50"
+                     colorClass="bg-blue-50 text-blue-600 border-blue-200"
                   />
                   <DetailItem
                      label="Openings"
                      value={`${job.vacancies} Positions`}
                      icon={Users}
-                     colorClass="bg-indigo-50 text-indigo-600 border-indigo-100/50"
+                     colorClass="bg-indigo-50 text-indigo-600 border-indigo-200"
                   />
                   <DetailItem
                      label="Monthly Salary"
@@ -303,36 +303,36 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                         : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
                      }
                      icon={DollarSign}
-                     colorClass="bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                     colorClass="bg-emerald-50 text-emerald-600 border-emerald-200"
                   />
                   <DetailItem
                      label="Experience Required"
                      value={`${job.experience_required}y (${formatTerm(job.experience_type)})`}
                      icon={Briefcase}
-                     colorClass="bg-purple-50 text-purple-600 border-purple-100/50"
+                     colorClass="bg-purple-50 text-purple-600 border-purple-200"
                   />
                   <DetailItem
                      label="Home Page Featuring"
                      value={job.featured === 1 ? "Active" : "Standard"}
                      icon={TrendingUp}
-                     colorClass={job.featured === 1 ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" : "bg-slate-50 text-slate-400 border-slate-100/50"}
+                     colorClass={job.featured === 1 ? "bg-[#312E81] text-white border-indigo-700 shadow-sm" : "bg-slate-50 text-slate-900 border-slate-200"}
                   />
                   <DetailItem
                      label="Featured Deadline"
                      value={job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "No Deadline"}
                      icon={Clock}
-                     colorClass="bg-rose-50 text-rose-600 border-rose-100/50"
+                     colorClass="bg-rose-50 text-rose-600 border-rose-200"
                   />
                   <DetailItem
                      label="Admin Home Status"
                      value={job.admin_featured === 1 ? "Featured" : "Regular"}
                      icon={ShieldCheck}
-                     colorClass={job.admin_featured === 1 ? "bg-amber-50 text-amber-600 border-amber-100/50" : "bg-slate-50 text-slate-400 border-slate-100/50"}
+                     colorClass={job.admin_featured === 1 ? "bg-amber-50 text-amber-600 border-amber-200" : "bg-slate-50 text-slate-900 border-slate-200"}
                   />
                </div>
 
-               <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
-                  <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Key Dates</h3>
+               <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+                  <h3 className="text-[11px] font-semibold text-slate-900 uppercase tracking-wider mb-2">Key Dates</h3>
 
                   <div className="space-y-4">
                      {[
@@ -366,20 +366,20 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                               )}>
                                  <item.icon className="w-3.5 h-3.5" />
                               </div>
-                              <p className="text-[12px] font-medium text-slate-500">{item.label}</p>
+                              <p className="text-[12px] font-medium text-slate-900">{item.label}</p>
                            </div>
                            <p className="text-[12px] font-semibold text-slate-900">{item.value}</p>
                         </div>
                      ))}
                   </div>
 
-                  <div className="pt-5 border-t border-slate-50 space-y-2">
+                  <div className="pt-5 border-t border-slate-200 space-y-2">
                      {job.job_status !== 'filled' && (
                         <Button
                            onClick={() => handleAction('filled')}
                            disabled={!!loadingAction}
                            variant="outline"
-                           className="w-full h-10 rounded-xl text-xs font-semibold text-emerald-600 border-emerald-100 bg-emerald-50/10 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
+                           className="w-full h-10 rounded-xl text-xs font-bold text-emerald-700 bg-white border border-emerald-600 hover:bg-emerald-50 flex items-center justify-center gap-2 shadow-sm"
                         >
                            {loadingAction === 'filled' ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                            Mark as Filled
@@ -389,7 +389,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                         onClick={() => handleAction('delete')}
                         disabled={!!loadingAction}
                         variant="outline"
-                        className="w-full h-10 rounded-xl text-xs font-semibold text-rose-500 border-rose-50 bg-rose-50/10 hover:bg-rose-50 transition-all flex items-center justify-center gap-2"
+                        className="w-full h-10 rounded-xl text-xs font-bold text-rose-700 bg-white border border-rose-600 hover:bg-rose-50 flex items-center justify-center gap-2 shadow-sm"
                      >
                         {loadingAction === 'delete' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                         Delete
@@ -400,16 +400,16 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                         disabled={!!loadingAction}
                         variant="outline"
                         className={cn(
-                           "w-full h-10 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2",
-                           job.featured === 1
-                              ? "text-amber-600 border-amber-100 bg-amber-50/10 hover:bg-amber-50"
-                              : "text-slate-600 border-slate-100 bg-slate-50/10 hover:bg-slate-50"
+                           "w-full h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm",
+                            job.featured === 1
+                               ? "text-indigo-700 border border-indigo-600 bg-white hover:bg-indigo-50"
+                               : "text-[#312E81] border border-[#312E81] bg-white hover:bg-indigo-50"
                         )}
                      >
                         {loadingAction === 'toggle-feature' ? (
                            <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                           <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                           <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
                         )}
                         {job.featured === 1 ? "Featured" : "Mark as Featured"}
                      </Button>

@@ -795,9 +795,19 @@ export default function CompanyProfileClient({
         <div className="h-32 sm:h-36 w-full bg-gradient-to-r from-indigo-600 via-[#312E81] to-indigo-800 relative">
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
           <div className="absolute top-3 right-3 flex items-center gap-2">
-            {profile.is_verified === 1 && (
+            {profile.is_profile_verified === 1 && (
               <div className="bg-white/95 backdrop-blur-md border border-white text-emerald-600 px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 shadow-lg">
                 <BadgeCheck className="w-3.5 h-3.5" /> Verified Profile
+              </div>
+            )}
+            {profile.is_profile_verified === 0 && (
+              <div className="bg-white/95 backdrop-blur-md border border-white text-amber-600 px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 shadow-lg">
+                <Clock className="w-3.5 h-3.5" /> Pending Verification
+              </div>
+            )}
+            {profile.is_profile_verified === 2 && (
+              <div className="bg-white/95 backdrop-blur-md border border-white text-red-600 px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 shadow-lg">
+                <X className="w-3.5 h-3.5" /> Profile Rejected
               </div>
             )}
             {profile.website && (
@@ -994,38 +1004,68 @@ export default function CompanyProfileClient({
           {/* Trust & Verification Dynamic Card */}
           <div className={cn(
             "rounded-2xl p-5 border transition-all duration-500",
-            profile.is_verified === 1
+            profile.is_profile_verified === 1
               ? "bg-emerald-50 border-emerald-100 text-emerald-900 shadow-sm shadow-emerald-50"
-              : "bg-slate-50 border-slate-200 text-slate-700"
+              : profile.is_profile_verified === 2
+                ? "bg-rose-50 border-rose-100 text-rose-900 shadow-sm shadow-rose-50"
+                : "bg-slate-50 border-slate-200 text-slate-700"
           )}>
             <div className="flex items-center gap-3.5 mb-3">
               <div className={cn(
                 "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border shadow-sm",
-                profile.is_verified === 1 ? "bg-white border-emerald-200 text-emerald-500" : "bg-white border-slate-200 text-slate-400"
+                profile.is_profile_verified === 1
+                  ? "bg-white border-emerald-200 text-emerald-500"
+                  : profile.is_profile_verified === 2
+                    ? "bg-white border-rose-200 text-rose-500"
+                    : "bg-white border-slate-200 text-slate-400"
               )}>
-                <BadgeCheck className="w-5 h-5 transition-transform hover:scale-110" />
+                {profile.is_profile_verified === 1 ? (
+                  <BadgeCheck className="w-5 h-5 transition-transform hover:scale-110" />
+                ) : profile.is_profile_verified === 2 ? (
+                  <X className="w-5 h-5 text-rose-500 transition-transform hover:scale-110" />
+                ) : (
+                  <Clock className="w-5 h-5 text-slate-400 transition-transform hover:scale-110" />
+                )}
               </div>
               <div>
                 <h3 className="text-sm font-semibold tracking-tight">
-                  {profile.is_verified === 1 ? "Certified Institution" : "Standard Profile"}
+                  {profile.is_profile_verified === 1
+                    ? "Certified Institution"
+                    : profile.is_profile_verified === 2
+                      ? "Profile Rejected"
+                      : "Standard Profile"}
                 </h3>
               </div>
             </div>
 
             <p className="text-[11.5px] font-medium leading-relaxed mb-4">
-              {profile.is_verified === 1
+              {profile.is_profile_verified === 1
                 ? "This institution has undergone background validation and is recognized as a trusted hiring partner on TeachNow."
-                : "Your profile is currently undergoing verification. Please ensure all contact and location details are accurate to expedite the process."}
+                : profile.is_profile_verified === 2
+                  ? "Your profile verification has been rejected. Please update your details and contact support to re-verify."
+                  : "Your profile is currently undergoing verification. Please ensure all contact and location details are accurate to expedite the process."}
             </p>
 
             <div className={cn(
               "flex items-center gap-2 text-[10px] font-semibold px-3 py-1.5 rounded-lg border w-fit",
-              profile.is_verified === 1
+              profile.is_profile_verified === 1
                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 shadow-xs"
-                : "bg-amber-500/10 border-amber-500/20 text-amber-600"
+                : profile.is_profile_verified === 2
+                  ? "bg-rose-500/10 border-rose-500/20 text-rose-600"
+                  : "bg-amber-500/10 border-amber-500/20 text-amber-600"
             )}>
-              <BadgeCheck className="w-3.5 h-3.5" />
-              {profile.is_verified === 1 ? "Profile Certified" : "Pending Verification"}
+              {profile.is_profile_verified === 1 ? (
+                <BadgeCheck className="w-3.5 h-3.5" />
+              ) : profile.is_profile_verified === 2 ? (
+                <X className="w-3.5 h-3.5" />
+              ) : (
+                <Clock className="w-3.5 h-3.5" />
+              )}
+              {profile.is_profile_verified === 1
+                ? "Profile Certified"
+                : profile.is_profile_verified === 2
+                  ? "Verification Rejected"
+                  : "Pending Verification"}
             </div>
           </div>
 

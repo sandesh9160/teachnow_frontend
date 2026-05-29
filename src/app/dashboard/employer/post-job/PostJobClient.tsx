@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Briefcase,
@@ -41,7 +42,7 @@ interface PostJobClientProps {
   isEdit?: boolean;
   userRole?: string;
   profile?: any;
-  isProfileComplete?: boolean;
+
   session?: any;
 }
 
@@ -51,10 +52,10 @@ export default function PostJobClient({
   isEdit = false,
   userRole = "employer",
   profile,
-  isProfileComplete = true,
+
   session
 }: PostJobClientProps) {
-  const basePath = `/dashboard/${userRole}`;
+  const router = useRouter();
   const job = isEdit ? initialData?.job : initialData;
   let initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
   
@@ -256,7 +257,13 @@ export default function PostJobClient({
     if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
 
-  const handleBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      router.push(`/dashboard/${userRole}`);
+    }
+  };
 
   const handleSubmit = async () => {
     const stepErrors = validateStep(4);
@@ -312,16 +319,30 @@ export default function PostJobClient({
       console.log("[PostJobClient] Submission Result:", result);
       
       if (result.status) {
-        toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"), {
-          style: {
-            background: '#F0FFF4',
-            color: '#22543D',
-            border: '1px solid #9AE6B4',
-            fontWeight: '600',
-            fontSize: '13px'
-          }
-        });
-        setTimeout(() => { window.location.href = `${basePath}/jobs`; }, 1200);
+        // Check institute verification flag
+        if (result.institution_verified === false) {
+          toast.warning("Institute is not verified. Job saved as draft.", {
+            style: {
+              background: '#FFFAF0',
+              color: '#744210',
+              border: '1px solid #FBD38D',
+              fontWeight: '600',
+              fontSize: '13px'
+            }
+          });
+          // No redirect, stay on page (job is saved as draft by backend)
+        } else {
+          toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"), {
+            style: {
+              background: '#F0FFF4',
+              color: '#22543D',
+              border: '1px solid #9AE6B4',
+              fontWeight: '600',
+              fontSize: '13px'
+            }
+          });
+          // Keeping user on page after posting; no redirect
+        }
       } else {
         toast.error(result.message || "Failed.", {
           style: {
@@ -371,31 +392,8 @@ export default function PostJobClient({
         <p className="text-slate-400 text-xs">{isEdit ? "Update your job listing requirements" : "Create a job listing in 5 simple steps"}</p>
       </div>
 
-      {!isProfileComplete && (
-        <div className="mt-4 p-4 bg-[#FFFBEB] rounded-xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#F59E0B] shrink-0 shadow-sm">
-               <Target className="w-4.5 h-4.5" />
-            </div>
-            <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-[#92400E]">Finish Your Profile</h3>
-              <p className="text-[11px] text-[#92400E]/80 font-medium">
-                You need to finish your profile before you can post any jobs.
-              </p>
-            </div>
-          </div>
-          <Button 
-            onClick={() => window.location.href = `/dashboard/${userRole}/company-profile`}
-            size="sm"
-            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[11px] font-bold px-5 h-8 rounded-lg whitespace-nowrap shadow-sm"
-          >
-            Finish Now
-          </Button>
-        </div>
-      )}
-
       {/* Stepper Indicator - Desktop Compact Side-by-Side Style */}
-      <div className={cn("w-full py-2 md:py-4", !isProfileComplete && "opacity-40 pointer-events-none")}>
+      <div className={cn("w-full py-2 md:py-4")}>
         <div className="flex items-center justify-center flex-wrap gap-y-1 max-w-4xl mx-auto">
           {steps.map((step, idx) => (
             <div key={step.id} className="flex items-center">
@@ -449,7 +447,7 @@ export default function PostJobClient({
         </div>
       </div>
 
-      <div className={cn("bg-white rounded-2xl border border-slate-100 shadow-xs p-4 md:p-6 min-h-[350px]", !isProfileComplete && "opacity-40 pointer-events-none")}>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 md:p-6 min-h-[350px]">
         {currentStep === 1 && (
           <div className="space-y-5 animate-in fade-in duration-300">
             <h2 className="text-sm font-bold text-[#1E1B4B]">Job Details</h2>
@@ -771,7 +769,7 @@ export default function PostJobClient({
                           <button 
                             onClick={() => removeQuestion(i)} 
                             suppressHydrationWarning
-                            className="p-2 text-slate-300 hover:text-rose-400 transition-colors bg-white md:bg-transparent rounded-lg border border-slate-50 md:border-none shadow-sm md:shadow-none"
+                            className="p-2 text-red-500 hover:text-red-700 transition-colors bg-white md:bg-transparent rounded-lg border border-slate-50 md:border-none shadow-sm md:shadow-none"
                             title="Remove Question"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -974,19 +972,20 @@ export default function PostJobClient({
       </div>
 
       {/* Navigation Footer */}
-      <div className={cn("flex items-center justify-between pt-6 border-t border-slate-50 gap-4", !isProfileComplete && "opacity-40 pointer-events-none")}>
-        <Button
-          variant="outline"
-          suppressHydrationWarning
-          onClick={handleBack}
-          disabled={currentStep === 1 || loading}
-          className={cn(
-            "h-10 px-6 rounded-xl text-xs font-bold border-slate-100 text-slate-500 bg-white hover:bg-slate-50 transition-all",
-            currentStep === 1 && "invisible"
-          )}
-        >
-          Back
-        </Button>
+      <div className="flex items-center justify-between pt-6 border-t border-slate-50 gap-4">
+        {currentStep > 1 ? (
+          <Button
+            variant="outline"
+            suppressHydrationWarning
+            onClick={handleBack}
+            disabled={loading}
+            className="h-10 px-8 rounded-xl text-xs font-bold border-2 border-[#312E81] text-[#312E81] bg-white transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-md"
+          >
+            Back
+          </Button>
+        ) : (
+          <div />
+        )}
 
         <div className="flex-1 md:flex-none flex justify-end gap-3">
           {currentStep < 5 ? (

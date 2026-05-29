@@ -155,7 +155,7 @@ export function DashboardSidebar({
 
         {/* BACK TO HOME */}
         <div className={`py-4 ${collapsed ? "px-0 flex justify-center" : "px-6"}`}>
-          <Link href="/" className={`flex items-center gap-3 text-slate-400 hover:text-indigo-600 transition-all group ${collapsed ? "justify-center" : ""}`}>
+          <Link href="/" className={`flex items-center gap-3 text-indigo-600 hover:text-indigo-800 transition-all group ${collapsed ? "justify-center" : ""}`}>
             <LogOut className={`h-4 w-4 rotate-180 transition-transform ${!collapsed ? "group-hover:-translate-x-1" : ""}`} />
             {!collapsed && <span className="text-[10px] font-bold tracking-wider uppercase">Back to Home</span>}
           </Link>
