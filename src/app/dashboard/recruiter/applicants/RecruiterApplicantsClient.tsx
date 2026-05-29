@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { 
   Users, 
   MapPin, 
@@ -34,10 +34,87 @@ import Link from "next/link";
 const STORAGE_BASE_URL = process.env.NEXT_PUBLIC_STORAGE_BASE_URL || "https://teachnowbackend.jobsvedika.in/";
 
 const safeFormatDistanceToNow = (dateString?: string) => {
-  if (!dateString) return "just now";
+  if (!dateString) return "Just Now";
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "just now";
-  return formatDistanceToNow(date);
+  if (isNaN(date.getTime())) return "Just Now";
+  const distance = formatDistanceToNow(date);
+  return distance === "less than a minute" ? "Just Now" : `${distance} ago`;
+};
+
+const CustomSelect = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder,
+  align = "left"
+}: { 
+  value: string; 
+  onChange: (val: string) => void; 
+  options: { value: string; label: string }[]; 
+  placeholder: string; 
+  align?: "left" | "right";
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+  const selectedOption = options.find(o => o.value === value);
+
+  useEffect(() => {
+    if (isOpen && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+    }
+  }, [isOpen]);
+
+  return (
+    <div className="relative w-full">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-10 px-4 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-[12px] font-semibold text-slate-700 flex items-center justify-between transition-all cursor-pointer shadow-2xs focus:border-indigo-500 focus:bg-white outline-none"
+      >
+        <span>{selectedOption ? selectedOption.label : placeholder}</span>
+        <svg className={cn("w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            style={{ position: 'fixed', top: pos.top, left: align === 'right' ? undefined : pos.left, right: align === 'right' ? (window.innerWidth - pos.left - pos.width) : undefined, minWidth: Math.max(pos.width, 220), zIndex: 50 }}
+            className="bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 max-h-60 overflow-y-auto divide-y divide-slate-50"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={cn(
+                  "w-full text-left px-4 py-2.5 text-[12px] font-semibold transition-colors flex items-center justify-between cursor-pointer border-none outline-none",
+                  opt.value === value 
+                    ? "bg-indigo-50 text-indigo-600" 
+                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-950"
+                )}
+              >
+                <span>{opt.label}</span>
+                {opt.value === value && (
+                  <svg className="w-4 h-4 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 interface Application {
@@ -102,7 +179,7 @@ interface RecruiterApplicantsClientProps {
 }
 
 const StatusBadge = ({ status, type = 'status' }: { status: string, type?: 'status' | 'contact' }) => {
-  const s = status?.toLowerCase() || "";
+  const s = status?.toLowerCase().replace(/[\s_-]+/g, "_") || "";
   
   if (type === 'contact') {
      const styles: Record<string, string> = {
@@ -110,14 +187,16 @@ const StatusBadge = ({ status, type = 'status' }: { status: string, type?: 'stat
         messaged: "bg-sky-50 text-sky-600 border-sky-100",
         not_picked: "bg-orange-50 text-orange-600 border-orange-100",
         not_reached: "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100",
+        not_reachable: "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100",
         default: "bg-slate-50 text-black/40 border-slate-100"
      };
+     const label = s === 'not_reachable' ? 'not reached' : status.replace(/[\s_-]+/g, ' ').toLowerCase();
      return (
         <span className={cn(
            "px-2.5 py-0.5 rounded-lg text-[10px] font-medium border whitespace-nowrap capitalize",
            styles[s] || styles.default
         )}>
-           {status.replace(/_/g, ' ').toLowerCase()}
+           {label}
         </span>
      );
   }
@@ -147,6 +226,11 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
   const [selectedApplicant, setSelectedApplicant] = useState<Application | null>(null);
   const [showPhone, setShowPhone] = useState(false);
   const [showResumePreview, setShowResumePreview] = useState(false);
+
+  // Advanced Filter States
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedExperience, setSelectedExperience] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
 
   const getInitialApps = () => {
     if (!initialData) return [];
@@ -182,18 +266,72 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
     return `${STORAGE_BASE_URL}${cleanPath}`;
   };
 
+  // Dynamic unique locations from candidates
+  const locations = useMemo(() => {
+    const locs = apps.map(a => a.job_seeker?.location || "India");
+    return Array.from(new Set(locs)).filter(Boolean);
+  }, [apps]);
+
   const filteredApps = useMemo(() => {
     return apps.filter((app) => {
       const fullName = getCandidateName(app).toLowerCase();
       const jobTitle = (app.job?.title || "").toLowerCase();
       const matchesSearch = fullName.includes(searchTerm.toLowerCase()) || jobTitle.includes(searchTerm.toLowerCase());
-      if (activeTab === 'all') return matchesSearch;
-      if (['called', 'messaged', 'not_picked', 'not_reached'].includes(activeTab)) {
-         return matchesSearch && app.contact_status === activeTab;
+      
+      if (!matchesSearch) return false;
+
+      // Status & Contact Status Tabs filter
+      let matchesTab = true;
+      if (activeTab !== 'all') {
+        const isContactTab = ['called', 'messaged', 'not_picked', 'not_reached'].includes(activeTab);
+        if (isContactTab) {
+           const cleanContactStatus = String(app.contact_status || "").toLowerCase().replace(/[\s_-]+/g, "");
+           const cleanActiveTab = activeTab.toLowerCase().replace(/[\s_-]+/g, "");
+           
+           if (cleanActiveTab === "notreached") {
+              matchesTab = (cleanContactStatus === "notreached" || cleanContactStatus === "notreachable");
+           } else {
+              matchesTab = cleanContactStatus === cleanActiveTab;
+           }
+        } else {
+           const cleanStatus = String(app.status || "").toLowerCase().replace(/[\s_-]+/g, "");
+           const cleanActiveTab = activeTab.toLowerCase().replace(/[\s_-]+/g, "");
+           matchesTab = cleanStatus === cleanActiveTab;
+        }
       }
-      return matchesSearch && app.status?.toLowerCase() === activeTab;
+      if (!matchesTab) return false;
+
+      // Location advanced filter
+      if (selectedLocation) {
+        const appLoc = (app.job_seeker?.location || "India").toLowerCase();
+        if (appLoc !== selectedLocation.toLowerCase()) return false;
+      }
+
+      // Experience advanced filter
+      if (selectedExperience) {
+        const exp = app.job_seeker?.experience_years ?? 0;
+        if (selectedExperience === "fresher" && exp !== 0) return false;
+        if (selectedExperience === "mid" && (exp < 1 || exp > 3)) return false;
+        if (selectedExperience === "senior" && (exp < 3 || exp > 5)) return false;
+        if (selectedExperience === "expert" && exp < 5) return false;
+      }
+
+      // Applied Time advanced filter
+      if (selectedTime) {
+        if (!app.created_at) return false;
+        const appDate = new Date(app.created_at);
+        const now = new Date();
+        const diffMs = now.getTime() - appDate.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        
+        if (selectedTime === "today" && diffDays > 1) return false;
+        if (selectedTime === "week" && diffDays > 7) return false;
+        if (selectedTime === "month" && diffDays > 30) return false;
+      }
+
+      return true;
     });
-  }, [apps, searchTerm, activeTab]);
+  }, [apps, searchTerm, activeTab, selectedLocation, selectedExperience, selectedTime]);
 
   const shortlistApplicant = async (appId: number) => {
     setLoading(appId);
@@ -235,7 +373,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
   };
 
   const stats = [
-    { label: "Total Apps", value: apps.length, icon: Users, bg: "bg-blue-50", text: "text-blue-600" },
+    { label: "Total Applications", value: apps.length, icon: Users, bg: "bg-blue-50", text: "text-blue-600" },
     { label: "Shortlisted", value: apps.filter(a => a.status?.toLowerCase() === 'shortlisted').length, icon: CheckCircle2, bg: "bg-emerald-50", text: "text-emerald-600" },
     { label: "Interviews", value: apps.filter(a => a.status?.toLowerCase() === 'interview').length, icon: ShieldCheck, bg: "bg-indigo-50", text: "text-indigo-600" },
   ];
@@ -274,8 +412,8 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
               <s.icon className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-xl font-medium text-black leading-none mb-1">{s.value}</h3>
-              <p className="text-[11px] font-medium text-black opacity-40">{s.label}</p>
+              <p className="text-[11px] font-bold text-black mb-1">{s.label}</p>
+              <h3 className="text-xl font-bold text-black leading-none">{s.value}</h3>
             </div>
           </div>
         ))}
@@ -318,6 +456,72 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
         </div>
       </div>
 
+      {/* Advanced Filters Bar */}
+      <div className="bg-white p-4 rounded-[20px] border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-3">
+         <div className="text-[10px] font-bold text-[#312E81] uppercase tracking-wider flex items-center gap-1.5 shrink-0 select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#312E81] animate-pulse" />
+            Filters
+         </div>
+         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full flex-1">
+            {/* Location Select */}
+            <CustomSelect
+               value={selectedLocation}
+               onChange={setSelectedLocation}
+               options={[
+                  { value: "", label: "All Locations" },
+                  ...locations.map(loc => ({ value: loc, label: loc }))
+               ]}
+               placeholder="All Locations"
+            />
+
+            {/* Experience Select */}
+            <CustomSelect
+               value={selectedExperience}
+               onChange={setSelectedExperience}
+               options={[
+                  { value: "", label: "All Experiences" },
+                  { value: "fresher", label: "Freshers (0 Years)" },
+                  { value: "mid", label: "Mid-level (1-3 Years)" },
+                  { value: "senior", label: "Senior (3-5 Years)" },
+                  { value: "expert", label: "Director / Lead (5+ Years)" }
+               ]}
+               placeholder="All Experiences"
+            />
+
+            {/* Applied Time Select */}
+            <CustomSelect
+               value={selectedTime}
+               onChange={setSelectedTime}
+               options={[
+                  { value: "", label: "All Time" },
+                  { value: "today", label: "Last 24 Hours" },
+                  { value: "week", label: "Last 7 Days" },
+                  { value: "month", label: "Last 30 Days" }
+               ]}
+               placeholder="All Time"
+               align="right"
+            />
+         </div>
+         
+         <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
+            <span className="text-[11px] text-black/50 font-medium px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 whitespace-nowrap">
+               Showing {filteredApps.length} of {apps.length}
+            </span>
+            {(selectedLocation || selectedExperience || selectedTime) && (
+               <button
+                  onClick={() => {
+                     setSelectedLocation("");
+                     setSelectedExperience("");
+                     setSelectedTime("");
+                  }}
+                  className="h-10 px-4 text-[11px] font-bold text-rose-600 hover:text-rose-700 border border-rose-100 bg-rose-50/30 hover:bg-rose-50 rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+               >
+                  Clear Filters
+               </button>
+            )}
+         </div>
+      </div>
+
       {/* Applicant High-Density Cards */}
       <div className="space-y-4">
         {filteredApps.length > 0 ? (
@@ -347,15 +551,18 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                           {app.contact_status && <StatusBadge status={app.contact_status} type="contact" />}
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                        <span className="flex items-center gap-1.5 text-[11px] font-medium text-black/50">
-                           <MapPin className="w-3 h-3 text-indigo-400" /> {app.job_seeker?.location || "India"}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1.5">
+                        <span className="flex items-center gap-1 text-xs font-normal text-slate-900">
+                           <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                           <strong className="font-semibold">Location:</strong> {app.job_seeker?.location || "India"}
                         </span>
-                        <span className="flex items-center gap-1.5 text-[11px] font-medium text-black/50">
-                           <Briefcase className="w-3 h-3 text-indigo-400" /> {app.job_seeker?.experience_years || "0"}y Exp
+                        <span className="flex items-center gap-1 text-xs font-normal text-slate-900">
+                           <Briefcase className="w-3.5 h-3.5 text-amber-500" />
+                           <strong className="font-semibold">Experience:</strong> {app.job_seeker?.experience_years ?? 0} Years
                         </span>
-                        <span className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-600">
-                           <Clock className="w-3 h-3" /> {safeFormatDistanceToNow(app.created_at)}
+                        <span className="flex items-center gap-1 text-xs font-normal text-slate-900">
+                           <Clock className="w-3.5 h-3.5 text-violet-500" />
+                           <strong className="font-semibold">Applied:</strong> {safeFormatDistanceToNow(app.created_at)}
                         </span>
                       </div>
                     </div>
@@ -624,7 +831,12 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                   <div className="flex-1">
                      <select 
                        className="h-12 w-full px-5 rounded-[18px] bg-slate-50/80 border border-slate-100 text-[13px] font-medium text-black focus:ring-2 focus:ring-indigo-100 outline-none cursor-pointer transition-all"
-                       value={selectedApplicant.contact_status || ""}
+                       value={(() => {
+                          if (!selectedApplicant.contact_status) return "";
+                          const s = selectedApplicant.contact_status.toLowerCase().replace(/[\s_-]+/g, "_");
+                          if (s === "not_reached") return "not_reachable";
+                          return s;
+                       })()}
                        onChange={(e) => updateContactStatus(selectedApplicant.id, e.target.value)}
                        disabled={loading === selectedApplicant.id}
                      >
@@ -632,7 +844,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                         <option value="called">Called</option>
                         <option value="messaged">Messaged</option>
                         <option value="not_picked">Not Picked</option>
-                        <option value="not_reached">Not Reached</option>
+                        <option value="not_reachable">Not Reached</option>
                      </select>
                   </div>
                   <div className="flex items-center gap-2">

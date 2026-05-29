@@ -228,7 +228,7 @@ export default function JobsClient({
         </div>
 
         <Link href={`${basePath}/post-job`}>
-          <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm transition-all flex items-center gap-2">
+          <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] border border-[#312E81] hover:border-[#1E1B4B] shadow-sm transition-all flex items-center gap-2 text-white">
             <PlusCircle className="w-4 h-4" />
             Post New Job
           </Button>
@@ -238,7 +238,7 @@ export default function JobsClient({
       {/* Stats Grid */}
       <div className={cn("grid gap-3", stats.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2 lg:grid-cols-4")}>
         {stats.map((s, i) => (
-          <div key={i} className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 transition-all hover:shadow-sm">
+          <div key={i} className="bg-white p-3.5 rounded-2xl border border-slate-300 shadow-xs flex items-center gap-3.5 transition-all hover:shadow-sm">
             <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner", s.bg, s.text)}>
               <s.icon className="w-5 h-5" />
             </div>
@@ -252,7 +252,7 @@ export default function JobsClient({
 
       {/* Tabs & Search */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 p-1 bg-slate-50/50 rounded-2xl border border-slate-300 overflow-x-auto no-scrollbar">
           {[
             { id: 'all', label: 'All', count: allJobs.length },
             { id: 'active', label: 'Active', count: activeJobs.length },
@@ -264,10 +264,10 @@ export default function JobsClient({
               onClick={() => setActiveTab(tab.id as any)}
               suppressHydrationWarning={true}
               className={cn(
-                "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap",
+                "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap border",
                 activeTab === tab.id
-                  ? "bg-[#312E81] text-white shadow-sm"
-                  : "text-slate-900 hover:bg-white/50"
+                  ? "bg-[#312E81] text-white border-[#312E81] shadow-sm"
+                  : "text-slate-700 bg-transparent border-transparent hover:bg-white hover:border-slate-300 hover:text-slate-900"
               )}
             >
               {tab.label} ({tab.count})
@@ -281,7 +281,7 @@ export default function JobsClient({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search your jobs..."
-            className="h-10 pl-10 bg-white border-slate-100 rounded-xl text-[12.5px] font-medium focus:ring-1 focus:ring-indigo-100 shadow-xs"
+            className="h-10 pl-10 bg-white border-slate-300 rounded-xl text-[12.5px] font-medium focus:ring-1 focus:ring-indigo-100 shadow-xs border"
           />
         </div>
       </div>
@@ -290,7 +290,7 @@ export default function JobsClient({
       <div className="space-y-3">
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
-            <div key={job.id} className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden p-4 group transition-all hover:shadow-md hover:border-indigo-100/50">
+            <div key={job.id} className="bg-white rounded-2xl border border-slate-300 shadow-xs overflow-hidden p-4 group transition-all hover:shadow-md hover:border-indigo-100/50">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
                 {/* Left: Job Info */}
@@ -330,18 +330,18 @@ export default function JobsClient({
                 {/* Right: Actions */}
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <Link href={`${basePath}/jobs/view/${job.id}`}>
-                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5 text-indigo-400" /> View
+                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-1.5 shadow-sm">
+                      <Eye className="w-3.5 h-3.5 text-indigo-500" /> View
                     </Button>
                   </Link>
 
                   {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                     <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                      <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border-indigo-100 hover:bg-indigo-100 transition-all flex items-center gap-1.5 shadow-xs">
+                      <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-300 hover:bg-indigo-100/80 hover:border-indigo-400 transition-all flex items-center gap-1.5 shadow-sm">
                         <Users className="w-3.5 h-3.5" />
                         Applicants
                         {job.applicants_count !== undefined && (
-                          <span className="ml-1 bg-white text-indigo-600 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-xs">
+                          <span className="ml-1 bg-white text-indigo-600 px-1.5 py-0.5 rounded-md text-[10px] font-bold border border-indigo-200 shadow-xs">
                             {job.applicants_count || 0}
                           </span>
                         )}
@@ -356,7 +356,7 @@ export default function JobsClient({
                       onClick={() => handleAction(job.id, 'filled')}
                       disabled={loadingId === job.id}
                       variant="outline"
-                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-emerald-500 bg-white border-emerald-50 hover:bg-emerald-50 hover:border-emerald-100 transition-all flex items-center gap-1.5"
+                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-emerald-600 bg-white border border-emerald-300 hover:bg-emerald-50/50 hover:border-emerald-400 transition-all flex items-center gap-1.5 shadow-sm"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Mark as Filled
                     </Button>
@@ -370,12 +370,12 @@ export default function JobsClient({
                     }}
                     disabled={loadingId === job.id || (job.featured === 1 && job.admin_featured !== 1) || (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))}
                     className={cn(
-                      "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5",
+                      "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5 shadow-sm",
                       (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))
-                        ? "bg-indigo-50 text-indigo-600 border-indigo-100 cursor-default"
+                        ? "bg-indigo-50 text-indigo-600 border border-indigo-300 cursor-default"
                         : (job.featured === 1 && job.admin_featured !== 1)
-                          ? "bg-amber-50 text-amber-600 border-amber-100 cursor-default"
-                          : "bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:border-slate-200"
+                          ? "bg-amber-50 text-amber-600 border border-amber-300 cursor-default"
+                          : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 hover:border-slate-400"
                     )}
                   >
                     {loadingId === job.id ? (
@@ -395,7 +395,7 @@ export default function JobsClient({
                       onClick={() => handleAction(job.id, 'republish')}
                       disabled={loadingId === job.id}
                       variant="outline"
-                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-50 hover:bg-indigo-50 hover:border-indigo-100 transition-all flex items-center gap-1.5"
+                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border border-indigo-300 hover:bg-indigo-50/50 hover:border-indigo-400 transition-all flex items-center gap-1.5 shadow-sm"
                     >
                       {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                       Republish Job
@@ -406,7 +406,7 @@ export default function JobsClient({
                     onClick={() => handleAction(job.id, 'delete')}
                     disabled={loadingId === job.id}
                     variant="outline"
-                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-500 bg-white border-rose-50 hover:bg-rose-50 hover:border-rose-100 transition-all flex items-center gap-1.5"
+                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-600 bg-white border border-rose-300 hover:bg-rose-50/50 hover:border-rose-400 transition-all flex items-center gap-1.5 shadow-sm"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Delete
                   </Button>
@@ -425,7 +425,7 @@ export default function JobsClient({
               <p className="text-[13px] text-slate-400 font-medium">Try adjusting your filters or post a new listing.</p>
             </div>
             <Link href={`${basePath}/post-job`}>
-              <Button size="lg" className="h-11 px-7 rounded-xl font-semibold text-xs shadow-sm transition-all">
+              <Button size="lg" className="h-11 px-7 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] border border-[#312E81] hover:border-[#1E1B4B] text-white shadow-sm transition-all">
                 Post a new job
               </Button>
             </Link>
@@ -454,12 +454,12 @@ export default function JobsClient({
         };
 
         return (
-          <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-50">
+          <div className="flex items-center justify-center gap-2 pt-8 border-t border-slate-100">
             <Button
               variant="outline"
               disabled={currentPage === 1}
               onClick={() => handlePageChange(currentPage - 1)}
-              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border border-slate-300 hover:bg-slate-50 disabled:opacity-50 shadow-sm transition-all"
             >
               Previous
             </Button>
@@ -470,10 +470,10 @@ export default function JobsClient({
                   key={pg}
                   onClick={() => handlePageChange(pg)}
                   className={cn(
-                    "w-9 h-9 rounded-xl text-xs font-bold transition-all",
+                    "w-9 h-9 rounded-xl text-xs font-bold transition-all border shadow-sm",
                     currentPage === pg
-                      ? "bg-[#312E81] text-white shadow-md"
-                      : "bg-white text-slate-600 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30"
+                      ? "bg-[#312E81] text-white border-[#312E81] shadow-md"
+                      : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/50 hover:text-[#312E81]"
                   )}
                 >
                   {pg}
@@ -485,7 +485,7 @@ export default function JobsClient({
               variant="outline"
               disabled={currentPage === lastPage}
               onClick={() => handlePageChange(currentPage + 1)}
-              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 disabled:opacity-50"
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border border-slate-300 hover:bg-slate-50 disabled:opacity-50 shadow-sm transition-all"
             >
               Next
             </Button>

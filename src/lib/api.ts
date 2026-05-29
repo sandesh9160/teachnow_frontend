@@ -151,27 +151,29 @@ import { toast } from "sonner";
  * This is used when a session expires to ensure the frontend state is wiped.
  */
 export const clearAuthCookies = () => {
+    console.log("clear cookies ")
     if (typeof window === "undefined") return;
-    
+
+
     const cookiesToClear = [
-        "userData", 
-        "laravel_session", 
-        "laravel-session", 
+        "userData",
+        "laravel_session",
+        "laravel-session",
         // "fmg-session", 
-        "XSRF-TOKEN", 
-        "authSession", 
+        "XSRF-TOKEN",
+        "authSession",
         "authToken"
     ];
-    
+
     cookiesToClear.forEach(name => {
         // 1. Clear for current hostname
         document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
-        
+
         // 2. Clear for current domain (with dot and without)
         const host = window.location.hostname;
         document.cookie = `${name}=; path=/; domain=${host}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
         document.cookie = `${name}=; path=/; domain=.${host}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
-        
+
         // 3. Clear for parent domain if applicable (e.g., jobsvedika.in for app.jobsvedika.in)
         const parts = host.split('.');
         if (parts.length > 2) {
@@ -197,7 +199,7 @@ api.interceptors.response.use(
 
                 // 2. Clear frontend state (if any)
                 clearAuthCookies();
-                
+
                 // 3. Redirect to login after a small delay
                 setTimeout(() => {
                     const currentPath = window.location.pathname;

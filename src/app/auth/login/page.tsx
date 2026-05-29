@@ -16,7 +16,7 @@ function LoginContent() {
   const [authLoading, setAuthLoading] = useState(false);
   const initialRole = searchParams?.get("role") as LoginRole | "employer_recruiter";
   const [role, setRole] = useState<LoginRole | "employer_recruiter">(initialRole || "job_seeker");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +31,7 @@ function LoginContent() {
       
       // Check if already authenticated (userData cookie exists)
       const hasUserData = document.cookie.split(';').some((item) => item.trim().startsWith('userData='));
-      if (hasUserData) setIsLoggedIn(true);
+
 
       if (hasUserData && !isSessionExpired && !redirectMessage) {
         setTimeout(() => {
@@ -154,37 +154,6 @@ function LoginContent() {
             <h1 className="font-display text-2xl font-bold text-foreground">Welcome back</h1>
           </div>
 
-          {isLoggedIn ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-5 py-8 animate-in fade-in zoom-in-95 duration-500">
-              <div className="p-4 bg-primary/10 rounded-2xl text-primary shadow-inner">
-                <User size={40} strokeWidth={2.5} />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-foreground tracking-tight">You are already signed in</h2>
-                <p className="text-xs text-muted-foreground px-6 leading-relaxed">
-                  To access another account or login again, you must sign out from your current session first.
-                </p>
-              </div>
-              
-              <div className="w-full space-y-3 pt-2">
-                <form action="/auth/logout" method="POST" className="w-full">
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl py-3 text-sm font-bold text-white bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    Logout from Session
-                  </button>
-                </form>
-                
-                <Link 
-                  href="/" 
-                  className="flex items-center justify-center w-full py-2.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors border border-border rounded-xl"
-                >
-                  Return to Home
-                </Link>
-              </div>
-            </div>
-          ) : (
             <>
               <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/20 p-1">
                 <button
@@ -274,7 +243,7 @@ function LoginContent() {
                 </p>
               </form>
             </>
-          )}
+          
         </div>
       </div>
     </div>

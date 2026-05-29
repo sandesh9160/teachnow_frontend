@@ -298,28 +298,32 @@ export default function EmployerDashboardClient({
          value: dashboardData?.total_jobs?.toString() || "0",
          icon: Briefcase,
          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/jobs`
       },
       {
          label: "Total applicants",
          value: dashboardData?.total_applications?.toString() || "0",
          icon: Users,
          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/jobs`
       },
       {
          label: "Shortlisted",
          value: dashboardData?.shortlisted_candidates?.toString() || "0",
          icon: CheckCircle2,
          gradient: "from-[#10B981] to-[#047857]", // Green
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/jobs`
       },
       {
          label: "Team members",
          value: dashboardData?.total_recruiters?.toString() || "0",
          icon: Users,
          gradient: "from-[#F97316] to-[#C2410C]", // Orange
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/recruiters`
       },
    ];
 
@@ -348,87 +352,89 @@ export default function EmployerDashboardClient({
 
          {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full">
+            <Link href={`${basePath}/purchase-history`} className="bg-white rounded-2xl p-3 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full transition-all duration-300 cursor-pointer block">
                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
 
-               <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-6 flex-1">
-                  {/* Left: Plan Info */}
-                  <div className="flex gap-3 items-center shrink-0">
-                     <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0">
-                        <CreditCard className="w-5 h-5" />
+               <div className="relative z-10 flex gap-3 items-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0">
+                     <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div>
+                     <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">Current Plan</span>
+                        <h2 className="text-lg font-bold text-black leading-none">{sub.plan_name}</h2>
                      </div>
-                     <div>
-                        <div className="flex items-center gap-2">
-                           <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">Current Plan</span>
-                           <h2 className="text-lg font-bold text-black leading-none">{sub.plan_name}</h2>
+                     <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-1">
+                        <Clock className="w-3 h-3 text-amber-500" /> Renewal: {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                     </p>
+                  </div>
+               </div>
+
+               <div className="h-10 w-px bg-slate-100 hidden lg:block" />
+
+               {/* Middle: Credits Grid (Allocation & Balance) */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 lg:max-w-2xl">
+                  {/* Active Allocation Box */}
+                  <div className="bg-slate-50/50 border border-slate-200 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
+                     <div className="flex items-center justify-between mb-2">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Allocation</span>
+                        <div className="flex items-center gap-1 px-1 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
+                           <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                           <span className="text-[7px] font-bold text-emerald-600 uppercase">Live</span>
                         </div>
-                        <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5 mt-1">
-                           <Clock className="w-3 h-3 text-amber-500" /> Renewal: {new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </p>
+                     </div>
+                     <div className="flex justify-between items-end">
+                        <div>
+                           <span className="text-[10px] font-medium text-slate-500 block">Job posts</span>
+                           <p className="text-lg font-bold text-slate-900 leading-none">{jobTotal}</p>
+                        </div>
+                        <div className="text-right">
+                           <span className="text-[10px] font-medium text-slate-500 block">Featured</span>
+                           <p className="text-lg font-bold text-slate-900 leading-none">{featTotal}</p>
+                        </div>
                      </div>
                   </div>
 
-                  <div className="h-10 w-px bg-slate-100 hidden lg:block" />
-
-                  {/* Middle: Credits Grid (Allocation & Balance) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 lg:max-w-2xl">
-                     {/* Active Allocation Box */}
-                     <div className="bg-slate-50/50 border border-slate-200 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
-                        <div className="flex items-center justify-between mb-2">
-                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Allocation</span>
-                           <div className="flex items-center gap-1 px-1 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
-                              <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="text-[7px] font-bold text-emerald-600 uppercase">Live</span>
-                           </div>
+                  {/* Remaining Balance Box */}
+                  <div className="bg-indigo-50/30 border border-indigo-200/60 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
+                     <div className="flex items-center justify-between mb-2">
+                        <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Remaining Balance</span>
+                        <span className="text-[7px] font-bold text-indigo-600 uppercase bg-indigo-100/50 px-1 py-0.5 rounded">Available</span>
+                     </div>
+                     <div className="flex justify-between items-end">
+                        <div>
+                           <span className="text-[10px] font-medium text-indigo-400 block">Job posts</span>
+                           <p className="text-lg font-bold text-indigo-600 leading-none">{jobRemaining}</p>
                         </div>
-                        <div className="flex justify-between items-end">
-                           <div>
-                              <span className="text-[10px] font-medium text-slate-500 block">Job posts</span>
-                              <p className="text-lg font-bold text-slate-900 leading-none">{jobTotal}</p>
-                           </div>
-                           <div className="text-right">
-                              <span className="text-[10px] font-medium text-slate-500 block">Featured</span>
-                              <p className="text-lg font-bold text-slate-900 leading-none">{featTotal}</p>
-                           </div>
-                        </div>
-                      </div>
-
-                     {/* Remaining Balance Box */}
-                     <div className="bg-indigo-50/30 border border-indigo-200/60 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
-                        <div className="flex items-center justify-between mb-2">
-                           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Remaining Balance</span>
-                           <span className="text-[7px] font-bold text-indigo-600 uppercase bg-indigo-100/50 px-1 py-0.5 rounded">Available</span>
-                        </div>
-                        <div className="flex justify-between items-end">
-                           <div>
-                              <span className="text-[10px] font-medium text-indigo-400 block">Job posts</span>
-                              <p className="text-lg font-bold text-indigo-600 leading-none">{jobRemaining}</p>
-                           </div>
-                           <div className="text-right">
-                              <span className="text-[10px] font-medium text-indigo-400 block">Featured</span>
-                              <p className="text-lg font-bold text-indigo-600 leading-none">{featRemaining}</p>
-                           </div>
+                        <div className="text-right">
+                           <span className="text-[10px] font-medium text-indigo-400 block">Featured</span>
+                           <p className="text-lg font-bold text-indigo-600 leading-none">{featRemaining}</p>
                         </div>
                      </div>
                   </div>
                </div>
 
                {/* Right: Upgrade Plan Button */}
-               <Link href="/dashboard/employer/purchase-history" className="relative z-10 shrink-0 self-end lg:self-center">
-                  <Button variant="outline" className="h-9 px-6 rounded-xl border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-indigo-700 text-xs font-bold shadow-sm transition-all active:scale-95 whitespace-nowrap">
+               <div className="relative z-10 shrink-0 self-end lg:self-center">
+                  <span className="inline-flex items-center justify-center h-9 px-6 rounded-xl border border-indigo-200 bg-[#312E81] hover:bg-[#1E1B4B] text-white text-xs font-bold shadow-sm transition-all active:scale-95 whitespace-nowrap">
                      Upgrade Plan
-                  </Button>
-               </Link>
-            </div>
+                  </span>
+               </div>
+            </Link>
          )}
 
          {/* Stats Grid - Live Data Only */}
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {stats.map((stat, i) => (
-               <div key={i} className={cn(
-                  "relative h-20 rounded-2xl p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-black/5",
-                  "bg-gradient-to-br", stat.gradient, stat.textColor
-               )}>
+               <Link 
+                  href={stat.link} 
+                  key={i} 
+                  className={cn(
+                     "relative h-20 rounded-2xl p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-black/5 block",
+                     "bg-gradient-to-br", stat.gradient, stat.textColor,
+                     "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer hover:shadow-md"
+                  )}
+               >
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
                      <stat.icon className="w-6 h-6 opacity-80" />
                   </div>
@@ -437,8 +443,7 @@ export default function EmployerDashboardClient({
                      <p className="text-[11px] font-medium opacity-90">{stat.label}</p>
                      <h3 className="text-3xl font-semibold tracking-tight">{stat.value}</h3>
                   </div>
-
-               </div>
+               </Link>
             ))}
          </div>
 
@@ -539,8 +544,9 @@ export default function EmployerDashboardClient({
                      dashboardData.latest_applications.slice(0, 5).map((app, idx) => {
                         const seekerName = app.job_seeker?.user?.name || "Applicant";
                         const seekerInitials = seekerName.split(' ').map(n => n[0] || '').join('').slice(0, 2) || "A";
+                        const targetLink = (app as any).job?.id ? `${basePath}/jobs/view/${(app as any).job.id}/applicants` : `${basePath}/jobs`;
                         return (
-                           <div key={`${app.id}-${idx}`} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                           <Link href={targetLink} key={`${app.id}-${idx}`} className="px-4 py-3 flex flex-wrap items-center gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group block">
                               <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
                                  <ApplicationAvatar
                                     src={app.job_seeker?.profile_photo || null}
@@ -550,7 +556,7 @@ export default function EmployerDashboardClient({
                               </div>
 
                               <div className="flex-1 min-w-0">
-                                 <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors truncate">
+                                 <h4 className="text-[14px] font-semibold text-[#1E1B4B] group-hover:text-indigo-600 transition-colors truncate">
                                     {seekerName}
                                  </h4>
                                  <p className="text-[11px] text-[#1E1B4B]">
@@ -566,7 +572,7 @@ export default function EmployerDashboardClient({
                                     {app.status}
                                  </Button>
                               </div>
-                           </div>
+                           </Link>
                         );
                      })
                   ) : (
@@ -587,65 +593,67 @@ export default function EmployerDashboardClient({
                <div className="divide-y divide-slate-100">
                   {dashboardData?.latest_jobs && dashboardData.latest_jobs.length > 0 ? (
                      dashboardData.latest_jobs.slice(0, 5).map((job, idx) => (
-                        <div key={`${job.id}-${idx}`} className="px-4 py-3 flex gap-3 hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                           <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
-                              <ApplicationAvatar
-                                 src={job.company_logo || job.employer_logo || job.logo || null}
-                                 alt={job.title}
-                                 initials={job.title?.charAt(0)}
-                              />
-                           </div>
-                           <div className="flex-1 min-w-0">
-                              <div className="flex items-start gap-2">
-                                 <h4 className="text-[13px] font-semibold text-[#1E1B4B] group-hover:text-primary transition-colors flex-1 min-w-0 line-clamp-1">
-                                    {job.title}
-                                 </h4>
-                                 <span className={cn(
-                                    "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
-                                    (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
-                                 )}>
-                                    {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
-                                 </span>
+                        <div key={`${job.id}-${idx}`} className="px-4 py-3 flex gap-3 hover:bg-slate-50/50 transition-colors group">
+                           <Link href={`${basePath}/jobs/view/${job.id}`} className="flex flex-row items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                              <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-slate-50 overflow-hidden shrink-0">
+                                 <ApplicationAvatar
+                                    src={job.company_logo || job.employer_logo || job.logo || null}
+                                    alt={job.title}
+                                    initials={job.title?.charAt(0)}
+                                 />
                               </div>
-                              <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
-                                 <span className="flex items-center gap-1 text-[10px] text-slate-400"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
+                              <div className="flex-1 min-w-0">
                                  <div className="flex items-center gap-2">
-                                    {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                       <Button
-                                          onClick={() => handleJobAction(job.id, 'republish')}
-                                          disabled={loadingJobId === job.id}
-                                          size="sm"
-                                          className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] flex items-center gap-1.5"
-                                       >
-                                          {loadingJobId === job.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                                          Republish
-                                       </Button>
-                                    )}
-                                    {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
-                                       <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                                          <Button size="sm" className="h-6 px-2.5 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-medium text-[10px] flex items-center gap-1.5">
-                                             <Users className="w-3 h-3" />
-                                             <span className="hidden xs:inline">Applicants</span>
-                                             {job.total_applications_count !== undefined && (
-                                                <span className="bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
-                                                   {job.total_applications_count || 0}
-                                                </span>
-                                             )}
-                                          </Button>
-                                       </Link>
-                                    )}
-                                    <Link href={`${basePath}/jobs/view/${job.id}`}>
-                                       <Button size="sm" className="h-6 px-2.5 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px]">View</Button>
-                                    </Link>
+                                    <h4 className="text-[13px] font-semibold text-[#1E1B4B] group-hover:text-indigo-600 transition-colors truncate">
+                                       {job.title}
+                                    </h4>
+                                    <span className={cn(
+                                       "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0 capitalize",
+                                       (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-100 text-amber-700" : getJobStatusStyles(job.job_status)
+                                    )}>
+                                       {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : job.job_status}
+                                    </span>
+                                 </div>
+                                 <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
+                                    <span className="flex items-center gap-1 text-[10px] text-slate-400"><Clock className="w-2.5 h-2.5" /> {new Date(job.created_at).toLocaleDateString('en-GB')}</span>
                                  </div>
                               </div>
+                           </Link>
+                           <div className="flex items-center justify-end gap-2 shrink-0">
+                              {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                 <Button
+                                    onClick={() => handleJobAction(job.id, 'republish')}
+                                    disabled={loadingJobId === job.id}
+                                    size="sm"
+                                    className="h-7 px-3 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 font-semibold text-[10px] flex items-center gap-1.5"
+                                 >
+                                    {loadingJobId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                                    Republish
+                                 </Button>
+                              )}
+                              {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
+                                 <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                                    <Button size="sm" className="h-6 px-2.5 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100 font-medium text-[10px] flex items-center gap-1.5">
+                                       <Users className="w-3.5 h-3.5" />
+                                       <span className="hidden xs:inline">Applicants</span>
+                                       {job.total_applications_count !== undefined && (
+                                          <span className="bg-indigo-600 text-white px-1 rounded-md text-[9px] font-bold">
+                                             {job.total_applications_count || 0}
+                                          </span>
+                                       )}
+                                    </Button>
+                                 </Link>
+                              )}
+                              <Link href={`${basePath}/jobs/view/${job.id}`}>
+                                 <Button size="sm" className="h-6 px-2.5 rounded-md bg-white border border-slate-200 text-indigo-600 hover:bg-indigo-50 font-medium text-[10px]">View</Button>
+                              </Link>
                            </div>
                         </div>
                      ))
                   ) : (
                      <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
                         <Briefcase className="w-10 h-10 mb-2" />
-                        <p className="text-xs font-semibold">No recent posts</p>
+                        <p className="text-xs font-semibold">No recent jobs posted</p>
                      </div>
                   )}
                </div>
@@ -668,9 +676,9 @@ export default function EmployerDashboardClient({
                <div className="divide-y divide-slate-100">
                   {dashboardData?.recruiters?.data && dashboardData.recruiters.data.length > 0 ? (
                      dashboardData.recruiters.data.map((recruiter, idx) => (
-                        <div key={`${recruiter.id}-${idx}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                        <Link href={`${basePath}/recruiters/${recruiter.id}`} key={`${recruiter.id}-${idx}`} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group block">
                            <div className="flex-1 min-w-0">
-                              <p className="text-[13px] font-bold text-slate-900 truncate">{recruiter.name}</p>
+                              <p className="text-[13px] font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{recruiter.name}</p>
                               <p className="text-[11px] text-slate-500 font-medium truncate">{recruiter.email}</p>
                            </div>
                            <div className="flex items-center gap-4 shrink-0">
@@ -683,7 +691,7 @@ export default function EmployerDashboardClient({
                                  <p className="text-[13px] font-bold text-indigo-600">{recruiter.featured_jobs_used}</p>
                               </div>
                            </div>
-                        </div>
+                        </Link>
                      ))
                   ) : (
                      <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">
@@ -710,10 +718,10 @@ export default function EmployerDashboardClient({
                <div className="divide-y divide-slate-100">
                   {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (
                      dashboardData.subscription_history.map((item, idx) => (
-                        <div key={idx} className="px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors">
+                        <Link href={`${basePath}/purchase-history`} key={idx} className="px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 hover:bg-slate-50/50 transition-colors cursor-pointer group block">
                            <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                 <p className="text-[13px] font-semibold text-slate-900">{item.plan_name}</p>
+                                 <p className="text-[13px] font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{item.plan_name}</p>
                                  {new Date(item.expires_at) < new Date() && (
                                     <span className="text-[8px] text-rose-500 font-semibold uppercase border border-rose-100 px-1 rounded">Exp</span>
                                  )}
@@ -731,7 +739,7 @@ export default function EmployerDashboardClient({
                                  {item.status}
                               </span>
                            </div>
-                        </div>
+                        </Link>
                      ))
                   ) : (
                      <div className="py-12 flex flex-col items-center justify-center text-center opacity-30">

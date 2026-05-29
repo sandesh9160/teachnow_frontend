@@ -101,21 +101,24 @@ export default function RecruiterDashboardClient({
          value: dashboardData?.active_jobs?.toString() || "0",
          icon: Briefcase,
          gradient: "from-[#4F46E5] to-[#3730A3]", // Indigo
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/jobs`
       },
       {
          label: "Total applicants",
          value: dashboardData?.total_applicants?.toString() || "0",
          icon: Users,
          gradient: "from-[#3B82F6] to-[#1E40AF]", // Blue
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/jobs`
       },
       {
          label: "Jobs Filled",
          value: dashboardData?.jobs_filled?.toString() || "0",
          icon: TrendingUp,
          gradient: "from-[#F97316] to-[#C2410C]", // Orange
-         textColor: "text-white"
+         textColor: "text-white",
+         link: `${basePath}/jobs`
       },
    ];
 
@@ -218,10 +221,15 @@ export default function RecruiterDashboardClient({
          {/* Stats Grid - Gradient Cards */}
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {stats.map((stat, i) => (
-               <div key={i} className={cn(
-                  "relative h-30 rounded-[24px] p-6 flex flex-col justify-between overflow-hidden shadow-sm text-white bg-gradient-to-br",
-                  stat.gradient
-               )}>
+               <Link 
+                  href={stat.link} 
+                  key={i} 
+                  className={cn(
+                     "relative h-30 rounded-[24px] p-6 flex flex-col justify-between overflow-hidden shadow-sm text-white bg-gradient-to-br block",
+                     stat.gradient,
+                     "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer hover:shadow-md"
+                  )}
+               >
                   <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner">
                      <stat.icon className="w-7 h-7 opacity-80" />
                   </div>
@@ -230,7 +238,7 @@ export default function RecruiterDashboardClient({
                      <p className="text-[16px] font-medium opacity-80">{stat.label}</p>
                      <h3 className="text-4xl font-semibold">{stat.value}</h3>
                   </div>
-               </div>
+               </Link>
             ))}
          </div>
 
@@ -248,45 +256,48 @@ export default function RecruiterDashboardClient({
 
                <div className="divide-y divide-slate-50">
                   {dashboardData?.recent_applications && dashboardData.recent_applications.length > 0 ? (
-                     dashboardData.recent_applications.slice(0, 5).map((app) => (
-                        <div key={app.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-slate-50/50 transition-colors group/item">
-                           <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
-                              <ApplicationAvatar
-                                 src={app.job_seeker?.profile_photo}
-                                 alt={app.job_seeker?.user?.name || "User"}
-                                 initials={app.job_seeker?.user?.name?.split(' ').map((n: any) => n[0]).join('')}
-                              />
-                           </div>
+                     dashboardData.recent_applications.slice(0, 5).map((app) => {
+                        const targetLink = app.job?.id ? `${basePath}/jobs/view/${app.job.id}/applicants` : `${basePath}/jobs`;
+                        return (
+                           <Link href={targetLink} key={app.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-slate-50/50 transition-colors group/item cursor-pointer block">
+                              <div className="relative w-10 h-10 rounded-lg border border-slate-100 bg-[#E0E7FF] overflow-hidden shrink-0">
+                                 <ApplicationAvatar
+                                    src={app.job_seeker?.profile_photo}
+                                    alt={app.job_seeker?.user?.name || "User"}
+                                    initials={app.job_seeker?.user?.name?.split(' ').map((n: any) => n[0]).join('')}
+                                 />
+                              </div>
 
-                           <div className="flex-1 min-w-0">
-                              <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors truncate">
-                                 {app.job_seeker?.user?.name || "Applicant"}
-                              </h4>
-                              {app.job_seeker?.experience_years != null ? (
-                                 <p className="text-[10px] text-slate-500 mt-0.5">
-                                    {app.job_seeker.experience_years} yr experience
+                              <div className="flex-1 min-w-0">
+                                 <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors truncate">
+                                    {app.job_seeker?.user?.name || "Applicant"}
+                                 </h4>
+                                 {app.job_seeker?.experience_years != null ? (
+                                    <p className="text-[10px] text-slate-500 mt-0.5">
+                                       {app.job_seeker.experience_years} yr experience
+                                    </p>
+                                 ) : null}
+                                 <p className="text-[11px] font-medium text-black/40 truncate">
+                                    {app.job?.title}
                                  </p>
-                              ) : null}
-                              <p className="text-[11px] font-medium text-black/40 truncate">
-                                 {app.job?.title}
-                              </p>
-                           </div>
+                              </div>
 
-                           <div className="flex items-center gap-4 shrink-0">
-                              <span className="text-[10px] text-black/30 hidden sm:block">
-                                 {new Date(app.created_at).toLocaleDateString('en-GB')}
-                              </span>
-                              <span className={cn(
-                                 "px-2.5 py-0.5 rounded-lg text-[10px] font-medium border capitalize",
-                                 app.status === 'applied' ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
-                                    app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" :
-                                       "bg-slate-50 text-black/40 border-slate-100"
-                              )}>
-                                 {app.status}
-                              </span>
-                           </div>
-                        </div>
-                     ))
+                              <div className="flex items-center gap-4 shrink-0">
+                                 <span className="text-[10px] text-black/30 hidden sm:block">
+                                    {new Date(app.created_at).toLocaleDateString('en-GB')}
+                                 </span>
+                                 <span className={cn(
+                                    "px-2.5 py-0.5 rounded-lg text-[10px] font-medium border capitalize",
+                                    app.status === 'applied' ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" :
+                                       app.status === 'shortlisted' ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" :
+                                          "bg-slate-50 text-black/40 border-slate-100"
+                                 )}>
+                                    {app.status}
+                                 </span>
+                              </div>
+                           </Link>
+                        );
+                     })
                   ) : (
                      <div className="py-16 flex flex-col items-center justify-center text-center opacity-20">
                         <Users className="w-10 h-10 mb-2" />
@@ -308,28 +319,30 @@ export default function RecruiterDashboardClient({
                <div className="divide-y divide-slate-50">
                   {dashboardData?.recent_jobs && dashboardData.recent_jobs.length > 0 ? (
                      dashboardData.recent_jobs.slice(0, 5).map((job) => (
-                        <div key={job.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-slate-50/50 transition-colors group/item">
-                           <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                 <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors truncate">
-                                    {job.title}
-                                 </h4>
-                                 <span className={cn(
-                                    "px-1.5 py-0.5 rounded text-[9px] font-medium border shrink-0 capitalize",
-                                    job.job_status === 'open' ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" : "bg-slate-50 text-black/40 border-slate-100"
-                                 )}>
-                                    {job.job_status}
-                                 </span>
-                              </div>
-                              <div className="flex items-center gap-3 text-[10px] font-medium text-black/40">
-                                 <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString('en-GB')}
+                        <div key={job.id} className="px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors group/item">
+                           <Link href={`${basePath}/jobs/view/${job.id}`} className="flex-1 min-w-0 flex items-center gap-4 cursor-pointer">
+                              <div className="flex-1 min-w-0">
+                                 <div className="flex items-center gap-2 mb-0.5">
+                                    <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors truncate">
+                                       {job.title}
+                                    </h4>
+                                    <span className={cn(
+                                       "px-1.5 py-0.5 rounded text-[9px] font-medium border shrink-0 capitalize",
+                                       job.job_status === 'open' ? "bg-emerald-50 text-emerald-600 border-emerald-100/50" : "bg-slate-50 text-black/40 border-slate-100"
+                                    )}>
+                                       {job.job_status}
+                                    </span>
                                  </div>
-                                 <div className="flex items-center gap-1 text-indigo-600/60">
-                                    <Users className="w-3 h-3" /> {job.job_applications_count || 0}
+                                 <div className="flex items-center gap-3 text-[10px] font-medium text-black/40">
+                                    <div className="flex items-center gap-1">
+                                       <Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString('en-GB')}
+                                    </div>
+                                    <div className="flex items-center gap-1 text-indigo-600/60">
+                                       <Users className="w-3 h-3" /> {job.job_applications_count || 0}
+                                    </div>
                                  </div>
                               </div>
-                           </div>
+                           </Link>
 
                            <Link href={`${basePath}/jobs/view/${job.id}`}>
                               <Button size="sm" className="h-8 px-4 rounded-xl bg-white border border-slate-200 text-black hover:bg-slate-50 font-medium text-[10px] shrink-0 shadow-sm transition-all active:scale-95">

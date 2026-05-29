@@ -103,6 +103,8 @@
 //     "/job/:path*", // job feature APIs
 //   ],
 // };
+
+
 import { NextRequest, NextResponse } from "next/server";
 
 function  clearAuthCookies(res: NextResponse) {
