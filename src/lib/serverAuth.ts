@@ -95,7 +95,9 @@ export const getSessionProfile = cache(async (): Promise<ServerSessionUser | nul
   
   // FAIL-FAST: If no role exists in the userData cookie, the user is a guest. Exit immediately!
   if (!role) {
+    
     return null;
+
   }
 
   const allEndpoints = ["auth/profile"];

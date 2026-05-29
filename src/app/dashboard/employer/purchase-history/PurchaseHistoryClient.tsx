@@ -424,40 +424,30 @@ export default function PurchaseHistoryClient() {
               </div>
 
               <div className="mt-8">
-                {isCurrent ? (
-                  <button
-                    disabled={true}
-                    className="w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 border shadow-sm cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200"
-                    title="This is your current active subscription"
-                  >
-                    ✓ Current Plan
-                  </button>
-                ) : (
-                  <button
-                    disabled={verificationStatus !== 1 || isProcessing || upgradingPlanId !== null}
-                    onClick={() => handleUpgrade(plan)}
-                    className={cn(
-                      "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 border shadow-sm",
-                      verificationStatus === 1
-                        ? "bg-[#00359E] hover:bg-[#002B80] text-white border-transparent cursor-pointer active:scale-95 shadow-lg shadow-blue-900/10"
-                        : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                    )}
-                    title={
-                      verificationStatus === 1
-                        ? `Purchase ${plan.name}`
-                        : "Please verify your profile to purchase plans"
-                    }
-                  >
-                    {upgradingPlanId === plan.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Purchase Plan"
-                    )}
-                  </button>
-                )}
+                <button
+                  disabled={verificationStatus !== 1 || isProcessing || upgradingPlanId !== null}
+                  onClick={() => handleUpgrade(plan)}
+                  className={cn(
+                    "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 border shadow-sm",
+                    verificationStatus === 1
+                      ? "bg-[#00359E] hover:bg-[#002B80] text-white border-transparent cursor-pointer active:scale-95 shadow-lg shadow-blue-900/10"
+                      : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                  )}
+                  title={
+                    verificationStatus === 1
+                      ? `Purchase ${plan.name}`
+                      : "Please verify your profile to purchase plans"
+                  }
+                >
+                  {upgradingPlanId === plan.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    isCurrent ? "Renew / Purchase Again" : "Purchase Plan"
+                  )}
+                </button>
               </div>
             </div>
           );

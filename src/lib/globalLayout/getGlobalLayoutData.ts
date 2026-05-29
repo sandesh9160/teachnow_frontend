@@ -233,7 +233,7 @@ async function fetchFooter(): Promise<FooterData | null> {
 }
 
 async function fetchHeroCTA(): Promise<HeroCTAData | null> {
-  const res = await serverFetch<ApiResponse<any>>("/open/home/hero-section");
+  const res = await serverFetch<ApiResponse<any>>("/open/home/hero-section", 0);
   if (!res) return null;
   const data = res.data || (res as any);
   return normalizeHeroCTA(data);

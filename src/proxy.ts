@@ -105,7 +105,7 @@
 // };
 import { NextRequest, NextResponse } from "next/server";
 
-function clearAuthCookies(res: NextResponse) {
+function  clearAuthCookies(res: NextResponse) {
   const common = {
     path: "/",
     maxAge: 0,

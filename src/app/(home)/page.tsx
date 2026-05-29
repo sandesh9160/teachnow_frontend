@@ -8,7 +8,7 @@ import Faq from "@/components/home/FAQ/FAQ";
 import Testimonial from "@/components/home/Testimonial/Testimonial";
 import BlogSections from "@/components/home/BlogSections/BlogSections";
 
-export const revalidate = 900; // Revalidate every 15 minutes (900 seconds)
+export const revalidate = 0; // Force dynamic server rendering, no static cache
 
 // Components
 import Hero from "@/components/home/Hero/Hero";
@@ -26,7 +26,6 @@ import {
   getCategories,
 } from "@/hooks/useHomepage";
 import { getBlogs } from "@/hooks/useBlogs";
-
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 
