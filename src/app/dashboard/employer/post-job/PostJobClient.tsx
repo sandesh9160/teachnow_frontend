@@ -354,7 +354,12 @@ export default function PostJobClient({
               fontSize: '13px'
             }
           });
-          // Keeping user on page after posting; no redirect
+          
+          // Redirect to the jobs page after successful submission
+          setTimeout(() => {
+            router.push(`/dashboard/${userRole}/jobs`);
+            router.refresh();
+          }, 1500);
         }
       } else {
         toast.error(result.message || "Failed.", {
