@@ -143,6 +143,7 @@ export default function ProfileFormClient({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [eduErrors, setEduErrors] = useState<Record<string, string>>({});
   const [expErrors, setExpErrors] = useState<Record<string, string>>({});
+  const [certErrors, setCertErrors] = useState<Record<string, string>>({});
   const [searchType, setSearchType] = useState<"location" | "preferred_location" | "exp_location">("location");
 
   const [certSuggestions, setCertSuggestions] = useState<string[]>([]);
@@ -252,8 +253,49 @@ export default function ProfileFormClient({
 
   const handleAddCertification = () => {
     const name = certInput.trim();
-    if (!name) return;
+    const issuer = certIssuer.trim();
 
+    if (!name) {
+      setCertErrors(prev => ({ ...prev, name: "Certification Name is required" }));
+      toast.error("Certification Name Required", {
+        description: "Please specify the name of the certification.",
+        style: { borderLeft: '4px solid #ef4444' }
+      });
+      return;
+    }
+
+    if (!issuer) {
+      setCertErrors(prev => ({ ...prev, issuer: "Issuer is required" }));
+      toast.error("Issuer Required", {
+        description: "Please specify who issued this certification.",
+        style: { borderLeft: '4px solid #ef4444' }
+      });
+      return;
+    }
+
+    if (!certIssuedAt) {
+      setCertErrors(prev => ({ ...prev, issued: "Issued date is required" }));
+      toast.error("Issued Date Required", {
+        description: "Please specify the date when this certification was issued.",
+        style: { borderLeft: '4px solid #ef4444' }
+      });
+      return;
+    }
+
+    if (certIssuedAt && certExpiresAt) {
+      const issued = parseISO(certIssuedAt);
+      const expires = parseISO(certExpiresAt);
+      if (!isAfter(expires, issued)) {
+        setCertErrors(prev => ({ ...prev, dates: "Expiry date must be after issued date" }));
+        toast.error("Invalid Certification Dates", {
+          description: "Expiry date must be after the issued date.",
+          style: { borderLeft: '4px solid #ef4444' }
+        });
+        return;
+      }
+    }
+
+    setCertErrors({});
     setProfileData(prev => ({
       ...prev,
       certifications: [...prev.certifications, {
@@ -277,7 +319,7 @@ export default function ProfileFormClient({
     if (!eduFormData.institution.trim()) errors.institution = "Institution is required";
     if (!eduFormData.degree.trim()) errors.degree = "Degree is required";
     if (!eduFormData.start_date) errors.start_date = "Start date is required";
-    
+
     if (eduFormData.start_date && eduFormData.end_date && !eduFormData.is_current) {
       if (isAfter(parseISO(eduFormData.start_date), parseISO(eduFormData.end_date))) {
         errors.dates = "End date must be after start date";
@@ -368,7 +410,7 @@ export default function ProfileFormClient({
     if (!expFormData.job_title.trim()) errors.job_title = "Job title is required";
     if (!expFormData.company_name.trim()) errors.company_name = "Institution name is required";
     if (!expFormData.start_date) errors.start_date = "Start date is required";
-    
+
     if (expFormData.start_date && expFormData.end_date && !expFormData.is_current) {
       if (isAfter(parseISO(expFormData.start_date), parseISO(expFormData.end_date))) {
         errors.dates = "End date must be after start date";
@@ -581,8 +623,8 @@ export default function ProfileFormClient({
             return {
               name: name,
               issuer: c.issuer || "",
-              issued_at: c.issued_at || "",
-              expires_at: c.expires_at || ""
+              issued_at: c.issued_at || null,
+              expires_at: c.expires_at || null
             };
           }).filter((c: any) => c.name.length > 0),
           education: localEduList.filter(e => !(e as any).is_deleted).map(toEducationPayload),
@@ -638,10 +680,10 @@ export default function ProfileFormClient({
         }
       }));
 
-      toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!", { 
-        style: { borderLeft: '4px solid #10b981' } 
+      toast.success(isNew ? "Profile created successfully!" : "Profile updated successfully!", {
+        style: { borderLeft: '4px solid #10b981' }
       });
-      
+
       // Reload immediately to avoid intermediate empty states
       window.location.reload();
     } catch (err: any) {
@@ -718,7 +760,7 @@ export default function ProfileFormClient({
   );
 
   const renderProfileView = () => (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 pb-8 animate-in fade-in duration-500">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-1 px-4 sm:px-0">
         <div>
           <h1 className="text-lg font-bold text-black tracking-tight">My Profile</h1>
@@ -880,17 +922,28 @@ export default function ProfileFormClient({
   );
 
   const renderProfileEdit = () => (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5 pb-10 animate-in slide-in-from-right-4 duration-500">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5 pb-10">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-black tracking-tight">Update Profile</h1>
           <p className="text-black/40 text-[12px] font-medium mt-0.5">Edit your recruitment-ready profile</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => setMode("view")} className="flex-1 sm:flex-none h-8 px-5 rounded-lg font-semibold text-[12px] border-slate-200 text-slate-600">Cancel</Button>
-          <Button onClick={handleSubmit} disabled={saving} className="flex-1 sm:flex-none h-8 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[12px]">
-            {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1.5" /> : null} Save Final
-          </Button>
+          <button
+            type="button"
+            onClick={() => setMode("view")}
+            className="flex-1 sm:flex-none h-8 px-5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-bold text-[12px] outline-none cursor-pointer flex items-center justify-center"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving}
+            className="flex-1 sm:flex-none h-8 px-6 rounded-lg border border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[12px] outline-none cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1.5 shrink-0" /> : null} Save Final
+          </button>
         </div>
       </div>
 
@@ -924,7 +977,11 @@ export default function ProfileFormClient({
                       <li
                         key={i}
                         className="px-4 py-2 text-[13px] hover:bg-slate-50 cursor-pointer"
-                        onClick={() => { setProfileData(prev => ({ ...prev, location: loc })); setShowLocationSug(false); }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setProfileData(prev => ({ ...prev, location: loc }));
+                          setShowLocationSug(false);
+                        }}
                       >
                         {loc}
                       </li>
@@ -950,8 +1007,8 @@ export default function ProfileFormClient({
                 <Input name="experience_years" type="number" min="0" value={profileData.experience_years} onChange={handleChange} className="h-10 rounded-lg text-[13px] border-slate-200" />
               </div>
               <div className="space-y-1.5">
-                <Label className={cn("text-[13px] font-semibold transition-colors", errors.dob ? "text-red-500" : "text-slate-700")}>Date of Birth</Label>
-                <div className={cn("rounded-lg transition-all", errors.dob && "ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]")}>
+                <Label className={cn("text-[13px] font-semibold", errors.dob ? "text-red-500" : "text-slate-700")}>Date of Birth</Label>
+                <div className={cn("rounded-lg", errors.dob && "ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]")}>
                   <DatePicker
                     date={profileData.dob ? parseISO(profileData.dob) : undefined}
                     setDate={(d) => {
@@ -970,7 +1027,7 @@ export default function ProfileFormClient({
                         return newErrs;
                       });
                     }}
-                    className={cn("h-10 rounded-lg text-[13px] bg-white border transition-all", errors.dob ? "border-red-500 bg-red-50/50" : "border-slate-200")}
+                    className={cn("h-10 rounded-lg text-[13px] bg-white border", errors.dob ? "border-red-500 bg-red-50/50" : "border-slate-200")}
                   />
                 </div>
               </div>
@@ -978,17 +1035,17 @@ export default function ProfileFormClient({
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.phone ? "text-red-500" : "text-slate-700")}>
                   Phone Number <span className="text-red-500">*</span>
                 </Label>
-                <Input 
-                  name="phone" 
-                  value={profileData.phone} 
-                  onChange={handleChange} 
-                  placeholder="e.g. 9876543210" 
+                <Input
+                  name="phone"
+                  value={profileData.phone}
+                  onChange={handleChange}
+                  placeholder="e.g. 9876543210"
                   className={cn(
-                    "h-10 rounded-lg text-[13px] transition-all", 
-                    errors.phone 
-                      ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" 
+                    "h-10 rounded-lg text-[13px] transition-all",
+                    errors.phone
+                      ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]"
                       : "border-slate-200"
-                  )} 
+                  )}
                 />
                 {errors.phone && (
                   <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 mt-1 px-1">
@@ -1117,7 +1174,7 @@ export default function ProfileFormClient({
                     <div className="min-w-0 flex-1">
                       <h4 className="font-semibold text-slate-800 text-[13px] break-words">{exp.job_title}</h4>
                       <p className="text-[11px] font-medium text-slate-500 flex flex-wrap items-center gap-x-1 gap-y-0.5">
-                        <span className="break-words">{exp.company_name}</span> 
+                        <span className="break-words">{exp.company_name}</span>
                         <span className="text-slate-300">·</span>
                         <span className="text-slate-400 font-semibold">{exp.start_date?.split("-")[0]} — {exp.is_current ? "Present" : exp.end_date?.split("-")[0] || "—"}</span>
                         {exp.location && (
@@ -1186,12 +1243,12 @@ export default function ProfileFormClient({
                         <option value="Percentage">Percentage</option>
                         <option value="CGPA">CGPA</option>
                       </select>
-                      <Input 
-                        value={eduFormData.grade} 
+                      <Input
+                        value={eduFormData.grade}
                         onChange={(e) => {
                           const val = e.target.value;
                           if (val !== "" && !/^\d*\.?\d*$/.test(val)) return;
-                          
+
                           const numVal = parseFloat(val);
                           if (!isNaN(numVal)) {
                             if (eduFormData.grade_type === "Percentage" && numVal > 100) {
@@ -1206,13 +1263,13 @@ export default function ProfileFormClient({
                             }
                           }
                           setEduErrors(prev => {
-                             const { grade, ...rest } = prev;
-                             return rest;
+                            const { grade, ...rest } = prev;
+                            return rest;
                           });
                           setEduFormData({ ...eduFormData, grade: val });
-                        }} 
-                        placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85" : "e.g. 9.2"} 
-                        className={cn("h-10 rounded-lg text-sm bg-white", eduErrors.grade ? "border-red-500 bg-red-50/50" : "border-slate-200")} 
+                        }}
+                        placeholder={eduFormData.grade_type === "Percentage" ? "e.g. 85" : "e.g. 9.2"}
+                        className={cn("h-10 rounded-lg text-sm bg-white", eduErrors.grade ? "border-red-500 bg-red-50/50" : "border-slate-200")}
                       />
                     </div>
                     {eduErrors.grade ? (
@@ -1322,7 +1379,7 @@ export default function ProfileFormClient({
                   <Button type="button" onClick={handleAddCustomSkill} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
                 </div>
                 {skillInput.length > 0 && (
-                  <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-300">
+                  <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto custom-scrollbar">
                     {availableSkills
                       .filter(s => {
                         const name = s.name.toLowerCase();
@@ -1382,7 +1439,7 @@ export default function ProfileFormClient({
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-500">Certification Name</Label>
+                    <Label className={cn("text-[11px] font-bold transition-colors", certErrors.name ? "text-red-500" : "text-slate-500")}>Certification Name <span className="text-red-500">*</span></Label>
                     <div className="relative">
                       <Input
                         placeholder="e.g. PMP, AWS" value={certInput}
@@ -1390,45 +1447,96 @@ export default function ProfileFormClient({
                           setCertInput(e.target.value);
                           fetchCertifications(e.target.value);
                           setShowCertSug(true);
+                          if (certErrors.name) setCertErrors(prev => {
+                            const copy = { ...prev };
+                            delete copy.name;
+                            return copy;
+                          });
                         }}
                         onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCertification())}
                         onBlur={() => setTimeout(() => setShowCertSug(false), 200)}
-                        className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                        className={cn("h-10 rounded-xl bg-white border px-5 text-[13px] transition-all", certErrors.name ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")}
                       />
                       {showCertSug && certSuggestions.length > 0 && (
                         <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-48 overflow-y-auto custom-scrollbar active:z-50">
                           {certSuggestions.map((cert, i) => (
-                            <li key={i} className="px-5 py-3 text-[12px] font-bold hover:bg-emerald-50 cursor-pointer border-b border-slate-50 last:border-0" onClick={() => { setCertInput(cert); setShowCertSug(false); }}>{cert}</li>
+                            <li
+                              key={i}
+                              className="px-5 py-3 text-[12px] font-bold hover:bg-emerald-50 cursor-pointer border-b border-slate-50 last:border-0"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                setCertInput(cert);
+                                setShowCertSug(false);
+                              }}
+                            >
+                              {cert}
+                            </li>
                           ))}
                         </ul>
                       )}
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-500">Issuer</Label>
+                    <Label className={cn("text-[11px] font-bold transition-colors", certErrors.issuer ? "text-red-500" : "text-slate-500")}>Issuer <span className="text-red-500">*</span></Label>
                     <Input
                       placeholder="e.g. Google, PMI"
                       value={certIssuer}
-                      onChange={(e) => setCertIssuer(e.target.value)}
-                      className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                      onChange={(e) => {
+                        setCertIssuer(e.target.value);
+                        if (certErrors.issuer) setCertErrors(prev => {
+                          const copy = { ...prev };
+                          delete copy.issuer;
+                          return copy;
+                        });
+                      }}
+                      className={cn("h-10 w-full rounded-xl bg-white border px-5 text-[13px] transition-all", certErrors.issuer ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-500">Issued Date</Label>
-                    <Input
-                      type="date"
-                      value={certIssuedAt}
-                      onChange={(e) => setCertIssuedAt(e.target.value)}
-                      className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                    <Label className={cn("text-[11px] font-bold transition-colors", (certErrors.dates || certErrors.issued) ? "text-red-500" : "text-slate-500")}>Issued Date <span className="text-red-500">*</span></Label>
+                    <DatePicker
+                      date={certIssuedAt ? parseISO(certIssuedAt) : undefined}
+                      setDate={(d) => {
+                        const dateStr = d ? format(d, 'yyyy-MM-dd') : "";
+                        if (d && isAfter(d, new Date())) {
+                          toast.error("Invalid Issued Date", {
+                            description: "Issued Date cannot be in the future.",
+                            style: { borderLeft: '4px solid #ef4444' }
+                          });
+                          return;
+                        }
+                        if (d && certExpiresAt && isAfter(d, parseISO(certExpiresAt))) {
+                          toast.error("Invalid Date Range", {
+                            description: "Issued Date cannot be after the expiry date.",
+                            style: { borderLeft: '4px solid #ef4444' }
+                          });
+                          return;
+                        }
+                        setCertIssuedAt(dateStr);
+                        if (certErrors.dates || certErrors.issued) setCertErrors({});
+                      }}
+                      placeholder="Issued Date"
+                      className={cn("h-10 rounded-lg text-[13px] bg-white border", (certErrors.dates || certErrors.issued) ? "border-red-500 bg-red-50/50" : "border-slate-200")}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-500">Expiry Date</Label>
-                    <Input
-                      type="date"
-                      value={certExpiresAt}
-                      onChange={(e) => setCertExpiresAt(e.target.value)}
-                      className="h-10 w-full rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                    <Label className={cn("text-[11px] font-bold", certErrors.dates ? "text-red-500" : "text-slate-500")}>Expiry Date</Label>
+                    <DatePicker
+                      date={certExpiresAt ? parseISO(certExpiresAt) : undefined}
+                      setDate={(d) => {
+                        const dateStr = d ? format(d, 'yyyy-MM-dd') : "";
+                        if (d && certIssuedAt && isAfter(parseISO(certIssuedAt), d)) {
+                          toast.error("Invalid Date Range", {
+                            description: "Expiry Date must be after the issued date.",
+                            style: { borderLeft: '4px solid #ef4444' }
+                          });
+                          return;
+                        }
+                        setCertExpiresAt(dateStr);
+                        if (certErrors.dates) setCertErrors({});
+                      }}
+                      placeholder="Expiry Date"
+                      className={cn("h-10 rounded-lg text-[13px] bg-white border", certErrors.dates ? "border-red-500 bg-red-50/50" : "border-slate-200")}
                     />
                   </div>
                   <Button type="button" onClick={handleAddCertification} className="w-full h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px] sm:col-span-2 md:col-span-1">Add</Button>
@@ -1458,10 +1566,21 @@ export default function ProfileFormClient({
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 px-4 sm:px-0">
-        <Button variant="outline" onClick={() => setMode("view")} className="w-full sm:w-auto px-6 h-10 rounded-xl font-semibold text-[13px] border-slate-200 text-slate-500">Discard</Button>
-        <Button onClick={handleSubmit} disabled={saving} className="w-full sm:w-auto px-8 h-10 rounded-xl bg-slate-900 text-white font-semibold text-[13px] hover:bg-black">
-          Save Final Profile
-        </Button>
+        <button
+          type="button"
+          onClick={() => setMode("view")}
+          className="w-full sm:w-auto px-6 h-10 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-bold text-[13px] outline-none cursor-pointer flex items-center justify-center"
+        >
+          Discard
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={saving}
+          className="w-full sm:w-auto px-8 h-10 rounded-lg border border-slate-900 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] outline-none cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Save Profile
+        </button>
       </div>
     </div>
   );

@@ -18,7 +18,13 @@ import {
   GraduationCap,
   Clock,
   Eye,
-  X
+  X,
+  Phone,
+  MessageSquare,
+  PhoneOff,
+  PhoneMissed,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { toast } from "sonner";
@@ -115,12 +121,63 @@ export default function ApplicationDetailPage() {
 
   const job = application.job;
 
-  const getStatusBadge = (status: any) => {
+  const getStatusInfo = (status: string) => {
     const s = String(status || '').toLowerCase();
-    if (s === 'accepted' || s === 'hired') return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    if (s === 'shortlisted') return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    if (s === 'rejected' || s === 'declined') return "bg-rose-50 text-rose-700 border-rose-200";
-    return "bg-slate-50 text-slate-600 border-slate-200";
+    if (s === 'interview scheduled' || s === 'interviews' || s === 'shortlisted' || s === 'hired') {
+      return {
+        className: "bg-[#E8FBF2] text-[#059669] border-[#A7F3D0]",
+        Icon: CheckCircle
+      };
+    }
+    if (s === 'under review' || s === 'reviewing' || s === 'accepted') {
+      return {
+        className: "bg-[#EEF2FF] text-[#4F46E5] border-[#C7D2FE]",
+        Icon: Eye
+      };
+    }
+    if (s === 'rejected' || s === 'declined') {
+      return {
+        className: "bg-[#FEF2F2] text-[#DC2626] border-[#FECDD3]",
+        Icon: XCircle
+      };
+    }
+    // applied / pending
+    return {
+      className: "bg-blue-50 text-blue-700 border-blue-200",
+      Icon: Clock
+    };
+  };
+
+  const getContactStatusInfo = (status: string) => {
+    const s = status?.toLowerCase().replace('_', ' ');
+    if (s === 'called') {
+      return {
+        className: "bg-blue-50 text-blue-700 border-blue-200",
+        Icon: Phone
+      };
+    }
+    if (s === 'messaged') {
+      return {
+        className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        Icon: MessageSquare
+      };
+    }
+    if (s === 'not picked') {
+      return {
+        className: "bg-amber-50 text-amber-700 border-amber-200",
+        Icon: PhoneOff
+      };
+    }
+    if (s === 'not reached') {
+      return {
+        className: "bg-rose-50 text-rose-700 border-rose-200",
+        Icon: PhoneMissed
+      };
+    }
+    return {
+      className: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      Icon: Phone
+    };
   };
 
   return (
@@ -139,14 +196,24 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {application.contact_status && (
-            <div className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold uppercase tracking-wider">
-              {application.contact_status.replace('_', ' ')}
-            </div>
-          )}
-          <div className={`px-4 py-1.5 rounded-full border text-[11px] font-semibold shadow-sm ${getStatusBadge(application.status)}`}>
-            {application.status || "Applied"}
-          </div>
+          {application.contact_status && (() => {
+            const { className, Icon } = getContactStatusInfo(application.contact_status);
+            return (
+              <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm ${className}`}>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                {application.contact_status.replace('_', ' ')}
+              </div>
+            );
+          })()}
+          {(() => {
+            const { className, Icon } = getStatusInfo(application.status);
+            return (
+              <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm ${className}`}>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                {application.status || "Applied"}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

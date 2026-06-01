@@ -19,6 +19,7 @@ export default async function RecruiterEditJobPage({ params }: EditJobPageProps)
   let jobDetails = await dashboardServerFetch(`recruiter/jobs/specific-job/${id}`, { silentStatusCodes: [405, 404] });
   if (jobDetails?.status !== true) {
     jobDetails = await dashboardServerFetch(`recruiter/jobs/edit/${id}`, { silentStatusCodes: [405, 404] });
+    console.log("Job details for recruiter edit:", jobDetails);
   }
 
   // Robust field extraction (Direct from data or nested within job)

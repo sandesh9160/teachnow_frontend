@@ -627,7 +627,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-32 no-scrollbar bg-slate-50/30">
+              <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-6 no-scrollbar bg-slate-50/30">
                 
                 {/* Header Profile Section - More Compact */}
                 <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-4">

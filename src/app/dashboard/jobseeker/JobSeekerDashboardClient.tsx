@@ -104,7 +104,7 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
             <h3 className="text-[15px] font-bold text-[#1E1B4B]">Quick Actions</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {[
-                { label: "Browse Jobs", desc: "Explore 12,000+ teaching opportunities", icon: Search, color: "text-blue-500", bg: "bg-blue-50", href: "/jobs" },
+                { label: "Browse Jobs", desc: "Explore teaching opportunities", icon: Search, color: "text-blue-500", bg: "bg-blue-50", href: "/jobs" },
                 { label: "Saved Jobs", desc: "View your bookmarked positions", icon: Bookmark, color: "text-indigo-500", bg: "bg-indigo-50", href: "/dashboard/jobseeker/saved-jobs" },
                 { label: "My Applications", desc: "Track your application status", icon: Briefcase, color: "text-emerald-500", bg: "bg-emerald-50", href: "/dashboard/jobseeker/applied-jobs" },
                 { label: "Update Resume", desc: "Keep your resume current", icon: FileText, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/jobseeker/resume-manager" },

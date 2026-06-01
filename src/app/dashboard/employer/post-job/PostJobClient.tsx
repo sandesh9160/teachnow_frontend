@@ -14,6 +14,12 @@ import {
   Plus,
   Target,
   HelpCircle,
+  MapPin,
+  Clock,
+  Users,
+  User,
+  Folder,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -58,7 +64,7 @@ export default function PostJobClient({
   const router = useRouter();
   const job = isEdit ? initialData?.job : initialData;
   let initialQuestions = isEdit ? (initialData?.questions || job?.questions || []) : [];
-  
+
   // If top-level questions is empty but job has questions, prefer job.questions
   if (isEdit && initialQuestions.length === 0 && job?.questions?.length > 0) {
     initialQuestions = job.questions;
@@ -115,7 +121,7 @@ export default function PostJobClient({
   const updateField = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-  
+
   const handleRewriteJD = async () => {
     // Check if we have at least a title if description is empty
     if ((!description || description.replace(/<[^>]*>/g, '').trim().length < 10) && !formData.title?.toString().trim()) {
@@ -133,17 +139,17 @@ export default function PostJobClient({
 
     setIsRewriting(true);
     const toastId = toast.loading(description ? "Optimizing with AI..." : "Generating with AI...");
-    
+
     try {
       // Use the appropriate endpoint based on userRole
       const endpoint = `${userRole}/jd-rewrite`;
 
       const result = await dashboardServerFetch(endpoint, {
         method: "POST",
-        data: { 
+        data: {
           data: {
             ...formData,
-            description: description || "" 
+            description: description || ""
           }
         }
       });
@@ -153,7 +159,7 @@ export default function PostJobClient({
         setDescription(result.output.job_description);
         // Increment key to force TipTapEditor to re-initialize with new content immediately
         setEditorKey(prev => prev + 1);
-        
+
         toast.dismiss(toastId);
         toast.success(description ? "Job description optimized!" : "Job description generated!", {
           style: {
@@ -186,7 +192,7 @@ export default function PostJobClient({
 
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
-    
+
     switch (step) {
       case 1:
         if (!formData.title?.toString().trim()) {
@@ -199,7 +205,7 @@ export default function PostJobClient({
         if (!formData.category_id) newErrors.category_id = "Please select a Subject or Category for this job";
         if (!formData.job_type) newErrors.job_type = "Please select a Job Type (Full-time or Part-time)";
         if (!formData.location) newErrors.location = "Please select a City location for this job";
-  
+
         if (!formData.experience_required?.toString().trim()) newErrors.experience_required = "Please specify the Experience Required for this role";
         if (!formData.experience_type) newErrors.experience_type = "Please select whether the role is for Freshers or Experienced candidates";
         if (!formData.gender) newErrors.gender = "Please specify a Gender Preference (or Select Any / Both)";
@@ -230,7 +236,7 @@ export default function PostJobClient({
         if (!formData.vacancies || Number(formData.vacancies) <= 0) newErrors.vacancies = "Please specify how many vacancies are available";
         break;
     }
-    
+
     setErrors(newErrors);
     return newErrors;
   };
@@ -238,7 +244,7 @@ export default function PostJobClient({
   const handleNext = () => {
     const stepErrors = validateStep(currentStep);
     const errorKeys = Object.keys(stepErrors);
-    
+
     if (errorKeys.length > 0) {
       toast.warning(stepErrors[errorKeys[0]], {
         style: {
@@ -252,7 +258,7 @@ export default function PostJobClient({
       });
       return;
     }
-    
+
     setErrors({});
     if (currentStep < 5) setCurrentStep(currentStep + 1);
   };
@@ -268,7 +274,7 @@ export default function PostJobClient({
   const handleSubmit = async () => {
     const stepErrors = validateStep(4);
     const errorKeys = Object.keys(stepErrors);
-    
+
     if (errorKeys.length > 0) {
       toast.warning(stepErrors[errorKeys[0]], {
         style: {
@@ -288,36 +294,35 @@ export default function PostJobClient({
     // Filter out incomplete questions where the text is empty
     const filteredQuestions = questions.filter(q => q.question.trim().length > 0);
 
-    const data = { 
-      ...formData, 
+    const data = {
+      ...formData,
       category_id: formData.category_id ? Number(formData.category_id) : null,
       experience_required: formData.experience_required ? Number(formData.experience_required.toString().replace(/[^0-9.]/g, '')) : 0,
       vacancies: formData.vacancies ? Number(formData.vacancies) : 1,
       school_name: job?.school_name || profile?.company_name || profile?.name || "",
       institution_name: job?.institution_name || profile?.company_name || profile?.name || "",
       institution_type: job?.institution_type || profile?.institution_type || "",
-      description: description || "", 
+      description: description || "",
       salary_min: (salaryUndisclosed || !formData.salary_min) ? null : Number(formData.salary_min),
       salary_max: (salaryUndisclosed || !formData.salary_max) ? null : Number(formData.salary_max),
-      application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "", 
+      application_deadline: deadline ? format(deadline, "yyyy-MM-dd") : "",
       questions: filteredQuestions,
       screening_questions: filteredQuestions,
-      ...(userRole === 'recruiter' && isEdit ? { _method: 'PUT' } : {})
     };
-    
+
     console.log(`[PostJobClient] Submitting to ${userRole} for job ${jobId}. Full Data:`, data);
-    
+
     try {
-      const endpoint = userRole === "recruiter"
-        ? (isEdit ? `recruiter/jobs/${jobId}` : `recruiter/jobs`)
-        : (isEdit ? `${userRole}/jobs/update/${jobId}` : `${userRole}/jobs/create`);
-      
-      const method = (userRole === 'recruiter' && isEdit) ? "POST" : (isEdit ? "PUT" : "POST");
-      console.log(`[PostJobClient] ${method} request to: ${endpoint} (with _method override if recruiter edit)`);
-      
+      const endpoint = isEdit
+        ? (userRole === "recruiter" ? `recruiter/jobs/${jobId}` : `employer/jobs/update/${jobId}`)
+        : (userRole === "recruiter" ? `recruiter/jobs` : `${userRole}/jobs/create`);
+
+      const method = isEdit ? "PUT" : "POST";
+      console.log(`[PostJobClient] ${method} request to: ${endpoint}`);
+
       const result = await dashboardServerFetch(endpoint, { method, data });
-      console.log("[PostJobClient] Submission Result:", result);
-      
+
+
       if (result.status) {
         // Check institute verification flag
         if (result.institution_verified === false) {
@@ -404,14 +409,14 @@ export default function PostJobClient({
                   if (step.id > currentStep) {
                     const currentError = validateStep(currentStep);
                     if (Object.keys(currentError).length > 0) {
-                      toast.warning(Object.values(currentError)[0] as string, { 
+                      toast.warning(Object.values(currentError)[0] as string, {
                         style: {
                           background: '#FFFAF0',
                           color: '#744210',
                           border: '1px solid #FBD38D',
                           fontWeight: '600',
                           fontSize: '13px'
-                        } 
+                        }
                       });
                       return;
                     }
@@ -456,8 +461,8 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.title ? "text-red-500" : "text-slate-700")}>
                   Job Title <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <Input 
-                  value={formData.title} 
+                <Input
+                  value={formData.title}
                   suppressHydrationWarning
                   onChange={(e) => {
                     const val = e.target.value;
@@ -469,17 +474,17 @@ export default function PostJobClient({
                     } else {
                       updateField("title", val);
                       if (errors.title) setErrors(prev => {
-                        const n = {...prev};
+                        const n = { ...prev };
                         delete n.title;
                         return n;
                       });
                     }
-                  }} 
-                  placeholder="e.g. Mathematics Teacher" 
+                  }}
+                  placeholder="e.g. Mathematics Teacher"
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
                     (errors.title || limitReachedField === "title") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                  )} 
+                  )}
                 />
                 {errors.title && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.title}</p>}
               </div>
@@ -487,17 +492,17 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.category_id ? "text-red-500" : "text-slate-700")}>
                   Subject / Category <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <select 
-                  value={formData.category_id} 
+                <select
+                  value={formData.category_id}
                   suppressHydrationWarning
                   onChange={(e) => {
                     updateField("category_id", e.target.value);
                     if (errors.category_id) setErrors(prev => {
-                      const n = {...prev};
+                      const n = { ...prev };
                       delete n.category_id;
                       return n;
                     });
-                  }} 
+                  }}
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.category_id ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -512,17 +517,17 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.job_type ? "text-red-500" : "text-slate-700")}>
                   Job Type <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <select 
-                  value={formData.job_type} 
+                <select
+                  value={formData.job_type}
                   suppressHydrationWarning
                   onChange={(e) => {
                     updateField("job_type", e.target.value);
                     if (errors.job_type) setErrors(prev => {
-                      const n = {...prev};
+                      const n = { ...prev };
                       delete n.job_type;
                       return n;
                     });
-                  }} 
+                  }}
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.job_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -538,17 +543,17 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.location ? "text-red-500" : "text-slate-700")}>
                   City <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <select 
-                  value={formData.location} 
+                <select
+                  value={formData.location}
                   suppressHydrationWarning
                   onChange={(e) => {
                     updateField("location", e.target.value);
                     if (errors.location) setErrors(prev => {
-                      const n = {...prev};
+                      const n = { ...prev };
                       delete n.location;
                       return n;
                     });
-                  }} 
+                  }}
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.location ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -563,8 +568,8 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_required ? "text-red-500" : "text-slate-700")}>
                   Experience Required <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <Input 
-                  value={formData.experience_required} 
+                <Input
+                  value={formData.experience_required}
                   suppressHydrationWarning
                   onChange={(e) => {
                     const val = e.target.value;
@@ -576,17 +581,17 @@ export default function PostJobClient({
                     } else {
                       updateField("experience_required", val);
                       if (errors.experience_required) setErrors(prev => {
-                        const n = {...prev};
+                        const n = { ...prev };
                         delete n.experience_required;
                         return n;
                       });
                     }
-                  }} 
-                  placeholder="e.g. 5 years" 
+                  }}
+                  placeholder="e.g. 5 years"
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
                     (errors.experience_required || limitReachedField === "experience_required") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                  )} 
+                  )}
                 />
                 {errors.experience_required && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.experience_required}</p>}
               </div>
@@ -594,17 +599,17 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_type ? "text-red-500" : "text-slate-700")}>
                   Experience Type <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <select 
-                  value={formData.experience_type} 
+                <select
+                  value={formData.experience_type}
                   suppressHydrationWarning
                   onChange={(e) => {
                     updateField("experience_type", e.target.value);
                     if (errors.experience_type) setErrors(prev => {
-                      const n = {...prev};
+                      const n = { ...prev };
                       delete n.experience_type;
                       return n;
                     });
-                  }} 
+                  }}
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -620,17 +625,17 @@ export default function PostJobClient({
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.gender ? "text-red-500" : "text-slate-700")}>
                   Gender Preference <span className="text-red-500 ml-0.5">*</span>
                 </Label>
-                <select 
-                  value={formData.gender} 
+                <select
+                  value={formData.gender}
                   suppressHydrationWarning
                   onChange={(e) => {
                     updateField("gender", e.target.value);
                     if (errors.gender) setErrors(prev => {
-                      const n = {...prev};
+                      const n = { ...prev };
                       delete n.gender;
                       return n;
                     });
-                  }} 
+                  }}
                   className={cn(
                     "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
                     errors.gender ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
@@ -647,12 +652,12 @@ export default function PostJobClient({
                 <Label className="text-[11px] font-bold px-1 text-slate-700">
                   Keywords <span className="text-slate-400 font-normal ml-1">(comma separated)</span>
                 </Label>
-                <Input 
-                  value={formData.keywords} 
+                <Input
+                  value={formData.keywords}
                   suppressHydrationWarning
-                  onChange={(e) => updateField("keywords", e.target.value)} 
-                  placeholder="e.g. physics, optics, laser" 
-                  className="h-10 rounded-xl text-xs bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all" 
+                  onChange={(e) => updateField("keywords", e.target.value)}
+                  placeholder="e.g. physics, optics, laser"
+                  className="h-10 rounded-xl text-xs bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all"
                 />
                 {/* <p className="text-[9px] text-slate-400 px-1">Helps candidates find your job through specific technical terms.</p> */}
               </div>
@@ -696,8 +701,8 @@ export default function PostJobClient({
               <div className="pt-0 space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-50 pb-3">
                   <h2 className="text-sm font-bold text-[#1E1B4B]">Candidate Questions (Optional)</h2>
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     suppressHydrationWarning
                     onClick={() => addQuestion("boolean")}
                     variant="outline"
@@ -721,18 +726,18 @@ export default function PostJobClient({
                       <div className="flex flex-col md:flex-row gap-3">
                         <div className="flex-1 space-y-1.5 min-w-0">
                           <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Question {i + 1}</label>
-                          <Input 
-                            value={q.question} 
+                          <Input
+                            value={q.question}
                             suppressHydrationWarning
-                            onChange={(e) => updateQuestion(i, "question", e.target.value)} 
+                            onChange={(e) => updateQuestion(i, "question", e.target.value)}
                             placeholder="e.g. Do you have a valid teaching license?"
-                            className="h-9 bg-white border-slate-100 text-xs focus:ring-1 focus:ring-indigo-100" 
+                            className="h-9 bg-white border-slate-100 text-xs focus:ring-1 focus:ring-indigo-100"
                           />
                         </div>
                         <div className="w-full md:w-32 shrink-0 space-y-1.5">
                           <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Type</label>
-                          <select 
-                            value={q.question_type} 
+                          <select
+                            value={q.question_type}
                             suppressHydrationWarning
                             onChange={(e) => updateQuestion(i, "question_type", e.target.value as any)}
                             className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
@@ -745,8 +750,8 @@ export default function PostJobClient({
                         <div className="w-full md:w-32 shrink-0 space-y-1.5">
                           <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Expected Answer</label>
                           {q.question_type === 'boolean' ? (
-                            <select 
-                              value={q.recruiter_answer} 
+                            <select
+                              value={q.recruiter_answer}
                               suppressHydrationWarning
                               onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
                               className="w-full h-9 rounded-xl bg-white border-slate-100 px-3 text-[10px] outline-none font-semibold focus:ring-1 focus:ring-indigo-100"
@@ -756,8 +761,8 @@ export default function PostJobClient({
                               <option value="no">No</option>
                             </select>
                           ) : (
-                            <Input 
-                              value={q.recruiter_answer} 
+                            <Input
+                              value={q.recruiter_answer}
                               suppressHydrationWarning
                               onChange={(e) => updateQuestion(i, "recruiter_answer", e.target.value)}
                               placeholder={q.question_type === 'numeric' ? "e.g. 5" : "Expected keywords..."}
@@ -766,8 +771,8 @@ export default function PostJobClient({
                           )}
                         </div>
                         <div className="flex items-end pb-0.5">
-                          <button 
-                            onClick={() => removeQuestion(i)} 
+                          <button
+                            onClick={() => removeQuestion(i)}
                             suppressHydrationWarning
                             className="p-2 text-red-500 hover:text-red-700 transition-colors bg-white md:bg-transparent rounded-lg border border-slate-50 md:border-none shadow-sm md:shadow-none"
                             title="Remove Question"
@@ -787,185 +792,298 @@ export default function PostJobClient({
         {currentStep === 4 && (
           <div className="space-y-5 animate-in fade-in duration-300">
             <h2 className="text-sm font-bold text-[#1E1B4B]">Salary Details</h2>
-              <div className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.salary_min ? "text-red-500" : "text-slate-700")}>
-                      Min Salary (Monthly) <span className="text-red-500 ml-0.5">*</span>
-                    </Label>
-                    <Input 
-                      value={formData.salary_min} 
-                      suppressHydrationWarning
-                      onChange={(e) => {
-                        updateField("salary_min", e.target.value);
-                        if (errors.salary_min) setErrors(prev => {
-                          const n = {...prev};
-                          delete n.salary_min;
-                          return n;
-                        });
-                      }} 
-                      placeholder="Min ₹" 
-                      disabled={salaryUndisclosed}
-                      className={cn(
-                        "h-10 text-xs transition-all",
-                        errors.salary_min ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white",
-                        salaryUndisclosed && "opacity-50 cursor-not-allowed"
-                      )} 
-                    />
-                    {errors.salary_min && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.salary_min}</p>}
-                  </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] font-bold px-1 capitalize text-slate-700 transition-colors">
-                        Max Salary (Monthly) <span className="text-red-500 ml-0.5">*</span>
-                      </Label>
-                    <Input 
-                      value={formData.salary_max} 
-                      suppressHydrationWarning
-                      onChange={(e) => {
-                        updateField("salary_max", e.target.value);
-                        if (errors.salary_max || errors.salary_range) setErrors(prev => {
-                          const n = {...prev};
-                          delete n.salary_max;
-                          delete n.salary_range;
-                          return n;
-                        });
-                      }} 
-                      placeholder="Max ₹" 
-                      disabled={salaryUndisclosed}
-                      className={cn(
-                        "h-10 text-xs transition-all",
-                        (errors.salary_max || errors.salary_range) ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white",
-                        salaryUndisclosed && "opacity-50 cursor-not-allowed"
-                      )} 
-                    />
-                    {(errors.salary_max || errors.salary_range) && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.salary_max || errors.salary_range}</p>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-2 px-1">
-                  <input 
-                    type="checkbox" 
-                    id="salary_undisclosed"
-                    checked={salaryUndisclosed}
-                    onChange={(e) => setSalaryUndisclosed(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.salary_min ? "text-red-500" : "text-slate-700")}>
+                    Min Salary (Monthly) <span className="text-red-500 ml-0.5">*</span>
+                  </Label>
+                  <Input
+                    value={formData.salary_min}
+                    suppressHydrationWarning
+                    onChange={(e) => {
+                      updateField("salary_min", e.target.value);
+                      if (errors.salary_min) setErrors(prev => {
+                        const n = { ...prev };
+                        delete n.salary_min;
+                        return n;
+                      });
+                    }}
+                    placeholder="Min ₹"
+                    disabled={salaryUndisclosed}
+                    className={cn(
+                      "h-10 text-xs transition-all",
+                      errors.salary_min ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white",
+                      salaryUndisclosed && "opacity-50 cursor-not-allowed"
+                    )}
                   />
-                  <label htmlFor="salary_undisclosed" className="text-[11px] font-semibold text-slate-600 cursor-pointer select-none">
-                    Salary Undisclosed
-                  </label>
+                  {errors.salary_min && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.salary_min}</p>}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.deadline ? "text-red-500" : "text-slate-700")}>
-                      Apply Before <span className="text-red-500 ml-0.5">*</span>
-                    </Label>
-                    <div className={cn(
-                      "rounded-xl transition-all",
-                      errors.deadline && "border border-red-500 bg-red-50/50"
-                    )}>
-                      <DatePicker
-                        date={deadline}
-                        setDate={(date) => {
-                          setDeadline(date);
-                          if (errors.deadline) setErrors(prev => {
-                            const n = {...prev};
-                            delete n.deadline;
-                            return n;
-                          });
-                        }}
-                        className="h-10 bg-transparent border-none text-xs"
-                        placeholder="Select date"
-                        calendarDisabled={{ before: new Date() }}
-                      />
-                    </div>
-                    {errors.deadline && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.deadline}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.vacancies ? "text-red-500" : "text-slate-700")}>
-                      Open Vacancies <span className="text-red-500 ml-0.5">*</span>
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.vacancies}
-                      suppressHydrationWarning
-                      onChange={(e) => {
-                        updateField("vacancies", e.target.value);
-                        if (errors.vacancies) setErrors(prev => {
-                          const n = {...prev};
-                          delete n.vacancies;
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold px-1 capitalize text-slate-700 transition-colors">
+                    Max Salary (Monthly) <span className="text-red-500 ml-0.5">*</span>
+                  </Label>
+                  <Input
+                    value={formData.salary_max}
+                    suppressHydrationWarning
+                    onChange={(e) => {
+                      updateField("salary_max", e.target.value);
+                      if (errors.salary_max || errors.salary_range) setErrors(prev => {
+                        const n = { ...prev };
+                        delete n.salary_max;
+                        delete n.salary_range;
+                        return n;
+                      });
+                    }}
+                    placeholder="Max ₹"
+                    disabled={salaryUndisclosed}
+                    className={cn(
+                      "h-10 text-xs transition-all",
+                      (errors.salary_max || errors.salary_range) ? "border-red-500 bg-red-50/50" : "bg-slate-50 border-slate-100 focus:bg-white",
+                      salaryUndisclosed && "opacity-50 cursor-not-allowed"
+                    )}
+                  />
+                  {(errors.salary_max || errors.salary_range) && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.salary_max || errors.salary_range}</p>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2 px-1">
+                <input
+                  type="checkbox"
+                  id="salary_undisclosed"
+                  checked={salaryUndisclosed}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSalaryUndisclosed(checked);
+                    if (checked) {
+                      updateField("salary_min", "");
+                      updateField("salary_max", "");
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <label htmlFor="salary_undisclosed" className="text-[11px] font-semibold text-slate-600 cursor-pointer select-none">
+                  Salary Undisclosed
+                </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                <div className="space-y-1.5">
+                  <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.deadline ? "text-red-500" : "text-slate-700")}>
+                    Apply Before <span className="text-red-500 ml-0.5">*</span>
+                  </Label>
+                  <div className={cn(
+                    "rounded-xl transition-all",
+                    errors.deadline && "border border-red-500 bg-red-50/50"
+                  )}>
+                    <DatePicker
+                      date={deadline}
+                      setDate={(date) => {
+                        setDeadline(date);
+                        if (errors.deadline) setErrors(prev => {
+                          const n = { ...prev };
+                          delete n.deadline;
                           return n;
                         });
                       }}
-                      className={cn(
-                        "h-10 text-xs transition-all",
-                        errors.vacancies ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                      )}
-                      placeholder="e.g. 2"
+                      className="h-10 bg-transparent border-none text-xs"
+                      placeholder="Select date"
+                      calendarDisabled={{ before: new Date() }}
                     />
-                    {errors.vacancies && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.vacancies}</p>}
                   </div>
+                  {errors.deadline && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.deadline}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.vacancies ? "text-red-500" : "text-slate-700")}>
+                    Open Vacancies <span className="text-red-500 ml-0.5">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    value={formData.vacancies}
+                    suppressHydrationWarning
+                    onChange={(e) => {
+                      updateField("vacancies", e.target.value);
+                      if (errors.vacancies) setErrors(prev => {
+                        const n = { ...prev };
+                        delete n.vacancies;
+                        return n;
+                      });
+                    }}
+                    className={cn(
+                      "h-10 text-xs transition-all",
+                      errors.vacancies ? "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    )}
+                    placeholder="e.g. 2"
+                  />
+                  {errors.vacancies && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.vacancies}</p>}
                 </div>
               </div>
+            </div>
           </div>
         )}
 
         {currentStep === 5 && (
-          <div className="space-y-6 md:space-y-10 animate-in fade-in duration-500">
-            <h2 className="text-base md:text-xl font-bold text-[#1E1B4B]">Preview Your Job Listing</h2>
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight">Preview Your Job Listing</h2>
+              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full uppercase tracking-wider">Draft Preview</span>
+            </div>
 
-            <div className="bg-white border border-slate-100 rounded-3xl p-6 md:p-10 space-y-8 md:space-y-10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]">
-              <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                <div className="space-y-1.5">
-                  <h3 className="text-2xl md:text-3xl font-bold text-[#1E1B4B] leading-tight capitalize tracking-tight">
-                    {formData.title || <span className="text-slate-200">Job Title</span>}
-                  </h3>
-                  <p className="text-slate-400 text-sm md:text-base font-medium">
-                    {formData.location || <span className="text-slate-200">Location</span>}
-                  </p>
-                </div>
-                <div className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[11px] md:text-xs font-semibold capitalize tracking-wide shrink-0">
-                  {formData.job_type.replace('_', ' ') || "Type"}
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+              {/* Header */}
+              <div className="p-5 md:p-6 border-b border-slate-100">
+                <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <h3 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight capitalize tracking-tight">
+                        {formData.title || <span className="text-slate-300">Job Title</span>}
+                      </h3>
+                      <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-[11px] font-semibold capitalize tracking-wide shrink-0">
+                        {formData.job_type.replace('_', ' ') || "Type"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-slate-500 text-[13px] font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-indigo-500" />
+                        {formData.location || <span className="text-slate-400">Location</span>}
+                      </div>
+                      {deadline && (
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-rose-500" />
+                          Apply by <span className="text-rose-600 font-semibold">{deadline.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Salary</p>
-                  <p className={cn("text-xs md:text-sm font-bold", formData.salary_min ? "text-[#1E1B4B]" : "text-slate-300")}>
-                    {formData.salary_min && formData.salary_max
-                      ? `₹${Number(formData.salary_min).toLocaleString()} – ₹${Number(formData.salary_max).toLocaleString()}`
-                      : "Not Disclosed"}
-                  </p>
-                </div>
-                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Experience</p>
-                  <p className={cn("text-xs md:text-sm font-bold", formData.experience_required ? "text-[#1E1B4B]" : "text-slate-300")}>
-                    {formData.experience_required ? `${formData.experience_required} years (${formData.experience_type})` : `Not Specified (${formData.experience_type})`}
-                  </p>
-                </div>
-                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Gender</p>
-                  <p className="text-xs md:text-sm font-bold text-[#1E1B4B] capitalize">
-                    {formData.gender}
-                  </p>
-                </div>
-                <div className="p-4 md:p-5 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:border-slate-200">
-                  <p className="text-[10px] md:text-[11px] text-slate-400 font-medium tracking-wide mb-2 uppercase">Vacancies</p>
-                  <p className="text-xs md:text-sm font-bold text-[#1E1B4B]">
-                    {formData.vacancies}
-                  </p>
+              {/* Key Details Grid */}
+              <div className="p-5 md:p-6 border-b border-slate-100">
+                <h4 className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
+                  Job Highlights
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-y-5 gap-x-6">
+                  {/* Salary */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-emerald-600">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Salary</span>
+                    </div>
+                    <p className={cn("text-[13px] font-semibold", formData.salary_min ? "text-slate-800" : "text-slate-400")}>
+                      {formData.salary_min && formData.salary_max
+                        ? `₹${Number(formData.salary_min).toLocaleString()} – ₹${Number(formData.salary_max).toLocaleString()}`
+                        : "Not Disclosed"}
+                    </p>
+                  </div>
+
+                  {/* Experience */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-blue-600">
+                      <Briefcase className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Experience</span>
+                    </div>
+                    <p className={cn("text-[13px] font-semibold", formData.experience_required ? "text-slate-800" : "text-slate-400")}>
+                      {formData.experience_required ? `${formData.experience_required} yrs (${formData.experience_type})` : `Not Specified (${formData.experience_type})`}
+                    </p>
+                  </div>
+
+                  {/* Category */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-purple-600">
+                      <Folder className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Category</span>
+                    </div>
+                    <p className="text-[13px] font-semibold text-slate-800">
+                      {metadata.categories.find(c => c.id === Number(formData.category_id))?.name || <span className="text-slate-400">Not Selected</span>}
+                    </p>
+                  </div>
+
+                  {/* Vacancies */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-orange-600">
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Vacancies</span>
+                    </div>
+                    <p className="text-[13px] font-semibold text-slate-800">
+                      {formData.vacancies} Position(s)
+                    </p>
+                  </div>
+
+                  {/* Gender Pref */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-pink-600">
+                      <User className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Gender Pref.</span>
+                    </div>
+                    <p className="text-[13px] font-semibold text-slate-800 capitalize">
+                      {formData.gender}
+                    </p>
+                  </div>
+
+                  {/* Keywords */}
+                  <div className="col-span-2 md:col-span-3 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-indigo-600">
+                      <Tag className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Keywords</span>
+                    </div>
+                    <p className={cn("text-[13px] font-medium leading-relaxed", formData.keywords ? "text-slate-800" : "text-slate-400")}>
+                      {formData.keywords || "None"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-5">
-                <h4 className="text-sm md:text-base font-bold text-[#1E1B4B] tracking-tight">Description</h4>
-                <div className="prose prose-sm md:prose-base prose-slate max-w-none text-slate-500 leading-relaxed min-h-[50px]">
+              {/* Description */}
+              <div className="p-5 md:p-6 border-b border-slate-100">
+                <h4 className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-blue-500" />
+                  Job Description
+                </h4>
+                <div className="prose prose-sm md:prose-base prose-slate max-w-none text-slate-600 leading-relaxed">
                   {description ? (
                     <div dangerouslySetInnerHTML={{ __html: description }} />
                   ) : (
-                    <span className="text-slate-200 italic font-medium">Description will appear here...</span>
+                    <span className="text-slate-400 italic">Description will appear here...</span>
                   )}
                 </div>
               </div>
+
+              {/* Questions */}
+              {questions.filter(q => q.question.trim()).length > 0 && (
+                <div className="p-5 md:p-6 bg-slate-50/50">
+                  <h4 className="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5 text-purple-500" />
+                    Screening Questions ({questions.filter(q => q.question.trim()).length})
+                  </h4>
+                  <div className="border border-slate-200 rounded-lg bg-white overflow-hidden">
+                    {questions.filter(q => q.question.trim()).map((q, idx) => (
+                      <div key={idx} className="p-3.5 border-b border-slate-100 last:border-b-0 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-start gap-2.5">
+                          <span className="text-[11px] font-semibold text-slate-400 mt-0.5 w-4 shrink-0">
+                            {String(idx + 1).padStart(2, '0')}.
+                          </span>
+                          <p className="text-[13px] font-medium text-slate-800 leading-tight">{q.question}</p>
+                        </div>
+                        <div className="flex items-center gap-3 pl-6 md:pl-0 shrink-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-medium text-slate-400">Type:</span>
+                            <span className="text-[11px] font-medium text-slate-600 capitalize">
+                              {q.question_type === 'boolean' ? 'Yes/No' : q.question_type}
+                            </span>
+                          </div>
+                          <div className="w-px h-3 bg-slate-200 hidden md:block"></div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-medium text-slate-400">Expected:</span>
+                            <span className="text-[11px] font-semibold text-indigo-600 uppercase">
+                              {q.recruiter_answer || "Any"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

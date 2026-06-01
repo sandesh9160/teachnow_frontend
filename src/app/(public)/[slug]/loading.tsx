@@ -1,17 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 export default function PublicSlugLoading() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Return null on the server side to protect ISR, SEO, and avoid hydration issues
-  if (!mounted) return null;
-
   return (
     <div className="bg-[#F8FAFC] min-h-[calc(100vh-5rem)] px-4 sm:px-6 lg:px-8 xl:px-12 py-10 flex flex-col items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -28,3 +15,4 @@ export default function PublicSlugLoading() {
     </div>
   );
 }
+

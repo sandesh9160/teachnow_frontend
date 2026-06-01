@@ -5,7 +5,6 @@ import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/shared/ui/Buttons/Buttons"
 import { Calendar } from "@/shared/ui/Calendar/Calendar"
 import {
   Popover,
@@ -28,19 +27,18 @@ export function DatePicker({ date, setDate, placeholder = "Pick a date", classNa
   return (
     <Popover open={open} onOpenChange={!disabled ? setOpen : undefined}>
       <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
+        <button
+          type="button"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal h-12 rounded-xl transition-all border-slate-50 bg-slate-50 hover:bg-white hover:border-slate-200 group/picker",
-            !date && "text-slate-400",
-            disabled && "opacity-50 cursor-not-allowed",
+            "w-full flex items-center justify-start text-left h-10 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 outline-none text-[13px] font-semibold group/picker disabled:opacity-50 disabled:cursor-not-allowed",
+            !date && "text-slate-400 text-slate-400/70 font-normal",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 text-slate-400 group-hover/picker:text-indigo-500 transition-colors" />
-          <span className="text-sm font-medium">{date ? format(date, "PPP") : placeholder}</span>
-        </Button>
+          <CalendarIcon className="mr-2 h-4 w-4 text-slate-400 group-hover/picker:text-indigo-500 shrink-0" />
+          <span className="truncate">{date ? format(date, "PPP") : placeholder}</span>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 border-none shadow-none z-50" align="start">
         <Calendar

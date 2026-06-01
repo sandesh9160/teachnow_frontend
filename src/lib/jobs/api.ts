@@ -11,6 +11,7 @@ import type { ApiResponse, Job } from "@/types/homepage";
 export type CategoryJobsRecord = {
   jobs?: Job[];
   data?: Job[];
+  similar_jobs?: Job[];
   name?: string;
   category_name?: string;
 };
@@ -137,6 +138,8 @@ export async function fetchJobsPaginated(opts?: {
         query.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(values))}`);
       }
     });
+
+    console.log("query: ", query);
 
     const queryString = query.length ? `?${query.join("&")}` : "";
     console.log("endpoint final: ", endpoint + queryString);

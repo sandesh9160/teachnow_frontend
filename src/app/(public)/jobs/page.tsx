@@ -15,6 +15,7 @@ interface PageProps {
     experience?: string | string[];
     job_type?: string | string[];
     gender?: string | string[];
+    experience_type?: string;
   }>;
 }
 
@@ -67,6 +68,10 @@ export default async function JobsPage({ searchParams }: PageProps) {
   const genders = toArray(params.gender);
   if (genders.length > 0) {
     backendFilters.gender = genders.map((v) => v.toLowerCase());
+  }
+
+  if (params.experience_type) {
+    backendFilters.experience_type = params.experience_type;
   }
 
   let initialJobs: Job[] = [];

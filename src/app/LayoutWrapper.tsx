@@ -61,6 +61,7 @@ export function LayoutWrapper({
         <ScrollToTop />
       </Suspense>
       <Header navigationData={navigationData} footerData={footerData} authUser={null} />
+      {/* Cache Invalidation Touch to resolve stale Turbopack hydration mismatch */}
       <main className="pt-20 min-h-screen flex flex-col">{children}</main>
       <Footer footerData={footerData} heroCTA={heroCTA} navigationData={navigationData} />
     </>

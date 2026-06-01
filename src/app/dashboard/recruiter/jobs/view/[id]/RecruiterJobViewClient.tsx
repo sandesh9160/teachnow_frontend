@@ -139,9 +139,15 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
             </div>
 
             <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                  <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-100 hover:bg-indigo-50 flex items-center gap-2 shadow-xs">
-                     <Users className="w-4 h-4" /> View Applicants {totalApplications > 0 && `(${totalApplications})`}
+                 <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                   <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-100 hover:bg-indigo-50 flex items-center gap-2 shadow-xs">
+                      <Users className="w-4 h-4" /> View Applicants {totalApplications > 0 && `(${totalApplications})`}
+                   </Button>
+                </Link>
+
+                <Link href={`${basePath}/jobs/edit/${job.id}`}>
+                  <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-slate-700 bg-white border-slate-200 hover:bg-slate-50 flex items-center gap-2 shadow-xs">
+                     <FileText className="w-4 h-4" /> Edit Requirement
                   </Button>
                </Link>
 
@@ -350,6 +356,16 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                   </div>
 
                   <div className="pt-4 border-t border-slate-200 space-y-2">
+                     <Link href={`${basePath}/jobs/edit/${job.id}`} className="block w-full">
+                        <Button
+                           variant="outline"
+                           className="w-full h-9 rounded-xl text-[11px] font-bold text-indigo-700 bg-white border border-indigo-600 hover:bg-indigo-50 flex items-center justify-center gap-2 shadow-sm"
+                        >
+                           <FileText className="w-3.5 h-3.5" />
+                           Edit Requirement
+                        </Button>
+                     </Link>
+
                      {job.job_status !== 'filled' && (
                         <Button
                            onClick={() => handleAction('filled')}

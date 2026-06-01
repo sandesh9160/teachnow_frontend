@@ -5,11 +5,13 @@ import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 
-import { getJobBySlug, getCategoryJobs, fullSearchJobs } from "@/lib/jobs/api";
+import { getJobBySlug, getCategoryJobs, fullSearchJobs, fetchJobsPaginated } from "@/lib/jobs/api";
 import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
 // import { getLocationJobs } from "@/hooks/useHomepage";
 import { getFilters } from "@/hooks/useHomepage";
+import { normalizeJob, toArray } from "@/lib/jobs/normalizeJob";
 import { sanitizeSlug } from "@/lib/utils";
+import type { Job } from "@/types/homepage";
 
 function isStaticOrIconRoute(slug: string): boolean {
   if (!slug) return true;
@@ -124,8 +126,14 @@ async function lookupByCategory(s: string) {
     const jobs = Array.isArray(jobsRaw) ? jobsRaw : [];
     if (jobs.length === 0) return null;
 
+    const similarJobsRaw = !Array.isArray(res) ? (res.similar_jobs ?? (res as any).data?.similar_jobs) : [];
+    const rawSimilar = toArray<Job>(similarJobsRaw).map(normalizeJob);
+    const similarJobs = rawSimilar.filter(
+      sj => !jobs.some(j => String(j.id) === String(sj.id))
+    );
+
     const name = Array.isArray(res) ? s : (res.name ?? res.category_name ?? s);
-    return { type: 'category' as const, data: { jobs, name, keyword: name } };
+    return { type: 'category' as const, data: { jobs, similarJobs, name, keyword: name } };
   } catch { return null; }
 }
 
@@ -251,7 +259,22 @@ async function lookupBySearch(s: string) {
     ].filter(Boolean).join(" - ");
 
     if (keyword || location || initialFilters.job_type.length > 0 || initialFilters.experience.length > 0) {
-      const { jobs, similarJobs } = await fullSearchJobs(keyword, location);
+      const backendFilters: any = {};
+      if (initialFilters.job_type?.length) {
+        backendFilters.job_type = initialFilters.job_type.map((v: string) =>
+          v.toLowerCase().replace(" ", "_").replace("-", "_")
+        );
+      }
+      if (initialFilters.experience?.length) {
+        backendFilters.experience = initialFilters.experience.map(Number);
+      }
+
+      const { jobs, similarJobs } = await fetchJobsPaginated({
+        keyword,
+        location,
+        filters: backendFilters,
+        limit: 100
+      });
 
       const isSearchLandingPage =
         s.endsWith("-jobs") ||
@@ -261,13 +284,13 @@ async function lookupBySearch(s: string) {
 
       // Only allow the search fallback if it's a structured search landing page 
       // OR if the slug is at least 3 characters long and returned actual jobs
-      if (!isSearchLandingPage && (s.length < 3 || jobs.length === 0)) {
+      if (!isSearchLandingPage && (s.length < 3 || (jobs || []).length === 0)) {
         return null;
       }
 
       return {
         type: 'search' as const,
-        data: { jobs, similarJobs, name: displayName || "Search Results", keyword, location, initialFilters }
+        data: { jobs: jobs || [], similarJobs: similarJobs || [], name: displayName || "Search Results", keyword, location, initialFilters }
       };
     }
   } catch { return null; }

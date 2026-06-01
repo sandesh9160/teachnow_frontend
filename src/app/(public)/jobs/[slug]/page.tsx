@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import JobListingView from "@/components/jobs/JobListings/JobListingView";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
-import { getJobs, fullSearchJobs, getJobBySlug, normalizeJob, toArray } from "@/lib/jobs/api";
+import { getJobs, fullSearchJobs, getJobBySlug, normalizeJob, toArray, fetchJobsPaginated } from "@/lib/jobs/api";
 import { getCompanies, getCompanyBySlug } from "@/hooks/useCompanies";
 import { getCategories, getFilters } from "@/hooks/useHomepage";
 import { fetchAPI } from "@/services/api/client";
@@ -25,7 +25,8 @@ async function lookupByNavigation(s: string) {
 
     const findMenuItem = (items: any[]): any => {
       for (const item of items) {
-        if ((item.slug ?? "").toLowerCase() === s) return item;
+        const cleanItemSlug = (item.slug ?? "").toLowerCase().replace(/^jobs\//, "");
+        if (cleanItemSlug === s) return item;
         if (item.children_recursive?.length) {
           const matched = findMenuItem(item.children_recursive);
           if (matched) return matched;
@@ -53,11 +54,12 @@ async function lookupByNavigation(s: string) {
       const knownCities = new Set(locations.map(l => l.name?.toLowerCase()).filter(Boolean));
 
       let resolvedLocation = "";
-      let resolvedKeyword = match.title;
+      let resolvedKeyword = "";
 
       if (apiUrl.includes("?")) {
         const [path, searchStr] = apiUrl.split("?");
         const params = new URLSearchParams(searchStr);
+        params.set("per_page", "100");
 
         const kwVal = params.get("keyword") || params.get("title");
         if (kwVal && knownCities.has(kwVal.toLowerCase().trim())) {
@@ -70,24 +72,69 @@ async function lookupByNavigation(s: string) {
           resolvedLocation = params.get("location") || "";
           if (resolvedLocation) {
             resolvedKeyword = ""; // Clear keyword if location is already set
+          } else if (kwVal) {
+            resolvedKeyword = kwVal;
           }
         }
         apiUrl = path + "?" + params.toString();
+      } else {
+        resolvedKeyword = match.title;
+        if (apiUrl.includes("/open/search/jobs") || apiUrl.includes("/open/jobs")) {
+          apiUrl = apiUrl + "?per_page=100";
+        }
       }
 
       const res = await fetchAPI<ApiResponse<any>>(apiUrl);
       const data = res.data || res;
       
       const mainJobs = toArray<any>(data?.search_jobs || data).map(normalizeJob);
-      const similarJobs = toArray<any>(data?.similar_jobs).map(normalizeJob);
+      const rawSimilarJobs = toArray<any>(data?.similar_jobs || data?.data?.similar_jobs).map(normalizeJob);
+      const similarJobs = rawSimilarJobs.filter(
+        sj => !mainJobs.some(j => String(j.id) === String(sj.id))
+      );
+
+      // Parse initialFilters from navigation URL parameters
+      const initialFilters: any = { job_type: [], experience: [], salary: [], institution_type: [] };
+      let finalKeyword = resolvedKeyword;
+      let finalLocation = resolvedLocation;
+
+      if (match.url.includes("?")) {
+        const [, searchStr] = match.url.split("?");
+        const params = new URLSearchParams(searchStr);
+        
+        const experienceType = params.get("experience_type");
+        if (experienceType) {
+          initialFilters.experience_type = experienceType;
+          if (experienceType === "fresher") {
+            initialFilters.experience.push("0");
+          }
+        }
+        
+        const jobType = params.get("job_type");
+        if (jobType) {
+          const formattedJobType = jobType === "full_time" ? "Full Time" : jobType === "part_time" ? "Part Time" : jobType;
+          initialFilters.job_type.push(formattedJobType);
+        }
+
+        const loc = params.get("location");
+        if (loc) {
+          finalLocation = loc;
+          finalKeyword = "";
+        }
+        const kw = params.get("keyword") || params.get("title");
+        if (kw && !knownCities.has(kw.toLowerCase().trim())) {
+          finalKeyword = kw;
+        }
+      }
       
       return { 
         type: 'category' as const, 
         data: mainJobs, 
         similarJobs: similarJobs,
         name: match.title, 
-        keyword: resolvedKeyword,
-        location: resolvedLocation
+        keyword: finalKeyword,
+        location: finalLocation,
+        initialFilters: initialFilters
       };
     }
   } catch (err) {
@@ -283,11 +330,27 @@ async function lookupBySearchFallback(s: string) {
     ].filter(Boolean).join(" - ");
 
     if (keyword || location || initialFilters.job_type.length > 0 || initialFilters.experience.length > 0) {
-      const { jobs, similarJobs } = await fullSearchJobs(keyword, location);
+      const backendFilters: any = {};
+      if (initialFilters.job_type?.length) {
+        backendFilters.job_type = initialFilters.job_type.map((v: string) =>
+          v.toLowerCase().replace(" ", "_").replace("-", "_")
+        );
+      }
+      if (initialFilters.experience?.length) {
+        backendFilters.experience = initialFilters.experience.map(Number);
+      }
+
+      const { jobs, similarJobs } = await fetchJobsPaginated({
+        keyword,
+        location,
+        filters: backendFilters,
+        limit: 100
+      });
+
       return {
         type: 'category' as const,
         data: jobs || [],
-        similarJobs,
+        similarJobs: similarJobs || [],
         name: displayName || "Jobs",
         keyword,
         location,

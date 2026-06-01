@@ -1073,7 +1073,7 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
                 </div>
 
                 {/* FOOTER ACTIONS */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 bg-white border-t flex items-center gap-2 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                <div className="mt-auto p-5 bg-white border-t flex items-center gap-2 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
                     <select 
                       className={cn(
                         "h-8 px-3 w-32 rounded-lg bg-slate-50 border border-slate-300 text-[10px] font-normal text-slate-900 focus:ring-1 focus:ring-primary outline-none cursor-pointer hover:bg-slate-100 transition-colors",

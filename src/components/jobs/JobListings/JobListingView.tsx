@@ -16,6 +16,7 @@ import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
 import { useRouter } from "next/navigation";
 import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter";
 import JobPagination from "@/components/jobs/JobPagination/JobPagination";
+import { fetchJobsPaginated } from "@/lib/jobs/api";
 
 
 interface JobListingViewProps {
@@ -56,6 +57,93 @@ export default function JobListingView({
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(10);
 
+  // Dynamic Backend Fetching States for Catch-all Landing Pages
+  const [jobsList, setJobsList] = useState<Job[]>(jobs);
+  const [similarJobsList, setSimilarJobsList] = useState<Job[]>(similarJobs);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [fetchError, setFetchError] = useState<string | undefined>(undefined);
+
+  const isFirstRender = useRef(true);
+
+  // Sync state if props change (e.g. when navigating to a new category slug)
+  useEffect(() => {
+    setJobsList(jobs);
+    setSimilarJobsList(similarJobs);
+    setCurrentPage(1);
+    isFirstRender.current = true;
+  }, [jobs, similarJobs]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    let active = true;
+
+    const fetchJobs = async () => {
+      setIsLoading(true);
+      setFetchError(undefined);
+
+      const backendFilters: any = {};
+
+      if (selectedFilters.job_type?.length) {
+        backendFilters.job_type = selectedFilters.job_type.map((v: string) =>
+          v.toLowerCase().replace(" ", "_").replace("-", "_")
+        );
+      }
+
+      if (selectedFilters.experience?.length) {
+        backendFilters.experience = selectedFilters.experience.map(Number);
+      }
+
+      if (selectedFilters.institution_type?.length) {
+        backendFilters.institution_type = selectedFilters.institution_type.map((v: string) => v.toLowerCase());
+      }
+
+      if (selectedFilters.gender?.length) {
+        backendFilters.gender = selectedFilters.gender.map((v: string) => v.toLowerCase());
+      }
+
+      try {
+        const { jobs: fetchedJobs, similarJobs: fetchedSimilar, error: fetchErr } = await fetchJobsPaginated({
+          keyword: initialKeyword,
+          location: initialLocation,
+          filters: backendFilters,
+          limit: 100
+        });
+
+        if (!active) return;
+
+        if (fetchErr) {
+          setFetchError(fetchErr);
+        } else {
+          setJobsList(fetchedJobs || []);
+          setSimilarJobsList(fetchedSimilar || []);
+          setCurrentPage(1);
+        }
+      } catch (err) {
+        if (active) {
+          setFetchError("Failed to fetch jobs");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    const handler = setTimeout(() => {
+      fetchJobs();
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(handler);
+    };
+  }, [selectedFilters]);
+
 
 
   // Auto-scroll to top on page or filter change
@@ -74,7 +162,9 @@ export default function JobListingView({
     } else if (pageName && pageName !== "Search") {
       // If pageName is just the location, don't double-fill it in keywords
       const isOnlyLocation = initialLocation && pageName.toLowerCase().includes(initialLocation.toLowerCase());
-      if (!isOnlyLocation) {
+      const lowerPageName = pageName.toLowerCase();
+      const isFilter = ["full-time", "part-time", "fresher", "contract", "internship", "experienced", "full time", "part time"].some(f => lowerPageName.includes(f));
+      if (!isOnlyLocation && !isFilter) {
         setInternalSearch(pageName);
       }
     }
@@ -134,7 +224,7 @@ export default function JobListingView({
           ? prev[cat].filter((v: string) => v !== value)
           : [...prev[cat], value],
       };
-    });  
+    });
     setCurrentPage(1);
   };
 
@@ -171,7 +261,7 @@ export default function JobListingView({
       .replaceAll(/\s+/g, " ")
       .trim();
 
-  const filteredJobs = (Array.isArray(jobs) ? jobs : []).filter((job) => {
+  const filteredJobs = (Array.isArray(jobsList) ? jobsList : []).filter((job) => {
     if (!job) return false;
     const jobType = normalizeType(job.job_type || "");
 
@@ -276,8 +366,9 @@ export default function JobListingView({
                 onOpenFilters={() => setMobileFiltersOpen(true)}
                 onSearch={handleSearch}
                 activeFilterCount={Object.values(selectedFilters).flat().length}
-                loading={isSearching}
+                loading={isLoading}
               />
+              {fetchError && <p className="text-red-500 mt-2">{fetchError}</p>}
             </div>
           </div>
         </div>
@@ -354,44 +445,46 @@ export default function JobListingView({
               </div>
             )}
 
-            {!isSearching && similarJobs.length > 0 && (
+            {!isSearching && similarJobsList.length > 0 && (
               <div className="mt-16">
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-foreground font-display">Similar Jobs</h2>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
-                  {similarJobs.map((job) => {
-                    const salary = (() => {
-                      const min = Number(job.salary_min || 0);
-                      const max = Number(job.salary_max || 0);
-                      if (!min && !max) return "Not disclosed";
-                      const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
-                      return `${fmt(min)} - ${fmt(max)}`;
-                    })();
+                  {similarJobsList
+                    .filter((sj) => !filteredJobs.some((j) => String(j.id) === String(sj.id)))
+                    .map((job) => {
+                      const salary = (() => {
+                        const min = Number(job.salary_min || 0);
+                        const max = Number(job.salary_max || 0);
+                        if (!min && !max) return "Not disclosed";
+                        const fmt = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n.toLocaleString("en-IN");
+                        return `${fmt(min)} - ${fmt(max)}`;
+                      })();
 
-                    return (
-                      <JobCard
-                        key={`similar-${job.id}`}
-                        id={job.id}
-                        title={job.title}
-                        company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
-                        location={job.location || "India"}
-                        type={String(job.job_type || "").replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c) => c.toUpperCase())}
-                        salary={salary}
-                        tags={[]}
-                        posted={job.created_at || new Date().toISOString()}
-                        logo={job.employer?.company_logo}
-                        slug={job.slug}
-                        institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
-                        deadline={job.application_deadline}
-                        gender={job.gender}
-                        vacancies={job.vacancies}
-                        experience={job.experience_required}
-                        experienceType={job.experience_type}
-                        compact={true}
-                      />
-                    );
-                  })}
+                      return (
+                        <JobCard
+                          key={`similar-${job.id}`}
+                          id={job.id}
+                          title={job.title}
+                          company={job.employer?.company_name || (job as any)?.company_name || "Confidential School"}
+                          location={job.location || "India"}
+                          type={String(job.job_type || "").replaceAll(/_/g, " ").replaceAll(/\b\w/g, (c) => c.toUpperCase())}
+                          salary={salary}
+                          tags={[]}
+                          posted={job.created_at || new Date().toISOString()}
+                          logo={job.employer?.company_logo}
+                          slug={job.slug}
+                          institutionType={(job as any).institutionType || job.institution_type || job.employer?.institution_type}
+                          deadline={job.application_deadline}
+                          gender={job.gender}
+                          vacancies={job.vacancies}
+                          experience={job.experience_required}
+                          experienceType={job.experience_type}
+                          compact={true}
+                        />
+                      );
+                    })}
                 </div>
               </div>
             )}

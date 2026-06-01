@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useApplications } from "@/hooks/useApplications";
-import { Briefcase, Building2, MapPin, ExternalLink, Clock } from "lucide-react";
+import { Briefcase, Building2, MapPin, ExternalLink, Clock, Phone, MessageSquare, PhoneOff, PhoneMissed, CheckCircle, Eye, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import Image from "next/image";
@@ -75,17 +75,63 @@ export default function AppliedJobsPage() {
   };
 
   // ... rest of logic stays same (getStatusStyles, stats, etc)
-  const getStatusStyles = (status: string) => {
-    const s = status?.toLowerCase();
-    if (s === 'interview scheduled' || s === 'interviews' || s === 'shortlisted' || s === 'hired')
-      return "bg-[#E8FBF2] text-[#059669]";
-    if (s === 'under review' || s === 'reviewing' || s === 'accepted')
-      return "bg-[#EEF2FF] text-[#4F46E5]";
-    if (s === 'applied' || s === 'pending')
-      return "bg-[#F1F5F9] text-[#1E293B]";
-    if (s === 'rejected' || s === 'declined')
-      return "bg-[#FEF2F2] text-[#DC2626]";
-    return "bg-[#F1F5F9] text-[#1E293B]";
+  const getStatusInfo = (status: string) => {
+    const s = String(status || '').toLowerCase();
+    if (s === 'interview scheduled' || s === 'interviews' || s === 'shortlisted' || s === 'hired') {
+      return {
+        className: "bg-[#E8FBF2] text-[#059669] border-[#A7F3D0]",
+        Icon: CheckCircle
+      };
+    }
+    if (s === 'under review' || s === 'reviewing' || s === 'accepted') {
+      return {
+        className: "bg-[#EEF2FF] text-[#4F46E5] border-[#C7D2FE]",
+        Icon: Eye
+      };
+    }
+    if (s === 'rejected' || s === 'declined') {
+      return {
+        className: "bg-[#FEF2F2] text-[#DC2626] border-[#FECDD3]",
+        Icon: XCircle
+      };
+    }
+    // applied / pending
+    return {
+      className: "bg-blue-50 text-blue-700 border-blue-200",
+      Icon: Clock
+    };
+  };
+
+  const getContactStatusInfo = (status: string) => {
+    const s = status?.toLowerCase().replace('_', ' ');
+    if (s === 'called') {
+      return {
+        className: "bg-blue-50 text-blue-700 border-blue-200",
+        Icon: Phone
+      };
+    }
+    if (s === 'messaged') {
+      return {
+        className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        Icon: MessageSquare
+      };
+    }
+    if (s === 'not picked') {
+      return {
+        className: "bg-amber-50 text-amber-700 border-amber-200",
+        Icon: PhoneOff
+      };
+    }
+    if (s === 'not reached') {
+      return {
+        className: "bg-rose-50 text-rose-700 border-rose-200",
+        Icon: PhoneMissed
+      };
+    }
+    return {
+      className: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      Icon: Phone
+    };
   };
 
   const stats = {
@@ -185,10 +231,25 @@ export default function AppliedJobsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between md:justify-end gap-6 md:gap-8">
-                      <span className={`px-3 py-0.5 rounded-full text-[10.5px] font-bold whitespace-nowrap shadow-sm/5 ${getStatusStyles(app.status)}`}>
-                        {app.status || "Applied"}
-                      </span>
+                    <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 flex-wrap">
+                      {app.contact_status && (() => {
+                        const { className, Icon } = getContactStatusInfo(app.contact_status);
+                        return (
+                          <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-xs flex items-center gap-1 ${className}`}>
+                            <Icon className="w-3 h-3 shrink-0" />
+                            {app.contact_status.replace('_', ' ')}
+                          </span>
+                        );
+                      })()}
+                      {(() => {
+                        const { className, Icon } = getStatusInfo(app.status);
+                        return (
+                          <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-xs flex items-center gap-1 ${className}`}>
+                            <Icon className="w-3 h-3 shrink-0" />
+                            {app.status || "Applied"}
+                          </span>
+                        );
+                      })()}
                       <Link
                         href={`/dashboard/jobseeker/applied-jobs/${app.id}`}
                         aria-label={`View details for ${app.job?.title || 'application'}`}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
 import JobFilterSidebar from "@/components/jobs/Filters/JobFilterSidebar/JobFilterSidebar";
 import FilterCard from "@/components/jobs/Filters/shared/FilterCard";
@@ -26,16 +26,45 @@ export default function JobsClientManager({
   error?: string
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const experienceType = searchParams?.get("experience_type") ?? "";
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const [search, setSearch] = useState("");
-  const [locationSearch, setLocationSearch] = useState("");
+  const getParamValuesNormalized = (key: string): string[] => {
+    const rawVals = (searchParams?.getAll(key) ?? []).concat(searchParams?.getAll(`${key}[]`) ?? []);
+    const single = searchParams?.get(key) ?? searchParams?.get(`${key}[]`);
+    if (single && !rawVals.includes(single)) rawVals.push(single);
+    const uniqueRaw = Array.from(new Set(rawVals.filter(Boolean)));
+    return uniqueRaw.map(v => {
+      const lower = v.toLowerCase().replace(/_/g, " ").replace(/-/g, " ").trim();
+      if (key === "job_type") {
+        if (lower === "full time" || lower === "full_time" || lower === "full-time") return "Full Time";
+        if (lower === "part time" || lower === "part_time" || lower === "part-time") return "Part Time";
+      }
+      if (key === "institution_type") {
+        const options = ["UG", "PG", "Diploma", "School", "Intermediate"];
+        const matched = options.find(o => o.toLowerCase() === lower);
+        if (matched) return matched;
+      }
+      if (key === "experience") {
+        if (lower === "fresher") return "0";
+        if (lower === "0-0" || lower === "0") return "0";
+        if (lower === "2" || lower === "2+") return "2";
+        if (lower === "5" || lower === "5+") return "5";
+        if (lower === "10" || lower === "10+") return "10";
+      }
+      return v;
+    });
+  };
+
+  const [search, setSearch] = useState(searchParams?.get("keyword") ?? "");
+  const [locationSearch, setLocationSearch] = useState(searchParams?.get("location") ?? "");
   
   const [selectedFilters, setSelectedFilters] = useState({
-    institution_type: [] as string[],
-    experience: [] as string[],
-    job_type: [] as string[],
-    gender: [] as string[],
+    institution_type: getParamValuesNormalized("institution_type") as string[],
+    experience: getParamValuesNormalized("experience") as string[],
+    job_type: getParamValuesNormalized("job_type") as string[],
+    gender: getParamValuesNormalized("gender") as string[],
   });
 
   const [jobsList, setJobsList] = useState<Job[]>(initialJobs);
@@ -95,6 +124,10 @@ export default function JobsClientManager({
         backendFilters.gender = selectedFilters.gender.map((v: string) => v.toLowerCase());
       }
 
+      if (experienceType) {
+        backendFilters.experience_type = experienceType;
+      }
+
       try {
         const { jobs, similarJobs: similar, meta, error: fetchErr } = await fetchJobsPaginated({
           page: currentPage,
@@ -135,7 +168,7 @@ export default function JobsClientManager({
       active = false;
       clearTimeout(handler);
     };
-  }, [currentPage, selectedFilters, resultsPerPage, search, locationSearch]);
+  }, [currentPage, selectedFilters, resultsPerPage, search, locationSearch, experienceType]);
 
   // Auto-scroll to top on page or filter change
   useEffect(() => {
