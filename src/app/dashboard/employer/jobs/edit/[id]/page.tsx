@@ -18,7 +18,7 @@ export default async function EditJobPage({ params }: EditJobPageProps) {
 
   // Primary Metadata Synchronization: Official Resource Endpoint
   let jobDetails = await dashboardServerFetch(`employer/jobs/${id}`);
-  
+    
   // Secondary: Attempt common variants if direct lookup is restricted
   if (jobDetails?.status !== true) {
     jobDetails = await dashboardServerFetch(`employer/jobs/show/${id}`);

@@ -236,7 +236,9 @@ export const JobsHeader = ({
                   ))}
                 </div>
               )}
-            </div>            {/* City/Location Search — dropdown only */}
+            </div>            
+            
+            {/* City/Location Search — dropdown only */}
             <div className="relative flex-1 w-full flex flex-col items-stretch" ref={cityRef}>
               <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all border bg-slate-50/80 md:bg-slate-50 border-transparent focus-within:border-indigo-200">
                 <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
@@ -328,8 +330,12 @@ export const JobsHeader = ({
             </div>
           )}
  
+
           {/* External error prop (e.g. from parent) */}
+
+      
           {error && (
+
             <div className="mt-2 px-2 animate-in fade-in slide-in-from-top-1 duration-200">
               <p className="text-[13px] font-semibold text-red-500 flex items-center gap-1.5">
                 <span className="flex h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />

@@ -18,7 +18,8 @@ import {
    Loader2,
    TrendingUp,
    RefreshCw,
-   Star
+   Star,
+   Edit2
 } from "lucide-react";
 
 import { useState } from "react";
@@ -176,6 +177,11 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+               <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
+                  <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-2">
+                     <Edit2 className="w-4 h-4 text-indigo-500" /> Edit Job
+                  </Button>
+               </Link>
                <Link href={`/dashboard/employer/jobs/view/${job.id}/applicants`}>
                   <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-2">
                      <Users className="w-4 h-4 text-indigo-500" /> View Applicants

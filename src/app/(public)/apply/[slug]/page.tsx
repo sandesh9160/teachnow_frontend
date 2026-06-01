@@ -79,7 +79,14 @@ export default function ApplyJobPage() {
   }, [mounted, sessionLoading, isLoggedIn, router, slug]);
 
   const [step, setStep] = useState(0);
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [step]);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [step]);
+
+  const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    if (submitted) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [submitted]);
   const [candidate, setCandidate] = useState({
     name: "",
     email: "",
@@ -100,7 +107,6 @@ export default function ApplyJobPage() {
   // Candidate data is initialized via the profile fetch effect below which handles both session user and detailed profile data
 
 
-  const [submitted, setSubmitted] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState<string | number>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -638,9 +644,9 @@ export default function ApplyJobPage() {
               )}
 
               <div className="flex gap-3 pt-6">
-                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => router.back()}>Cancel</Button>
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold hover:scale-100 active:scale-100 transition-none" onClick={() => router.back()}>Cancel</Button>
                 <Button 
-                  className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" 
+                  className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20 hover:scale-100 active:scale-100 transition-none" 
                   onClick={() => {
                     if (!isLoggedIn) {
                       setShowAuthModal(true);
@@ -722,10 +728,10 @@ export default function ApplyJobPage() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(0)}>
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold hover:scale-100 active:scale-100 transition-none" onClick={() => setStep(0)}>
                   Back
                 </Button>
-                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20 hover:scale-100 active:scale-100 transition-none" onClick={() => {
                   if (!candidate.name.trim()) { toast.error("Full Name is required"); return; }
                   if (!candidate.email.trim()) { toast.error("Email is required"); return; }
                   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate.email)) { toast.error("Enter a valid email address"); return; }
@@ -956,30 +962,39 @@ export default function ApplyJobPage() {
                 </div>
               )}
 
-              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-4">
                 <Button 
                   variant="outline" 
-                  className="w-full h-11 rounded-xl text-[13px] font-semibold gap-1.5 border-slate-200 hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center" 
-                  onClick={() => router.push("/dashboard/jobseeker/resume")}
+                  className="w-full h-11 rounded-xl text-[13px] font-semibold gap-1.5 border-slate-200 hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center bg-white" 
+                  onClick={() => router.push("/dashboard/jobseeker/resume-manager")}
                 >
-                  <Plus className="h-4 w-4" /> Manage Resumes
+                  <Plus className="h-4 w-4 shrink-0" /> Manage Resumes
                 </Button>
-                <Button
-                  variant="hero"
-                  className="w-full h-11 rounded-xl text-[13px] font-semibold shadow-sm shadow-primary/20 gap-2 flex items-center justify-center"
-                  onClick={() => setShowTemplateOverlay(true)}
-                  disabled={isGenerating}
-                >
-                  <Zap className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                  {isGenerating ? "Generating..." : "Generate CV with AI"}
-                </Button>
+                
+                <div className="space-y-3 mt-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-start gap-2.5 px-1 py-1 mb-2">
+        
+                    <p className="text-[13px] font-semibold text-red-600 leading-relaxed">
+                     Create a professional teaching resume tailored to this job description. Select a template below to get started.
+                    </p>
+                  </div>
+                  <Button
+                    variant="hero"
+                    className="w-full h-11 rounded-xl text-[13px] font-semibold shadow-sm shadow-primary/20 gap-2 flex items-center justify-center"
+                    onClick={() => setShowTemplateOverlay(true)}
+                    disabled={isGenerating}
+                  >
+                    <Zap className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    {isGenerating ? "Generating..." : "Generate CV with AI"}
+                  </Button>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-6">
-                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(1)}>
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold hover:scale-100 active:scale-100 transition-none" onClick={() => setStep(1)}>
                   Back
                 </Button>
-                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20 hover:scale-100 active:scale-100 transition-none" onClick={() => {
                   if (!selectedResumeId && resumes.length > 0) {
                     toast.error("Please select a resume to proceed");
                     return;
@@ -1098,10 +1113,10 @@ export default function ApplyJobPage() {
               </div>
 
               <div className="flex gap-3 pt-6">
-                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => setStep(step - 1)}>
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold hover:scale-100 active:scale-100 transition-none" onClick={() => setStep(step - 1)}>
                   Back
                 </Button>
-                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={() => {
+                <Button className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20 hover:scale-100 active:scale-100 transition-none" onClick={() => {
                   // Mandatory Validation for all questions
                   if (jobDetails.cover_letter_question_id && !questionAnswers[jobDetails.cover_letter_question_id]?.trim()) {
                     toast.error("Please provide your Cover Letter/Motivation.");
@@ -1289,10 +1304,10 @@ export default function ApplyJobPage() {
               </div>
 
               <div className="flex gap-3 pt-6">
-                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold" onClick={() => router.back()}>
+                <Button variant="outline" className="flex-1 h-12 rounded-xl text-sm font-semibold hover:scale-100 active:scale-100 transition-none" onClick={() => router.back()}>
                   Cancel
                 </Button>
-                <Button variant="hero" className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20" onClick={handleSubmit} disabled={isSubmitting}>
+                <Button variant="hero" className="flex-1 h-12 rounded-xl text-sm font-semibold shadow-sm shadow-primary/20 hover:scale-100 active:scale-100 transition-none" onClick={handleSubmit} disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
                   {isSubmitting ? "Submitting..." : "Submit Application"}
                 </Button>

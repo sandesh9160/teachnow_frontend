@@ -19,10 +19,6 @@ import {
   Clock,
   Eye,
   X,
-  Phone,
-  MessageSquare,
-  PhoneOff,
-  PhoneMissed,
   CheckCircle,
   XCircle
 } from "lucide-react";
@@ -42,6 +38,69 @@ export default function ApplicationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+
+  const rUrl = application?.resume_details?.url ||
+    application?.resume?.url ||
+    application?.resume?.pdf_path ||
+    (typeof application?.resume === 'string' ? application.resume : null) ||
+    application?.resume_url ||
+    application?.resume_path ||
+    application?.pdf_path ||
+    profileData?.resume?.url ||
+    profileData?.resume?.pdf_path ||
+    (typeof profileData?.resume === 'string' ? profileData?.resume : null);
+
+  const resumeName = application?.resume_details?.title ||
+    application?.resume?.file_name ||
+    application?.resume_name ||
+    "Official_Resume.pdf";
+
+  const isOfficeFormat = (() => {
+    const name = String(resumeName || "").toLowerCase();
+    const url = String(rUrl || "").toLowerCase();
+    return name.endsWith(".docx") || name.endsWith(".doc") ||
+           url.endsWith(".docx") || url.endsWith(".doc") ||
+           url.includes(".docx") || url.includes(".doc");
+  })();
+
+  const getPreviewSrc = (url: string | null, isFullscreen: boolean = false) => {
+    if (!url) return "";
+    const resolvedUrl = normalizeMediaUrl(url);
+    if (isOfficeFormat) {
+      return `https://docs.google.com/viewer?url=${encodeURIComponent(resolvedUrl)}&embedded=true`;
+    }
+    return `/api/files/preview?url=${encodeURIComponent(resolvedUrl)}${isFullscreen ? '#view=Fit' : '#toolbar=0&view=Fit'}`;
+  };
+
+  const handleDownloadResume = async (url: string, fileName: string) => {
+    const toastId = toast.loading("Downloading resume...");
+    try {
+      // Use the local server-side preview proxy to fetch the file blob and bypass CORS
+      const proxyUrl = `/api/files/preview?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      if (!response.ok) throw new Error("Failed to fetch via proxy");
+      
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.setAttribute("download", fileName || "Resume.pdf");
+      document.body.appendChild(link);
+      
+      link.click();
+      
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      toast.dismiss(toastId);
+      toast.success("Downloaded successfully!");
+    } catch (error) {
+      console.error("Direct download failed, falling back to window.open", error);
+      toast.dismiss(toastId);
+      window.open(url, "_blank");
+    }
+  };
 
   const fetchDetail = async () => {
     try {
@@ -102,7 +161,7 @@ export default function ApplicationDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-40 gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary/20" />
-        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading Details...</p>
+        <p className="text-sm font-bold text-black  tracking-widest">Loading Details...</p>
       </div>
     );
   }
@@ -148,38 +207,6 @@ export default function ApplicationDetailPage() {
     };
   };
 
-  const getContactStatusInfo = (status: string) => {
-    const s = status?.toLowerCase().replace('_', ' ');
-    if (s === 'called') {
-      return {
-        className: "bg-blue-50 text-blue-700 border-blue-200",
-        Icon: Phone
-      };
-    }
-    if (s === 'messaged') {
-      return {
-        className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        Icon: MessageSquare
-      };
-    }
-    if (s === 'not picked') {
-      return {
-        className: "bg-amber-50 text-amber-700 border-amber-200",
-        Icon: PhoneOff
-      };
-    }
-    if (s === 'not reached') {
-      return {
-        className: "bg-rose-50 text-rose-700 border-rose-200",
-        Icon: PhoneMissed
-      };
-    }
-    return {
-      className: "bg-indigo-50 text-indigo-700 border-indigo-200",
-      Icon: Phone
-    };
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4 md:px-0 pt-2">
       {/* Header */}
@@ -196,15 +223,6 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {application.contact_status && (() => {
-            const { className, Icon } = getContactStatusInfo(application.contact_status);
-            return (
-              <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm ${className}`}>
-                <Icon className="w-3.5 h-3.5 shrink-0" />
-                {application.contact_status.replace('_', ' ')}
-              </div>
-            );
-          })()}
           {(() => {
             const { className, Icon } = getStatusInfo(application.status);
             return (
@@ -221,7 +239,7 @@ export default function ApplicationDetailPage() {
         {/* Main Details (2/3) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Job Overview Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm overflow-hidden relative group">
+          <div className="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm overflow-hidden relative group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110 duration-700" />
             <div className="relative z-10 flex gap-5">
               <div className="h-16 w-16 shrink-0 bg-white border border-slate-100 rounded-2xl flex items-center justify-center p-2 shadow-sm">
@@ -243,11 +261,11 @@ export default function ApplicationDetailPage() {
                   {job?.employer?.company_name || application.company_name || application.employer_name || "Organization"}
                 </p>
                 <div className="flex items-center gap-4 pt-1">
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-black">
                     <MapPin className="w-3.5 h-3.5 text-indigo-400" />
                     {job?.location || application.location || "Location not specified"}
                   </span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-black">
                     <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
                     {job?.job_type || application.job_type || "General"}
                   </span>
@@ -257,19 +275,19 @@ export default function ApplicationDetailPage() {
           </div>
 
           {/* Job Description Preview */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+          <div className="bg-white border border-slate-300 rounded-2xl p-6 space-y-4">
             <div className="flex items-center gap-2 border-b border-indigo-50 pb-3">
               <div className="w-1 h-4 bg-indigo-600 rounded-full" />
               <h3 className="text-sm font-semibold text-slate-800">Role Requirements</h3>
             </div>
             <div
-              className="text-slate-700 text-sm leading-relaxed whitespace-pre-line rich-text font-normal"
+              className="text-black text-sm leading-relaxed whitespace-pre-line rich-text font-normal"
               dangerouslySetInnerHTML={{ __html: job?.description || application.job_description || application.description || "No description provided." }}
             />
           </div>
 
           {/* Candidate Info Section */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 space-y-6 shadow-xs">
+          <div className="bg-white border border-slate-300 rounded-2xl p-5 md:p-6 space-y-6 shadow-xs">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
               <div className="h-7 w-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
                 <User className="w-3.5 h-3.5" />
@@ -289,7 +307,7 @@ export default function ApplicationDetailPage() {
                 { label: "Selected Resume", value: application.resume_details?.title || application.resume?.file_name || "Official_Resume.pdf", isResume: true },
               ].map((item) => (
                 <div key={item.label} className={`flex flex-col gap-1 ${item.colSpan === 2 ? 'md:col-span-2' : ''}`}>
-                  <span className="text-[10px] text-slate-400 font-medium">{item.label}</span>
+                  <span className="text-[10px] text-black font-semibold uppercase tracking-wider">{item.label}</span>
                   {item.isLink ? (
                     <div className="min-w-0">
                       {item.value !== "—" ? (
@@ -297,13 +315,18 @@ export default function ApplicationDetailPage() {
                           {item.value}
                         </a>
                       ) : (
-                        <p className="text-xs text-slate-400 font-medium">—</p>
+                        <p className="text-xs text-black font-medium">—</p>
                       )}
                     </div>
                   ) : item.isResume ? (
                     <div className="flex items-center gap-2">
                       <p className="text-xs text-slate-800 font-semibold truncate max-w-[140px] md:max-w-[200px]">{item.value}</p>
-                      <button className="px-1.5 py-0.5 rounded bg-indigo-50 text-[9px] font-medium text-indigo-700 border border-indigo-100 hover:bg-white transition-all">View File</button>
+                      <button
+                        onClick={() => rUrl && handleDownloadResume(normalizeMediaUrl(rUrl), resumeName)}
+                        className="px-1.5 py-0.5 rounded bg-indigo-50 text-[9px] font-medium text-indigo-700 border border-indigo-100 hover:bg-white transition-all"
+                      >
+                        View File
+                      </button>
                     </div>
                   ) : (
                     <p className="text-xs text-slate-800 font-semibold">{item.value}</p>
@@ -314,8 +337,8 @@ export default function ApplicationDetailPage() {
 
             {(application.bio || profileData?.bio) && (
               <div className="pt-4 border-t border-slate-50">
-                <span className="block text-[10px] text-slate-400 font-medium mb-1.5">Personal Statement</span>
-                <p className="text-xs text-slate-600 leading-relaxed font-normal italic pr-2">
+                <span className="block text-[10px] text-black font-semibold uppercase tracking-wider mb-1.5">Personal Statement</span>
+                <p className="text-xs text-black leading-relaxed font-normal italic pr-2">
                   "{application.bio || profileData?.bio}"
                 </p>
               </div>
@@ -334,7 +357,7 @@ export default function ApplicationDetailPage() {
             if (displayAnswers.length === 0) return null;
 
             return (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6 shadow-sm">
+              <div className="bg-white border border-slate-300 rounded-2xl p-6 space-y-6 shadow-sm">
                 <div className="flex items-center gap-3 border-b border-indigo-50 pb-4">
                   <div className="h-8 w-8 rounded-lg bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
                     <FileText className="w-4 h-4" />
@@ -346,14 +369,14 @@ export default function ApplicationDetailPage() {
                     <div key={idx} className="relative pl-6 space-y-3 group">
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-100 group-hover:bg-amber-500/30 transition-colors rounded-full" />
                       <div className="space-y-1">
-                        <p className="text-[10px] font-medium text-slate-400">Requirement {idx + 1}</p>
+                        <p className="text-[10px] font-semibold text-black">Requirement {idx + 1}</p>
                         <p className="text-xs font-semibold text-slate-800 leading-relaxed">
                           {ans.question?.question || ans.question?.question_text || ans.question_text || ans.question || "Requirement Detail"}
                         </p>
                       </div>
                       <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 shadow-inner">
                         <p className="text-[9px] font-bold text-amber-600 mb-1">Response</p>
-                        <p className="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-line">
+                        <p className="text-xs font-medium text-black leading-relaxed whitespace-pre-line">
                           {ans.candidate_answer || ans.answer || ans.response || "No response provided."}
                         </p>
                       </div>
@@ -365,7 +388,7 @@ export default function ApplicationDetailPage() {
           })()}
 
           {/* Background & History */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-8">
+          <div className="bg-white border border-slate-300 rounded-2xl p-6 space-y-8">
             <div className="flex items-center gap-3 border-b border-indigo-50 pb-4">
               <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-600/20">
                 <GraduationCap className="w-4 h-4" />
@@ -376,10 +399,10 @@ export default function ApplicationDetailPage() {
             {/* Skills */}
             {((application.skills?.length > 0) || (profileData?.skills?.length > 0)) && (
               <div className="space-y-4">
-                <span className="block text-[11px] text-slate-400 font-medium">Skills Expertise</span>
+                <span className="block text-[11px] text-black font-semibold uppercase tracking-wider">Skills Expertise</span>
                 <div className="flex flex-wrap gap-2">
                   {(application.skills?.length > 0 ? application.skills : (profileData?.skills || [])).map((skill: any, idx: number) => (
-                    <span key={idx} className="px-3 py-1 bg-slate-50 text-slate-600 text-[10px] font-medium border border-slate-100 rounded-lg capitalize">
+                    <span key={idx} className="px-3 py-1 bg-slate-50 text-black text-[10px] font-semibold border border-slate-200 rounded-lg capitalize">
                       {typeof skill === "object" ? (skill.name || skill.title) : skill}
                     </span>
                   ))}
@@ -388,17 +411,17 @@ export default function ApplicationDetailPage() {
             )}
 
             {/* Combined History */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-indigo-50">
+            <div className="flex flex-col gap-6 pt-4 border-t border-indigo-50">
               {/* Education */}
               <div className="space-y-4">
-                <span className="block text-[11px] text-slate-400 font-medium">Education Background</span>
+                <span className="block text-[11px] text-black font-semibold uppercase tracking-wider">Education Background</span>
                 <div className="space-y-3">
                   {(application.educations?.length > 0 ? application.educations : (profileData?.educations || [])).slice(0, 3).map((edu: any, idx: number) => (
                     <div key={idx} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 shadow-sm relative overflow-hidden group">
                       <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 rounded-full" />
                       <p className="text-xs font-semibold text-slate-900 leading-tight">{edu.degree}</p>
                       <p className="text-[10px] font-medium text-emerald-700 mt-0.5">{edu.institution}</p>
-                      <p className="text-[9px] text-slate-500 font-medium mt-1">{edu.start_year || "—"} - {edu.end_year || "Present"}</p>
+                      <p className="text-[9px] text-black font-semibold mt-1">{edu.start_year || "—"} - {edu.end_year || "Present"}</p>
                     </div>
                   ))}
                 </div>
@@ -406,14 +429,14 @@ export default function ApplicationDetailPage() {
 
               {/* Experience */}
               <div className="space-y-4">
-                <span className="block text-[11px] text-slate-400 font-medium">Work Experience</span>
+                <span className="block text-[11px] text-black font-semibold uppercase tracking-wider">Work Experience</span>
                 <div className="space-y-3">
                   {(application.experiences?.length > 0 ? application.experiences : (profileData?.experiences || [])).slice(0, 3).map((exp: any, idx: number) => (
                     <div key={idx} className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 shadow-sm relative overflow-hidden group">
                       <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-full" />
                       <p className="text-xs font-semibold text-slate-900 leading-tight">{exp.job_title}</p>
                       <p className="text-[10px] font-medium text-blue-700 mt-0.5">{exp.company_name}</p>
-                      <p className="text-[9px] text-slate-500 font-medium mt-1">{exp.start_date ? new Date(exp.start_date).getFullYear() : "—"} - {exp.is_current ? "Present" : "Completed"}</p>
+                      <p className="text-[9px] text-black font-semibold mt-1">{exp.start_date ? new Date(exp.start_date).getFullYear() : "—"} - {exp.is_current ? "Present" : "Completed"}</p>
                     </div>
                   ))}
                 </div>
@@ -425,7 +448,7 @@ export default function ApplicationDetailPage() {
         {/* Sidebar Info (1/3) */}
         <div className="space-y-6">
           {/* Status Tracker */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-6">
+          <div className="bg-white border border-slate-300 rounded-2xl p-5 shadow-sm space-y-6">
             <h3 className="text-sm font-semibold text-slate-800 border-b border-indigo-50 pb-3">Status Monitor</h3>
 
             <div className="space-y-4">
@@ -435,7 +458,7 @@ export default function ApplicationDetailPage() {
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-400 font-medium">Submission Date</p>
+                    <p className="text-[10px] text-black font-semibold uppercase tracking-wider">Submission Date</p>
                     <p className="text-xs font-semibold text-indigo-950">
                       {application.created_at ? new Date(application.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "N/A"}
                     </p>
@@ -450,56 +473,71 @@ export default function ApplicationDetailPage() {
                       <AlertCircle className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-slate-400 font-medium">Final Deadline</p>
+                      <p className="text-[10px] text-black font-semibold uppercase tracking-wider">Final Deadline</p>
                       <p className="text-xs font-semibold text-rose-950">{new Date(job.application_deadline).toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Resume Card */}
+              {/* Resume Card with Inline Preview & Direct Download */}
               <div className="pt-2">
-                <div className="bg-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-indigo-600/20 space-y-4 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-700" />
-                  <div className="relative z-10 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white">
-                      <FileText className="w-5 h-5" />
+                <div className="bg-white border border-slate-300 rounded-2xl p-4 shadow-sm space-y-3 relative overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-indigo-50 pb-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-indigo-600" />
+                      <span className="text-xs font-bold text-slate-800">Submitted Resume</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-medium text-indigo-100 italic">Submitted Resume</p>
-                      <p className="text-xs font-bold text-white truncate">
-                        {application.resume_details?.title || application.resume?.file_name || application.resume_name || "Official_Document.pdf"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const rUrl = application.resume_details?.url ||
-                      application.resume?.url ||
-                      application.resume?.pdf_path ||
-                      (typeof application.resume === 'string' ? application.resume : null) ||
-                      application.resume_url ||
-                      application.resume_path ||
-                      application.pdf_path ||
-                      profileData?.resume?.url ||
-                      profileData?.resume?.pdf_path ||
-                      (typeof profileData?.resume === 'string' ? profileData?.resume : null);
-
-                    if (!rUrl) return null;
-
-                    return (
+                    {rUrl && (
                       <button
                         onClick={() => {
                           setPreviewUrl(normalizeMediaUrl(rUrl));
                           setShowResumePreview(true);
                         }}
-                        className="flex items-center justify-center gap-2 w-full h-9 bg-white rounded-lg text-xs font-semibold text-indigo-700 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-sm"
+                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 active:scale-95 transition-all"
+                        title="View Fullscreen"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        Preview Resume
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"></path>
+                        </svg>
+                        Fullscreen
                       </button>
-                    );
-                  })()}
+                    )}
+                  </div>
+                  
+                  {/* File Name */}
+                  <p className="text-[11px] font-bold text-black truncate" title={resumeName}>
+                    {resumeName}
+                  </p>
+
+                  {/* Inline iframe preview using Google Docs Viewer */}
+                  {rUrl ? (
+                    <>
+                      <div className="w-full h-[450px] rounded-xl border border-slate-200 overflow-hidden bg-slate-50 relative shadow-inner">
+                        <iframe
+                          key={rUrl}
+                          src={getPreviewSrc(rUrl, false)}
+                          className="w-full h-full border-none"
+                          title="Resume Preview"
+                        />
+                        {isOfficeFormat && (
+                          <div className="absolute top-0 right-0 w-16 h-12 bg-transparent z-20 pointer-events-auto" />
+                        )}
+                      </div>
+                      
+                      <button
+                        onClick={() => handleDownloadResume(normalizeMediaUrl(rUrl), resumeName)}
+                        className="flex items-center justify-center gap-2 w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold active:scale-[0.98] shadow-sm transition-all"
+                      >
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Download Resume
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-xs text-black italic font-semibold">No resume URL available</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -528,19 +566,25 @@ export default function ApplicationDetailPage() {
                 </h2>
               </div>
               <button onClick={() => setShowResumePreview(false)} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                <X className="w-6 h-6 text-slate-400" />
+                <X className="w-6 h-6 text-black" />
               </button>
             </div>
 
             <div className="flex-1 overflow-hidden bg-slate-100 relative">
               {previewUrl ? (
-                <iframe
-                  src={`/api/files/preview?url=${encodeURIComponent(previewUrl)}#toolbar=0`}
-                  className="w-full h-full border-none"
-                  title="Resume Content"
-                />
+                <>
+                  <iframe
+                    key={previewUrl}
+                    src={getPreviewSrc(previewUrl, true)}
+                    className="w-full h-full border-none"
+                    title="Resume Content"
+                  />
+                  {isOfficeFormat && (
+                    <div className="absolute top-0 right-0 w-20 h-16 bg-transparent z-20 pointer-events-auto" />
+                  )}
+                </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-black">
                   <Loader2 className="w-8 h-8 animate-spin" />
                   <p className="font-bold text-sm">Loading document...</p>
                 </div>

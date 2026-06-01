@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useApplications } from "@/hooks/useApplications";
-import { Briefcase, Building2, MapPin, ExternalLink, Clock, Phone, MessageSquare, PhoneOff, PhoneMissed, CheckCircle, Eye, XCircle } from "lucide-react";
+import { Briefcase, Building2, MapPin, Clock, CheckCircle, Eye, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import Image from "next/image";
@@ -102,38 +102,6 @@ export default function AppliedJobsPage() {
     };
   };
 
-  const getContactStatusInfo = (status: string) => {
-    const s = status?.toLowerCase().replace('_', ' ');
-    if (s === 'called') {
-      return {
-        className: "bg-blue-50 text-blue-700 border-blue-200",
-        Icon: Phone
-      };
-    }
-    if (s === 'messaged') {
-      return {
-        className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        Icon: MessageSquare
-      };
-    }
-    if (s === 'not picked') {
-      return {
-        className: "bg-amber-50 text-amber-700 border-amber-200",
-        Icon: PhoneOff
-      };
-    }
-    if (s === 'not reached') {
-      return {
-        className: "bg-rose-50 text-rose-700 border-rose-200",
-        Icon: PhoneMissed
-      };
-    }
-    return {
-      className: "bg-indigo-50 text-indigo-700 border-indigo-200",
-      Icon: Phone
-    };
-  };
-
   const stats = {
     total: pagination?.total || applications.length,
     underReview: applications.filter(a => ['under review', 'reviewing', 'accepted'].includes(a.status?.toLowerCase())).length,
@@ -190,7 +158,7 @@ export default function AppliedJobsPage() {
         </div>
       ) : applications.length > 0 ? (
         <div className="space-y-4">
-          <div className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-slate-300 rounded-xl overflow-hidden shadow-sm">
             <div className="divide-y divide-slate-50">
               {applications.map((app) => (
                 <div key={app.id} className="p-4 px-6 hover:bg-slate-50/50 group transition-colors">
@@ -232,15 +200,6 @@ export default function AppliedJobsPage() {
                     </div>
 
                     <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 flex-wrap">
-                      {app.contact_status && (() => {
-                        const { className, Icon } = getContactStatusInfo(app.contact_status);
-                        return (
-                          <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-xs flex items-center gap-1 ${className}`}>
-                            <Icon className="w-3 h-3 shrink-0" />
-                            {app.contact_status.replace('_', ' ')}
-                          </span>
-                        );
-                      })()}
                       {(() => {
                         const { className, Icon } = getStatusInfo(app.status);
                         return (
@@ -253,9 +212,10 @@ export default function AppliedJobsPage() {
                       <Link
                         href={`/dashboard/jobseeker/applied-jobs/${app.id}`}
                         aria-label={`View details for ${app.job?.title || 'application'}`}
-                        className="flex items-center gap-1 text-[12px] font-bold text-slate-700 hover:text-[#0046B5] transition-colors"
+                        className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#0046B5] bg-[#0046B5] text-white transition-all shadow-sm hover:bg-[#003da1] hover:border-[#003da1] active:scale-95 shrink-0"
+                        title="View Details"
                       >
-                        View <ExternalLink className="w-3 h-3 opacity-60" />
+                        <Eye className="w-4 h-4 shrink-0" />
                       </Link>
                     </div>
                   </div>

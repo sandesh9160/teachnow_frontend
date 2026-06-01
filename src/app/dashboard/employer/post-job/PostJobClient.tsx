@@ -20,6 +20,7 @@ import {
   User,
   Folder,
   Tag,
+  ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -266,6 +267,13 @@ export default function PostJobClient({
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    } else if (isEdit) {
+      const jobId = job?.id || job?.job_id;
+      if (jobId) {
+        router.push(`/dashboard/${userRole}/jobs/view/${jobId}`);
+      } else {
+        router.push(`/dashboard/${userRole}/jobs`);
+      }
     } else {
       router.push(`/dashboard/${userRole}`);
     }
@@ -385,6 +393,15 @@ export default function PostJobClient({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-4 font-sans text-slate-900 pb-20" suppressHydrationWarning>
+      
+      {/* Top Back Breadcrumb */}
+      <button
+        onClick={handleBack}
+        className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 active:scale-95 mb-4"
+      >
+        <ChevronLeft className="w-3.5 h-3.5" /> Back
+      </button>
+
       <div className="space-y-0.5">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-[#1E1B4B]">{isEdit ? "Edit Job" : "Post a New Job"}</h1>
@@ -1091,7 +1108,7 @@ export default function PostJobClient({
 
       {/* Navigation Footer */}
       <div className="flex items-center justify-between pt-6 border-t border-slate-50 gap-4">
-        {currentStep > 1 ? (
+        {currentStep > 1 || isEdit ? (
           <Button
             variant="outline"
             suppressHydrationWarning

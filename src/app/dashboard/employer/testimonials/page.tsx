@@ -248,13 +248,13 @@ export default function EmployerTestimonialsPage() {
                  <div className="flex items-center gap-0.5">
                     <button 
                       onClick={() => handleEdit(t)}
-                      className="p-1 text-slate-300 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                      className="p-1 text-blue-500 hover:bg-blue-50 rounded transition-all"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button 
                       onClick={() => handleDelete(t.id)}
-                      className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded transition-all"
+                      className="p-1 text-red-500 hover:bg-red-50 rounded transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -279,7 +279,7 @@ export default function EmployerTestimonialsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-dashed border-slate-200 p-20 text-center">
-           <Award className="w-12 h-12 text-slate-100 mx-auto mb-4" />
+           <Award className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce duration-1000" />
            <p className="text-slate-400 font-bold text-sm">You haven't shared any testimonials yet.</p>
            <Button onClick={() => setShowForm(true)} className="mt-8 rounded h-10 px-8 font-bold text-xs text-white">Share Your Story</Button>
         </div>

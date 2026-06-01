@@ -302,7 +302,7 @@ const DesktopAuth = ({
       </button>
 
       {userDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-indigo-100/50 border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 py-1 z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl shadow-indigo-100/50 border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 py-1 z-50">
           <div className="px-4 py-3 border-b border-slate-50 mb-1 bg-slate-50/50">
             <p className="text-[10px] font-medium text-slate-400 mb-0.5">Account Info</p>
             <p className="text-[13px] font-semibold text-slate-700 truncate">{user?.email}</p>

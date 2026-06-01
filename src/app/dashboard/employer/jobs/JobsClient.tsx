@@ -15,7 +15,8 @@ import {
   RefreshCw,
   Users,
   Star,
-  Trash2
+  Trash2,
+  Edit2
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -332,6 +333,12 @@ export default function JobsClient({
                   <Link href={`${basePath}/jobs/view/${job.id}`}>
                     <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-1.5 shadow-sm">
                       <Eye className="w-3.5 h-3.5 text-indigo-500" /> View
+                    </Button>
+                  </Link>
+
+                  <Link href={`${basePath}/jobs/edit/${job.id}`}>
+                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-1.5 shadow-sm">
+                      <Edit2 className="w-3.5 h-3.5 text-indigo-500" /> Edit
                     </Button>
                   </Link>
 
