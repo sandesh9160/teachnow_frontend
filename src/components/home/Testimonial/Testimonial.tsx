@@ -6,6 +6,7 @@ import { normalizeMediaUrl } from "@/services/api/client";
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import AutoScrollCarousel from "@/shared/ui/Carousel/AutoScrollCarousel";
 
 const TestimonialAvatar = ({ src, name }: { src?: string | null, name: string }) => {
   const [error, setError] = useState(false);
@@ -35,9 +36,50 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
   if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) return null;
 
   const isSingle = testimonials.length === 1;
-  const displayTestimonials = isSingle 
-    ? testimonials 
-    : [...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials];
+
+  const testimonialItems = testimonials.map((t) => (
+    <div
+      key={t.id}
+      className="shrink-0 w-[280px] md:w-[320px] h-full rounded-[16px] border border-[#eef2f8] bg-white p-7 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] whitespace-normal"
+    >
+      <div className="flex flex-col h-full text-left">
+        {/* Mini Stars at Top Left */}
+        <div className="flex gap-0.5 mb-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={cn(
+                "h-3 w-3",
+                i < (t.rating || 5) ? "text-[#f59e0b] fill-[#f59e0b]" : "text-slate-100"
+              )}
+            />
+          ))}
+        </div>
+
+        {/* Light Quote Icon */}
+        <div className="mb-4">
+          <Quote className="h-6 w-6 text-[#dbeafe] fill-white" strokeWidth={1.5} />
+        </div>
+
+        <p className="text-[14px] text-slate-600 flex-1 font-normal leading-relaxed mb-6">
+          {t.message}
+        </p>
+
+        {/* Subtle Divider and Small Author Profile */}
+        <div className="pt-5 border-t border-[#f1f5fb] flex items-center gap-3">
+          <div className="relative h-10 w-10 shrink-0 rounded-full bg-[#ecf2ff] overflow-hidden flex items-center justify-center text-black font-semibold text-sm ring-1 ring-[#ecf2ff]">
+            <TestimonialAvatar src={t.photo} name={t.name} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[14px] font-semibold text-[#111827]">{t.name}</p>
+            <p className="text-[11px] font-normal text-slate-500">
+              {t.designation}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  ));
 
   return (
     <section className="py-24 bg-[#f8faff] overflow-hidden relative w-full">
@@ -51,60 +93,16 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           </p>
         </div>
 
-        {/* Full-width Autoscrolling Container */}
-        <div className={cn("relative w-full overflow-hidden py-4 flex", isSingle && "justify-center")}>
-          <div 
-            className={cn(
-              "flex gap-6 w-max", 
-              !isSingle && "animate-marquee hover:[animation-play-state:paused] active:[animation-play-state:paused]"
-            )} 
-            style={{ width: isSingle ? 'auto' : 'max-content' }}
-          >
-            {displayTestimonials.map((t, index) => (
-              <div
-                key={`${t.id}-${index}`}
-                className="shrink-0 w-[280px] md:w-[320px] h-full rounded-[16px] border border-[#eef2f8] bg-white p-7 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] whitespace-normal"
-              >
-                <div className="flex flex-col h-full text-left">
-                  {/* Mini Stars at Top Left */}
-                  <div className="flex gap-0.5 mb-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={cn(
-                          "h-3 w-3",
-                          i < (t.rating || 5) ? "text-[#f59e0b] fill-[#f59e0b]" : "text-slate-100"
-                        )}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Light Quote Icon */}
-                  <div className="mb-4">
-                    <Quote className="h-6 w-6 text-[#dbeafe] fill-white" strokeWidth={1.5} />
-                  </div>
-
-                  <p className="text-[14px] text-slate-600 flex-1 font-normal leading-relaxed mb-6">
-                    {t.message}
-                  </p>
-
-                  {/* Subtle Divider and Small Author Profile */}
-                  <div className="pt-5 border-t border-[#f1f5fb] flex items-center gap-3">
-                    <div className="relative h-10 w-10 shrink-0 rounded-full bg-[#ecf2ff] overflow-hidden flex items-center justify-center text-black font-semibold text-sm ring-1 ring-[#ecf2ff]">
-                      <TestimonialAvatar src={t.photo} name={t.name} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[14px] font-semibold text-[#111827]">{t.name}</p>
-                      <p className="text-[11px] font-normal text-slate-500">
-                        {t.designation}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Carousel */}
+        {isSingle ? (
+          <div className="flex justify-center py-4">
+            {testimonialItems}
           </div>
-        </div>
+        ) : (
+          <AutoScrollCarousel speed={80} isContinuous={true} className="py-4">
+            {testimonialItems}
+          </AutoScrollCarousel>
+        )}
       </div>
     </section>
   );
