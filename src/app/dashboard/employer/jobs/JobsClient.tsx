@@ -229,7 +229,7 @@ export default function JobsClient({
         </div>
 
         <Link href={`${basePath}/post-job`}>
-          <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] border border-[#312E81] hover:border-[#1E1B4B] shadow-sm transition-all flex items-center gap-2 text-white">
+          <Button className="h-10 px-5 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] border border-[#312E81] hover:border-[#1E1B4B] shadow-sm flex items-center gap-2 text-white">
             <PlusCircle className="w-4 h-4" />
             Post New Job
           </Button>
@@ -265,10 +265,10 @@ export default function JobsClient({
               onClick={() => setActiveTab(tab.id as any)}
               suppressHydrationWarning={true}
               className={cn(
-                "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold transition-all whitespace-nowrap border",
+                "px-4 py-1.5 rounded-xl text-[12.5px] font-semibold whitespace-nowrap border",
                 activeTab === tab.id
                   ? "bg-[#312E81] text-white border-[#312E81] shadow-sm"
-                  : "text-slate-700 bg-transparent border-transparent hover:bg-white hover:border-slate-300 hover:text-slate-900"
+                  : "text-slate-700 bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 shadow-sm"
               )}
             >
               {tab.label} ({tab.count})
@@ -291,7 +291,7 @@ export default function JobsClient({
       <div className="space-y-3">
         {filteredJobs.length > 0 ? (
           filteredJobs.map((job) => (
-            <div key={job.id} className="bg-white rounded-2xl border border-slate-300 shadow-xs overflow-hidden p-4 group transition-all hover:shadow-md hover:border-indigo-100/50">
+            <div key={job.id} className={cn("bg-white rounded-2xl border border-slate-300 shadow-xs overflow-hidden p-4 group transition-all hover:shadow-md hover:border-indigo-100/50", job.job_status === 'filled' && "opacity-70 bg-slate-50/50")}>
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
                 {/* Left: Job Info */}
@@ -300,12 +300,14 @@ export default function JobsClient({
                     <div className="flex items-center gap-3">
                       <h3 className="text-[15px] font-semibold text-slate-900 group-hover:text-[#312E81] transition-colors">{job.title}</h3>
                       <span className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-semibold",
-                        (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-50 text-amber-600" :
-                          (job.job_status === 'active' || job.status === 'approved') ? "bg-emerald-50 text-emerald-600" :
-                            job.job_status === 'closed' ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-600"
+                        "px-2 py-0.5 rounded-full text-[10px] font-semibold border",
+                        job.job_status === 'filled' ? "bg-slate-100 text-slate-500 border-slate-200" :
+                        (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "bg-amber-50 text-amber-600 border-amber-100" :
+                          (job.job_status === 'active' || job.status === 'approved') ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                            job.job_status === 'closed' ? "bg-slate-50 text-slate-400 border-slate-200" : "bg-amber-50 text-amber-600 border-amber-100"
                       )}>
-                        {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : (job.status || job.job_status)}
+                        {job.job_status === 'filled' ? "Filled" :
+                        (job.job_status === 'expired' || new Date(job.expires_at) < new Date()) ? "Expired" : (job.status || job.job_status)}
                       </span>
                     </div>
                   </div>
@@ -325,26 +327,33 @@ export default function JobsClient({
                         <TrendingUp className="w-3.5 h-3.5" /> Featured {new Date(job.featured_until).toLocaleDateString('en-GB')}
                       </span>
                     )}
+                    {job.admin_featured === 1 && (
+                      <span className="flex items-center gap-1.5 text-[12px] font-semibold text-amber-600">
+                        <Star className="w-3.5 h-3.5" /> Admin Featured Listing
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Right: Actions */}
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <Link href={`${basePath}/jobs/view/${job.id}`}>
-                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-1.5 shadow-sm">
+                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 flex items-center gap-1.5 shadow-sm">
                       <Eye className="w-3.5 h-3.5 text-indigo-500" /> View
                     </Button>
                   </Link>
 
-                  <Link href={`${basePath}/jobs/edit/${job.id}`}>
-                    <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-1.5 shadow-sm">
-                      <Edit2 className="w-3.5 h-3.5 text-indigo-500" /> Edit
-                    </Button>
-                  </Link>
+                  {job.job_status !== 'filled' && (
+                    <Link href={`${basePath}/jobs/edit/${job.id}`}>
+                      <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 flex items-center gap-1.5 shadow-sm">
+                        <Edit2 className="w-3.5 h-3.5 text-indigo-500" /> Edit
+                      </Button>
+                    </Link>
+                  )}
 
                   {!(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                     <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                      <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-300 hover:bg-indigo-100/80 hover:border-indigo-400 transition-all flex items-center gap-1.5 shadow-sm">
+                      <Button variant="outline" className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-300 hover:bg-indigo-100/80 hover:border-indigo-400 flex items-center gap-1.5 shadow-sm">
                         <Users className="w-3.5 h-3.5" />
                         Applicants
                         {job.applicants_count !== undefined && (
@@ -355,54 +364,53 @@ export default function JobsClient({
                       </Button>
                     </Link>
                   )}
-
-
-
                   {job.job_status === 'active' && (
                     <Button
                       onClick={() => handleAction(job.id, 'filled')}
                       disabled={loadingId === job.id}
                       variant="outline"
-                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-emerald-600 bg-white border border-emerald-300 hover:bg-emerald-50/50 hover:border-emerald-400 transition-all flex items-center gap-1.5 shadow-sm"
+                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-emerald-600 bg-white border border-emerald-300 hover:bg-emerald-50/50 hover:border-emerald-400 flex items-center gap-1.5 shadow-sm"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Mark as Filled
                     </Button>
                   )}
 
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      const isExpiredFeatured = job.featured === 1 && job.featured_until && new Date(job.featured_until) < new Date();
-                      if (job.featured === 0 || isExpiredFeatured) handleToggleFeatured(job.id);
-                    }}
-                    disabled={loadingId === job.id || (job.featured === 1 && job.admin_featured !== 1) || (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))}
-                    className={cn(
-                      "h-9 px-3.5 rounded-xl text-[12px] font-semibold transition-all flex items-center gap-1.5 shadow-sm",
-                      (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))
-                        ? "bg-indigo-50 text-indigo-600 border border-indigo-300 cursor-default"
-                        : (job.featured === 1 && job.admin_featured !== 1)
-                          ? "bg-amber-50 text-amber-600 border border-amber-300 cursor-default"
-                          : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 hover:border-slate-400"
-                    )}
-                  >
-                    {loadingId === job.id ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
-                    )} 
-                    {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) 
-                      ? "Featured"
-                      : (job.featured === 1 && job.admin_featured !== 1) 
-                        ? "Awaiting" 
-                        : "Feature"}
-                  </Button>
+                  {job.admin_featured !== 1 && (
+                     <Button 
+                       variant="outline" 
+                       onClick={() => {
+                         const isExpiredFeatured = job.featured === 1 && job.featured_until && new Date(job.featured_until) < new Date();
+                         if (job.featured === 0 || isExpiredFeatured) handleToggleFeatured(job.id);
+                       }}
+                       disabled={loadingId === job.id || (job.featured === 1 && job.admin_featured !== 1) || (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))}
+                       className={cn(
+                         "h-9 px-3.5 rounded-xl text-[12px] font-semibold flex items-center gap-1.5 shadow-sm",
+                         (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date()))
+                           ? "bg-indigo-50 text-indigo-600 border border-indigo-300 cursor-default"
+                           : (job.featured === 1 && job.admin_featured !== 1)
+                             ? "bg-amber-50 text-amber-600 border border-amber-300 cursor-default"
+                             : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 hover:border-slate-400"
+                       )}
+                     >
+                       {loadingId === job.id ? (
+                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                       ) : (
+                         <Star className={cn("w-3.5 h-3.5", (job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) ? "fill-amber-500 text-amber-500" : "text-slate-400")} />
+                       )} 
+                       {(job.featured === 1 && job.admin_featured === 1 && (!job.featured_until || new Date(job.featured_until) >= new Date())) 
+                         ? "Featured"
+                         : (job.featured === 1 && job.admin_featured !== 1) 
+                           ? "Awaiting" 
+                           : "Feature"}
+                     </Button>
+                   )}
 
                   {(job.job_status === 'expired' || new Date(job.expires_at) < new Date()) && (
                     <Button
                       onClick={() => handleAction(job.id, 'republish')}
                       disabled={loadingId === job.id}
                       variant="outline"
-                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border border-indigo-300 hover:bg-indigo-50/50 hover:border-indigo-400 transition-all flex items-center gap-1.5 shadow-sm"
+                      className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border border-indigo-300 hover:bg-indigo-50/50 hover:border-indigo-400 flex items-center gap-1.5 shadow-sm"
                     >
                       {loadingId === job.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                       Republish Job
@@ -413,7 +421,7 @@ export default function JobsClient({
                     onClick={() => handleAction(job.id, 'delete')}
                     disabled={loadingId === job.id}
                     variant="outline"
-                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-600 bg-white border border-rose-300 hover:bg-rose-50/50 hover:border-rose-400 transition-all flex items-center gap-1.5 shadow-sm"
+                    className="h-9 px-3.5 rounded-xl text-[12px] font-semibold text-rose-600 bg-white border border-rose-300 hover:bg-rose-50/50 hover:border-rose-400 flex items-center gap-1.5 shadow-sm"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Delete
                   </Button>
@@ -432,7 +440,7 @@ export default function JobsClient({
               <p className="text-[13px] text-slate-400 font-medium">Try adjusting your filters or post a new listing.</p>
             </div>
             <Link href={`${basePath}/post-job`}>
-              <Button size="lg" className="h-11 px-7 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] border border-[#312E81] hover:border-[#1E1B4B] text-white shadow-sm transition-all">
+              <Button size="lg" className="h-11 px-7 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] border border-[#312E81] hover:border-[#1E1B4B] text-white shadow-sm">
                 Post a new job
               </Button>
             </Link>
@@ -466,7 +474,7 @@ export default function JobsClient({
               variant="outline"
               disabled={currentPage === 1}
               onClick={() => handlePageChange(currentPage - 1)}
-              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border border-slate-300 hover:bg-slate-50 disabled:opacity-50 shadow-sm transition-all"
+              className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-700 border border-slate-300 hover:bg-slate-50 disabled:opacity-50 shadow-sm"
             >
               Previous
             </Button>
@@ -477,7 +485,7 @@ export default function JobsClient({
                   key={pg}
                   onClick={() => handlePageChange(pg)}
                   className={cn(
-                    "w-9 h-9 rounded-xl text-xs font-bold transition-all border shadow-sm",
+                    "w-9 h-9 rounded-xl text-xs font-bold border shadow-sm",
                     currentPage === pg
                       ? "bg-[#312E81] text-white border-[#312E81] shadow-md"
                       : "bg-white text-slate-600 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/50 hover:text-[#312E81]"

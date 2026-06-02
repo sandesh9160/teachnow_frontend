@@ -12,11 +12,15 @@ import {
   Clock,
   ArrowUpRight,
   Star,
+
+  
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { fetchAPI } from "@/services/api/client";
 import { useRazorpay } from "@/hooks/useRazorpay";
+import { useBranding } from "@/hooks/useBranding";
+
 
 // import { toast } from "sonner";
 import Link from "next/link";
@@ -117,6 +121,7 @@ interface ApiResponse {
 }
 
 export default function PurchaseHistoryClient() {
+  const { companyName, companyLogo } = useBranding();
   const [data, setData] = useState<PurchaseHistoryData | null>(null);
   const [plansArray, setPlansArray] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -297,6 +302,11 @@ export default function PurchaseHistoryClient() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-0.5">
           <div className="flex items-center gap-3">
+            {companyLogo && (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm overflow-hidden p-1 border border-slate-200 shrink-0">
+                <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+              </div>
+            )}
             <h2 className="text-2xl font-semibold text-[#0F172A]">Billing</h2>
             {verificationStatus === 1 && (
               <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[11px] font-semibold border border-emerald-100 shadow-xs">
@@ -348,10 +358,10 @@ export default function PurchaseHistoryClient() {
             <div
               key={plan.id}
               className={cn(
-                "rounded-2xl p-4 sm:p-6 flex flex-col border transition-all duration-300 relative",
+                "rounded-2xl p-4 sm:p-6 flex flex-col border-2 transition-all duration-300 relative",
                 isCurrent
-                  ? "border-[#1E3A8A] bg-[#F1F5F9] shadow-lg shadow-blue-900/5 ring-1 ring-[#1E3A8A]"
-                  : "border-slate-200 bg-white hover:border-blue-200"
+                  ? "border-[#1E3A8A] bg-[#F1F5F9] shadow-lg shadow-blue-900/5"
+                  : "border-slate-300 bg-white hover:border-blue-300"
               )}
             >
               {isCurrent && (

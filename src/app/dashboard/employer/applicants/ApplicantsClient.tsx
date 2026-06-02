@@ -18,7 +18,8 @@ import {
   Phone,
   MessageSquare,
   PhoneOff,
-  AlertCircle
+  AlertCircle,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -37,6 +38,7 @@ const safeFormatDistanceToNow = (dateString?: string) => {
   const distance = formatDistanceToNow(date);
   return distance === "less than a minute" ? "Just Now" : `${distance} ago`;
 };
+
 
 const CustomSelect = ({ 
   value, 
@@ -126,6 +128,7 @@ interface Application {
     id: number;
     title: string;
     job_status: string;
+    admin_featured?: number;
   };
   job_seeker: {
     id: number;
@@ -362,35 +365,23 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
     return `${STORAGE_BASE_URL}${cleanPath}`;
   };
 
-  const downloadResume = async (url: string, fileName: string) => {
+  const downloadResume = (url: string, fileName: string) => {
     if (!url) {
       toast.error("Resume file URL not found");
       return;
     }
-    toast.info("Downloading resume directly...");
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("CORS or Network error");
-      const blob = await res.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = fileName || "Resume.pdf";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(blobUrl);
-      toast.success("Download complete!");
-    } catch (e) {
-      console.warn("Direct download failed, falling back to new window/tab", e);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName || "Resume.pdf";
-      a.target = "_blank";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
+    toast.info("Downloading resume...");
+    
+    // Route the download through our local API proxy to bypass CORS 
+    // and force a direct download without opening a new tab
+    const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&fileName=${encodeURIComponent(fileName || 'Resume.pdf')}`;
+    
+    const a = document.createElement("a");
+    a.href = proxyUrl;
+    a.download = fileName || "Resume.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const shortlistApplicant = async (appId: number) => {
@@ -509,7 +500,14 @@ export default function ApplicantsClient({ initialData }: ApplicantsClientProps)
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-gray-200">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Applicants</h1>
-          <p className="text-xs text-gray-900 font-normal">Manage institution candidate pool</p>
+          <div className="flex flex-wrap items-center gap-2">
+             <p className="text-xs text-gray-900 font-normal">Manage institution candidate pool</p>
+             {apps[0]?.job?.admin_featured === 1 && (
+                <span className="bg-amber-500 text-white px-2.5 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm border border-amber-600">
+                   <TrendingUp className="w-2.5 h-2.5" /> Admin Featured Listing
+                </span>
+             )}
+          </div>
         </div>
       </div>
 

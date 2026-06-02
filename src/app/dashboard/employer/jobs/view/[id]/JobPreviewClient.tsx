@@ -9,7 +9,6 @@ import {
    Briefcase,
    Clock,
    Layers,
-   Trash2,
    CheckCircle2,
    ExternalLink,
    Calendar,
@@ -20,6 +19,7 @@ import {
    RefreshCw,
    Star,
    Edit2
+
 } from "lucide-react";
 
 import { useState } from "react";
@@ -177,21 +177,23 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-               <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
-                  <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-2">
-                     <Edit2 className="w-4 h-4 text-indigo-500" /> Edit Job
-                  </Button>
-               </Link>
+               {job.job_status !== 'filled' && (
+                  <Link href={`/dashboard/employer/jobs/edit/${job.id}`}>
+                     <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-indigo-700 border-indigo-200 bg-indigo-50/30 hover:bg-indigo-50 hover:border-indigo-300 flex items-center gap-2 transition-all hover:scale-100 active:scale-100">
+                        <Edit2 className="w-4 h-4 text-indigo-600" /> Edit Job
+                     </Button>
+                  </Link>
+               )}
                <Link href={`/dashboard/employer/jobs/view/${job.id}/applicants`}>
-                  <Button variant="outline" className="h-10 px-5 rounded-xl text-xs font-semibold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-2">
-                     <Users className="w-4 h-4 text-indigo-500" /> View Applicants
+                  <Button className="h-10 px-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 border border-indigo-600 hover:bg-indigo-700 hover:border-indigo-700 flex items-center gap-2 shadow-md transition-all hover:scale-100 active:scale-100">
+                     <Users className="w-4 h-4 text-white" /> View Applicants
                   </Button>
                </Link>
                {job.job_status === 'expired' && (
                   <Button
                      onClick={() => handleAction('republish')}
                      disabled={loadingAction === 'republish'}
-                     className="h-10 px-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 flex items-center gap-2 shadow-sm"
+                     className="h-10 px-5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 flex items-center gap-2 shadow-sm hover:scale-100 active:scale-100"
                   >
                      {loadingAction === 'republish' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                      Republish Job
@@ -212,24 +214,26 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                      Live Preview <ExternalLink className="w-3.5 h-3.5" />
                   </Button>
                )}
-               <Button
-                  variant="outline"
-                  onClick={handleToggleFeatured}
-                  disabled={!!loadingAction}
-                  className={cn(
-                     "h-10 px-5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm",
-                      job.featured === 1
-                         ? "bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50"
-                         : "bg-white text-[#312E81] border border-[#312E81] hover:bg-indigo-50"
-                  )}
-               >
-                  {loadingAction === 'toggle-feature' ? (
-                     <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                     <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
-                  )}
-                  {job.featured === 1 ? "Featured" : "Feature on Home"}
-               </Button>
+               {job.admin_featured !== 1 && (
+                  <Button
+                     variant="outline"
+                     onClick={handleToggleFeatured}
+                     disabled={!!loadingAction}
+                     className={cn(
+                        "h-10 px-5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm",
+                         job.featured === 1
+                            ? "bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50"
+                            : "bg-white text-[#312E81] border border-[#312E81] hover:bg-indigo-50"
+                     )}
+                  >
+                     {loadingAction === 'toggle-feature' ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                     ) : (
+                        <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
+                     )}
+                     {job.featured === 1 ? "Featured" : "Feature on Home"}
+                  </Button>
+               )}
             </div>
          </div>
 
@@ -391,34 +395,27 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                            Mark as Filled
                         </Button>
                      )}
-                     <Button
-                        onClick={() => handleAction('delete')}
-                        disabled={!!loadingAction}
-                        variant="outline"
-                        className="w-full h-10 rounded-xl text-xs font-bold text-rose-700 bg-white border border-rose-600 hover:bg-rose-50 flex items-center justify-center gap-2 shadow-sm"
-                     >
-                        {loadingAction === 'delete' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                        Delete
-                     </Button>
 
-                     <Button
-                        onClick={handleToggleFeatured}
-                        disabled={!!loadingAction}
-                        variant="outline"
-                        className={cn(
-                           "w-full h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm",
-                            job.featured === 1
-                               ? "text-indigo-700 border border-indigo-600 bg-white hover:bg-indigo-50"
-                               : "text-[#312E81] border border-[#312E81] bg-white hover:bg-indigo-50"
-                        )}
-                     >
-                        {loadingAction === 'toggle-feature' ? (
-                           <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                           <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
-                        )}
-                        {job.featured === 1 ? "Featured" : "Mark as Featured"}
-                     </Button>
+                     {job.admin_featured !== 1 && (
+                        <Button
+                           onClick={handleToggleFeatured}
+                           disabled={!!loadingAction}
+                           variant="outline"
+                           className={cn(
+                              "w-full h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm",
+                               job.featured === 1
+                                  ? "text-indigo-700 border border-indigo-600 bg-white hover:bg-indigo-50"
+                                  : "text-[#312E81] border border-[#312E81] bg-white hover:bg-indigo-50"
+                           )}
+                        >
+                           {loadingAction === 'toggle-feature' ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                           ) : (
+                              <Star className={cn("w-4 h-4", job.featured === 1 ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
+                           )}
+                           {job.featured === 1 ? "Featured" : "Mark as Featured"}
+                        </Button>
+                     )}
                   </div>
                </div>
             </div>

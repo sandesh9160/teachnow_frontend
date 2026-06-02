@@ -337,9 +337,9 @@ export default function ApplicationDetailPage() {
 
             {(application.bio || profileData?.bio) && (
               <div className="pt-4 border-t border-slate-50">
-                <span className="block text-[10px] text-black font-semibold uppercase tracking-wider mb-1.5">Personal Statement</span>
-                <p className="text-xs text-black leading-relaxed font-normal italic pr-2">
-                  "{application.bio || profileData?.bio}"
+                <span className="block text-[10px] text-black font-semibold uppercase tracking-wider mb-1.5">Professional Summery </span>
+                <p className="text-xs text-black leading-relaxed font-normal pr-2">
+                  {application.bio || profileData?.bio}
                 </p>
               </div>
             )}
@@ -374,7 +374,7 @@ export default function ApplicationDetailPage() {
                           {ans.question?.question || ans.question?.question_text || ans.question_text || ans.question || "Requirement Detail"}
                         </p>
                       </div>
-                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 shadow-inner">
+                      <div className="border border-slate-300 rounded-xl p-4">
                         <p className="text-[9px] font-bold text-amber-600 mb-1">Response</p>
                         <p className="text-xs font-medium text-black leading-relaxed whitespace-pre-line">
                           {ans.candidate_answer || ans.answer || ans.response || "No response provided."}
@@ -452,7 +452,7 @@ export default function ApplicationDetailPage() {
             <h3 className="text-sm font-semibold text-slate-800 border-b border-indigo-50 pb-3">Status Monitor</h3>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-indigo-50/20 rounded-xl border border-indigo-50 shadow-inner">
+              <div className="flex items-center justify-between p-4 border border-slate-300 rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-lg bg-white flex items-center justify-center text-indigo-600 shadow-sm">
                     <Clock className="w-4 h-4" />
@@ -467,7 +467,7 @@ export default function ApplicationDetailPage() {
               </div>
 
               {job?.application_deadline && (
-                <div className="flex items-center justify-between p-4 bg-rose-50/30 rounded-xl border border-rose-50 shadow-inner">
+                <div className="flex items-center justify-between p-4 border border-slate-300 rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-lg bg-white flex items-center justify-center text-rose-600 shadow-sm">
                       <AlertCircle className="w-4 h-4" />

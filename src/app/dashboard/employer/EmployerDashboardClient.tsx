@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+
+
 // import { format } from "date-fns";
 
 interface LatestJob {
@@ -352,7 +354,7 @@ export default function EmployerDashboardClient({
 
          {/* Subscription & Credits Intelligence Card */}
          {sub && (
-            <Link href={`${basePath}/purchase-history`} className="bg-white rounded-2xl p-3 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full transition-all duration-300 cursor-pointer block">
+            <Link href={`${basePath}/purchase-history`} className="bg-white rounded-2xl p-3 border-2 border-slate-300 hover:border-indigo-400 shadow-sm hover:shadow-md relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group w-full transition-all duration-300 cursor-pointer block">
                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
 
                <div className="relative z-10 flex gap-3 items-center shrink-0">
@@ -375,7 +377,7 @@ export default function EmployerDashboardClient({
                {/* Middle: Credits Grid (Allocation & Balance) */}
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 lg:max-w-2xl">
                   {/* Active Allocation Box */}
-                  <div className="bg-slate-50/50 border border-slate-200 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
+                  <div className="bg-slate-50/50 border-2 border-indigo-300 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
                      <div className="flex items-center justify-between mb-2">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Total Allocation</span>
                         <div className="flex items-center gap-1 px-1 py-0.5 bg-emerald-50 rounded-full border border-emerald-100/50">
@@ -396,7 +398,7 @@ export default function EmployerDashboardClient({
                   </div>
 
                   {/* Remaining Balance Box */}
-                  <div className="bg-indigo-50/30 border border-indigo-200/60 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
+                  <div className="bg-indigo-50/30 border-2 border-indigo-300 rounded-xl p-3 transition-all hover:bg-indigo-50/50 group/remaining">
                      <div className="flex items-center justify-between mb-2">
                         <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider">Remaining Balance</span>
                         <span className="text-[7px] font-bold text-indigo-600 uppercase bg-indigo-100/50 px-1 py-0.5 rounded">Available</span>
@@ -709,11 +711,9 @@ export default function EmployerDashboardClient({
                      <Clock className="w-4 h-4 text-amber-600" />
                      <h2 className="text-[14px] font-semibold text-black">Subscription Timeline</h2>
                   </div>
-                  {dashboardData?.credits_summary?.active_subscriptions_count && dashboardData.credits_summary.active_subscriptions_count > 1 && (
-                     <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full animate-pulse">
-                        {dashboardData.credits_summary.active_subscriptions_count} Active Packs
-                     </span>
-                  )}
+                  <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">
+                     {dashboardData?.credits_summary?.active_subscriptions_count || 0} Active Pack{dashboardData?.credits_summary?.active_subscriptions_count === 1 ? '' : 's'}
+                  </span>
                </div>
                <div className="divide-y divide-slate-100">
                   {dashboardData?.subscription_history && dashboardData.subscription_history.length > 0 ? (

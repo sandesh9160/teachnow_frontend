@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
+import { useBranding } from "@/hooks/useBranding";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface RazorpayOptions {
@@ -9,6 +10,7 @@ interface RazorpayOptions {
   amount: number;
   currency: string;
   name: string;
+  image?: string;
   description: string;
   order_id: string;
   handler: (response: RazorpayPaymentResponse) => void;
@@ -89,6 +91,7 @@ export function useRazorpay(options?: {
 }): UseRazorpayReturn {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { companyName, companyLogo } = useBranding();
 
   // Load Razorpay script on mount
   useEffect(() => {
@@ -148,7 +151,8 @@ export function useRazorpay(options?: {
           key: razorpayKey,
           amount: amount,
           currency: currency || "INR",
-          name: "TeachNow",
+          name: companyName || "TeachNow",
+          image: companyLogo || undefined,
           description: `${resolvedPlanName} Subscription`,
           order_id: order_id,
           handler: async (response: RazorpayPaymentResponse) => {
@@ -217,7 +221,7 @@ export function useRazorpay(options?: {
         options?.onFailure?.(msg);
       }
     },
-    [isProcessing, options]
+    [isProcessing, options, companyName, companyLogo]
   );
 
   return { isLoaded, isProcessing, purchasePlan };

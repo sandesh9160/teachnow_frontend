@@ -322,8 +322,8 @@ export default function RecruiterDashboardClient({
                         <div key={job.id} className="px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors group/item">
                            <Link href={`${basePath}/jobs/view/${job.id}`} className="flex-1 min-w-0 flex items-center gap-4 cursor-pointer">
                               <div className="flex-1 min-w-0">
-                                 <div className="flex items-center gap-2 mb-0.5">
-                                    <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors truncate">
+                                 <div className="flex items-start sm:items-center gap-2 mb-0.5 flex-wrap sm:flex-nowrap">
+                                    <h4 className="text-[14px] font-medium text-black group-hover/item:text-indigo-600 transition-colors">
                                        {job.title}
                                     </h4>
                                     <span className={cn(

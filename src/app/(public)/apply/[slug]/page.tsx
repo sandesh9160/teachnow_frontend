@@ -22,7 +22,7 @@ import {
   Clock,
   Loader2,
   Plus,
-  // Star,
+  Star,
   Bookmark,
   Zap,
   Sparkles,
@@ -255,11 +255,18 @@ export default function ApplyJobPage() {
   }, [candidate]);
 
   useEffect(() => {
-    if (!resumes.length) return;
-    const defaultResume = resumes.find((r) => r.is_default);
-    if (defaultResume) setSelectedResumeId(defaultResume.id);
-    else setSelectedResumeId(resumes[0].id);
-  }, [resumes]);
+    if (selectedResumeId !== "") return;
+    
+    if (resumes.length > 0) {
+      const defaultResume = resumes.find((r) => r.is_default);
+      if (defaultResume) setSelectedResumeId(defaultResume.id);
+      else setSelectedResumeId(resumes[0].id);
+    } else if (generatedResumes.length > 0) {
+      const latest = generatedResumes.reduce((latest, current) => new Date(current.created_at) > new Date(latest.created_at) ? current : latest);
+      setSelectedResumeId(`cv-${latest.id}`);
+      setResumeTab('generated');
+    }
+  }, [resumes, generatedResumes, selectedResumeId]);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
@@ -308,6 +315,9 @@ export default function ApplyJobPage() {
           style: { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
         });
         await fetchResumes();
+        if (typeof fetchGeneratedCVs === 'function') {
+          await fetchGeneratedCVs();
+        }
         await fetchTemplates();
         setShowTemplateOverlay(false);
       }
@@ -788,8 +798,8 @@ export default function ApplyJobPage() {
                               <label
                                 key={resume.id}
                                 className={`flex items-start md:items-center gap-3 rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
-                                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                  : "border-border bg-card hover:border-primary/30 hover:bg-muted/30"
+                                  ? "border-primary bg-primary/10 ring-1 ring-primary/30 shadow-sm"
+                                  : "border-slate-200 bg-slate-50 hover:border-primary/40 hover:bg-primary/5"
                                   }`}
                               >
                                 <input
@@ -845,7 +855,10 @@ export default function ApplyJobPage() {
                           <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
                               <h3 className="text-[9px] font-bold text-slate-500 tracking-wide">Resume Usage</h3>
-                              <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[7px] font-bold rounded border border-emerald-100">Live</span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200 shadow-xs">
+                                <Zap className="w-3 h-3 text-emerald-500" fill="currentColor" />
+                                Live
+                              </span>
                             </div>
                             <div className="flex gap-10">
                               <div>
@@ -863,7 +876,10 @@ export default function ApplyJobPage() {
                           <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
                               <h3 className="text-[9px] font-bold text-indigo-500 tracking-wide">Remaining Credits</h3>
-                              <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[7px] font-bold rounded border border-indigo-100">Available</span>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-full border border-indigo-200 shadow-xs">
+                                <CheckCircle2 className="w-3 h-3 text-indigo-500" />
+                                Available
+                              </span>
                             </div>
                             <div className="flex gap-10">
                               <div>
@@ -898,38 +914,64 @@ export default function ApplyJobPage() {
                           const paginated = generatedResumes.slice(start, start + itemsPerPage);
                           if (generatedResumes.length === 0) return <div className="col-span-full h-40 flex items-center justify-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest border-2 border-dashed border-emerald-100 rounded-xl">No AI drafts generated</div>;
 
+                          const latestCvId = generatedResumes.length > 0 
+                            ? generatedResumes.reduce((latest, current) => new Date(current.created_at) > new Date(latest.created_at) ? current : latest).id 
+                            : null;
+
                           return paginated.map((cv) => {
                             const isSelected = String(selectedResumeId) === `cv-${cv.id}`;
+                            const isLatest = cv.id === latestCvId;
+                            const formattedDate = new Date(cv.created_at).toLocaleDateString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            });
+                            const formattedTime = new Date(cv.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            });
+
                             return (
                               <label
                                 key={cv.id}
-                                className={`flex items-start md:items-center gap-3 rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
-                                  ? "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-200"
-                                  : "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/30"
+                                className={`relative block rounded-xl border p-4 cursor-pointer transition-all duration-200 ${isSelected
+                                  ? "border-emerald-500 bg-emerald-100/80 ring-1 ring-emerald-300 shadow-sm"
+                                  : "border-emerald-200/60 bg-emerald-50/50 hover:border-emerald-300 hover:bg-emerald-50"
                                   }`}
                               >
-                                <input
-                                  type="radio"
-                                  checked={isSelected}
-                                  onChange={() => setSelectedResumeId(`cv-${cv.id}`)}
-                                  className="sr-only"
-                                />
-                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-                                  <FileText className="h-5 w-5" />
+                                {isLatest && (
+                                  <span className="absolute top-0 left-0 inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-800 text-[11px] font-bold rounded-br-xl rounded-tl-xl border-b border-r border-blue-200 shadow-xs z-10">
+                                    <Star className="w-3.5 h-3.5 text-blue-600" fill="currentColor" />
+                                    Latest
+                                  </span>
+                                )}
+                                <div className={`flex items-start md:items-center gap-3 w-full ${isLatest ? 'mt-4' : ''}`}>
+                                  <input
+                                    type="radio"
+                                    checked={isSelected}
+                                    onChange={() => setSelectedResumeId(`cv-${cv.id}`)}
+                                    className="sr-only"
+                                  />
+                                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? 'bg-emerald-500 text-white' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    <FileText className="h-5 w-5" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <p className="text-[13px] font-bold text-foreground truncate">{cv.title || "AI Resume"}</p>
+                                    </div>
+                                    <p className="text-[10px] font-medium text-slate-500/80 uppercase tracking-tight flex items-center gap-1 mt-0.5">
+                                      <Clock className="w-3 h-3 text-slate-400" /> {formattedDate} at {formattedTime}
+                                    </p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePreviewResume(cv.pdf_path); }}
+                                    className="p-2 rounded-lg hover:bg-emerald-100 text-emerald-600 transition-colors"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </button>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] font-bold text-foreground truncate">{cv.title || "AI Resume"}</p>
-                                  <p className="text-[10px] font-medium text-muted-foreground/80 uppercase tracking-tight">
-                                    {new Date(cv.created_at).toLocaleDateString()}
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlePreviewResume(cv.pdf_path); }}
-                                  className="p-2 rounded-lg hover:bg-emerald-100 text-emerald-600 transition-colors"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </button>
                               </label>
                             );
                           });
@@ -1143,22 +1185,26 @@ export default function ApplyJobPage() {
           {step === submitStepIdx && !submitted && (
             <div className="space-y-6 md:space-y-8">
               <div className="rounded-2xl border border-border bg-muted/20 p-5 md:p-6 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
-                    { label: "Job Position", value: jobDetails.title },
-                    { label: "Institution", value: jobDetails.employer?.company_name },
-                    { label: "Full Name", value: candidate.name },
-                    { label: "Email", value: candidate.email },
-                    { label: "Phone", value: candidate.phone || "—" },
-                    { label: "Experience", value: candidate.experience ? `${candidate.experience} Years` : "—" },
-                    { label: "Location", value: candidate.location || "—" },
-                    { label: "Date of Birth", value: candidate.dob || "—" },
-                    { label: "Portfolio", value: candidate.portfolio_website || "—" },
-
+                    { label: "Job Position", value: jobDetails.title, icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50" },
+                    { label: "Institution", value: jobDetails.employer?.company_name, icon: Building2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                    { label: "Full Name", value: candidate.name, icon: User, color: "text-blue-600", bg: "bg-blue-50" },
+                    { label: "Email", value: candidate.email, icon: Mail, color: "text-rose-600", bg: "bg-rose-50" },
+                    { label: "Phone", value: candidate.phone || "—", icon: Phone, color: "text-amber-600", bg: "bg-amber-50" },
+                    { label: "Experience", value: candidate.experience ? `${candidate.experience} Years` : "—", icon: Star, color: "text-violet-600", bg: "bg-violet-50" },
+                    { label: "Location", value: candidate.location || "—", icon: MapPin, color: "text-pink-600", bg: "bg-pink-50" },
+                    { label: "Date of Birth", value: candidate.dob || "—", icon: Clock, color: "text-orange-600", bg: "bg-orange-50" },
+                    { label: "Portfolio", value: candidate.portfolio_website || "—", icon: Globe, color: "text-cyan-600", bg: "bg-cyan-50" },
                   ].map((item) => (
-                    <div key={item.label} className="min-w-0 group">
-                      <span className="block text-[10px] font-semibold text-slate-700 mb-1 group-hover:text-primary transition-colors">{item.label}</span>
-                      <div className="block font-semibold text-foreground text-sm md:text-base">{item.value}</div>
+                    <div key={item.label} className="flex items-start gap-3.5 min-w-0 bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm">
+                      <div className={`p-2 rounded-lg shrink-0 ${item.bg}`}>
+                        <item.icon className={`w-4 h-4 ${item.color}`} />
+                      </div>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <span className="block text-[12px] font-medium text-slate-500 tracking-tight mb-0.5">{item.label}</span>
+                        <div className="block font-semibold text-slate-900 text-[13px] break-words leading-tight">{item.value}</div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1186,10 +1232,10 @@ export default function ApplyJobPage() {
                       </span>
                       <p className="text-sm font-bold text-foreground mb-3">{title}</p>
                       {fullUrl ? (
-                        <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+                        <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shadow-sm">
                           <iframe
-                            src={`/api/files/preview?url=${encodeURIComponent(fullUrl)}#toolbar=0&view=Fit`}
-                            className="w-full h-[300px] sm:h-[400px] border-none"
+                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`}
+                            className="w-full h-[500px] sm:h-[700px] lg:h-[850px] border-none bg-slate-50"
                             title="Resume Preview"
                           />
                         </div>
@@ -1220,11 +1266,16 @@ export default function ApplyJobPage() {
                 )}
 
                 {candidate.bio && (
-                  <div className="pt-6 border-t border-border/50 space-y-5">
-                    <div className="bg-background/50 rounded-xl p-4 border border-border/30">
-                      <span className="block text-[10px] font-semibold text-slate-700 mb-2">Professional Bio</span>
+                  <div className="pt-6 border-t border-border/50 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-50 shrink-0">
+                        <User className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <span className="block text-[14px] font-semibold text-slate-800 tracking-tight">Professional Bio</span>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
                       <div
-                        className="text-sm text-muted-foreground leading-relaxed rich-text"
+                        className="text-[13px] text-slate-700 font-medium leading-relaxed rich-text"
                         dangerouslySetInnerHTML={{ __html: candidate.bio.replace(/\n/g, '<br/>') }}
                       />
                     </div>
@@ -1232,22 +1283,23 @@ export default function ApplyJobPage() {
                 )}
 
                 {candidate.educations.length > 0 && (
-                  <div className="pt-6 border-t border-border/50">
-                    <span className="block text-[10px] font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                      <GraduationCap className="w-3 h-3" /> Education History
-                    </span>
+                  <div className="pt-6 border-t border-border/50 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-indigo-50 shrink-0">
+                        <GraduationCap className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <span className="block text-[14px] font-semibold text-slate-800 tracking-tight">Education History</span>
+                    </div>
                     <div className="space-y-3">
                       {candidate.educations.map((edu: any, idx: number) => (
-                        <div key={idx} className="bg-background/40 rounded-xl p-3 border border-border/20">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">{edu.degree} in {edu.field_of_study}</p>
-                              <p className="text-xs text-muted-foreground font-medium">{edu.institution}</p>
-                            </div>
-                            <span className="text-[10px] font-medium text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
-                              {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
-                            </span>
+                        <div key={idx} className="bg-white rounded-xl p-3.5 border border-slate-100 shadow-sm flex items-start gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-bold text-slate-900">{edu.degree} <span className="font-medium text-slate-500">in</span> {edu.field_of_study}</p>
+                            <p className="text-[12px] text-slate-600 font-medium mt-0.5">{edu.institution}</p>
                           </div>
+                          <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg shrink-0">
+                            {edu.start_year} — {edu.is_current ? "Present" : edu.end_year}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -1255,25 +1307,26 @@ export default function ApplyJobPage() {
                 )}
 
                 {candidate.experiences.length > 0 && (
-                  <div className="pt-6 border-t border-border/50">
-                    <span className="block text-[10px] font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                      <Briefcase className="w-3 h-3" /> Professional Experience
-                    </span>
+                  <div className="pt-6 border-t border-border/50 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-50 shrink-0">
+                        <Briefcase className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <span className="block text-[14px] font-semibold text-slate-800 tracking-tight">Professional Experience</span>
+                    </div>
                     <div className="space-y-3">
                       {candidate.experiences.map((exp: any, idx: number) => (
-                        <div key={idx} className="bg-background/40 rounded-xl p-3 border border-border/20">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">{exp.job_title}</p>
-                              <p className="text-xs text-muted-foreground font-medium">{exp.company_name}</p>
-                              {exp.description && (
-                                <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{exp.description}</p>
-                              )}
-                            </div>
-                            <span className="text-[10px] font-medium text-primary/60 bg-primary/5 px-2 py-0.5 rounded-full">
-                              {new Date(exp.start_date).getFullYear()} — {exp.is_current ? "Present" : (exp.end_date ? new Date(exp.end_date).getFullYear() : "Present")}
-                            </span>
+                        <div key={idx} className="bg-white rounded-xl p-3.5 border border-slate-100 shadow-sm flex items-start gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-bold text-slate-900">{exp.job_title}</p>
+                            <p className="text-[12px] text-slate-600 font-medium mt-0.5">{exp.company_name}</p>
+                            {exp.description && (
+                              <p className="text-[12px] text-slate-600 mt-2 line-clamp-3 leading-relaxed">{exp.description}</p>
+                            )}
                           </div>
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg shrink-0">
+                            {new Date(exp.start_date).getFullYear()} — {exp.is_current ? "Present" : (exp.end_date ? new Date(exp.end_date).getFullYear() : "Present")}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -1281,20 +1334,28 @@ export default function ApplyJobPage() {
                 )}
 
                 {hasQuestions && Object.values(questionAnswers).some(a => a.trim()) && (
-                  <div className="pt-6 border-t border-border/50">
-                    <span className="block text-[10px] font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                      Recruiter Questions Review
-                    </span>
-                    <div className="space-y-4">
+                  <div className="pt-6 border-t border-border/50 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-amber-50 shrink-0">
+                        <CheckCircle2 className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <span className="block text-[14px] font-semibold text-slate-800 tracking-tight">Recruiter Questions Review</span>
+                    </div>
+                    <div className="space-y-3">
                       {Object.entries(questionAnswers).map(([qid, ans]) => {
                         const q = jobDetails.questions?.find(sq => String(sq.id) === qid) ||
                           jobDetails.screening_questions?.find(sq => String(sq.id) === qid);
                         const label = q ? q.question : (parseInt(qid) === jobDetails.cover_letter_question_id ? "Motivation / Cover Letter" : "Question");
                         if (!ans.trim()) return null;
                         return (
-                          <div key={qid} className="bg-background/40 rounded-xl p-3 border border-border/20">
-                            <p className="text-[10px] font-medium text-primary/60 tracking-tight mb-1">{label}</p>
-                            <p className="text-sm text-foreground whitespace-pre-wrap">{ans === "yes" ? "Yes" : (ans === "no" ? "No" : ans)}</p>
+                          <div key={qid} className="bg-white rounded-xl p-3.5 border border-slate-100 shadow-sm flex items-start gap-3">
+                            <div className="p-1 rounded bg-amber-50 border border-amber-100 shrink-0 mt-0.5">
+                               <Check className="w-3.5 h-3.5 text-amber-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                               <p className="text-[12px] font-medium text-slate-500 tracking-tight mb-1">{label}</p>
+                               <p className="text-[13px] font-semibold text-slate-900 whitespace-pre-wrap leading-relaxed">{ans === "yes" ? "Yes" : (ans === "no" ? "No" : ans)}</p>
+                            </div>
                           </div>
                         );
                       })}
@@ -1533,8 +1594,8 @@ export default function ApplyJobPage() {
             <div className="flex-1 overflow-hidden bg-slate-100 relative">
               {previewUrl ? (
                 <iframe
-                  src={`/api/files/preview?url=${encodeURIComponent(previewUrl)}#toolbar=0&view=Fit`}
-                  className="w-full h-full border-none"
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                  className="w-full h-full border-none bg-slate-50"
                   title="Resume Content"
                 />
               ) : (

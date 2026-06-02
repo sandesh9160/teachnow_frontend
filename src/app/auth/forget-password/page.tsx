@@ -4,8 +4,11 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { GraduationCap, KeyRound } from "lucide-react";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm/ResetPasswordForm";
+import { useBranding } from "@/hooks/useBranding";
 
 function ForgetPasswordContent() {
+  const { companyName, companyLogo, brandSecondaryPart, brandPrimaryPart } = useBranding();
+
   return (
     <div className="flex flex-1 items-start md:items-center justify-center bg-white px-4 pt-8 pb-10 md:py-12">
       <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-sm md:grid md:grid-cols-[1.2fr_1.8fr]">
@@ -13,11 +16,19 @@ function ForgetPasswordContent() {
         {/* LEFT PANEL — Shared brand panel */}
         <div className="relative hidden flex-col items-center justify-start gap-3 overflow-hidden bg-muted/10 p-4 pt-5 md:flex border-r border-border">
           <div className="relative z-10 flex flex-col items-center text-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
-              <GraduationCap className="h-7 w-7 text-primary" />
-            </div>
+            {companyLogo ? (
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm overflow-hidden p-2 border border-border/50">
+                <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+              </div>
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <GraduationCap className="h-7 w-7 text-primary" />
+              </div>
+            )}
             <div>
-              <h2 className="font-display text-xl font-bold text-foreground">TeachNow</h2>
+              <h2 className="font-display text-xl font-bold text-foreground">
+                {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
+              </h2>
               <p className="mt-1 text-sm text-muted-foreground leading-relaxed max-w-[180px]">
                 Restoring your access to India&apos;s leading education portal.
               </p>
@@ -39,10 +50,18 @@ function ForgetPasswordContent() {
         <div className="p-3 md:p-6 bg-white min-h-[480px] flex flex-col">
           {/* Mobile brand */}
           <div className="flex items-center gap-2 mb-4 md:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <GraduationCap className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-display text-base font-bold text-foreground">TeachNow</span>
+            {companyLogo ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm overflow-hidden p-1 border border-border">
+                <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+              </div>
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <GraduationCap className="h-4 w-4 text-primary-foreground" />
+              </div>
+            )}
+            <span className="font-display text-base font-bold text-foreground">
+              {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
+            </span>
           </div>
 
           <div className="mb-4">
