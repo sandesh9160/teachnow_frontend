@@ -66,7 +66,7 @@ export default function ResumeManagementPage() {
 
     try {
       const res = await generateCV({ template_id: tplId });
-      const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url;
+      const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url || res?.data?.pdf_path || res?.pdf_path;
       if (url) {
         setLastGeneratedCV(normalizeMediaUrl(url));
         toast.success("Generation complete! Successfully created Resume.", {

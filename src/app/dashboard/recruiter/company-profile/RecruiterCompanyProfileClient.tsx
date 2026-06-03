@@ -19,7 +19,6 @@ import {
   ArrowRight,
   X,
   ChevronLeft,
-  Edit3
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -458,45 +457,48 @@ export default function RecruiterCompanyProfileClient({
               </div>
 
               <div className={cn("space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== "location" && "hidden")}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="space-y-5">
                   <div className="space-y-1.5">
                     <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.address ? "text-red-500" : "text-slate-500")}>
                       Physical Address <span className="text-red-500 ml-0.5">*</span>
                     </Label>
-                    <Input
+                    <textarea
                       name="address"
+                      rows={5}
                       defaultValue={profile.address || ""}
                       className={cn(
-                        "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
+                        "w-full text-[13px] font-semibold p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black shadow-xs-soft",
                         errors.address && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
                       )}
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.city ? "text-red-500" : "text-slate-500")}>
-                      Settlement / City <span className="text-red-500 ml-0.5">*</span>
-                    </Label>
-                    <Input
-                      name="city"
-                      defaultValue={profile.city || ""}
-                      className={cn(
-                        "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
-                        errors.city && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.country ? "text-red-500" : "text-slate-500")}>
-                      Nation / Country <span className="text-red-500 ml-0.5">*</span>
-                    </Label>
-                    <Input
-                      name="country"
-                      defaultValue={profile.country || "INDIA"}
-                      className={cn(
-                        "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
-                        errors.country && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
-                      )}
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="space-y-1.5">
+                      <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.city ? "text-red-500" : "text-slate-500")}>
+                        Settlement / City <span className="text-red-500 ml-0.5">*</span>
+                      </Label>
+                      <Input
+                        name="city"
+                        defaultValue={profile.city || ""}
+                        className={cn(
+                          "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
+                          errors.city && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                        )}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.country ? "text-red-500" : "text-slate-500")}>
+                        Nation / Country <span className="text-red-500 ml-0.5">*</span>
+                      </Label>
+                      <Input
+                        name="country"
+                        defaultValue={profile.country || "INDIA"}
+                        className={cn(
+                          "h-10 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 bg-white text-black shadow-xs-soft",
+                          errors.country && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                        )}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -594,12 +596,7 @@ export default function RecruiterCompanyProfileClient({
           <h1 className="text-lg font-medium text-black tracking-tight">Institution Profile</h1>
           <p className="text-[12px] text-black opacity-60">General identity and public presence of the institution.</p>
         </div>
-        <Button
-          onClick={() => setIsEditing(true)}
-          className="h-9 px-4 rounded-xl font-semibold text-xs bg-[#312E81] hover:bg-[#1E1B4B] shadow-sm shadow-indigo-100 transition-all flex items-center gap-2 active:scale-95 shrink-0 text-white"
-        >
-          <Edit3 className="w-3.5 h-3.5" /> Edit Profile
-        </Button>
+
       </div>
 
       {/* Hero Banner Section */}

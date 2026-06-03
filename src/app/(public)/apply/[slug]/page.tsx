@@ -1234,7 +1234,7 @@ export default function ApplyJobPage() {
                       {fullUrl ? (
                         <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shadow-sm">
                           <iframe
-                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`}
+                            src={fullUrl}
                             className="w-full h-[500px] sm:h-[700px] lg:h-[850px] border-none bg-slate-50"
                             title="Resume Preview"
                           />

@@ -111,7 +111,7 @@ export default function ProfileFormClient({
   const [editingExpId, setEditingExpId] = useState<number | string | null>(null);
 
   const [profileData, setProfileData] = useState(() => mapServerProfile(initialResponse));
-  const [availableSkills] = useState<any[]>(
+  const [availableSkills, setAvailableSkills] = useState<any[]>(
     Array.isArray(initialResponse.skills) ? (initialResponse.skills as any[]) : []
   );
 
@@ -192,6 +192,27 @@ export default function ProfileFormClient({
       }
     } catch (err) {
       setCertSuggestions([]);
+    }
+  };
+
+  const fetchSkills = async (query: string) => {
+    if (query.length < 1) {
+      setAvailableSkills(Array.isArray(initialResponse.skills) ? (initialResponse.skills as any[]) : []);
+      return;
+    }
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
+      const res = await fetch(`${baseUrl}/api/open/skills?search=${query}`);
+      const data = await res.json();
+      if (data.status && Array.isArray(data.data)) {
+        setAvailableSkills(data.data);
+      } else {
+        // Fallback common skills
+        const commonSkills = ["Mathematics", "Science", "English", "History", "Physics", "Chemistry", "Biology", "Computer Science", "Communication", "Leadership", "Teaching", "Lesson Planning", "Curriculum Development", "Classroom Management"];
+        setAvailableSkills(commonSkills.filter(s => s.toLowerCase().includes(query.toLowerCase())).map(name => ({ id: name, name })));
+      }
+    } catch (err) {
+      // Keep existing or fallback
     }
   };
 
@@ -532,6 +553,10 @@ export default function ProfileFormClient({
 
     if (profileData.dob && isAfter(parseISO(profileData.dob), new Date())) {
       newErrors.dob = "Date of Birth cannot be in the future";
+    }
+
+    if (!photoFile && !profileData.profile_photo) {
+      newErrors.profile_photo = "Profile picture is mandatory. Please upload a photo.";
     }
 
     setErrors(newErrors);
@@ -1371,8 +1396,14 @@ export default function ProfileFormClient({
                 <div className="flex items-center gap-2">
                   <Input
                     placeholder="Add a skill or subject..." value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onFocus={() => setSkillInput(skillInput)}
+                    onChange={(e) => {
+                      setSkillInput(e.target.value);
+                      fetchSkills(e.target.value);
+                    }}
+                    onFocus={() => {
+                      setSkillInput(skillInput);
+                      if (skillInput.length > 0) fetchSkills(skillInput);
+                    }}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomSkill())}
                     className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
                   />

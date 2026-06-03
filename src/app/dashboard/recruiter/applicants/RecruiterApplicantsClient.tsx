@@ -118,6 +118,7 @@ const CustomSelect = ({
   );
 };
 
+
 interface Application {
   id: number;
   job_id: number;
@@ -235,6 +236,8 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
     setMounted(true);
   }, []);
 
+
+
   // Advanced Filter States
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedExperience, setSelectedExperience] = useState("");
@@ -249,6 +252,8 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
     return [];
   };
 
+
+
   const initialApps = getInitialApps();
   const [apps, setApps] = useState<Application[]>(initialApps);
   const [loading, setLoading] = useState<number | null>(null);
@@ -258,6 +263,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
   useEffect(() => {
     setApps(getInitialApps());
   }, [initialData]);
+
 
   const getCandidateName = (app: Application) => app.job_seeker?.user?.name || app.job_seeker?.name || "Applicant";
   const getCandidateInitial = (app: Application) => {
@@ -283,6 +289,8 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
     
     // Route the download through our local API proxy to bypass CORS 
     // and force a direct download without opening a new tab
+
+    
     const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&fileName=${encodeURIComponent(fileName || 'Resume.pdf')}`;
     
     const a = document.createElement("a");

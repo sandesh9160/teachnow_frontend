@@ -374,7 +374,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                               variant="outline"
                               className="w-full h-9 rounded-xl text-[11px] font-bold text-indigo-700 bg-white border border-indigo-600 hover:bg-indigo-50 flex items-center justify-center gap-2 shadow-sm"
                            >
-                              <FileText className="w-3.5 h-3.5" />
+                              <Edit2 className="w-3.5 h-3.5" />
                               Edit Requirement
                            </Button>
                         </Link>

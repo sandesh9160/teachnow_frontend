@@ -146,71 +146,71 @@ export default function RecruiterDashboardClient({
 
          {/* Subscription & Credit Summary - Balanced Density */}
          {credits && (
-            <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-8 group">
+             <div className="bg-white rounded-[20px] p-4 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
 
-               <div className="relative z-10 flex gap-4 md:items-center shrink-0">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
+               <div className="relative z-10 flex gap-3 md:items-center shrink-0">
+                  <div className="w-10 h-10 rounded-[14px] bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner group-hover:rotate-6 transition-transform">
                      <CreditCard className="w-4 h-4" />
                   </div>
                   <div>
-                     <p className="text-[10px] font-medium text-black/40 capitalize mb-0.5">Current membership</p>
-                     <h2 className="text-xl font-medium text-black tracking-tight">{sub?.plan_name || "Silver Plan"}</h2>
-                     <p className="text-[11px] font-medium text-black/40 flex items-center gap-1.5 mt-0.5">
+                     <p className="text-[9px] font-medium text-black/40 capitalize mb-0.5">Current membership</p>
+                     <h2 className="text-base font-medium text-black tracking-tight">{sub?.plan_name || "Silver Plan"}</h2>
+                     <p className="text-[10px] font-medium text-black/40 flex items-center gap-1.5 mt-0.5">
                         <Clock className="w-2.5 h-2.5 text-amber-500" /> Renewal: {sub?.expires_at ? new Date(sub.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "---"}
                      </p>
                   </div>
                </div>
 
-               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-4 lg:gap-8 lg:border-l lg:border-slate-100 lg:pl-10">
+               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-3 lg:gap-6 lg:border-l lg:border-slate-100 lg:pl-6">
                   {/* Allocation Info Box */}
-                  <div className="flex-1 bg-slate-50/30 border border-slate-200 rounded-2xl p-4 transition-all hover:bg-slate-50 group/active">
-                     <div className="flex items-center gap-2 mb-2.5">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Total Credits</span>
+                  <div className="flex-1 bg-slate-50/30 border border-slate-200 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
+                     <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Total Credits</span>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-slate-500 capitalize">Job posts</span>
-                           <p className="text-xl font-medium text-black">{jobTotal}</p>
+                           <span className="text-[9px] font-medium text-slate-500 capitalize">Job posts</span>
+                           <p className="text-base font-medium text-black">{jobTotal}</p>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-slate-500 capitalize">Featured</span>
-                           <p className="text-xl font-medium text-black">{featTotal}</p>
+                           <span className="text-[9px] font-medium text-slate-500 capitalize">Featured</span>
+                           <p className="text-base font-medium text-black">{featTotal}</p>
                         </div>
                      </div>
                   </div>
 
                   {/* Remaining Balance Box */}
-                  <div className="flex-1 bg-emerald-50/10 border border-emerald-200/60 rounded-2xl p-4 transition-all hover:bg-emerald-50/20 group/remaining">
-                     <div className="flex items-center gap-2 mb-2.5">
-                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
+                  <div className="flex-1 bg-emerald-50/10 border border-emerald-200/60 rounded-xl p-3 transition-all hover:bg-emerald-50/20 group/remaining">
+                     <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider whitespace-nowrap">Remaining Credits</span>
                         <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-emerald-700/70 capitalize">Job posts</span>
-                           <p className="text-xl font-medium text-emerald-600">{jobRemaining}</p>
+                           <span className="text-[9px] font-medium text-emerald-700/70 capitalize">Job posts</span>
+                           <p className="text-base font-medium text-emerald-600">{jobRemaining}</p>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-emerald-700/70 capitalize">Featured</span>
-                           <p className="text-xl font-medium text-emerald-600">{featRemaining}</p>
+                           <span className="text-[9px] font-medium text-emerald-700/70 capitalize">Featured</span>
+                           <p className="text-base font-medium text-emerald-600">{featRemaining}</p>
                         </div>
                      </div>
                   </div>
 
                   {/* Recruiter's Personal Usage Box */}
-                  <div className="flex-1 bg-amber-50/10 border border-amber-200/60 rounded-2xl p-4 transition-all hover:bg-amber-50/20 group/usage">
-                     <div className="flex items-center gap-2 mb-2.5">
-                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider whitespace-nowrap">Your Usage</span>
+                  <div className="flex-1 bg-amber-50/10 border border-amber-200/60 rounded-xl p-3 transition-all hover:bg-amber-50/20 group/usage">
+                     <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-bold text-amber-700 uppercase tracking-wider whitespace-nowrap">Your Usage</span>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-amber-700/70 capitalize">Jobs used</span>
-                           <p className="text-xl font-medium text-black">{yourJobs}</p>
+                           <span className="text-[9px] font-medium text-amber-700/70 capitalize">Jobs used</span>
+                           <p className="text-base font-medium text-black">{yourJobs}</p>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-medium text-amber-700/70 capitalize">Featured</span>
-                           <p className="text-xl font-medium text-black">{yourFeat}</p>
+                           <span className="text-[9px] font-medium text-amber-700/70 capitalize">Featured</span>
+                           <p className="text-base font-medium text-black">{yourFeat}</p>
                         </div>
                      </div>
                   </div>
@@ -219,24 +219,24 @@ export default function RecruiterDashboardClient({
          )}
 
          {/* Stats Grid - Gradient Cards */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {stats.map((stat, i) => (
                <Link 
                   href={stat.link} 
                   key={i} 
                   className={cn(
-                     "relative h-30 rounded-[24px] p-6 flex flex-col justify-between overflow-hidden shadow-sm text-white bg-gradient-to-br block",
+                     "relative h-24 rounded-[20px] p-5 flex flex-col justify-between overflow-hidden shadow-sm text-white bg-gradient-to-br block border border-white/20",
                      stat.gradient,
-                     "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer hover:shadow-md"
+                     "hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer hover:shadow-md hover:border-white/40"
                   )}
                >
-                  <div className="absolute top-3 right-3 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner">
-                     <stat.icon className="w-7 h-7 opacity-80" />
+                  <div className="absolute top-3 right-3 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm shadow-inner">
+                     <stat.icon className="w-5 h-5 opacity-80" />
                   </div>
 
-                  <div className="relative z-10 space-y-0.5">
-                     <p className="text-[16px] font-medium opacity-80">{stat.label}</p>
-                     <h3 className="text-4xl font-semibold">{stat.value}</h3>
+                  <div className="relative z-10 space-y-0.5 mt-2">
+                     <p className="text-[13px] font-medium opacity-80">{stat.label}</p>
+                     <h3 className="text-2xl font-semibold">{stat.value}</h3>
                   </div>
                </Link>
             ))}

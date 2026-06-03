@@ -2,10 +2,10 @@
 
 import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
-import { 
-  Bell, 
-  CheckCircle2, 
-  ChevronLeft, 
+import {
+  Bell,
+  CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   UserPlus,
   Briefcase,
@@ -16,14 +16,14 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function NotificationsList() {
-  const { 
-    notifications, 
-    loading, 
-    unreadCount, 
-    pagination, 
-    fetchNotifications, 
-    markAsRead, 
-    markAllAsRead 
+  const {
+    notifications,
+    loading,
+    unreadCount,
+    pagination,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead
   } = useNotifications("recruiter");
 
   if (loading && notifications.length === 0) {
@@ -80,7 +80,7 @@ export default function NotificationsList() {
       <div className="bg-white rounded-2xl border border-slate-200/60 p-1.5 sm:p-2.5 shadow-sm space-y-1">
         {notifications.map((notification) => {
           const isUnread = !notification.is_read;
-          
+
           const getIcon = () => {
             const type = notification.type?.toLowerCase();
             if (type?.includes('applicant')) return <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />;
@@ -89,24 +89,24 @@ export default function NotificationsList() {
             if (type?.includes('featured')) return <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4" />;
             return <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />;
           };
-            const getColorConfig = () => {
-              const type = notification.type?.toLowerCase();
-              if (type?.includes('applicant')) return { border: "border-indigo-100", bg: "bg-indigo-50/20", accent: "bg-indigo-500", iconBg: "bg-indigo-50 text-indigo-500" };
-              if (type?.includes('job')) return { border: "border-emerald-100", bg: "bg-emerald-50/20", accent: "bg-emerald-500", iconBg: "bg-emerald-50 text-emerald-500" };
-              if (type?.includes('subscription') || type?.includes('credit')) return { border: "border-amber-100", bg: "bg-amber-50/20", accent: "bg-amber-500", iconBg: "bg-amber-50 text-amber-500" };
-              if (type?.includes('expired') || type?.includes('deleted')) return { border: "border-rose-100", bg: "bg-rose-50/20", accent: "bg-rose-500", iconBg: "bg-rose-50 text-rose-500" };
-              return { border: "border-slate-100", bg: "bg-white", accent: "bg-indigo-600", iconBg: "bg-slate-50 text-slate-500" };
-            };
+          const getColorConfig = () => {
+            const type = notification.type?.toLowerCase();
+            if (type?.includes('applicant')) return { border: "border-indigo-100", bg: "bg-indigo-50/20", accent: "bg-indigo-500", iconBg: "bg-indigo-50 text-indigo-500" };
+            if (type?.includes('job')) return { border: "border-emerald-100", bg: "bg-emerald-50/20", accent: "bg-emerald-500", iconBg: "bg-emerald-50 text-emerald-500" };
+            if (type?.includes('subscription') || type?.includes('credit')) return { border: "border-amber-100", bg: "bg-amber-50/20", accent: "bg-amber-500", iconBg: "bg-amber-50 text-amber-500" };
+            if (type?.includes('expired') || type?.includes('deleted')) return { border: "border-rose-100", bg: "bg-rose-50/20", accent: "bg-rose-500", iconBg: "bg-rose-50 text-rose-500" };
+            return { border: "border-slate-100", bg: "bg-white", accent: "bg-indigo-600", iconBg: "bg-slate-50 text-slate-500" };
+          };
 
-            const colors = getColorConfig();
+          const colors = getColorConfig();
 
           return (
             <div
               key={notification.id}
               onClick={() => isUnread && markAsRead(notification.id)}
               className={cn(
-                "group flex items-start gap-4 p-5 sm:p-6 rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm relative overflow-hidden active:bg-slate-50 mb-3 last:mb-0",
-                isUnread 
+                "group flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-300 cursor-pointer shadow-sm relative overflow-hidden active:bg-slate-50 mb-2 last:mb-0",
+                isUnread
                   ? `bg-white border-slate-200/60 ring-1 ring-slate-100 shadow-md`
                   : `bg-white border-slate-100 hover:border-slate-200 hover:shadow-md`
               )}
@@ -114,30 +114,30 @@ export default function NotificationsList() {
               {/* Icon & Status */}
               <div className="relative shrink-0">
                 <div className={cn(
-                  "w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-300 border shadow-sm",
+                  "w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center transition-all duration-300 border shadow-sm",
                   colors.iconBg,
                   isUnread ? "border-transparent" : "border-slate-100"
                 )}>
                   {getIcon()}
                 </div>
                 {isUnread && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-indigo-600 rounded-full border-2 border-white animate-pulse shadow-sm z-20" />
+                  <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white animate-pulse shadow-sm z-20" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h4 className={cn(
-                    "text-[15px] sm:text-[16px] font-bold leading-tight tracking-tight mb-1 transition-colors",
+                    "text-[13px] sm:text-[14px] font-bold leading-tight tracking-tight mb-0.5 transition-colors",
                     isUnread ? "text-slate-900" : "text-slate-600"
                   )}>
                     {notification.title}
                   </h4>
-                  
+
                   {/* Mobile Badge (only shown on mobile) */}
-                  <div className="sm:hidden mb-2">
-                     <span className={cn(
-                      "text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors inline-block",
+                  <div className="sm:hidden mb-1.5">
+                    <span className={cn(
+                      "text-[9px] font-bold px-2 py-0.5 rounded-full border shadow-sm transition-colors inline-block",
                       isUnread ? "bg-slate-50 text-slate-500 border-slate-200" : "bg-slate-50 text-slate-400 border-slate-100"
                     )}>
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
@@ -145,7 +145,7 @@ export default function NotificationsList() {
                   </div>
 
                   <p className={cn(
-                    "text-[13px] sm:text-sm leading-relaxed",
+                    "text-[11px] sm:text-xs leading-relaxed",
                     isUnread ? "text-slate-600 font-medium" : "text-slate-400 font-normal"
                   )}>
                     {notification.message}
@@ -177,7 +177,7 @@ export default function NotificationsList() {
             <span className="hidden xs:inline">Total </span>
             <span className="hidden xs:inline text-slate-900">{pagination.total}</span>
           </p>
-          
+
           <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               disabled={pagination.currentPage === 1}
@@ -186,7 +186,7 @@ export default function NotificationsList() {
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            
+
             <div className="flex items-center gap-1 px-3 h-8 bg-white border border-slate-200 rounded-xl">
               <span className="text-[11px] font-bold text-slate-700">{pagination.currentPage}</span>
               <span className="text-slate-300 text-[10px]">/</span>

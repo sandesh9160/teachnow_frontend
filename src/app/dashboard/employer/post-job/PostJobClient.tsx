@@ -362,7 +362,11 @@ export default function PostJobClient({
           }, 1500);
         }
       } else {
-        toast.error(result.message || "Failed.", {
+        let errorMessage = result.message || "Failed.";
+        if (errorMessage === "No job credits available") {
+          errorMessage = "No job credits available please purchase plan";
+        }
+        toast.error(errorMessage, {
           style: {
             background: '#FFF5F5',
             color: '#C53030',
@@ -595,13 +599,14 @@ export default function PostJobClient({
                   suppressHydrationWarning
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (val.length > 50) {
+                    const filteredVal = val.replace(/[^0-9]/g, '');
+                    if (filteredVal.length > 50) {
                       setLimitReachedField("experience_required");
                       toast.error("Character limit reached: Maximum 50 characters allowed", { id: "limit-toast" });
-                      updateField("experience_required", val.slice(0, 50));
+                      updateField("experience_required", filteredVal.slice(0, 50));
                       setTimeout(() => setLimitReachedField(null), 2000);
                     } else {
-                      updateField("experience_required", val);
+                      updateField("experience_required", filteredVal);
                       if (errors.experience_required) setErrors(prev => {
                         const n = { ...prev };
                         delete n.experience_required;
@@ -609,7 +614,7 @@ export default function PostJobClient({
                       });
                     }
                   }}
-                  placeholder="e.g. 5 years"
+                  placeholder="e.g. 5"
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
                     (errors.experience_required || limitReachedField === "experience_required") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
