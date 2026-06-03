@@ -1234,7 +1234,7 @@ export default function ApplyJobPage() {
                       {fullUrl ? (
                         <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-50 shadow-sm">
                           <iframe
-                            src={fullUrl}
+                            src={`/api/view?url=${encodeURIComponent(fullUrl)}#toolbar=0&view=FitH`}
                             className="w-full h-[500px] sm:h-[700px] lg:h-[850px] border-none bg-slate-50"
                             title="Resume Preview"
                           />
@@ -1594,7 +1594,7 @@ export default function ApplyJobPage() {
             <div className="flex-1 overflow-hidden bg-slate-100 relative">
               {previewUrl ? (
                 <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                  src={`/api/view?url=${encodeURIComponent(previewUrl)}#toolbar=0&view=FitH`}
                   className="w-full h-full border-none bg-slate-50"
                   title="Resume Content"
                 />
