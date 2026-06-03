@@ -42,7 +42,7 @@ export const getBlogs = cache(async (filters: Record<string, any> = {}): Promise
     });
 
     const query = params.toString();
-    const res = await fetchAPI<ApiResponse<any>>(`/open/blogs${query ? "?" + query : ""}`);
+    const res = await fetchAPI<ApiResponse<any>>(`/open/blogs${query ? "?" + query : ""}`, { cache: "no-store" });
 
     const data = res.data || res;
     return toArray<Blog>(data).map(normalizeBlog);
@@ -61,7 +61,7 @@ export async function getBlogById(idOrSlug: string | number): Promise<{ blog: Bl
   if (!cleanId) return { blog: null, related: [] };
 
   try {
-    const res = await fetchAPI<ApiResponse<any>>(`/open/blogs/${cleanId}`);
+    const res = await fetchAPI<ApiResponse<any>>(`/open/blogs/${cleanId}`, { cache: "no-store" });
     const data = res.data || res;
 
     if (!data) return { blog: null, related: [] };
@@ -85,7 +85,7 @@ export const getBlogBySlug = getBlogById;
  */
 export const getLatestBlogs = cache(async (): Promise<Blog[]> => {
   try {
-    const res = await fetchAPI<ApiResponse<any>>("/open/blogs/latest");
+    const res = await fetchAPI<ApiResponse<any>>("/open/blogs/latest", { cache: "no-store" });
     const data = res.data || res;
     return toArray<Blog>(data).map(normalizeBlog);
   } catch (error) {

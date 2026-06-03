@@ -29,7 +29,17 @@ export function useResumes(options?: UseResumesOptions) {
   const refreshList = useCallback(async () => {
     const res = await dashboardServerFetch<any>("jobseeker/resumes", { method: "GET" });
     const list = Array.isArray(res?.data) ? (res.data as Resume[]) : [];
-    const generated = Array.isArray(res?.generated_resumes) ? res.generated_resumes : [];
+    
+    // Sort generated resumes by created_at descending
+    const generated = Array.isArray(res?.generated_resumes) 
+      ? [...res.generated_resumes].sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          const validA = isNaN(dateA) ? 0 : dateA;
+          const validB = isNaN(dateB) ? 0 : dateB;
+          return validB - validA;
+        })
+      : [];
 
     // Sort to put default at the top
     const sortedList = [...list].sort((a, b) => (b.is_default ? 1 : 0) - (a.is_default ? 1 : 0));

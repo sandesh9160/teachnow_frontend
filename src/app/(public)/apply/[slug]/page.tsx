@@ -1594,7 +1594,13 @@ export default function ApplyJobPage() {
             <div className="flex-1 overflow-hidden bg-slate-100 relative">
               {previewUrl ? (
                 <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                  src={
+                    previewUrl.toLowerCase().endsWith('.pdf') 
+                      ? previewUrl 
+                      : previewUrl.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/)
+                        ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`
+                        : `https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`
+                  }
                   className="w-full h-full border-none bg-slate-50"
                   title="Resume Content"
                 />

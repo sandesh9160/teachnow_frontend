@@ -133,8 +133,8 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
                     ...(options.headers || {}),
                 },
                 body: options.body ? JSON.stringify(options.body) : undefined,
-                // Default revalidate to 1 hour for public data if not specified
-                next: { revalidate: options.cache === "no-store" ? 0 : 3600 },
+                // Disable caching by default so CMS updates reflect instantly
+                next: { revalidate: 0 },
                 signal: options.signal,
             });
 

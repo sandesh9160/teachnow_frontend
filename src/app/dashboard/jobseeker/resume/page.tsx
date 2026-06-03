@@ -40,6 +40,7 @@ export default function ResumeManagementPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   const [lastGeneratedCV, setLastGeneratedCV] = useState<string | null>(null);
+  const [viewingResumeUrl, setViewingResumeUrl] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchTemplates();
@@ -85,10 +86,10 @@ export default function ResumeManagementPage() {
   const handleDownload = (url: string) => {
     if (!url) return;
     const fullUrl = normalizeMediaUrl(url);
+    const downloadUrl = `/api/download?url=${encodeURIComponent(fullUrl)}&fileName=${encodeURIComponent('My_Professional_CV.pdf')}`;
     const link = document.createElement("a");
-    link.href = fullUrl;
+    link.href = downloadUrl;
     link.setAttribute("download", `My_Professional_CV.pdf`);
-    link.setAttribute("target", "_blank");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -260,14 +261,14 @@ export default function ResumeManagementPage() {
                       </button>
 
                       {/* Floating Primary Action */}
-                      <div className="absolute bottom-3 left-3 right-3 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-3 left-3 right-3 pointer-events-auto transition-opacity opacity-100">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleGenerate(tpl.id);
                           }}
                           disabled={cvLoading}
-                          className="h-8 w-full bg-[#36D7B7] hover:bg-[#2EB89C] text-white rounded-md font-bold text-[10px] shadow-lg shadow-[#36D7B7]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                          className="h-8 w-full bg-[#36D7B7] hover:bg-[#2EB89C] text-white rounded-sm font-bold text-[10px] shadow-lg shadow-[#36D7B7]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
                           {cvLoading && selectedTemplate?.id === tpl.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
                           Apply Theme
@@ -323,7 +324,7 @@ export default function ResumeManagementPage() {
               </div>
               <div className="aspect-[4/6] w-full max-w-2xl mx-auto rounded-2xl overflow-hidden border border-white/5 bg-white relative z-10 shadow-2xl">
                 <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(lastGeneratedCV)}&embedded=true`}
+                  src={`/api/view?url=${encodeURIComponent(lastGeneratedCV)}#toolbar=0&view=FitH`}
                   className="w-full h-full"
                   style={{ border: 'none' }}
                   title="CV Preview"
@@ -341,7 +342,7 @@ export default function ResumeManagementPage() {
                 <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">
                   <Clock className="w-4 h-4" />
                 </div>
-                <h2 className="text-lg font-bold text-black tracking-tight">Built History <span className="text-slate-300 ml-2 font-medium">({generatedResumes.length})</span></h2>
+                <h2 className="text-lg font-bold text-black tracking-tight">Generated  History <span className="text-slate-300 ml-2 font-medium">({generatedResumes.length})</span></h2>
               </div>
             </div>
 
@@ -357,7 +358,7 @@ export default function ResumeManagementPage() {
                       {/* Document Render Container */}
                       <div className="absolute inset-0 pointer-events-none origin-top-left scale-[0.2] sm:scale-[0.25] w-[500%] sm:w-[400%] h-[500%] sm:h-[400%] bg-white opacity-90 transition-opacity">
                         <iframe
-                          src={`https://docs.google.com/viewer?url=${encodeURIComponent(normalizeMediaUrl(cv.pdf_path))}&embedded=true`}
+                          src={`/api/view?url=${encodeURIComponent(normalizeMediaUrl(cv.pdf_path))}#toolbar=0&navpanes=0&scrollbar=0`}
                           className="w-full h-full border-none"
                           title="CV Preview"
                         />
@@ -387,7 +388,7 @@ export default function ResumeManagementPage() {
                       <div className="flex gap-1.5 sm:gap-2">
                         <button
                           className="flex-1 h-6 sm:h-7 bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-md font-bold text-[8px] sm:text-[9px] transition-all flex items-center justify-center gap-1 sm:gap-1.5 border border-slate-100/50"
-                          onClick={() => window.open(normalizeMediaUrl(cv.pdf_path), '_blank')}
+                          onClick={() => setViewingResumeUrl(normalizeMediaUrl(cv.pdf_path))}
                         >
                           <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> View
                         </button>
@@ -500,6 +501,45 @@ export default function ResumeManagementPage() {
                 {cvLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Layout className="w-5 h-5" />}
                 Use This Template
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resume View Modal */}
+      {viewingResumeUrl && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-300 p-4 sm:p-6">
+          <div
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm cursor-pointer"
+            onClick={() => setViewingResumeUrl(null)}
+          />
+          <div className="relative w-full max-w-4xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-white z-10">
+              <h3 className="font-bold text-slate-800">Resume Preview</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDownload(viewingResumeUrl)}
+                  className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download
+                </button>
+                <button
+                  onClick={() => setViewingResumeUrl(null)}
+                  className="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 w-full bg-slate-100 relative">
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-0">
+                <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+              </div>
+              <iframe
+                src={`/api/view?url=${encodeURIComponent(viewingResumeUrl)}#toolbar=0&view=FitH`}
+                className="w-full h-full border-none relative z-10 bg-white"
+                title="Resume Full Preview"
+              />
             </div>
           </div>
         </div>
