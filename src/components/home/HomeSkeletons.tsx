@@ -15,7 +15,7 @@ export const FeaturedJobsSkeleton = () => (
       <div className="flex gap-6 overflow-hidden">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="w-[320px] shrink-0">
-            <JobCardSkeleton compact={true} />
+            <JobCardSkeleton />
           </div>
         ))}
       </div>
@@ -29,7 +29,7 @@ export const FeaturedInstitutionsSkeleton = () => (
       <SectionHeaderSkeleton />
       <div className="flex gap-6 overflow-hidden">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="w-[240px] h-[300px] shrink-0 bg-white rounded-3xl border border-slate-100 shadow-sm" />
+          <div key={i} className="w-[240px] h-[190px] shrink-0 bg-white rounded-xl border border-slate-100 shadow-sm" />
         ))}
       </div>
     </div>
@@ -50,12 +50,12 @@ export const CategoriesSkeleton = () => (
 );
 
 export const BrowseByCitySkeleton = () => (
-  <section className="py-16 bg-white overflow-hidden">
+  <section className="py-12 md:py-16 bg-white overflow-hidden">
     <div className="max-w-none w-full px-4 md:px-12">
       <SectionHeaderSkeleton />
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-48 bg-slate-50 rounded-2xl" />
+      <div className="flex gap-6 overflow-hidden">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="w-[300px] h-[200px] shrink-0 bg-slate-50 rounded-[20px]" />
         ))}
       </div>
     </div>
@@ -70,6 +70,45 @@ export const HeroStatsSkeleton = () => (
             <div className="h-8 w-24 bg-slate-100 rounded-lg mx-auto animate-pulse" />
             <div className="h-4 w-32 bg-slate-50 rounded mx-auto animate-pulse" />
           </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+export const TestimonialsSkeleton = () => (
+  <section className="py-24 bg-[#f8faff] overflow-hidden w-full">
+    <div className="w-full">
+      <SectionHeaderSkeleton />
+      <div className="flex gap-6 overflow-hidden justify-center py-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="w-[320px] h-[250px] shrink-0 bg-white rounded-[16px] border border-slate-100 shadow-sm" />
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+export const FAQSkeleton = () => (
+  <section className="bg-[#f8faff] py-10 px-4">
+    <div className="max-w-3xl mx-auto">
+      <SectionHeaderSkeleton />
+      <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-14 bg-white rounded-lg border border-slate-200 w-full" />
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+export const BlogsSkeleton = () => (
+  <section className="py-16 bg-white overflow-hidden w-full">
+    <div className="w-full max-w-7xl mx-auto md:px-8">
+      <SectionHeaderSkeleton />
+      <div className="flex gap-6 overflow-hidden py-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="w-[360px] h-[400px] shrink-0 bg-white rounded-2xl border border-slate-100 shadow-sm" />
         ))}
       </div>
     </div>

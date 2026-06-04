@@ -31,9 +31,33 @@ export type FetchOptions = {
     body?: any;
     headers?: Record<string, string>;
     cache?: RequestCache;
+    revalidate?: number;
     silentStatusCodes?: number[];
     auth?: boolean; // ✅ Include cookies & CSRF for auth
     signal?: AbortSignal;
+};
+
+const CACHE_STRATEGIES: Record<string, number> = {
+    // 300 seconds (5 minutes) for jobs, stats, blogs, and frequently changing content
+    "/open/home/featured-jobs": 300,
+    "/open/home/stats": 300,
+    "/open/blogs/latest": 300,
+    "/open/blogs": 300,
+    
+    // 900 seconds (15 minutes) for CMS/layout content
+    "/open/home/navigation": 900,
+    "/open/home/footer": 900,
+    "/open/home/hero-section": 900,
+    "/open/categories": 900,
+    "/open/home/featured-companies": 900,
+    "/open/locations": 900,
+    "/open/home/testimonials": 900,
+    "/open/home/faqs": 900,
+    "/open/about-us": 900,
+    "/open/terms-conditions": 900,
+    "/open/privacy-policy": 900,
+    "/open/cv-templates": 900,
+    "/open/plans": 900,
 };
 
 const BACKEND_ROOT = new URL(BASE_URL).origin;
@@ -110,6 +134,9 @@ function normalizeEndpoint(endpoint: string): string {
 // -----------------------------
 // Generic API Wrapper
 // -----------------------------
+// -----------------------------
+// Generic API Wrapper
+// -----------------------------
 /**
  * fetchAPI is the main wrapper to call backend endpoints.
  * Supports CSRF, cookies, silent status codes, and POST/PUT/DELETE requests.
@@ -125,6 +152,20 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
     if (typeof window === "undefined") {
         const url = `${BASE_URL}${normalizeEndpoint(endpoint)}`;
         try {
+            // Determine explicit cache duration
+            let revalidate = 0;
+            if (method === "GET") {
+                if (options.cache === "no-store" || options.cache === "no-cache") {
+                    revalidate = 0;
+                } else if (options.revalidate !== undefined) {
+                    revalidate = options.revalidate;
+                } else {
+                    const cleanPath = endpoint.split("?")[0];
+                    const normalizedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
+                    revalidate = CACHE_STRATEGIES[normalizedPath] ?? 0;
+                }
+            }
+
             const res = await fetch(url, {
                 method,
                 headers: {
@@ -133,8 +174,7 @@ export async function fetchAPI<T>(endpoint: string, options: FetchOptions = {}):
                     ...(options.headers || {}),
                 },
                 body: options.body ? JSON.stringify(options.body) : undefined,
-                // Disable caching by default so CMS updates reflect instantly
-                next: { revalidate: 0 },
+                next: { revalidate },
                 signal: options.signal,
             });
 

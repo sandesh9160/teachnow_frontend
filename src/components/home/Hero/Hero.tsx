@@ -1,3 +1,6 @@
+
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -22,7 +25,6 @@ export const Hero = ({
       id="main-hero" 
       className="relative w-full min-h-[500px] lg:min-h-[600px] flex items-center bg-[#F7F9FC] overflow-visible"
     >
-      {/* Background layer */}
       {imageUrl && (
         <div className="absolute inset-0 z-0">
           <Image
@@ -33,7 +35,19 @@ export const Hero = ({
             fetchPriority="high"
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
             className="object-cover object-center"
-            quality={90}
+            quality={55}
+    <section className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] md:min-h-[600px] flex items-center justify-center">
+      {/* Background layer */}
+      {imageUrl && (
+        <div className="absolute inset-0">
+          <Image
+            src={imageUrl}
+            alt="Hero Background"
+            fill
+            className="object-cover object-center"
+            priority
+            fetchPriority="high"
+            sizes="100vw"
           />
         </div>
       )}
@@ -55,7 +69,7 @@ export const Hero = ({
               </>
             )}
           </h1>
-          <p className="mt-5 text-slate-500 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto font-medium leading-relaxed">
+          <p className="mt-5 text-slate-600 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto font-medium leading-relaxed">
             {hero?.subtitle ?? "Discover thousands of teaching opportunities across India. Connect with top schools, universities, and edtech companies."}
           </p>
         </div>
@@ -78,9 +92,13 @@ export const Hero = ({
                 }
               >
                 <Link href={item.button_link}>
+
                   {btnIconUrl && (
                     <Image
                       src={btnIconUrl}
+                  {item.background_image && (
+                    <Image
+                      src={normalizeMediaUrl(item.background_image)}
                       alt=""
                       width={24}
                       height={24}
@@ -101,7 +119,7 @@ export const Hero = ({
           {/* Popular Searches */}
           {popularSearches && popularSearches.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-              <span className="text-slate-500 font-medium text-[14px] mr-1">Popular:</span>
+              <span className="text-slate-600 font-medium text-[14px] mr-1">Popular:</span>
               {popularSearches.map((search) => (
                 <Link
                   key={search.slug}

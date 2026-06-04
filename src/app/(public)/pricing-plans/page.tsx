@@ -3,8 +3,8 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { fetchAPI } from "@/services/api/client";
 import PricingClient from "./PricingClient";
 
-// Incremental Static Regeneration (ISR): Cache for 1 hour, refresh in background
-export const revalidate = 3600;
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 
 interface PricingPlan {
   id: number;

@@ -12,6 +12,7 @@ import {
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NavigationData } from "@/types/homepage";
 import type { DashboardRole } from "@/types/session";
@@ -25,14 +26,13 @@ import { useClientSession } from "@/hooks/useClientSession";
 
 const NavItem = ({ item, onClose, level = 0 }: { item: any, onClose: () => void, level?: number }) => (
   <div className={level > 0 ? "pl-3.5 border-l border-slate-100/80 ml-2 mt-1" : "mt-0.5"}>
-    <Link 
-      href={item.url} 
+    <Link
+      href={item.url}
       onClick={onClose}
-      className={`block rounded-lg py-1 transition-all duration-200 ${
-        level === 0 
-          ? "text-[14px] font-medium text-slate-600 hover:text-primary px-2" 
+      className={`block rounded-lg py-1 transition-all duration-200 ${level === 0
+          ? "text-[14px] font-medium text-slate-600 hover:text-primary px-2"
           : "text-[13px] font-normal text-slate-400 hover:text-primary"
-      }`}
+        }`}
     >
       {item.title}
     </Link>
@@ -128,7 +128,7 @@ const MegaMenu = ({
             {sidebars.map((sb: any) => (
               <div key={sb.id} className="w-60 border-r border-border pr-10">
                 <Link href={sb.url} onClick={onClose} className="text-[11px] font-bold text-slate-400 tracking-[0.15em] mb-6 block hover:text-primary transition-colors">
-                   {sb.title.toUpperCase()}
+                  {sb.title.toUpperCase()}
                 </Link>
                 <div className="space-y-1">
                   {sb.children.map((child: any) => (
@@ -283,6 +283,7 @@ const DesktopAuth = ({
             <Image
               src={avatarSrc}
               alt={user.name || "User avatar"}
+
               width={32}
               height={32}
               className="h-full w-full object-cover"
@@ -424,13 +425,13 @@ const Header = ({
   // --- Dynamic Data Mapping with Fallbacks (Memoized) ---
   const mappedMenus = useMemo(() => (navigationData as any)?.mappedMenus || [], [navigationData]);
 
-  const dashboardPath = useMemo(() => 
-    user?.role === "employer" 
-      ? "/dashboard/employer" 
-      : user?.role === "recruiter" 
-        ? "/dashboard/recruiter" 
+  const dashboardPath = useMemo(() =>
+    user?.role === "employer"
+      ? "/dashboard/employer"
+      : user?.role === "recruiter"
+        ? "/dashboard/recruiter"
         : "/dashboard/jobseeker"
-  , [user?.role]);
+    , [user?.role]);
 
   // Brand Data: Robust extraction from navigation or footer data (Memoized)
   const { companyName, companyLogo, brandPrimaryPart, brandSecondaryPart } = useMemo(() => {
@@ -473,18 +474,18 @@ const Header = ({
       primary = parts.length > 1 ? parts.at(-1) || "" : "";
     }
 
-    return { 
-      companyName: name, 
-      companyLogo: logo, 
-      brandPrimaryPart: primary, 
-      brandSecondaryPart: secondary 
+    return {
+      companyName: name,
+      companyLogo: logo,
+      brandPrimaryPart: primary,
+      brandSecondaryPart: secondary
     };
   }, [navigationData, footerData]);
 
 
   return (
-    <header 
-      className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300" 
+    <header
+      className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm transition-all duration-300"
       ref={navRef}
       suppressHydrationWarning
     >
@@ -493,13 +494,12 @@ const Header = ({
         <Link href="/" className="flex items-center gap-1.5 sm:gap-3 group shrink-0" onClick={closeAll}>
           {companyLogo ? (
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg overflow-hidden transition-transform group-hover:scale-105">
-              <Image 
-                src={companyLogo} 
-                alt={companyName} 
-                className="h-full w-full object-contain" 
-                width={40} 
-                height={40} 
-                priority
+              <Image
+                src={companyLogo}
+                alt={companyName}
+                className="h-full w-full object-contain"
+                width={40}
+                height={40}
               />
             </div>
           ) : (
@@ -569,15 +569,15 @@ const Header = ({
           />
         </div>
 
-          <div className="flex lg:hidden items-center gap-1.5 sm:gap-3">
-            {!isLoggedIn && (
-              <Link 
-                href="/auth/login" 
-                className="text-[11px] sm:text-[12px] font-bold text-primary px-2 sm:px-4 py-2 bg-primary/5 rounded-lg whitespace-nowrap transition-all active:scale-95 border border-primary/10"
-              >
-                Register / Login
-              </Link>
-            )}
+        <div className="flex lg:hidden items-center gap-1.5 sm:gap-3">
+          {!isLoggedIn && (
+            <Link
+              href="/auth/login"
+              className="text-[11px] sm:text-[12px] font-bold text-primary px-2 sm:px-4 py-2 bg-primary/5 rounded-lg whitespace-nowrap transition-all active:scale-95 border border-primary/10"
+            >
+              Register / Login
+            </Link>
+          )}
           <button
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-50 transition-colors border border-gray-100"
             onClick={() => setMobileOpen(!mobileOpen)}

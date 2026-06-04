@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { GraduationCap } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { normalizeMediaUrl } from "@/services/api/client";
 import type { FooterData, FooterTopSearch } from "@/lib/globalLayout/getGlobalLayoutData";
 
@@ -110,6 +111,7 @@ export const Footer = ({
                   width={32}
                   height={32}
                   className="h-8 w-8 object-contain rounded-lg"
+                  loading="lazy"
                 />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
@@ -160,6 +162,7 @@ export const Footer = ({
                               width={16}
                               height={16}
                               className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
+                              loading="lazy"
                             />
                           ) : null}
                           <span>{link.title}</span>
@@ -176,6 +179,7 @@ export const Footer = ({
                               width={16}
                               height={16}
                               className="h-4 w-4 object-contain transition-transform group-hover:scale-105"
+                              loading="lazy"
                             />
                           ) : null}
                           <span>{link.title}</span>

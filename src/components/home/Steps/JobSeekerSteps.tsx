@@ -1,6 +1,5 @@
-"use client";
-
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { ArrowRight } from "lucide-react";
 
@@ -39,7 +38,7 @@ export const JobSeekerSteps = () => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Get Your Job in 4 Simple Steps
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Follow these steps to land your dream job on TeachNow
           </p>
         </div>
@@ -51,10 +50,16 @@ export const JobSeekerSteps = () => {
               className="group relative rounded-[20px] bg-[#f8faff] p-5 md:p-6 transition-all duration-500 flex flex-col items-center text-center border border-slate-200 shadow-sm hover:border-blue-200 hover:shadow-md"
             >
               <div className="mb-4 h-28 w-full flex items-center justify-center">
-                <img
+                <Image
                   src={s.img}
                   alt={s.title}
+                  width={200}
+                  height={112}
+
+                  quality={75}
+                  sizes="(max-width: 768px) 200px, 200px"
                   className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
                 />
               </div>
 
@@ -65,7 +70,7 @@ export const JobSeekerSteps = () => {
               <h3 className="text-xl font-semibold text-[#111827] mb-3 leading-tight">
                 {s.title}
               </h3>
-              <p className="text-[15px] text-slate-500 font-normal leading-relaxed max-w-[240px] mx-auto">
+              <p className="text-[15px] text-slate-600 font-normal leading-relaxed max-w-[240px] mx-auto">
                 {s.desc}
               </p>
             </div>

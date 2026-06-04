@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DashboardSidebar } from "./Sidebar";
 import { DashboardHeader } from "./Header";
 import { normalizeMediaUrl } from "@/services/api/client";
+import { useLayoutData } from "@/providers/LayoutDataProvider";
 
 export function DashboardShell({
   children,
@@ -13,14 +14,15 @@ export function DashboardShell({
 }: {
   children: React.ReactNode;
   user: any;
-  layoutData: any;
+  layoutData?: any;
   userRole: string;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const layoutCtx = useLayoutData();
 
   // Branding logic shared across header and sidebar
-  const navData = layoutData?.navigation;
-  const footerData = layoutData?.footer;
+  const navData = layoutData?.navigation ?? layoutCtx?.navigationData;
+  const footerData = layoutData?.footer ?? layoutCtx?.footerData;
   
   // Exhaustive search for brand data in navigation and footer responses
   const rawCompany = 

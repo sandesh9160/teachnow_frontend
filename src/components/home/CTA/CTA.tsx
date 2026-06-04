@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { CTASection } from "@/types/homepage";
@@ -55,10 +56,13 @@ export const HomeCTA = ({ cta }: CTAProps) => {
 
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
                   {bgImage ? (
-                    <img
+                    <Image
                       src={bgImage}
                       alt={cta.title}
+                      width={400}
+                      height={380}
                       className="max-h-[300px] md:max-h-[380px] w-auto object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.5)] transition-transform duration-700 hover:scale-105"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="h-48 w-48 rounded-full bg-primary/20 blur-3xl" />

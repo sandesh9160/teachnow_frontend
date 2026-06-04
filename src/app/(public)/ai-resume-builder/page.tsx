@@ -13,8 +13,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
 
-// Incremental Static Regeneration (ISR): Cache for 1 hour, refresh in background
-export const revalidate = 3600;
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 
 interface CVTemplate {
   id: number;
@@ -131,7 +131,6 @@ export default async function AIResumeBuilderPage() {
                     alt="AI Resume Preview" 
                     fill
                     priority
-                    unoptimized
                     className="object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700" 
                    />
                    {/* Glowing Orbs */}
@@ -158,7 +157,6 @@ export default async function AIResumeBuilderPage() {
                     src={normalizeMediaUrl(t.preview_image)} 
                     alt={t.name} 
                     fill
-                    unoptimized
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-500" 
                   />
                 </div>

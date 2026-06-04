@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    qualities: [75, 90],
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: '**.example.com' },
       { protocol: 'http', hostname: 'localhost' },
@@ -12,6 +12,14 @@ const nextConfig = {
       { protocol: 'http', hostname: '**.jobsvedika.in' },
       { protocol: 'http', hostname: 'teachnowbackend.jobsvedika.in' },
       { protocol: 'https', hostname: 'teachnowbackend.jobsvedika.in' },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
     ],
   },
   turbopack: {}, // ✅ just enable Turbopack

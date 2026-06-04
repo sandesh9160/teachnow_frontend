@@ -7,8 +7,8 @@
 
 @theme {
   /* Fonts */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* Core Colors */
   --color-border: hsl(var(--border));
@@ -70,8 +70,8 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
   }
 
   @keyframes accordion-down {
@@ -337,11 +337,7 @@
 
 }
 
-/* Marquee Animation for Carousels */
-@keyframes marquee {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
-}
+
 
 .animate-marquee {
   animation: marquee 60s linear infinite;

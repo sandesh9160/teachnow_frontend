@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { MapPin, Clock3, Bookmark, Building, Users } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
@@ -155,6 +156,7 @@ const JobCard = ({
                   height={56}
                   className="h-full w-full object-contain"
                   onError={() => setLogoError(true)}
+                  loading="lazy"
                 />
               ) : (
                 <span className={`${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} font-semibold text-2xl`}>{company?.[0]?.toUpperCase()}</span>
@@ -199,7 +201,7 @@ const JobCard = ({
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-slate-500 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
+          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-slate-600 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
             <div className="flex items-center gap-1.5 max-w-[120px]">
               <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <span className="truncate">{location}</span>
@@ -305,6 +307,7 @@ const JobCard = ({
                   href={jobHref}
                   onClick={(e) => e.stopPropagation()}
                   suppressHydrationWarning
+                  aria-label={`Details for ${title} at ${company}`}
                   className="px-9 h-[44px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center"
                 >
                   Details

@@ -78,7 +78,7 @@ export function toArray<T>(data: any): T[] {
  */
 export const getFeaturedJobs = cache(async (): Promise<Job[]> => {
   try {
-    const res = await fetchAPI<ApiResponse<any>>("/open/home/featured-jobs", { cache: "no-store" });
+    const res = await fetchAPI<ApiResponse<any>>("/open/home/featured-jobs");
     const data = res.data || res;
     return toArray<Job>(data).map(normalizeJob);
   } catch (error) {
@@ -108,7 +108,7 @@ export const getAllJobs = cache(async (): Promise<Job[]> => {
  */
 export const getFeaturedInstitutions = cache(async (): Promise<Institution[]> => {
   try {
-    const res = await fetchAPI<ApiResponse<any>>("/open/home/featured-companies", { cache: "no-store" });
+    const res = await fetchAPI<ApiResponse<any>>("/open/home/featured-companies");
     const data = res.data || res;
     return toArray<Institution>(data).map(normalizeInstitution);
   } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useBranding } from "@/hooks/useBranding";
 
@@ -93,14 +93,8 @@ export function useRazorpay(options?: {
   const [isProcessing, setIsProcessing] = useState(false);
   const { companyName, companyLogo } = useBranding();
 
-  // Load Razorpay script on mount
-  useEffect(() => {
-    loadRazorpayScript()
-      .then(() => setIsLoaded(true))
-      .catch(() => {
-        console.error("Razorpay SDK failed to load");
-      });
-  }, []);
+  // Razorpay script will load on-demand when purchasePlan is called
+
 
   const purchasePlan = useCallback(
     async (planId: number, planName?: string) => {

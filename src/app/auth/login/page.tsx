@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { GraduationCap, User, Building2, Eye, EyeOff } from "lucide-react";
@@ -109,7 +110,7 @@ function LoginContent() {
           <div className="relative z-10 flex flex-col items-center text-center gap-6">
             {companyLogo ? (
               <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white shadow-2xl overflow-hidden p-4 transition-transform hover:scale-110 duration-500">
-                <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+                <Image src={companyLogo} alt={companyName} width={112} height={112} className="h-full w-full object-contain" priority />
               </div>
             ) : (
               <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white shadow-2xl transition-transform hover:scale-110 duration-500">
@@ -122,11 +123,13 @@ function LoginContent() {
               </h2>
             </div>
             <div className="relative mt-6 w-full max-w-[300px] overflow-hidden rounded-2xl drop-shadow-xl transition-transform duration-500 hover:scale-105">
-              <img
+              <Image
                 src="/images/auth-illustrator.png"
                 alt="Teaching Illustration"
+                width={300}
+                height={300}
                 className="w-full h-auto object-contain"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                priority
               />
             </div>
           </div>
@@ -139,7 +142,7 @@ function LoginContent() {
             <div className="flex items-center gap-2 mb-4 md:hidden">
               {companyLogo ? (
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-md overflow-hidden p-1.5 border border-border">
-                  <img src={companyLogo} alt={companyName} className="h-full w-full object-contain" />
+                  <Image src={companyLogo} alt={companyName} width={40} height={40} className="h-full w-full object-contain" />
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md">

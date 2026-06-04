@@ -30,13 +30,12 @@ export function SearchBar({ }: SearchBarProps) {
   const queryRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchAllLocations = async () => {
-      const data = await getLocations();
-      setAllLocations(data);
-    };
-    fetchAllLocations();
+  const handleLoadLocations = async () => {
+    const data = await getLocations();
+    setAllLocations(data);
+  };
 
+  useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (queryRef.current && !queryRef.current.contains(e.target as Node)) setShowQuerySuggestions(false);
       if (cityRef.current && !cityRef.current.contains(e.target as Node)) setShowCitySuggestions(false);
@@ -191,6 +190,7 @@ export function SearchBar({ }: SearchBarProps) {
                 setSelectedIndex(-1);
               }}
               onFocus={() => {
+                handleLoadLocations();
                 setShowQuerySuggestions(true);
                 setSelectedIndex(-1);
               }}
@@ -258,6 +258,7 @@ export function SearchBar({ }: SearchBarProps) {
                 setSelectedIndex(-1);
               }}
               onFocus={() => {
+                handleLoadLocations();
                 setShowCitySuggestions(true);
                 setSelectedIndex(-1);
               }}
