@@ -47,7 +47,10 @@ export function SearchBar({ }: SearchBarProps) {
   // Fetch Query Suggestions with Debounce and AbortController
   useEffect(() => {
     if (query.trim().length === 0) {
-      setSuggestions(prev => ({ ...prev, roles: [] }));
+      setSuggestions(prev => {
+        if (prev.roles.length === 0) return prev;
+        return { ...prev, roles: [] };
+      });
       return;
     }
 
@@ -82,7 +85,10 @@ export function SearchBar({ }: SearchBarProps) {
   // Fetch City Suggestions from API with Debounce and AbortController
   useEffect(() => {
     if (city.trim().length === 0) {
-      setSuggestions(prev => ({ ...prev, cities: [] }));
+      setSuggestions(prev => {
+        if (prev.cities.length === 0) return prev;
+        return { ...prev, cities: [] };
+      });
       return;
     }
 
@@ -107,7 +113,7 @@ export function SearchBar({ }: SearchBarProps) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [city, allLocations]);
+  }, [city]);
 
   // Clear invalid city on blur — must be selected from dropdown only
   const handleCityBlur = () => {

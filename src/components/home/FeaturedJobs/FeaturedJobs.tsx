@@ -24,7 +24,8 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
   };
 
   useEffect(() => {
-    checkScroll();
+    // Defer initial scroll state check to avoid triggering a synchronous forced reflow on mount
+    const mountTimeout = setTimeout(checkScroll, 200);
     
     let timeoutId: NodeJS.Timeout;
     const debouncedCheckScroll = () => {
@@ -43,6 +44,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
       if (jobsEl) jobsEl.removeEventListener('scroll', debouncedCheckScroll);
       window.removeEventListener('resize', debouncedCheckScroll);
       clearTimeout(timeoutId);
+      clearTimeout(mountTimeout);
     };
   }, [jobs]);
 

@@ -24,14 +24,16 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
   };
 
   useEffect(() => {
-    checkScroll();
+    // Defer initial scroll state check to avoid triggering a synchronous forced reflow on mount
+    const mountTimeout = setTimeout(checkScroll, 200);
     const timeout = setTimeout(checkScroll, 500); // Initial check after render
     window.addEventListener('resize', checkScroll, { passive: true });
     return () => {
       window.removeEventListener('resize', checkScroll);
       clearTimeout(timeout);
+      clearTimeout(mountTimeout);
     };
-  }, [blogPreview]);
+  }, [blogs]);
 
   const showContent = blogPreview.length > 0;
 

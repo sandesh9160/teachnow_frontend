@@ -23,7 +23,8 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
   };
 
   useEffect(() => {
-    checkScroll();
+    // Defer initial scroll state check to avoid triggering a synchronous forced reflow on mount
+    const mountTimeout = setTimeout(checkScroll, 200);
     
     let timeoutId: NodeJS.Timeout;
     const debouncedCheckScroll = () => {
@@ -42,6 +43,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
       if (companiesEl) companiesEl.removeEventListener('scroll', debouncedCheckScroll);
       window.removeEventListener('resize', debouncedCheckScroll);
       clearTimeout(timeoutId);
+      clearTimeout(mountTimeout);
     };
   }, [institutions]);
 

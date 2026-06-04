@@ -1,6 +1,3 @@
-
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/Buttons/Buttons";
@@ -36,7 +33,6 @@ export const Hero = ({
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
             className="object-cover object-center"
             quality={55}
-            loading="eager"
           />
         </div>
       )}
