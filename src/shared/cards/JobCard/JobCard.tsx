@@ -199,7 +199,7 @@ const JobCard = ({
           </div>
 
           {/* Metadata Row: Location, Job Type, Time */}
-          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-slate-500 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
+          <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] font-medium text-slate-600 ${compact ? "mb-2" : "mb-3"} min-h-[24px]`}>
             <div className="flex items-center gap-1.5 max-w-[120px]">
               <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <span className="truncate">{location}</span>
@@ -305,6 +305,7 @@ const JobCard = ({
                   href={jobHref}
                   onClick={(e) => e.stopPropagation()}
                   suppressHydrationWarning
+                  aria-label={`Details for ${title} at ${company}`}
                   className="px-9 h-[44px] rounded-lg border border-slate-200 bg-white text-slate-900 font-semibold text-[13px] hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center"
                 >
                   Details

@@ -1,6 +1,5 @@
-"use client";
-
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { ArrowRight } from "lucide-react";
 
@@ -39,7 +38,7 @@ export const EmployerSteps = () => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Steps to Post a Job
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Hire qualified teachers quickly with TeachNow.
           </p>
         </div>
@@ -49,11 +48,15 @@ export const EmployerSteps = () => {
               key={s.step}
               className="group w-full rounded-[16px] border border-slate-200/80 bg-white p-6 transition-all duration-300 flex flex-col items-center text-center h-full shadow-sm hover:shadow-md"
             >
-              <div className="relative mb-6 h-36 w-full flex items-center justify-center">
-                <img
+              <div className="mb-6 h-36 w-full flex items-center justify-center">
+                <Image
                   src={s.img}
                   alt={s.title}
-                  className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  width={200}
+                  height={144}
+                  quality={75}
+                  sizes="(max-width: 768px) 200px, 200px"
+                  className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
 

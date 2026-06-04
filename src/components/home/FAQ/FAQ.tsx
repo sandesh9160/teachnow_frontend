@@ -9,7 +9,7 @@ import {
 import { FAQProps } from "@/types/components";
 
 export const FAQ = ({ faqs }: FAQProps) => {
-  if (!faqs || !Array.isArray(faqs) || faqs.length === 0) return null;
+  const showContent = faqs && Array.isArray(faqs) && faqs.length > 0;
 
   return (
     <section className="bg-[#f8faff] py-10 px-4">
@@ -18,32 +18,38 @@ export const FAQ = ({ faqs }: FAQProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827]  mb-2">
             Frequently Asked Questions
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Find answers to common questions from our community
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="w-full space-y-2">
-          {faqs.map((faq, i) => (
-            <AccordionItem 
-              key={i} 
-              value={`item-${i}`}
-              className="group rounded-lg border border-slate-200 bg-white px-4 md:px-5 overflow-hidden transition-all duration-300 shadow-xs"
-            >
-              <AccordionTrigger className="text-left py-3 text-[15px] md:text-[16px] font-semibold text-[#111827] hover:no-underline transition-all gap-4">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="pb-4">
-                <div 
-                  className="rich-text text-[14px] leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: faq.answer }}
-                  suppressHydrationWarning={true}
-                />
-              </AccordionContent>
+        {showContent ? (
+          <Accordion type="single" collapsible className="w-full space-y-2">
+            {faqs.map((faq, i) => (
+              <AccordionItem 
+                key={i} 
+                value={`item-${i}`}
+                className="group rounded-lg border border-slate-200 bg-white px-4 md:px-5 overflow-hidden transition-all duration-300 shadow-xs"
+              >
+                <AccordionTrigger className="text-left py-3 text-[15px] md:text-[16px] font-semibold text-[#111827] hover:no-underline transition-all gap-4">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="pb-4">
+                  <div 
+                    className="rich-text text-[14px] leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: faq.answer }}
+                    suppressHydrationWarning={true}
+                  />
+                </AccordionContent>
 
-            </AccordionItem>
-          ))}
-        </Accordion>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : (
+          <div className="text-center py-12 text-slate-400 font-semibold bg-white rounded-lg border border-slate-200 w-full">
+            No FAQs available at the moment.
+          </div>
+        )}
       </div>
     </section>
   );

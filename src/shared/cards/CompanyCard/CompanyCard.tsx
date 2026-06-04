@@ -19,7 +19,7 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
         {logo ? (
           <Image 
             src={logo} 
-            alt={`${name} logo`} 
+            alt={name} 
             width={56} 
             height={56} 
             className="h-full w-full object-contain overflow-hidden" 

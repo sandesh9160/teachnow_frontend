@@ -25,7 +25,11 @@ import {
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
 import { Label } from "@/shared/ui/Label/Label";
-import { TipTapEditor } from "@/shared/ui/TipTapEditor/TipTapEditor";
+import dynamic from "next/dynamic";
+const TipTapEditor = dynamic(() => import("@/shared/ui/TipTapEditor/TipTapEditor").then(m => m.TipTapEditor), {
+  ssr: false,
+  loading: () => <div className="h-40 w-full animate-pulse bg-slate-50 rounded-xl border border-slate-100" />
+});
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/shared/ui/DatePicker/DatePicker";

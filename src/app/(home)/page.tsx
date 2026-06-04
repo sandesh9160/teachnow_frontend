@@ -1,19 +1,34 @@
-import FeaturedInstitutions from "@/components/home/FeaturedInstitutions/FeaturedInstitutions";
-import FeaturedJobs from "@/components/home/FeaturedJobs/FeaturedJobs";
+import { Suspense } from "react";
+
+// Server Components (imported statically)
+import Hero from "@/components/home/Hero/Hero";
 import JobSeekerSteps from "@/components/home/Steps/JobSeekerSteps";
 import EmployerSteps from "@/components/home/Steps/EmployerSteps";
 import Features from "@/components/home/Features/Features";
+
+// Homepage Sections (imported statically to support server rendering and streaming)
+import Categories from "@/components/home/Categories/Categories";
+import FeaturedInstitutions from "@/components/home/FeaturedInstitutions/FeaturedInstitutions";
 import BrowseByCity from "@/components/home/BrowseByCity/BrowseByCity";
-import Faq from "@/components/home/FAQ/FAQ";
+import FeaturedJobs from "@/components/home/FeaturedJobs/FeaturedJobs";
+import HeroStats from "@/components/home/HeroStats/Herostats";
 import Testimonial from "@/components/home/Testimonial/Testimonial";
+import Faq from "@/components/home/FAQ/FAQ";
 import BlogSections from "@/components/home/BlogSections/BlogSections";
 
-export const revalidate = 0; // Force dynamic server rendering, no static cache
+export const revalidate = 300; // Cache the homepage for 300 seconds (5 minutes)
 
-// Components
-import Hero from "@/components/home/Hero/Hero";
-import HeroStats from "@/components/home/HeroStats/Herostats";
-import Categories from "@/components/home/Categories/Categories";
+// Skeletons
+import {
+  CategoriesSkeleton,
+  FeaturedInstitutionsSkeleton,
+  BrowseByCitySkeleton,
+  FeaturedJobsSkeleton,
+  HeroStatsSkeleton,
+  TestimonialsSkeleton,
+  FAQSkeleton,
+  BlogsSkeleton,
+} from "@/components/home/HomeSkeletons";
 
 // API
 import {
@@ -29,54 +44,45 @@ import { getBlogs } from "@/hooks/useBlogs";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 
-// Async Data Wrappers for Streaming
+// Async Data Wrappers for Streaming (always render component to prevent skeleton -> null collapse shifts)
 async function CategoriesSection() {
   const categories = await getCategories();
-  if (!categories || categories.length === 0) return null;
-  return <Categories categories={categories} />;
+  return <Categories categories={categories || []} />;
 }
 
 async function FeaturedInstitutionsSection() {
   const institutions = await getFeaturedInstitutions();
-  if (!institutions || institutions.length === 0) return null;
-  return <FeaturedInstitutions institutions={institutions} />;
+  return <FeaturedInstitutions institutions={institutions || []} />;
 }
 
 async function FeaturedJobsSection() {
   const jobs = await getFeaturedJobs();
-  if (!jobs || jobs.length === 0) return null;
-  return <FeaturedJobs jobs={jobs} />;
+  return <FeaturedJobs jobs={jobs || []} />;
 }
 
 async function BrowseByCitySection() {
   const [cities, stats] = await Promise.all([getTopCities(), getStats()]);
-  if (!cities || cities.length === 0) return null;
-  return <BrowseByCity cities={cities} totalJobs={stats?.total_jobs} />;
+  return <BrowseByCity cities={cities || []} totalJobs={stats?.total_jobs} />;
 }
 
 async function StatsSection() {
   const stats = await getStats();
-  if (!stats) return null;
   return <HeroStats stats={stats} />;
 }
 
 async function TestimonialsSection() {
   const testimonials = await getTestimonials();
-  if (!testimonials || testimonials.length === 0) return null;
-  return <Testimonial testimonials={testimonials} />;
+  return <Testimonial testimonials={testimonials || []} />;
 }
 
 async function FAQSection() {
   const faqs = await getFAQs();
-  if (!faqs || faqs.length === 0) return null;
-  return <Faq faqs={faqs} />;
+  return <Faq faqs={faqs || []} />;
 }
 
 async function BlogsSection() {
   const blogs = await getBlogs();
-  console.log("blogs",blogs)
-  if (!blogs || blogs.length === 0) return null;
-  return <BlogSections blogs={blogs} />;
+  return <BlogSections blogs={blogs || []} />;
 }
 
 export default async function HomePage() {
@@ -88,28 +94,44 @@ export default async function HomePage() {
     <div className="flex flex-col min-h-screen">
       {/* Hero renders immediately as it uses layout-level cached data */}
       <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
-      
-      <CategoriesSection />
 
-      <FeaturedInstitutionsSection />
+      <Suspense fallback={<CategoriesSkeleton />}>
+        <CategoriesSection />
+      </Suspense>
 
-      <BrowseByCitySection />
+      <Suspense fallback={<FeaturedInstitutionsSkeleton />}>
+        <FeaturedInstitutionsSection />
+      </Suspense>
 
-      <FeaturedJobsSection />
+      <Suspense fallback={<BrowseByCitySkeleton />}>
+        <BrowseByCitySection />
+      </Suspense>
 
-      <StatsSection />
+      <Suspense fallback={<FeaturedJobsSkeleton />}>
+        <FeaturedJobsSection />
+      </Suspense>
+
+      <Suspense fallback={<HeroStatsSkeleton />}>
+        <StatsSection />
+      </Suspense>
 
       <JobSeekerSteps />
-      
+
       <Features />
-      
+
       <EmployerSteps />
 
-      <TestimonialsSection />
+      <Suspense fallback={<TestimonialsSkeleton />}>
+        <TestimonialsSection />
+      </Suspense>
 
-      <FAQSection />
+      <Suspense fallback={<FAQSkeleton />}>
+        <FAQSection />
+      </Suspense>
 
-      <BlogsSection />
+      <Suspense fallback={<BlogsSkeleton />}>
+        <BlogsSection />
+      </Suspense>
     </div>
   );
 }

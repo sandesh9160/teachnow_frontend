@@ -9,7 +9,7 @@ export default async function HeroPopularSearches() {
 
   return (
     <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
-      <span className="text-slate-500 font-semibold text-[14px] mr-1">Popular Searches:</span>
+      <span className="text-slate-600 font-semibold text-[14px] mr-1">Popular Searches:</span>
       {popularSearches.map((search: any) => (
         <Link
           key={search.slug}

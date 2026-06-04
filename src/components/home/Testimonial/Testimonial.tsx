@@ -25,7 +25,7 @@ const TestimonialAvatar = ({ src, name }: { src?: string | null, name: string })
       src={fullUrl}
       alt={name || "Author"}
       fill
-      unoptimized
+      sizes="40px"
       className="object-cover"
       onError={() => setError(true)}
     />
@@ -33,11 +33,10 @@ const TestimonialAvatar = ({ src, name }: { src?: string | null, name: string })
 };
 
 export const Testimonial = ({ testimonials }: TestimonialProps) => {
-  if (!testimonials || !Array.isArray(testimonials) || testimonials.length === 0) return null;
+  const showContent = testimonials && Array.isArray(testimonials) && testimonials.length > 0;
+  const isSingle = showContent && testimonials.length === 1;
 
-  const isSingle = testimonials.length === 1;
-
-  const testimonialItems = testimonials.map((t) => (
+  const testimonialItems = showContent ? testimonials.map((t) => (
     <div
       key={t.id}
       className="shrink-0 w-[280px] md:w-[320px] h-full rounded-[16px] border border-[#eef2f8] bg-white p-7 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] whitespace-normal"
@@ -72,14 +71,14 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           </div>
           <div className="min-w-0">
             <p className="text-[14px] font-semibold text-[#111827]">{t.name}</p>
-            <p className="text-[11px] font-normal text-slate-500">
+            <p className="text-[11px] font-normal text-slate-600">
               {t.designation}
             </p>
           </div>
         </div>
       </div>
     </div>
-  ));
+  )) : [];
 
   return (
     <section className="py-24 bg-[#f8faff] overflow-hidden relative w-full">
@@ -88,20 +87,25 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             What Teachers and Schools Say
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Real experiences from our community
           </p>
         </div>
 
-        {/* Carousel */}
-        {isSingle ? (
-          <div className="flex justify-center py-4">
-            {testimonialItems}
-          </div>
+        {showContent ? (
+          isSingle ? (
+            <div className="flex justify-center py-4">
+              {testimonialItems}
+            </div>
+          ) : (
+            <AutoScrollCarousel speed={80} isContinuous={true} className="py-4">
+              {testimonialItems}
+            </AutoScrollCarousel>
+          )
         ) : (
-          <AutoScrollCarousel speed={80} isContinuous={true} className="py-4">
-            {testimonialItems}
-          </AutoScrollCarousel>
+          <div className="text-center py-12 text-slate-400 font-semibold bg-white rounded-2xl mx-4 md:mx-12 border border-[#eef2f8] shadow-sm">
+            No testimonials available at the moment.
+          </div>
         )}
       </div>
     </section>

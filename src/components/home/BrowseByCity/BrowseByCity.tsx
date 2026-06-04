@@ -35,6 +35,8 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
             alt={`Teaching jobs in ${city.name}`}
             width={300}
             height={200}
+            quality={75}
+            sizes="(max-width: 768px) 300px, 300px"
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
@@ -55,7 +57,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
     );
   }), [uniqueCities]);
 
-  if (!cities || !Array.isArray(cities) || cities.length === 0) return null;
+  const showContent = cities && Array.isArray(cities) && cities.length > 0;
 
   return (
     <section className="py-12 md:py-16 bg-white overflow-hidden relative">
@@ -64,15 +66,21 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Explore teaching jobs in major <span className="text-blue-600">Indian cities</span>
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Find opportunities {totalJobs ? `among ${totalJobs}+ ` : "in your "}preferred location
           </p>
         </div>
       </div>
       <div className="max-w-none w-full px-2">
-        <AutoScrollCarousel speed={100} className="!gap-4 md:!gap-4">
-          {carouselItems}
-        </AutoScrollCarousel>
+        {showContent ? (
+          <AutoScrollCarousel speed={100} className="!gap-4 md:!gap-4">
+            {carouselItems}
+          </AutoScrollCarousel>
+        ) : (
+          <div className="text-center py-12 text-slate-400 font-semibold bg-slate-50/50 rounded-2xl mx-4 md:mx-12 border border-slate-100">
+            No locations available at the moment.
+          </div>
+        )}
       </div>
     </section>
   );

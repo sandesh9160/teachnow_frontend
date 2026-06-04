@@ -45,7 +45,8 @@ const CategoryIcon = ({ iconPath, id, name }: { iconPath: string | null | undefi
         alt={`${name} icon`}
         width={48}
         height={48}
-        unoptimized
+        quality={80}
+        sizes="48px"
         className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
         onError={() => setError(true)}
       />

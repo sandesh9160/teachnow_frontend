@@ -14,24 +14,26 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
   const blogPreview = Array.isArray(blogs) ? blogs : [];
 
   const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 10);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
-    }
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setCanScrollLeft(scrollLeft > 10);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+      }
+    });
   };
 
   useEffect(() => {
     checkScroll();
     const timeout = setTimeout(checkScroll, 500); // Initial check after render
-    window.addEventListener('resize', checkScroll);
+    window.addEventListener('resize', checkScroll, { passive: true });
     return () => {
       window.removeEventListener('resize', checkScroll);
       clearTimeout(timeout);
     };
   }, [blogPreview]);
 
-  if (blogPreview.length === 0) return null;
+  const showContent = blogPreview.length > 0;
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -54,7 +56,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
             <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
               Career Blogs
             </h2>
-            <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+            <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
               Tips, insights, and career advice for educators
             </p>
           </div>
@@ -71,62 +73,72 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
 
         {/* Carousel Container */}
         <div className="relative group">
-          {/* Side Navigation Buttons */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              scroll("left");
-            }}
-            disabled={blogPreview.length <= 1}
-            className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
-                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
-                : "bg-white border-slate-200 text-slate-400 opacity-60"
-              }`}
-          >
-            <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
-          </button>
+          {showContent ? (
+            <>
+              {/* Side Navigation Buttons */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  scroll("left");
+                }}
+                disabled={blogPreview.length <= 1}
+                aria-label="Scroll blogs left"
+                className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
+                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
+                    : "bg-white border-slate-200 text-slate-400 opacity-60"
+                  }`}
+              >
+                <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
+              </button>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              scroll("right");
-            }}
-            disabled={blogPreview.length <= 1}
-            className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
-                ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
-                : "bg-white border-slate-200 text-slate-400 opacity-60"
-              }`}
-          >
-            <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
-          </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  scroll("right");
+                }}
+                disabled={blogPreview.length <= 1}
+                aria-label="Scroll blogs right"
+                className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
+                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
+                    : "bg-white border-slate-200 text-slate-400 opacity-60"
+                  }`}
+              >
+                <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
+              </button>
 
-          {/* Horizontal Scroll Area */}
-          <div
-            ref={scrollRef}
-            onScroll={checkScroll}
-            className="flex gap-5 overflow-x-auto scrollbar-hide pb-8 pt-1 px-[calc(50%-135px)] md:px-0 scroll-smooth snap-x snap-mandatory"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {/* Start Spacer */}
-            <div className="shrink-0 w-px md:hidden" />
-            {blogPreview.map((post) => (
-              <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px] snap-center md:snap-start">
-                <BlogCard
-                  title={post.title}
-                  slug={post.slug}
-                  image={post.image}
-                  date={post.created_at ? formatDate(post.created_at) : "Recently"}
-                  category={post.category || "Career Advice"}
-                  readTime={post.readTime || "5 min read"}
-                  excerpt={post.excerpt || "Read more about this article on our blog."}
-                />
+              {/* Horizontal Scroll Area */}
+              <div
+                ref={scrollRef}
+                onScroll={checkScroll}
+                className="flex gap-5 overflow-x-auto scrollbar-hide pb-8 pt-1 px-[calc(50%-135px)] md:px-0 scroll-smooth snap-x snap-mandatory"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {/* Start Spacer */}
+                <div className="shrink-0 w-px md:hidden" />
+                {blogPreview.map((post) => (
+                  <div key={post.id || post.slug} className="shrink-0 w-[270px] sm:w-[320px] md:w-[360px] snap-center md:snap-start">
+                    <BlogCard
+                      title={post.title}
+                      slug={post.slug}
+                      image={post.image}
+                      date={post.created_at ? formatDate(post.created_at) : "Recently"}
+                      category={post.category || "Career Advice"}
+                      readTime={post.readTime || "5 min read"}
+                      excerpt={post.excerpt || "Read more about this article on our blog."}
+                    />
+                  </div>
+                ))}
+                {/* End Spacer */}
+                <div className="shrink-0 w-px md:hidden" />
               </div>
-            ))}
-            {/* End Spacer */}
-            <div className="shrink-0 w-px md:hidden" />
-          </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-slate-400 font-semibold bg-slate-50/50 rounded-2xl mx-4 md:mx-12 border border-slate-100">
+              No blogs available at the moment.
+            </div>
+          )}
         </div>
       </div>
     </section>

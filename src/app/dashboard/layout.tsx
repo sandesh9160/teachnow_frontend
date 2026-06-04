@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 import { getSessionProfile, sessionUserForHeader } from "@/lib/serverAuth";
-import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { DashboardSessionProvider } from "@/components/dashboard/DashboardSessionContext";
 import SessionTimeoutHandler from "@/components/auth/SessionTimeoutHandler";
@@ -9,10 +8,7 @@ import SessionTimeoutHandler from "@/components/auth/SessionTimeoutHandler";
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [profile, layoutData] = await Promise.all([
-    getSessionProfile(),
-    getGlobalLayoutData(),
-  ]);
+  const profile = await getSessionProfile();
 
   if (!profile) {
     redirect("/auth/login?message=" + encodeURIComponent("Please login to access this page"));
@@ -25,7 +21,6 @@ export default async function DashboardLayout({
       <SessionTimeoutHandler />
       <DashboardShell
         user={authUser}
-        layoutData={layoutData}
         userRole={profile.role}
       >
         {children}

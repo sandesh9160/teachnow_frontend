@@ -1,5 +1,4 @@
-"use client";
-
+import Image from "next/image";
 import { Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 import { normalizeMediaUrl } from "@/services/api/client";
@@ -24,10 +23,12 @@ const BlogCard = ({ title, excerpt, readTime, date, slug, image }: BlogCardProps
     >
       <div className="h-44 overflow-hidden relative">
         {image ? (
-          <img 
+          <Image 
             src={imageUrl} 
             alt={title} 
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" 
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+            className="object-cover transition-transform duration-700 group-hover:scale-105" 
             loading="lazy" 
           />
         ) : (
@@ -44,11 +45,11 @@ const BlogCard = ({ title, excerpt, readTime, date, slug, image }: BlogCardProps
           {title}
         </h3>
         
-        <p className="mt-4 flex-1 text-[13px] md:text-[14px] leading-relaxed text-slate-500 font-medium line-clamp-3">
+        <p className="mt-4 flex-1 text-[13px] md:text-[14px] leading-relaxed text-slate-600 font-medium line-clamp-3">
           {excerpt}
         </p>
         
-        <div className="mt-6 pt-5 border-t border-slate-50 flex items-center gap-4 text-[11px] md:text-[12px] text-slate-400 font-semibold">
+        <div className="mt-6 pt-5 border-t border-slate-50 flex items-center gap-4 text-[11px] md:text-[12px] text-slate-600 font-semibold">
           <div className="flex items-center gap-1.5 tracking-wide">
             <Calendar className="h-3.5 w-3.5 text-slate-300 shrink-0" />
             <span className="whitespace-nowrap">{date}</span>

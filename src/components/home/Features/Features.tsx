@@ -1,6 +1,5 @@
-"use client";
-
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
@@ -15,7 +14,7 @@ export const Features = () => {
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
             Why TeachNow?
           </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-500 font-normal">
+          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Empowering educators and enabling schools to thrive together
           </p>
         </div>
@@ -24,16 +23,19 @@ export const Features = () => {
           {/* For Job Seekers */}
           <div className="group relative rounded-[16px] border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full">
             <div className="h-48 sm:h-56 overflow-hidden relative">
-              <img
+              <Image
                 src={teacherClassroomImg}
                 alt="Teacher in classroom"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fill
+                quality={75}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
             
             <div className="p-6 md:p-8 flex flex-col flex-1">
               <h3 className="text-xl font-semibold text-[#111827]">For Job Seekers</h3>
-              <p className="mt-3 text-[14px] text-slate-500 font-normal leading-relaxed">
+              <p className="mt-3 text-[14px] text-slate-600 font-normal leading-relaxed">
                 TeachNow helps teachers discover verified job opportunities across schools, colleges, and online
                 teaching platforms.
               </p>
@@ -67,16 +69,19 @@ export const Features = () => {
           {/* For Employers */}
           <div className="group relative rounded-[16px] border border-slate-200/80 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full">
             <div className="h-48 sm:h-56 overflow-hidden relative">
-              <img
+              <Image
                 src={employerHiringImg}
                 alt="Employer hiring"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fill
+                quality={75}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
             
             <div className="p-6 md:p-8 flex flex-col flex-1">
               <h3 className="text-xl font-semibold text-[#111827]">For Employers</h3>
-              <p className="mt-3 text-[14px] text-slate-500 font-normal leading-relaxed">
+              <p className="mt-3 text-[14px] text-slate-600 font-normal leading-relaxed">
                 TeachNow enables institutions to quickly hire qualified teachers through advanced discovery tools.
               </p>
               
