@@ -74,6 +74,7 @@ async function FAQSection() {
 
 async function BlogsSection() {
   const blogs = await getBlogs();
+  console.log("blogs",blogs)
   if (!blogs || blogs.length === 0) return null;
   return <BlogSections blogs={blogs} />;
 }

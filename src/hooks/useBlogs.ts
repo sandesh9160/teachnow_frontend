@@ -36,6 +36,7 @@ function toArray<T>(data: any): T[] {
  */
 export const getBlogs = cache(async (filters: Record<string, any> = {}): Promise<Blog[]> => {
   try {
+    
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => {
       if (v !== undefined && v !== null) params.append(k, v.toString());

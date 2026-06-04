@@ -38,8 +38,6 @@ function normalizeLocationSlug(s: string): string {
   return (s || "").replace(/-(jobs|job)$/i, "").trim();
 }
 
-
-
 /* -------------------- STRATEGY RESOLVERS -------------------- */
 
 /**

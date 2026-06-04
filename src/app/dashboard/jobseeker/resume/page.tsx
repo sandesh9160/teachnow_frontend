@@ -67,6 +67,7 @@ export default function ResumeManagementPage() {
 
     try {
       const res = await generateCV({ template_id: tplId });
+      console.log("res",res)
       const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url || res?.data?.pdf_path || res?.pdf_path;
       if (url) {
         setLastGeneratedCV(normalizeMediaUrl(url));

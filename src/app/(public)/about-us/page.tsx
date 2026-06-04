@@ -2,8 +2,8 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { getAboutUs } from "@/hooks/useHomepage";
 import AboutPageClient from "./AboutPageClient";
 
-// Incremental Static Regeneration (ISR): Cache for 1 hour, refresh in background
-export const revalidate = 3600;
+// Disable caching entirely so updates are immediate
+export const dynamic = 'force-dynamic';
 
 export default async function AboutPage() {
   let sections = [];
