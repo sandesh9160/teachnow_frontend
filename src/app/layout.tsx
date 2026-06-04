@@ -41,6 +41,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <head>
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
+        <noscript>
+          <link rel="stylesheet" href="/no-js.css" />
+        </noscript>
       </head>
       <body className="antialiased font-sans">
         <Providers>

@@ -75,40 +75,41 @@ export const Features = () => {
               src={employerHiringImg}
               alt="Employer hiring"
               fill
-
               quality={75}
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
-              loading="lazy"></Image>
-            <div className="p-6 md:p-8 flex flex-col flex-1">
-              <h3 className="text-xl font-semibold text-[#111827]">For Employers</h3>
-              <p className="mt-3 text-[14px] text-slate-600 font-normal leading-relaxed">
-                TeachNow enables institutions to quickly hire qualified teachers through advanced discovery tools.
-              </p>
+              loading="lazy"
+            />
+          </div>
 
-              <ul className="mt-4 space-y-2.5 flex-1">
-                {[
-                  "Post teaching jobs instantly",
-                  "Access qualified educator profiles",
-                  "Simplified recruitment workflow",
-                  "Affordable hiring plans",
-                ].map((f) => (
-                  <li key={f} className="flex items-center gap-3 text-[13px] text-slate-600 font-normal">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    </div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
+          <div className="p-6 md:p-8 flex flex-col flex-1">
+            <h3 className="text-xl font-semibold text-[#111827]">For Employers</h3>
+            <p className="mt-3 text-[14px] text-slate-600 font-normal leading-relaxed">
+              TeachNow enables institutions to quickly hire qualified teachers through advanced discovery tools.
+            </p>
 
-              <div className="mt-6">
-                <Button asChild className="bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
-                  <Link href="/auth/login">
-                    Hire Teachers <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
+            <ul className="mt-4 space-y-2.5 flex-1">
+              {[
+                "Post teaching jobs instantly",
+                "Access qualified educator profiles",
+                "Simplified recruitment workflow",
+                "Affordable hiring plans",
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-3 text-[13px] text-slate-600 font-normal">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                  </div>
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6">
+              <Button asChild className="bg-[#2e3fc7] hover:bg-[#1e2cb2] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
+                <Link href="/auth/login">
+                  Hire Teachers <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

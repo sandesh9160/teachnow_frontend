@@ -74,7 +74,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
         </div>
       </div>
       <div className="max-w-none w-full px-2">
-        <AutoScrollCarousel speed={0.6} className="!gap-4 md:!gap-4">
+        <AutoScrollCarousel speed={80} className="!gap-4 md:!gap-4">
           {carouselItems}
         </AutoScrollCarousel>
       </div>
