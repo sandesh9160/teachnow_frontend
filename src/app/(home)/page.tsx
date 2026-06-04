@@ -16,11 +16,9 @@ import Testimonial from "@/components/home/Testimonial/Testimonial";
 import Faq from "@/components/home/FAQ/FAQ";
 import BlogSections from "@/components/home/BlogSections/BlogSections";
 
-<<<<<<< HEAD
-export const revalidate = 10; // Force dynamic server rendering, no static cache
-=======
-export const revalidate = 300; // Cache the homepage for 300 seconds (5 minutes)
->>>>>>> optimization
+
+export const revalidate = 30; // Force dynamic server rendering, no static cache
+
 
 // Skeletons
 import {
