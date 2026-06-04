@@ -8,7 +8,7 @@ import Faq from "@/components/home/FAQ/FAQ";
 import Testimonial from "@/components/home/Testimonial/Testimonial";
 import BlogSections from "@/components/home/BlogSections/BlogSections";
 
-export const revalidate = 0; // Force dynamic server rendering, no static cache
+export const revalidate = 10; // Force dynamic server rendering, no static cache
 
 // Components
 import Hero from "@/components/home/Hero/Hero";
