@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { GraduationCap } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { normalizeMediaUrl } from "@/services/api/client";
 import type { FooterData, FooterTopSearch } from "@/lib/globalLayout/getGlobalLayoutData";
 

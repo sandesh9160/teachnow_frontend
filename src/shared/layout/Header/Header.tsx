@@ -12,7 +12,6 @@ import {
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NavigationData } from "@/types/homepage";
 import type { DashboardRole } from "@/types/session";

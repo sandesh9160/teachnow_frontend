@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Clock, Calendar } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import Link from "next/link";;
 import { normalizeMediaUrl } from "@/services/api/client";
 
 interface BlogCardProps {

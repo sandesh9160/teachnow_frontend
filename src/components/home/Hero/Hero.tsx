@@ -23,7 +23,7 @@ export const Hero = ({
   return (
     <section 
       id="main-hero" 
-      className="relative w-full min-h-[500px] lg:min-h-[600px] flex items-center bg-[#F7F9FC] overflow-visible"
+      className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] lg:min-h-[600px] flex items-center justify-center"
     >
       {imageUrl && (
         <div className="absolute inset-0 z-0">
@@ -36,18 +36,7 @@ export const Hero = ({
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
             className="object-cover object-center"
             quality={55}
-    <section className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] md:min-h-[600px] flex items-center justify-center">
-      {/* Background layer */}
-      {imageUrl && (
-        <div className="absolute inset-0">
-          <Image
-            src={imageUrl}
-            alt="Hero Background"
-            fill
-            className="object-cover object-center"
-            priority
-            fetchPriority="high"
-            sizes="100vw"
+            loading="eager"
           />
         </div>
       )}
@@ -92,13 +81,9 @@ export const Hero = ({
                 }
               >
                 <Link href={item.button_link}>
-
                   {btnIconUrl && (
                     <Image
                       src={btnIconUrl}
-                  {item.background_image && (
-                    <Image
-                      src={normalizeMediaUrl(item.background_image)}
                       alt=""
                       width={24}
                       height={24}
