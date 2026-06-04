@@ -62,6 +62,7 @@ export const HomeCTA = ({ cta }: CTAProps) => {
                       width={400}
                       height={380}
                       className="max-h-[300px] md:max-h-[380px] w-auto object-contain drop-shadow-[0_35px_60px_rgba(0,0,0,0.5)] transition-transform duration-700 hover:scale-105"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="h-48 w-48 rounded-full bg-primary/20 blur-3xl" />

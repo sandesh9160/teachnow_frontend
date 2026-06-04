@@ -30,6 +30,7 @@ export const Features = () => {
                 quality={75}
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
               />
             </div>
             
@@ -73,12 +74,11 @@ export const Features = () => {
                 src={employerHiringImg}
                 alt="Employer hiring"
                 fill
+
                 quality={75}
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-            </div>
-            
+                loading="lazy"></Image>
             <div className="p-6 md:p-8 flex flex-col flex-1">
               <h3 className="text-xl font-semibold text-[#111827]">For Employers</h3>
               <p className="mt-3 text-[14px] text-slate-600 font-normal leading-relaxed">

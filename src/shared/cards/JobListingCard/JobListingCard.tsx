@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { MapPin, Briefcase, ArrowUpRight, Clock3 } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { useRouter } from "next/navigation";
@@ -74,7 +75,7 @@ const JobListingCard = ({
           <div className="flex items-center gap-5">
             <div className="h-16 w-16 shrink-0 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm flex items-center justify-center overflow-hidden">
               {logo ? (
-                <img src={logo} alt={company} className="h-full w-full object-contain" />
+                <Image src={logo} alt={company} width={64} height={64} className="h-full w-full object-contain" loading="lazy" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-primary/5 text-primary font-bold text-2xl uppercase">
                   {company[0]}

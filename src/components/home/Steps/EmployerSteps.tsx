@@ -48,6 +48,7 @@ export const EmployerSteps = () => {
               key={s.step}
               className="group w-full rounded-[16px] border border-slate-200/80 bg-white p-6 transition-all duration-300 flex flex-col items-center text-center h-full shadow-sm hover:shadow-md"
             >
+
               <div className="mb-6 h-36 w-full flex items-center justify-center">
                 <Image
                   src={s.img}
@@ -57,6 +58,14 @@ export const EmployerSteps = () => {
                   quality={75}
                   sizes="(max-width: 768px) 200px, 200px"
                   className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+
+              <div className="relative mb-6 h-36 w-full flex items-center justify-center">
+                <Image
+                  src={s.img}
+                  alt={s.title}
+                  fill
+                  className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                 />
               </div>
 

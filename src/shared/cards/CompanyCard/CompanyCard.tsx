@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { MapPin, Users } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 
 import { CompanyCardProps } from "@/types/components";
@@ -24,6 +25,8 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
             height={56} 
             className="h-full w-full object-contain overflow-hidden" 
           />
+          <Image src={logo} alt={name} width={56} height={56} className="h-full w-full object-contain overflow-hidden" loading="lazy" />
+
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-slate-200 text-[#1e3a8a] font-semibold text-lg rounded-xl">
             {name[0]}

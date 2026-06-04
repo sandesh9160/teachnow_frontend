@@ -2,6 +2,7 @@
 
 import { ResourceData } from "@/types/homepage";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { BookOpen, Clock } from "lucide-react";
 
@@ -34,13 +35,15 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
     >
       {/* Photo */}
       <div className="relative aspect-[1.15/1] w-full overflow-hidden rounded-md mb-1.5 bg-slate-50">
-        <img
+        <Image
           src={imageUrl}
           alt={resource.title}
+          fill
           className="h-full w-full object-cover"
           onError={(e) => {
              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1000&auto=format&fit=crop";
           }}
+          loading="lazy"
         />
       </div>
 
@@ -69,14 +72,17 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
         {/* Author Row - Tiny but Legible */}
         <div className="flex items-center gap-1.5 mb-2.5 pb-2.5 border-b border-slate-100/50">
           <div className="h-4.5 w-4.5 rounded-full overflow-hidden bg-slate-50 border border-slate-200/50 shrink-0">
-            <img
+            <Image
               src={authorImageUrl}
               alt={resource.author_name || "Author"}
+              width={18}
+              height={18}
               className="h-full w-full object-cover"
               onError={(e) => {
                 const name = resource.author_name || "Author";
                 (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=32`;
               }}
+              loading="lazy"
             />
           </div>
           <span className="text-[10px] font-bold text-slate-500 truncate">

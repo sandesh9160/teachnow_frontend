@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { MapPin, Clock3, Bookmark, Building, Users } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useClientSession } from "@/hooks/useClientSession";
@@ -155,6 +156,7 @@ const JobCard = ({
                   height={56}
                   className="h-full w-full object-contain"
                   onError={() => setLogoError(true)}
+                  loading="lazy"
                 />
               ) : (
                 <span className={`${isExpired ? "text-slate-400" : "text-[#1e3a8a]"} font-semibold text-2xl`}>{company?.[0]?.toUpperCase()}</span>

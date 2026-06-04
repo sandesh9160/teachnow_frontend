@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Clock, Calendar } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { normalizeMediaUrl } from "@/services/api/client";
 
 interface BlogCardProps {
@@ -29,6 +30,7 @@ const BlogCard = ({ title, excerpt, readTime, date, slug, image }: BlogCardProps
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
             className="object-cover transition-transform duration-700 group-hover:scale-105" 
+
             loading="lazy" 
           />
         ) : (
