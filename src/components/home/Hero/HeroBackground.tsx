@@ -14,8 +14,8 @@ export default async function HeroBackground() {
         alt=""
         fill
         sizes="(min-width: 640px) 100vw, 0px"
-        className="object-cover object-center"
-        quality={75}
+        className="object-cover object-center opacity-100"
+        unoptimized
       />
     </div>
   );

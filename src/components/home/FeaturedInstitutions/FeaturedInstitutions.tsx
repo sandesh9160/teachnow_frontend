@@ -52,7 +52,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
   const showContent = institutions && Array.isArray(institutions) && institutions.length > 0;
 
   return (
-    <section className="pt-12 pb-20 bg-[#f8faff] overflow-hidden relative">
+    <section className="pt-12 pb-20 bg-[#F7F9FC] overflow-hidden relative">
       <div className="max-w-none w-full">
         
         {/* Header */}
@@ -137,7 +137,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
               </div>
             </>
           ) : (
-            <div className="text-center py-12 text-slate-400 font-semibold bg-[#f8faff] rounded-2xl mx-4 md:mx-12 border border-slate-100 shadow-sm">
+            <div className="text-center py-12 text-slate-400 font-semibold bg-white rounded-2xl mx-4 md:mx-12 border border-slate-200 shadow-sm">
               No top institutions available at the moment.
             </div>
           )}

@@ -12,7 +12,7 @@ export const FAQ = ({ faqs }: FAQProps) => {
   const showContent = faqs && Array.isArray(faqs) && faqs.length > 0;
 
   return (
-    <section className="bg-[#f8faff] py-10 px-4">
+    <section className="bg-[#F7F9FC] py-10 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827]  mb-2">
@@ -26,8 +26,8 @@ export const FAQ = ({ faqs }: FAQProps) => {
         {showContent ? (
           <Accordion type="single" collapsible className="w-full space-y-2">
             {faqs.map((faq, i) => (
-              <AccordionItem 
-                key={i} 
+              <AccordionItem
+                key={i}
                 value={`item-${i}`}
                 className="group rounded-lg border border-slate-200 bg-white px-4 md:px-5 overflow-hidden transition-all duration-300 shadow-xs"
               >
@@ -35,7 +35,7 @@ export const FAQ = ({ faqs }: FAQProps) => {
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
-                  <div 
+                  <div
                     className="rich-text text-[14px] leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: faq.answer }}
                     suppressHydrationWarning={true}

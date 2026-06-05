@@ -24,7 +24,7 @@ export const FeaturedJobsSkeleton = () => (
 );
 
 export const FeaturedInstitutionsSkeleton = () => (
-  <section className="pt-12 pb-20 bg-[#f8faff] overflow-hidden">
+  <section className="pt-12 pb-20 bg-[#F7F9FC] overflow-hidden">
     <div className="max-w-none w-full px-4 md:px-12">
       <SectionHeaderSkeleton />
       <div className="flex gap-6 overflow-hidden">
@@ -77,7 +77,7 @@ export const HeroStatsSkeleton = () => (
 );
 
 export const TestimonialsSkeleton = () => (
-  <section className="py-24 bg-[#f8faff] overflow-hidden w-full">
+  <section className="py-24 bg-[#F7F9FC] overflow-hidden w-full">
     <div className="w-full">
       <SectionHeaderSkeleton />
       <div className="flex gap-6 overflow-hidden justify-center py-4">
@@ -90,7 +90,7 @@ export const TestimonialsSkeleton = () => (
 );
 
 export const FAQSkeleton = () => (
-  <section className="bg-[#f8faff] py-10 px-4">
+  <section className="bg-[#F7F9FC] py-10 px-4">
     <div className="max-w-3xl mx-auto">
       <SectionHeaderSkeleton />
       <div className="space-y-4">

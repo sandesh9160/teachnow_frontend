@@ -71,7 +71,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
         key={cat.id}
         href={href}
         aria-label={`View jobs in ${cat.name}`}
-        className="group relative flex flex-col shrink-0 w-[180px] h-[165px] items-center justify-center rounded-[20px] border border-primary/20 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
+        className="group relative flex flex-col shrink-0 w-[200px] h-[150px] items-center justify-center rounded-xl border border-slate-300 bg-[#f8faff] p-4 text-center shadow-[0_4px_20px_rgb(0,0,0,0.02)] transition-all duration-300 hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 mx-0"
       >
         <CategoryIcon iconPath={cat.icon} id={cat.id} name={cat.name} />
 

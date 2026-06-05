@@ -56,7 +56,7 @@ export function LayoutWrapper({
       </Suspense>
       <Header navigationData={navigationData} footerData={footerData} authUser={null} />
       {/* Cache Invalidation Touch to resolve stale Turbopack hydration mismatch */}
-      <main className="pt-20 min-h-screen flex flex-col">{children}</main>
+      <main className="pt-16 min-h-screen flex flex-col">{children}</main>
       <Footer footerData={footerData} heroCTA={heroCTA} navigationData={navigationData} />
     </>
   );

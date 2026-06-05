@@ -22,7 +22,7 @@ export function SiteChromeGate({
   return (
     <>
       {header}
-      <main className="pt-20 min-h-screen flex flex-col">{children}</main>
+      <main className="pt-16 min-h-screen flex flex-col">{children}</main>
       {footer}
     </>
   );

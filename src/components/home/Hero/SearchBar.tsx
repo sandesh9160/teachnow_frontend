@@ -175,14 +175,14 @@ export function SearchBar({ }: SearchBarProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto h-auto">
-      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border border-slate-200 hover:border-indigo-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
+      <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border border-slate-300 hover:border-indigo-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
 
         {/* Subject/Role Search */}
         <div className="relative flex-[1.4] w-full" ref={queryRef}>
           <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all border ${
             emptySearchError 
               ? "bg-slate-50/80 md:bg-slate-50 border-red-400 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100" 
-              : "bg-slate-50/80 md:bg-slate-50 border-transparent focus-within:border-indigo-200"
+              : "bg-slate-50/80 md:bg-slate-50 border-slate-200 focus-within:border-indigo-200"
           }`}>
             <Search className={`h-4 w-4 shrink-0 ${emptySearchError ? "text-red-400" : "text-indigo-400"}`} />
             <input
@@ -251,7 +251,7 @@ export function SearchBar({ }: SearchBarProps) {
 
         {/* City/Location Search — dropdown only */}
         <div className="relative flex-1 w-full flex flex-col items-stretch" ref={cityRef}>
-          <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all border bg-slate-50/80 md:bg-slate-50 border-transparent focus-within:border-indigo-200">
+          <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all border bg-slate-50/80 md:bg-slate-50 border-slate-200 focus-within:border-indigo-200">
             <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
             <input
               type="text"

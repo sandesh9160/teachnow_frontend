@@ -81,7 +81,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
   )) : [];
 
   return (
-    <section className="py-24 bg-[#f8faff] overflow-hidden relative w-full">
+    <section className="py-24 bg-[#F7F9FC] overflow-hidden relative w-full">
       <div className="w-full">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
