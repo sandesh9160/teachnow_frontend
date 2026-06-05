@@ -84,7 +84,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
     <section className="py-24 bg-[#F7F9FC] overflow-hidden relative w-full">
       <div className="w-full">
         <div className="text-center mb-14 px-4">
-          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
+          <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
             What Teachers and Schools Say
           </h2>
           <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">

@@ -88,7 +88,7 @@ export const Hero = ({
                 variant={isBlue ? "default" : "outline"}
                 className={
                   isBlue
-                    ? "bg-gradient-to-r from-[#2e3fc7] to-[#0c00ec] hover:shadow-xl hover:shadow-indigo-200/50 text-white px-6 py-3 h-auto rounded-lg transition-all font-bold text-sm w-full sm:w-auto sm:min-w-[130px] flex items-center justify-center gap-2.5 border-0 active:scale-95"
+                    ? "bg-[#3b49df] hover:bg-[#2e3fc7] hover:shadow-xl hover:shadow-indigo-200/50 text-white px-6 py-3 h-auto rounded-lg transition-all font-bold text-sm w-full sm:w-auto sm:min-w-[130px] flex items-center justify-center gap-2.5 border-0 active:scale-95"
                     : "border border-slate-200 bg-white hover:bg-slate-50 text-[#1a202c] px-6 py-2.5 h-auto rounded-lg shadow-sm hover:shadow-md transition-all font-bold text-sm w-full sm:w-auto sm:min-w-[130px] flex items-center justify-center gap-2.5 active:scale-95"
                 }
               >
@@ -117,12 +117,12 @@ export const Hero = ({
           {popularSearches && popularSearches.length > 0 && (
             <div className="w-full max-w-4xl mx-auto px-1.5 md:px-2">
               <div className="mt-5 flex flex-wrap items-center justify-start gap-2">
-                <span className="text-slate-500 font-medium text-[13px] mr-1">Popular:</span>
+                <span className="text-slate-500 font-normal text-[12px] mr-1">Popular:</span>
                 {popularSearches.map((search) => (
                   <Link
                     key={search.slug}
                     href={`/jobs/${search.slug}`}
-                    className="px-3.5 py-0.75 bg-white border border-slate-300 rounded-full text-[13px] font-medium text-[#5a6b82] hover:border-indigo-400 hover:text-indigo-600 transition-all"
+                    className="px-2.5 py-0.5 bg-white border border-slate-300 rounded-full text-[12px] font-normal text-[#5a6b82] hover:border-indigo-400 hover:text-indigo-600 transition-all hover:-translate-y-0.5 active:scale-95 duration-200"
                   >
                     {search.name}
                   </Link>

@@ -29,7 +29,7 @@ export default async function PrivacyPolicyPage() {
       <header className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center">
         <div className="space-y-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Privacy <span className="text-primary italic">Policy</span>
+            Privacy Policy
           </h1>
           {lastUpdated && (
             <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">

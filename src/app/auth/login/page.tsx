@@ -227,8 +227,7 @@ function LoginContent() {
                   type="submit"
                   disabled={authLoading}
                   suppressHydrationWarning
-                  className={`w-full rounded-xl py-2 text-xs font-bold text-white transition-all shadow-lg mt-2 disabled:opacity-50 disabled:cursor-wait bg-primary hover:bg-primary/90 shadow-primary/20 active:scale-[0.98]
-                    }`}
+                  className="w-full rounded-xl py-2.5 text-xs font-bold text-white transition-all shadow-md mt-2 disabled:opacity-50 disabled:cursor-wait bg-[#3b49df] hover:bg-[#3b49df] shadow-indigo-600/10 hover:shadow-lg hover:shadow-indigo-600/20 active:scale-[0.98]"
                 >
                   {authLoading ? (
                     <div className="flex items-center justify-center gap-2">

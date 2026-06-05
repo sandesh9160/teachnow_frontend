@@ -297,7 +297,7 @@ const JobCard = ({
                   <button
                     onClick={handleApply}
                     suppressHydrationWarning
-                    className="px-7 h-[44px] rounded-lg bg-[#1e3a8a] text-white font-semibold text-[14px] hover:bg-blue-800 transition-all active:scale-95 shadow-md shadow-blue-900/10"
+                    className="px-7 h-[44px] rounded-lg bg-[#1e3a8a] text-white font-semibold text-[14px] hover:bg-[#1e3a8a] transition-all active:scale-95 shadow-md shadow-blue-900/10"
                   >
                     Apply Now
                   </button>

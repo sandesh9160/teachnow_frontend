@@ -35,7 +35,7 @@ export const EmployerSteps = () => {
     <section className="pt-16 pb-24 bg-white text-black">
       <div className="max-w-[1440px] mx-auto px-4 md:px-8">
         <div className="text-center mb-14 px-4">
-          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
+          <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
             Steps to Post a Job
           </h2>
           <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">

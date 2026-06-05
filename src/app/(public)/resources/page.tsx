@@ -5,7 +5,7 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import ResourcesClient from "./ResourcesClient";
 
 // Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
-export const revalidate = 900;
+export const revalidate = 0;
 
 export default async function ResourcesPage() {
   let allResources: ResourceData[] = [];

@@ -25,7 +25,7 @@ export default function TermsPageClient({ sections, lastUpdated }: { sections: T
           className="space-y-4"
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Terms and <span className="text-primary italic">Conditions</span>
+            Terms and Conditions
           </h1>
           {lastUpdated && (
             <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">

@@ -64,7 +64,7 @@ export default function ResourceDownloadClient({
   return (
     <div className={className}>
       <Button
-        className={isMobile ? "w-full h-12 rounded-lg font-semibold shadow-lg shadow-primary/20" : "w-full h-12 rounded-lg font-semibold shadow-md shadow-primary/10 hover:shadow-primary/20 transition-all"}
+        className={isMobile ? "w-full h-12 rounded-lg font-semibold shadow-lg shadow-primary/20 bg-[#3b49df] hover:bg-[#3b49df] text-white border-0" : "w-full h-12 rounded-lg font-semibold shadow-md shadow-primary/10 hover:shadow-primary/20 transition-all bg-[#3b49df] hover:bg-[#3b49df] text-white border-0"}
         onClick={handleDownload}
         disabled={isDownloading}
       >

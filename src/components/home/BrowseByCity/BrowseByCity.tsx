@@ -65,8 +65,8 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
     <section className="py-12 md:py-16 bg-white overflow-hidden relative">
       <div className="max-w-none w-full px-2">
         <div className="text-center mb-14 px-4">
-          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
-            Explore teaching jobs in major <span className="text-blue-600">Indian cities</span>
+          <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
+            Explore teaching jobs in major Indian cities
           </h2>
           <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
             Find opportunities {totalJobs ? `among ${totalJobs}+ ` : "in your "}preferred location

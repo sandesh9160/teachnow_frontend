@@ -10,15 +10,15 @@ import { FeaturedJobsProps } from "@/types/components";
 export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
   const jobsRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const checkScroll = () => {
     requestAnimationFrame(() => {
       if (jobsRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = jobsRef.current;
-        // Use a larger threshold for mobile sub-pixel issues
-        setCanScrollLeft(scrollLeft > 5);
-        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+        // Use a larger threshold to prevent snap/sub-pixel offsets from showing buttons initially
+        setCanScrollLeft(scrollLeft > 50);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 50);
       }
     });
   };
@@ -51,13 +51,13 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
   const showContent = jobs && Array.isArray(jobs) && jobs.length > 0;
 
   return (
-    <section className="py-12 md:py-16 bg-white overflow-hidden relative">
+    <section className="pt-12 pb-20 bg-white overflow-hidden relative">
       <div className="max-w-none w-full">
         {/* Header - Center Title with Right-aligned "View All" */}
-        <div className="relative mb-10 px-4 md:px-8">
+        <div className="relative mb-10 px-4 md:px-12">
           <div className="text-center mb-14 px-4">
-            <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
-              Featured <span className="text-blue-600">Jobs</span>
+            <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
+              Featured Jobs
             </h2>
             <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
               Hand-picked opportunities from top institutions
@@ -86,43 +86,39 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
           {showContent ? (
             <>
               {/* Side Navigation Buttons */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (jobsRef.current) jobsRef.current.scrollBy({ left: -300, behavior: 'smooth' });
-                  setTimeout(checkScroll, 500);
-                }}
-                disabled={jobs.length <= 1}
-                aria-label="Scroll jobs left"
-                className={`absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
-                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
-                    : "bg-white border-slate-200 text-slate-400 opacity-60"
-                  }`}
-              >
-                <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
-              </button>
+              {canScrollLeft && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (jobsRef.current) jobsRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+                    setTimeout(checkScroll, 500);
+                  }}
+                  aria-label="Scroll jobs left"
+                  className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                >
+                  <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
+              )}
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (jobsRef.current) jobsRef.current.scrollBy({ left: 300, behavior: 'smooth' });
-                  setTimeout(checkScroll, 500);
-                }}
-                disabled={jobs.length <= 1}
-                aria-label="Scroll jobs right"
-                className={`absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
-                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
-                    : "bg-white border-slate-200 text-slate-400 opacity-60"
-                  }`}
-              >
-                <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
-              </button>
+              {canScrollRight && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (jobsRef.current) jobsRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+                    setTimeout(checkScroll, 500);
+                  }}
+                  aria-label="Scroll jobs right"
+                  className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                >
+                  <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
+              )}
 
               <div
                 ref={jobsRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8 px-[calc(50%-150px)] md:px-12 snap-x snap-mandatory"
+                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-[calc(50%-150px)] md:px-12 snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {/* Start Spacer */}

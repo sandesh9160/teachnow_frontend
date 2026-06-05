@@ -97,7 +97,7 @@ export default async function AIResumeBuilderPage() {
                 <Sparkles className="h-3.5 w-3.5" /> 100% Free — No Credit Card Required
               </div>
               <h1 className="text-4xl font-extrabold text-slate-900 md:text-6xl tracking-tight leading-tight">
-                Free AI <span className="text-[#3B49DF]">Resume Builder</span>
+                Free AI Resume Builder
               </h1>
               <p className="text-lg text-slate-500 font-medium max-w-xl leading-relaxed mx-auto lg:mx-0">
                 Create a professional resume in minutes using smart AI-powered templates. Perfect for any job seeker.

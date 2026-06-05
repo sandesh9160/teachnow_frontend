@@ -117,7 +117,7 @@ const MegaMenu = ({
       <button
         onClick={onToggle}
         suppressHydrationWarning
-        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold transition-colors hover:bg-muted hover:text-foreground ${active ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+        className={`flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${active ? "text-primary bg-primary/5" : "text-gray-500"}`}
       >
         {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
       </button>
@@ -212,7 +212,7 @@ const SimpleDropdown = ({
       <button
         onClick={onToggle}
         suppressHydrationWarning
-        className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${active ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+        className={`flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${active ? "text-primary bg-primary/5" : "text-gray-500"}`}
       >
         {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
       </button>
@@ -256,9 +256,12 @@ const DesktopAuth = ({
   if (!isLoggedIn) {
     return (
       <div className="flex items-center gap-1.5 xl:gap-4">
-        <Button asChild variant="ghost" size="sm" className="font-bold text-gray-600 hover:text-primary transition-colors whitespace-nowrap px-2">
-          <Link href="/auth/login">Register / Login</Link>
-        </Button>
+        <Link
+          href="/auth/login"
+          className="rounded-lg px-3.5 py-2 text-sm font-bold text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-primary whitespace-nowrap"
+        >
+          Register / Login
+        </Link>
         <Button asChild variant="hero" size="sm" className="rounded-lg px-4 h-9 font-bold bg-[#3b49df] shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20 whitespace-nowrap text-[13px]">
           <Link href="/auth/login?role=employer_recruiter">Post a Job</Link>
         </Button>

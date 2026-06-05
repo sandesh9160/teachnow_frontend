@@ -10,15 +10,15 @@ import { formatDate } from "@/lib/utils";
 export const BlogSections = ({ blogs }: BlogSectionsProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const blogPreview = Array.isArray(blogs) ? blogs : [];
 
   const checkScroll = () => {
     requestAnimationFrame(() => {
       if (scrollRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        setCanScrollLeft(scrollLeft > 10);
-        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+        setCanScrollLeft(scrollLeft > 50);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 50);
       }
     });
   };
@@ -50,12 +50,12 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
   };
 
   return (
-    <section className="py-16 bg-white overflow-hidden relative">
-      <div className="max-w-7xl mx-auto md:px-8">
+    <section className="pt-12 pb-20 bg-white overflow-hidden relative">
+      <div className="max-w-none w-full">
         {/* Header with All Posts Link */}
-        <div className="relative mb-14 px-4">
+        <div className="relative mb-14 px-4 md:px-12">
           <div className="text-center">
-            <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
+            <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
               Career Blogs
             </h2>
             <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
@@ -63,7 +63,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
             </p>
           </div>
 
-          <div className="absolute right-4 md:right-0 bottom-0 sm:top-1/2 sm:-translate-y-1/2 hidden md:block">
+          <div className="absolute right-4 md:right-12 bottom-0 sm:top-1/2 sm:-translate-y-1/2 hidden md:block">
             <Link
               href="/blogs"
               className="group flex items-center gap-2 text-blue-600 font-semibold"
@@ -78,43 +78,39 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
           {showContent ? (
             <>
               {/* Side Navigation Buttons */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  scroll("left");
-                }}
-                disabled={blogPreview.length <= 1}
-                aria-label="Scroll blogs left"
-                className={`absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollLeft
-                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
-                    : "bg-white border-slate-200 text-slate-400 opacity-60"
-                  }`}
-              >
-                <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
-              </button>
+              {canScrollLeft && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    scroll("left");
+                  }}
+                  aria-label="Scroll blogs left"
+                  className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                >
+                  <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
+              )}
 
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  scroll("right");
-                }}
-                disabled={blogPreview.length <= 1}
-                aria-label="Scroll blogs right"
-                className={`absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${canScrollRight
-                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95"
-                    : "bg-white border-slate-200 text-slate-400 opacity-60"
-                  }`}
-              >
-                <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
-              </button>
+              {canScrollRight && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    scroll("right");
+                  }}
+                  aria-label="Scroll blogs right"
+                  className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                >
+                  <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
+              )}
 
               {/* Horizontal Scroll Area */}
               <div
                 ref={scrollRef}
                 onScroll={checkScroll}
-                className="flex gap-5 overflow-x-auto scrollbar-hide pb-8 pt-1 px-[calc(50%-135px)] md:px-0 scroll-smooth snap-x snap-mandatory"
+                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-10 pt-2 px-[calc(50%-135px)] md:px-12 scroll-smooth snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {/* Start Spacer */}

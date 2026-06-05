@@ -10,14 +10,14 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
   const { institutions } = props;
   const companiesRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const checkScroll = () => {
     requestAnimationFrame(() => {
       if (companiesRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = companiesRef.current;
-        setCanScrollLeft(scrollLeft > 10);
-        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
+        setCanScrollLeft(scrollLeft > 50);
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 50);
       }
     });
   };
@@ -57,7 +57,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
         
         {/* Header */}
         <div className="text-center mb-14 px-4">
-          <h2 className="text-[30px] md:text-[36px] font-bold text-[#111827] tracking-tight mb-2">
+          <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
             Top Institutions Hiring
           </h2>
           <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
@@ -69,41 +69,35 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
           {showContent ? (
             <>
               {/* Side Navigation Buttons */}
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (companiesRef.current) companiesRef.current.scrollBy({ left: -304, behavior: 'smooth' });
-                  setTimeout(checkScroll, 500);
-                }}
-                disabled={institutions.length <= 1}
-                aria-label="Scroll institutions left"
-                className={`absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
-                  canScrollLeft 
-                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
-                    : "bg-white border-slate-200 text-slate-400 opacity-60"
-                }`}
-              >
-                <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
-              </button>
+              {canScrollLeft && (
+                <button 
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (companiesRef.current) companiesRef.current.scrollBy({ left: -304, behavior: 'smooth' });
+                    setTimeout(checkScroll, 500);
+                  }}
+                  aria-label="Scroll institutions left"
+                  className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                >
+                  <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
+              )}
               
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (companiesRef.current) companiesRef.current.scrollBy({ left: 304, behavior: 'smooth' });
-                  setTimeout(checkScroll, 500);
-                }}
-                disabled={institutions.length <= 1}
-                aria-label="Scroll institutions right"
-                className={`absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer ${
-                  canScrollRight 
-                    ? "bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95" 
-                    : "bg-white border-slate-200 text-slate-400 opacity-60"
-                }`}
-              >
-                <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
-              </button>
+              {canScrollRight && (
+                <button 
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (companiesRef.current) companiesRef.current.scrollBy({ left: 304, behavior: 'smooth' });
+                    setTimeout(checkScroll, 500);
+                  }}
+                  aria-label="Scroll institutions right"
+                  className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                >
+                  <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
+                </button>
+              )}
 
               <div 
                 ref={companiesRef} 

@@ -91,8 +91,8 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
         </div>
 
         {/* Action Button - Balanced */}
-        <div className="mt-auto block w-full py-2 bg-[#007AB0] hover:bg-[#006999] text-white text-center rounded-lg text-[11px] font-extrabold transition-colors shadow-sm active:scale-[0.98]">
-          VIEW DETAILS
+        <div className="mt-auto block w-full py-2 bg-[#3b49df] hover:bg-[#3b49df] text-white text-center rounded-lg text-[14px] font-semibold transition-colors shadow-sm active:scale-[0.98]">
+          View Details
         </div>
       </div>
     </Link>
