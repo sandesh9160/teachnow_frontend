@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Providers } from "@/providers";
 import "./globals.css";
 
@@ -6,7 +7,7 @@ import { LayoutWrapper } from "./LayoutWrapper";
 import { LayoutDataProvider } from "@/providers/LayoutDataProvider";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
-import { normalizeMediaUrl } from "@/services/api/client";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,7 +59,19 @@ export default function RootLayout({
   );
 }
 
-async function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
+function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <Suspense fallback={
+      <LayoutDataProvider navigationData={null} footerData={null} heroCTA={null}>
+        <main className="pt-16 min-h-screen flex flex-col">{children}</main>
+      </LayoutDataProvider>
+    }>
+      <RootLayoutContentInner>{children}</RootLayoutContentInner>
+    </Suspense>
+  );
+}
+
+async function RootLayoutContentInner({ children }: Readonly<{ children: React.ReactNode }>) {
   // Fetch critical layout data
   const { navigation, footer, heroCTA } = await getGlobalLayoutData();
 
@@ -80,5 +93,3 @@ async function RootLayoutContent({ children }: Readonly<{ children: React.ReactN
     </LayoutDataProvider>
   );
 }
-
-

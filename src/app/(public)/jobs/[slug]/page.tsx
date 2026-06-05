@@ -9,6 +9,7 @@ import { fetchAPI } from "@/services/api/client";
 import { Job, Institution, ApiResponse } from "@/types/homepage";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { sanitizeSlug } from "@/lib/utils";
+import { cache } from 'react';
 
 export const dynamic = "force-dynamic";
 
@@ -361,33 +362,29 @@ async function lookupBySearchFallback(s: string) {
   return null;
 }
 
+
+
 /**
  * Enhanced async resolver that determines the content type and data from a slug. 
  * This follows a modular, strategy-based approach to map paths to components.
  */
-async function resolveSlug(slug: string) {
+const resolveSlug = cache(async (slug: string) => {
   const s = sanitizeSlug(slug);
-
-  // Guard against common placeholder or invalid slugs
   if (!s || ["null", "undefined"].includes(s)) {
     return { type: 'not-found' as const };
   }
-
   try {
-    // Attempt lookup strategies in order of specificity
     const result = await lookupByNavigation(s)
       ?? await lookupByCategory(s)
-      ?? await lookupByInstitution(s) // Prioritize organization profiles if name matches exactly
-      ?? await lookupBySearchFallback(s) // Broad keyword searches (skills, locations)
-      ?? await lookupByJob(s); // Specific individual job pages as final fallback
-
+      ?? await lookupByInstitution(s)
+      ?? await lookupBySearchFallback(s)
+      ?? await lookupByJob(s);
     if (result) return result;
   } catch (err) {
     //console.error(`Resolver error for ${slug}:`, err);
   }
-
   return { type: 'not-found' as const };
-}
+});
 
 export default async function GenericJobDetailPage({ params }: { readonly params: Promise<{ readonly slug: string }> }) {
   const { slug } = await params;

@@ -1,5 +1,6 @@
 import { fetchAPI, normalizeMediaUrl } from "@/services/api/client";
 import { Institution, Job, ApiResponse } from "@/types/homepage";
+import { cache } from "react";
 
 /* -------------------- HELPERS -------------------- */
 
@@ -75,7 +76,7 @@ export async function getCompanies(filters: Record<string, any> = {}): Promise<I
  */
 
 
-export async function getCompanyProfileWithJobs(
+export const getCompanyProfileWithJobs = cache(async function getCompanyProfileWithJobs(
   slugOrId: string | number
 ): Promise<{ company: Institution; jobs: Job[] } | null> {
   const slug = (slugOrId || "").toString().replace(/^[:/]+/, "").replace(/\/+$/, "").trim();
@@ -112,7 +113,7 @@ export async function getCompanyProfileWithJobs(
   } catch (error: any) {
     return null;
   }
-}
+});
 
 
 /**

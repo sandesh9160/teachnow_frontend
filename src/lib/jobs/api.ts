@@ -4,6 +4,7 @@
  */
 import { fetchAPI } from "@/services/api/client";
 import { getJobs as getJobsFromService, getJobDetails } from "@/services/api/job.service";
+import { cache } from "react";
 import { normalizeJob, toArray } from "@/lib/jobs/normalizeJob";
 import type { ApiResponse, Job } from "@/types/homepage";
 
@@ -37,7 +38,7 @@ export async function getJobsForSlug(slug: string): Promise<Job[] | null> {
   return Array.isArray(j) ? j : null;
 }
 
-export async function getCategoryJobs(slug: string | number): Promise<CategoryJobsResult> {
+export const getCategoryJobs = cache(async function getCategoryJobs(slug: string | number): Promise<CategoryJobsResult> {
   const cleanSlug = slug.toString().replace(/\/+$/, "").trim();
   if (!cleanSlug) return null;
 
@@ -61,9 +62,9 @@ export async function getCategoryJobs(slug: string | number): Promise<CategoryJo
     }
     return null;
   }
-}
+});
 
-export async function fullSearchJobs(
+export const fullSearchJobs = cache(async function fullSearchJobs(
   keyword: string,
   location: string,
   category_id?: string | number
@@ -88,7 +89,7 @@ export async function fullSearchJobs(
   } catch (err: unknown) {
     return { jobs: [], similarJobs: [] };
   }
-}
+});
 
 export async function searchJobs(
   keyword: string,
@@ -99,7 +100,7 @@ export async function searchJobs(
   return result.jobs;
 }
 
-export async function fetchJobsPaginated(opts?: {
+export const fetchJobsPaginated = cache(async function fetchJobsPaginated(opts?: {
   keyword?: string;
   location?: string;
   page?: number;
@@ -204,4 +205,4 @@ export async function fetchJobsPaginated(opts?: {
       error: err instanceof Error ? err.message : "Failed to load jobs"
     };
   }
-}
+});

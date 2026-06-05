@@ -193,14 +193,6 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
-      {bannerImg && (
-        <link
-          rel="preload"
-          as="image"
-          href={bannerImg}
-          fetchPriority="high"
-        />
-      )}
       {/* Breadcrumb Bar */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="w-full px-4 sm:px-6 lg:px-12 py-2">

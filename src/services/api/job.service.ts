@@ -1,5 +1,6 @@
 import axios from "axios";
-import { api } from "@/services/api/client";
+import { fetchAPI } from "@/services/api/client";
+import { cache } from "react";
 import { normalizeJob, toArray } from "@/lib/jobs/normalizeJob";
 import type { Job } from "@/types/homepage";
 import type { JobDetails } from "@/types/jobs";
@@ -11,21 +12,24 @@ export async function getJobs(filters: Record<string, unknown> = {}): Promise<Jo
       if (v !== undefined && v !== null) params.append(k, String(v));
     });
     const query = params.toString();
-    const res = await api.get<unknown>(`/open/jobs${query ? `?${query}` : ""}`);
-    return toArray<Job>(res.data).map((j) => normalizeJob(j));
+    const res = await fetchAPI<any>(`/open/jobs${query ? `?${query}` : ""}`, {
+      silentStatusCodes: [404, 500]
+    });
+    return toArray<Job>(res).map((j) => normalizeJob(j));
   } catch (err) {
     //console.error("getJobs error:", err);
     return [];
   }
 }
 
-export async function getJobDetails(slug: string): Promise<JobDetails | null> {
+export const getJobDetails = cache(async function getJobDetails(slug: string): Promise<JobDetails | null> {
   const cleanSlug = (slug || "").replace(/^[:/]+/, "").replace(/\/+$/, "").trim();
   if (!cleanSlug) return null;
 
   try {
-    const res = await api.get<unknown>(`/open/jobs/${encodeURIComponent(cleanSlug)}`);
-    const body = res.data as Record<string, unknown> | undefined;
+    const body = await fetchAPI<any>(`/open/jobs/${encodeURIComponent(cleanSlug)}`, {
+      silentStatusCodes: [404, 500]
+    });
     const inner = (body?.data as Record<string, unknown> | undefined) ?? body ?? {};
     const rawJob = (inner.job ?? inner) as Record<string, unknown>;
 
@@ -67,4 +71,5 @@ export async function getJobDetails(slug: string): Promise<JobDetails | null> {
     }
     return null;
   }
-}
+});
+

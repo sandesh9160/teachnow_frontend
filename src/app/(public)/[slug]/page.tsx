@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next";
+import { cache } from 'react';
 
 import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
@@ -37,6 +38,66 @@ export const dynamic = 'force-dynamic';
 function normalizeLocationSlug(s: string): string {
   return (s || "").replace(/-(jobs|job)$/i, "").trim();
 }
+
+const resolveSlug = cache(async (slug: string) => {
+  // Ignore static files/icons early
+  if (isStaticOrIconRoute(slug)) return null;
+
+  const s = sanitizeSlug(slug);
+  if (!s) return null;
+
+  // 1 & 2. Try Job and Institute in parallel (the most common high-priority hits)
+  const [jobResult, instResult] = await Promise.all([
+    lookupByJob(s, slug),
+    lookupByInstitute(s)
+  ]);
+
+  if (jobResult) {
+    return { type: 'job' as const, data: jobResult.data, officialSlug: jobResult.data.slug || String(jobResult.data.id) };
+  }
+  if (instResult) {
+    return { type: 'institute' as const, data: instResult.data, officialSlug: instResult.data.company.slug || String(instResult.data.company.id) };
+  }
+
+  // 3. Category (often contains common teaching terms)
+  const cat = await lookupByCategory(s);
+  if (cat) return { type: 'category' as const, data: cat.data, officialSlug: cat.data.name.toLowerCase().replace(/\s+/g, '-') };
+
+  // 4. Location
+  const loc = await lookupByLocation(s);
+  if (loc) return { type: 'location' as const, data: loc.data, officialSlug: loc.data.name.toLowerCase().replace(/\s+/g, '-') };
+
+  // 5. Generic Search Fallback
+  const search = await lookupBySearch(s);
+  if (search) return { type: 'search' as const, data: search.data, officialSlug: s };
+
+  return null;
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  if (isStaticOrIconRoute(slug)) {
+    return { title: "TeachNow" };
+  }
+  const resolved = await resolveSlug(slug);
+  if (!resolved) {
+    return { title: "TeachNow" };
+  }
+  if (resolved.type === 'job') {
+    const job = resolved.data as any;
+    return { title: `${job.title} | TeachNow` };
+  }
+  if (resolved.type === 'institute') {
+    const inst = resolved.data as any;
+    return { title: `${inst.company.company_name} | TeachNow` };
+  }
+  return { title: "TeachNow" };
+}
+
 
 /* -------------------- STRATEGY RESOLVERS -------------------- */
 
@@ -295,65 +356,11 @@ async function lookupBySearch(s: string) {
   return null;
 }
 
-/* -------------------- ORCHESTRATOR -------------------- */
 
-async function resolveSlug(slug: string) {
-  // Ignore static files/icons early
-  if (isStaticOrIconRoute(slug)) return null;
-
-  const s = sanitizeSlug(slug);
-  if (!s) return null;
-
-  // 1 & 2. Try Job and Institute in parallel (the most common high-priority hits)
-  const [jobResult, instResult] = await Promise.all([
-    lookupByJob(s, slug),
-    lookupByInstitute(s)
-  ]);
-
-  if (jobResult) {
-    return { type: 'job' as const, data: jobResult.data, officialSlug: jobResult.data.slug || String(jobResult.data.id) };
-  }
-  if (instResult) {
-    return { type: 'institute' as const, data: instResult.data, officialSlug: instResult.data.company.slug || String(instResult.data.company.id) };
-  }
-
-  // 3. Category (often contains common teaching terms)
-  const cat = await lookupByCategory(s);
-  if (cat) return { type: 'category' as const, data: cat.data, officialSlug: cat.data.name.toLowerCase().replace(/\s+/g, '-') };
-
-  // 4. Location
-  const loc = await lookupByLocation(s);
-  if (loc) return { type: 'location' as const, data: loc.data, officialSlug: loc.data.name.toLowerCase().replace(/\s+/g, '-') };
-
-  // 5. Generic Search Fallback
-  const search = await lookupBySearch(s);
-  if (search) return { type: 'search' as const, data: search.data, officialSlug: s };
-
-  return null;
-}
 
 /* -------------------- EXPORTS -------------------- */
 
-export async function generateMetadata({
-  params
-}: {
-  params: Promise<{ slug: string }>
-}): Promise<Metadata> {
-  const { slug } = await params;
-  if (isStaticOrIconRoute(slug)) {
-    return { title: "TeachNow" };
-  }
-  const s = sanitizeSlug(slug);
 
-  // Quick metadata lookups (minimizing redundant strategy execution)
-  const job = (await getJobBySlug(slug)) || (slug === s ? null : await getJobBySlug(s));
-  if (job) return { title: `${job.title} | TeachNow` };
-
-  const inst = (await getCompanyProfileWithJobs(slug)) || (slug === s ? null : await getCompanyProfileWithJobs(s));
-  if (inst) return { title: `${inst.company.company_name} | TeachNow` };
-
-  return { title: "TeachNow" };
-}
 
 export default async function PublicSlugPage({ params }: { readonly params: Promise<{ slug: string }> }) {
   const { slug } = await params;

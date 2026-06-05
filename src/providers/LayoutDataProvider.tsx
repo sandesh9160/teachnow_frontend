@@ -1,5 +1,6 @@
 "use client";
 
+
 import { createContext, useContext, ReactNode } from "react";
 import type { NavigationData} from "@/types/homepage";
 import type { FooterData, HeroCTAData } from "@/lib/globalLayout/getGlobalLayoutData";
@@ -9,6 +10,7 @@ interface LayoutContextType {
   footerData: FooterData | null;
   heroCTA: HeroCTAData | null;
 }
+
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
