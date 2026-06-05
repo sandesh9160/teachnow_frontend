@@ -34,32 +34,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch layout data here (cached — no extra request) to preload hero image in <head>
-  const { heroCTA } = await getGlobalLayoutData();
-  const heroImageUrl = heroCTA?.hero?.background_image
-    ? normalizeMediaUrl(heroCTA.hero.background_image)
-    : null;
-
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <head>
         {/* Preconnect to backend CDN as early as possible */}
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
-        {/* Preload hero background image — tells browser to fetch it immediately, fixing NO_LCP on mobile */}
-        {heroImageUrl && (
-          <link
-            rel="preload"
-            as="image"
-            href={heroImageUrl}
-            fetchPriority="high"
-          />
-        )}
       </head>
       <body className="antialiased font-sans">
         <noscript>
@@ -96,4 +81,4 @@ async function RootLayoutContent({ children }: Readonly<{ children: React.ReactN
   );
 }
 
-
+

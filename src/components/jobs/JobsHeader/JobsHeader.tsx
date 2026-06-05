@@ -310,11 +310,8 @@ export const JobsHeader = ({
             <Button
               onClick={handleSearchInternal}
               disabled={loading}
-              className={`px-8 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-3 ${
-                loading
-                  ? "bg-slate-300 text-slate-500 cursor-not-allowed shadow-none"
-                  : "bg-[#3b49df] hover:bg-[#2e3fc7] hover:scale-[1.02] active:scale-[0.98] text-white shadow-xl shadow-indigo-100"
-              }`}
+              variant={loading ? "default" : "hero"}
+              className="px-8 py-2.5 h-auto rounded-xl font-bold text-base shrink-0 w-full md:w-auto flex items-center justify-center gap-3 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none"
             >
               <Search className="h-5 w-5" />
               <span>Search Jobs</span>

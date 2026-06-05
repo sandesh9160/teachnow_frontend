@@ -1,4 +1,5 @@
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
+import { normalizeMediaUrl } from "@/services/api/client";
 
 // Server Components (imported statically)
 import Hero from "@/components/home/Hero/Hero";
@@ -57,9 +58,18 @@ export default async function HomePage() {
   const heroCTA = globalData?.heroCTA ?? null;
   const hero = heroCTA?.hero ?? null;
   const cta = heroCTA?.cta ?? [];
+  const heroImageUrl = hero?.background_image ? normalizeMediaUrl(hero.background_image) : null;
 
   return (
     <div className="flex flex-col min-h-screen">
+      {heroImageUrl && (
+        <link
+          rel="preload"
+          as="image"
+          href={heroImageUrl}
+          fetchPriority="high"
+        />
+      )}
       {/* Hero renders immediately as it uses layout-level cached data */}
       <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
 

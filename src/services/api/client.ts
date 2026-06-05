@@ -134,9 +134,7 @@ function normalizeEndpoint(endpoint: string): string {
 // -----------------------------
 // Generic API Wrapper
 // -----------------------------
-// -----------------------------
-// Generic API Wrapper
-// -----------------------------
+
 /**
  * fetchAPI is the main wrapper to call backend endpoints.
  * Supports CSRF, cookies, silent status codes, and POST/PUT/DELETE requests.

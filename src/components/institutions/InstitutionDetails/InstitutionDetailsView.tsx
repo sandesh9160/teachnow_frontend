@@ -48,6 +48,14 @@ export default function InstitutionDetailsView({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
+      {companyLogo && (
+        <link
+          rel="preload"
+          as="image"
+          href={companyLogo}
+          fetchPriority="high"
+        />
+      )}
       {/* Breadcrumb Bar */}
       <div className="bg-white border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
@@ -106,7 +114,8 @@ export default function InstitutionDetailsView({
             {/* Header CTA */}
             <Button
               asChild
-              className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-8 py-4 h-auto rounded-xl font-semisemibold shadow-lg shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center justify-center gap-3 active:scale-95"
+              variant="hero"
+              className="px-8 py-4 h-auto rounded-xl font-semibold flex items-center justify-center gap-3"
             >
               <Link href="#open-jobs">
                 <Briefcase className="h-5 w-5" />
