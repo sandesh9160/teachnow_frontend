@@ -278,8 +278,8 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   </Button>
                 ) : (
                   <Link href={`/apply/${jobSegment}`} className="w-full sm:w-auto">
-                    <Button className="h-11 w-full sm:px-10 rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[14px]">
-                      Apply Now
+                    <Button variant="hero">
+                      Apply No
                     </Button>
                   </Link>
                 )}
@@ -340,7 +340,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                     </Button>
                   ) : (
                     <Link href={`/apply/${jobSegment}`} className="w-full">
-                      <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
+                      <Button variant="hero" className="h-12 w-full rounded-xl font-bold text-[15px]">
                         Apply Now
                       </Button>
                     </Link>
@@ -503,7 +503,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                   </Button>
                 ) : (
                   <Link href={`/apply/${jobSegment}`} className="w-full">
-                    <Button className="h-12 w-full rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3bb3] text-white text-[15px] shadow-sm transition-all">
+                    <Button variant="hero" className="h-12 w-full rounded-xl font-bold text-[15px]">
                       Apply Now
                     </Button>
                   </Link>

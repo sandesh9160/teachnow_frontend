@@ -319,13 +319,13 @@ export function SearchBar({ }: SearchBarProps) {
         </div>
 
         <Button
-          variant={null}
-          className="px-5 py-2.5 h-auto rounded-xl font-bold text-base transition-all shrink-0 w-full md:w-auto flex items-center justify-center gap-2 bg-[#3b49df] hover:bg-[#2e3fc7] hover:scale-[1.02] active:scale-[0.98] text-white shadow-xl shadow-indigo-100 disabled:opacity-70"
+          variant="hero"
+          className="px-5 py-2.5 h-auto rounded-xl font-bold text-base shrink-0 w-full md:w-auto flex items-center justify-center gap-2 disabled:opacity-70"
           onClick={() => handleSearch()}
           disabled={isLoading}
         >
           <Search className="h-5 w-5" />
-          <span>Search Jobs</span>
+          <span>Search</span>
         </Button>
       </div>
 

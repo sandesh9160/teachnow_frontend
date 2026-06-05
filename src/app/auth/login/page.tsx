@@ -9,6 +9,7 @@ import { useBranding } from "@/hooks/useBranding";
 import { EmailSignInAction } from "@/lib/sign-in";
 import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
 import { toast } from "sonner";
+import { Button } from "@/shared/ui/Buttons/Buttons";
 
 type LoginRole = "job_seeker" | "employer" | "recruiter";
 
@@ -223,11 +224,12 @@ function LoginContent() {
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="submit"
+                  variant="hero"
                   disabled={authLoading}
                   suppressHydrationWarning
-                  className="w-full rounded-xl py-2.5 text-xs font-bold text-white transition-all shadow-md mt-2 disabled:opacity-50 disabled:cursor-wait bg-[#3b49df] hover:bg-[#3b49df] shadow-indigo-600/10 hover:shadow-lg hover:shadow-indigo-600/20 active:scale-[0.98]"
+                  className="w-full rounded-xl py-2.5 text-xs font-bold mt-2 h-auto"
                 >
                   {authLoading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -237,7 +239,7 @@ function LoginContent() {
                   ) : (
                     `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`
                   )}
-                </button>
+                </Button>
 
                 <p className="mt-4 text-center text-xs text-muted-foreground">
                   Don&apos;t have an account?{" "}

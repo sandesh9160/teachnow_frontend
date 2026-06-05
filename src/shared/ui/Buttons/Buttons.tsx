@@ -15,7 +15,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-muted text-foreground hover:scale-[1.02] active:scale-[0.98]",
         link: "text-primary underline-offset-4 hover:underline",
         accent: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
-        hero: "gradient-primary text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]",
+        hero: "bg-[#3b49df] bg-primary border-2 border-[#2e3fc7] text-white shadow-md hover:shadow-lg hover:shadow-indigo-200/50 hover:scale-[1.02] active:scale-[0.98]",
       },
       size: {
         default: "h-10 px-5 py-2",
@@ -34,7 +34,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "accent" | "hero" | null;
   size?: "default" | "sm" | "lg" | "xl" | "icon" | null;

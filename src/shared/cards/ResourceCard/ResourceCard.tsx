@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { BookOpen, Clock } from "lucide-react";
+import { Button } from "@/shared/ui/Buttons/Buttons";
 
 interface ResourceCardProps {
   resource: ResourceData;
@@ -90,10 +91,13 @@ const ResourceCard = ({ resource, className, onClick }: ResourceCardProps) => {
           </span>
         </div>
 
-        {/* Action Button - Balanced */}
-        <div className="mt-auto block w-full py-2 bg-[#3b49df] hover:bg-[#3b49df] text-white text-center rounded-lg text-[14px] font-semibold transition-colors shadow-sm active:scale-[0.98]">
+        <Button
+          variant="hero"
+          className="mt-auto w-full py-2 h-auto rounded-lg text-[14px] font-semibold"
+          tabIndex={-1}
+        >
           View Details
-        </div>
+        </Button>
       </div>
     </Link>
   );

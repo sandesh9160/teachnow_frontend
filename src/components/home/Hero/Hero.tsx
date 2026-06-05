@@ -92,10 +92,10 @@ export const Hero = ({
               <Button
                 key={item.id ?? item.title ?? item.button_text}
                 asChild
-                variant={isBlue ? null : "outline"}
+                variant={isBlue ? "hero" : "outline"}
                 className={
                   isBlue
-                    ? "bg-[#3b49df] hover:bg-[#2e3fc7] hover:shadow-xl hover:shadow-indigo-200/50 text-white px-6 py-3 h-auto rounded-lg transition-all font-bold text-sm w-full sm:w-auto sm:min-w-[130px] flex items-center justify-center gap-2.5 border-0 active:scale-95"
+                    ? "px-6 py-3 h-auto rounded-lg font-bold text-sm w-full sm:w-auto sm:min-w-[130px] flex items-center justify-center gap-2.5 active:scale-95"
                     : "border border-slate-200 bg-white hover:bg-slate-50 text-[#1a202c] px-6 py-2.5 h-auto rounded-lg shadow-sm hover:shadow-md transition-all font-bold text-sm w-full sm:w-auto sm:min-w-[130px] flex items-center justify-center gap-2.5 active:scale-95"
                 }
               >

@@ -56,6 +56,7 @@ export default function ResourcesClient({ initialResources }: ResourcesClientPro
               if (!acc[category]) acc[category] = [];
               acc[category].push(res);
               return acc;
+              
             }, {} as Record<string, ResourceData[]>)
           ).map(([category, items], sectionIndex) => (
             <div key={category} className="group/section">

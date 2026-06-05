@@ -26,7 +26,7 @@ export default function AboutPageClient({ sections }: { sections: AboutUsSection
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight motion-h1"
         >
-          About <span className="text-primary">TeachNow</span>
+          About TeachNow
         </motion.h1>
       </header>
 

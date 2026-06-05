@@ -73,9 +73,9 @@ const MegaMenu = ({
         <button
           onClick={onToggle}
           suppressHydrationWarning
-          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-bold text-muted-foreground hover:bg-muted"
+          className={`flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${active ? "text-primary bg-primary/5" : "text-gray-600"}`}
         >
-          {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
+          {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${active ? "rotate-180" : ""}`} />
         </button>
         {active && (
           <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -187,9 +187,9 @@ const SimpleDropdown = ({
         <button
           onClick={onToggle}
           suppressHydrationWarning
-          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
+          className={`flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${active ? "text-primary bg-primary/5" : "text-gray-600"}`}
         >
-          {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform ${active ? "rotate-180" : ""}`} />
+          {label} <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${active ? "rotate-180" : ""}`} />
         </button>
         {active && (
           <div className="pl-6 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -262,7 +262,7 @@ const DesktopAuth = ({
         >
           Register / Login
         </Link>
-        <Button asChild variant="hero" size="sm" className="rounded-lg px-4 h-9 font-bold bg-[#3b49df] shadow-md shadow-primary/10 transition-all hover:shadow-lg hover:shadow-primary/20 whitespace-nowrap text-[13px]">
+        <Button asChild variant="hero" size="sm" >
           <Link href="/auth/login?role=employer_recruiter">Post a Job</Link>
         </Button>
       </div>
@@ -341,7 +341,7 @@ const MobileAuth = ({
     return (
       <div className="mt-4 flex flex-col gap-3 p-2">
         <Button asChild variant="outline" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login" onClick={closeAll}>Register / Login</Link></Button>
-        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3fc7] text-white shadow-md shadow-primary/10 transition-all"><Link href="/auth/login?role=employer_recruiter" onClick={closeAll}>Post a Job</Link></Button>
+        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login?role=employer_recruiter" onClick={closeAll}>Post a Job</Link></Button>
       </div>
     );
   }
@@ -629,7 +629,7 @@ const Header = ({
                   key={menu.id}
                   href={menu.url}
                   onClick={closeAll}
-                  className="rounded-lg px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                  className={`rounded-lg px-3.5 py-2.5 text-sm font-bold transition-all duration-200 hover:bg-gray-50 hover:text-primary ${pathname === menu.url ? "text-primary bg-primary/5" : "text-gray-600"}`}
                 >
                   {menu.title}
                 </Link>

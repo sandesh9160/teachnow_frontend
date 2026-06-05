@@ -34,7 +34,7 @@ export default async function ResourcesPage() {
       {/* Consistent Header Section */}
       <section className="bg-white border-b border-slate-100 py-4 sm:py-5">
         <div className="w-full px-4 sm:px-6 lg:px-12">
-          <h1 className="text-3xl font-bold text-slate-900 md:text-4xl tracking-tight mb-2">
+          <h1 className="text-3xl font-extrabold text-slate-900 md:text-4xl tracking-tight mb-2">
             Teaching Resources
           </h1>
           <p className="text-base text-slate-500 max-w-2xl font-medium leading-relaxed">

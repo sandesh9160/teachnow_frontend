@@ -77,7 +77,7 @@ export const JobSeekerSteps = () => {
           ))}
         </div>
         <div className="mt-16 flex justify-center">
-          <Button variant="hero" size="xl" asChild className="rounded-2xl px-12 transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+          <Button variant="hero" size="xl" asChild className="rounded-2xl px-12">
             <Link href="/auth/login" className="flex items-center gap-3">
               Start Your Job Search <ArrowRight className="h-5 w-5" />
           </Link>

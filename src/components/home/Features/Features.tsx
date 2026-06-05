@@ -58,7 +58,7 @@ export const Features = () => {
               </ul>
 
               <div className="mt-6">
-                <Button asChild variant={null} className="bg-[#3b49df] hover:bg-[#2e3fc7] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
+                <Button asChild variant="hero" className="px-7 h-11 rounded-xl font-bold flex items-center justify-center w-fit gap-2">
                   <Link href="/jobs">
                     Explore Jobs <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -104,7 +104,7 @@ export const Features = () => {
               </ul>
 
               <div className="mt-6">
-                <Button asChild variant={null} className="bg-[#3b49df] hover:bg-[#2e3fc7] text-white px-7 h-11 rounded-xl font-bold transition-all shadow-md shadow-blue-100 flex items-center justify-center w-fit gap-2">
+                <Button asChild variant="hero" className="px-7 h-11 rounded-xl font-bold flex items-center justify-center w-fit gap-2">
                   <Link href="/auth/login">
                     Hire Teachers <ArrowRight className="h-4 w-4" />
                   </Link>
