@@ -134,6 +134,9 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
     }
   };
 
+
+  
+
   const handleShare = async () => {
     const shareData = {
       title: `${title} | TeachNow`,

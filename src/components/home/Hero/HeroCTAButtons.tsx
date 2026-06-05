@@ -21,10 +21,10 @@ export default async function HeroCTAButtons() {
           <Button
             key={item.id ?? item.title ?? item.button_text}
             asChild
-            variant={isBlue ? "default" : "outline"}
+            variant={isBlue ? null : "outline"}
             className={
               isBlue
-                ? "bg-gradient-to-r from-[#2e3fc7] to-[#0c00ec] hover:shadow-xl hover:shadow-indigo-200/50 text-white px-6 py-3 h-auto rounded-xl transition-all font-bold text-sm w-full sm:w-auto flex items-center justify-center gap-2.5 border-0 active:scale-95"
+                ? "bg-[#3b49df] hover:bg-[#2e3fc7] hover:shadow-xl hover:shadow-indigo-200/50 text-white px-6 py-3 h-auto rounded-xl transition-all font-bold text-sm w-full sm:w-auto flex items-center justify-center gap-2.5 border-0 active:scale-95"
                 : "border border-slate-300 bg-white hover:bg-slate-50 text-[#1a202c] px-6 py-2.5 h-auto rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-sm w-full sm:w-auto flex items-center justify-center gap-2.5 active:scale-95"
             }
           >

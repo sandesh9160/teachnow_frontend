@@ -341,7 +341,7 @@ const MobileAuth = ({
     return (
       <div className="mt-4 flex flex-col gap-3 p-2">
         <Button asChild variant="outline" className="w-full h-11 rounded-xl font-bold"><Link href="/auth/login" onClick={closeAll}>Register / Login</Link></Button>
-        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-primary"><Link href="/auth/login?role=employer_recruiter" onClick={closeAll}>Post a Job</Link></Button>
+        <Button asChild variant="hero" className="w-full h-11 rounded-xl font-bold bg-[#3b49df] hover:bg-[#2e3fc7] text-white shadow-md shadow-primary/10 transition-all"><Link href="/auth/login?role=employer_recruiter" onClick={closeAll}>Post a Job</Link></Button>
       </div>
     );
   }

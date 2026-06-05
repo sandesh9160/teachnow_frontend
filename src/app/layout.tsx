@@ -6,17 +6,19 @@ import { LayoutWrapper } from "./LayoutWrapper";
 import { LayoutDataProvider } from "@/providers/LayoutDataProvider";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { normalizeMediaUrl } from "@/services/api/client";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  display: "swap",
+  // 'optional' renders immediately in system font — no font-swap re-render that blocks LCP
+  display: "optional",
 });
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-display",
-  display: "swap",
+  display: "optional",
 });
 
 export const metadata: Metadata = {
@@ -32,15 +34,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch layout data here (cached — no extra request) to preload hero image in <head>
+  const { heroCTA } = await getGlobalLayoutData();
+  const heroImageUrl = heroCTA?.hero?.background_image
+    ? normalizeMediaUrl(heroCTA.hero.background_image)
+    : null;
+
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <head>
+        {/* Preconnect to backend CDN as early as possible */}
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
+        {/* Preload hero background image — tells browser to fetch it immediately, fixing NO_LCP on mobile */}
+        {heroImageUrl && (
+          <link
+            rel="preload"
+            as="image"
+            href={heroImageUrl}
+            fetchPriority="high"
+          />
+        )}
       </head>
       <body className="antialiased font-sans">
         <noscript>
