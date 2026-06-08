@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import CompanyCard from "@/shared/cards/CompanyCard/CompanyCard";
 import { normalizeMediaUrl } from "@/services/api/client";
 import { FeaturedInstitutionsProps } from "@/types/components";
@@ -55,14 +56,33 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
     <section className="pt-12 pb-20 bg-[#F7F9FC] overflow-hidden relative">
       <div className="max-w-none w-full">
         
-        {/* Header */}
-        <div className="text-center mb-14 px-4">
-          <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
-            Top Institutions Hiring
-          </h2>
-          <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
-            Leading institutions actively looking for educators
-          </p>
+        {/* Header - Center Title with Right-aligned "View All" */}
+        <div className="relative mb-10 px-4 md:px-12">
+          <div className="text-center mb-14 px-4">
+            <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
+              Top Institutions Hiring
+            </h2>
+            <p className="text-[16px] md:text-[18px] text-slate-600 font-normal">
+              Leading institutions actively looking for educators
+            </p>
+          </div>
+          <div className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 hidden md:block z-10">
+            <Link
+              href="/institutions"
+              className="group flex items-center gap-2 text-blue-600 font-semibold"
+            >
+              View All Institutions <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+          {/* Mobile View All */}
+          <div className="text-right mt-4 md:hidden">
+            <Link
+              href="/institutions"
+              className="text-blue-600 font-semibold"
+            >
+              View All Institutions
+            </Link>
+          </div>
         </div>
 
         <div className="relative group/carousel">

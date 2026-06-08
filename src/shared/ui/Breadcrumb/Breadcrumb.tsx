@@ -15,7 +15,7 @@ interface BreadcrumbProps {
 
 export const Breadcrumb = ({ items, className }: BreadcrumbProps) => {
   return (
-    <nav className={cn("flex flex-wrap items-center text-[13px] md:text-[14px] font-medium text-slate-800 gap-1.5 md:gap-2 py-2", className)}>
+    <nav className={cn("flex items-center text-[13px] md:text-[14px] font-medium text-slate-800 gap-1.5 md:gap-2 py-2 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]", className)}>
       <Link 
         href="/" 
         className="text-slate-500 hover:text-slate-900 transition-colors shrink-0 font-normal"
