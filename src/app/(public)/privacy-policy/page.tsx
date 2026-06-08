@@ -15,24 +15,24 @@ export default async function PrivacyPolicyPage() {
     console.error("Failed to load privacy policy:", error);
   }
 
-  const lastUpdated = sections.length > 0
+  const lastUpdated = (sections.length > 0
     ? new Date(Math.max(...sections.map(s => new Date(s.updated_at).getTime()))).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
       year: 'numeric'
     })
-    : null;
+    : null) || "May 6, 2026";
 
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
       {/* --- Page Header --- */}
       <header className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center">
         <div className="space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">
             Privacy Policy
           </h1>
           {lastUpdated && (
-            <p className="text-sm text-slate-400 uppercase tracking-widest font-bold">
+            <p className="text-sm text-slate-600  tracking-widest  font-bold">
               Last updated: {lastUpdated}
             </p>
           )}
@@ -47,7 +47,7 @@ export default async function PrivacyPolicyPage() {
               <p className="text-slate-400 font-medium text-sm">Privacy policy is being updated. Please check back soon.</p>
             </div>
           ) : (
-            <div className="rich-text">
+            <div className="rich-text privacy-policy-headings">
               {sections.map((section) => (
                 <div key={section.id}>
                   {/* Section Title */}
@@ -83,10 +83,10 @@ export default async function PrivacyPolicyPage() {
 
       {/* --- Compact Footer CTA --- */}
       <div className="mt-12 text-center px-4">
-        <div className="flex items-center justify-center gap-6 text-[13px] font-bold uppercase tracking-wider">
-          <a href="/terms-and-conditions" className="text-slate-400 hover:text-primary transition-colors">Terms of Service</a>
+        <div className="flex items-center justify-center gap-6 text-[15px] font-bold  tracking-wider">
+          <a href="/terms-and-conditions" className="text-slate-600 hover:text-primary transition-colors">Terms of Service</a>
           <div className="h-4 w-px bg-slate-200" />
-          <a href="/contact-us" className="text-slate-400 hover:text-primary transition-colors">Contact Support</a>
+          <a href="/contact-us" className="text-slate-600 hover:text-primary transition-colors">Contact Support</a>
         </div>
       </div>
     </div>

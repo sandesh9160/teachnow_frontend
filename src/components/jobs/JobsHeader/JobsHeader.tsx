@@ -160,18 +160,17 @@ export const JobsHeader = ({
   };
 
   return (
-    <section className="bg-white/50 backdrop-blur-sm relative py-0.5 md:py-1">
+    <section className="relative py-0.5 md:py-1">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div className="mx-auto w-full">
           <div className="bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] flex flex-col md:flex-row items-stretch md:items-center gap-3 p-1.5 md:p-2 transition-all duration-300 border border-slate-200 hover:border-indigo-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
 
             {/* Subject/Role Search */}
             <div className="relative flex-[1.4] w-full" ref={roleRef}>
-              <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all border ${
-                emptySearchError 
-                  ? "bg-slate-100 border-red-400 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100" 
+              <div className={`flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all border ${emptySearchError
+                  ? "bg-slate-100 border-red-400 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100"
                   : "bg-slate-100 border-transparent focus-within:border-indigo-200"
-              }`}>
+                }`}>
                 <Search className={`h-4 w-4 shrink-0 ${emptySearchError ? "text-red-400" : "text-indigo-400"}`} />
                 <input
                   type="text"
@@ -227,17 +226,16 @@ export const JobsHeader = ({
                         setSearch(role);
                         setShowRoleSuggestions(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${
-                        selectedIndex === idx ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === idx ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"
+                        }`}
                     >
                       {role}
                     </button>
                   ))}
                 </div>
               )}
-            </div>            
-            
+            </div>
+
             {/* City/Location Search — dropdown only */}
             <div className="relative flex-1 w-full flex flex-col items-stretch" ref={cityRef}>
               <div className="flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all border bg-slate-100 border-transparent focus-within:border-indigo-200">
@@ -283,7 +281,7 @@ export const JobsHeader = ({
                   className="w-full bg-transparent text-slate-800 font-semibold placeholder:text-slate-400 focus:outline-none text-[15px]"
                 />
               </div>
- 
+
               {/* Suggestions - Cities */}
               {showCitySuggestions && suggestions.cities.length > 0 && (
                 <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 bg-white rounded-lg shadow-lg overflow-hidden py-1 text-left">
@@ -296,9 +294,8 @@ export const JobsHeader = ({
                         setLocation(city);
                         setShowCitySuggestions(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${
-                        selectedIndex === idx ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-[13px] font-semibold transition-colors ${selectedIndex === idx ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50"
+                        }`}
                     >
                       {city}
                     </button>
@@ -326,11 +323,11 @@ export const JobsHeader = ({
               </p>
             </div>
           )}
- 
+
 
           {/* External error prop (e.g. from parent) */}
 
-      
+
           {error && (
 
             <div className="mt-2 px-2 animate-in fade-in slide-in-from-top-1 duration-200">

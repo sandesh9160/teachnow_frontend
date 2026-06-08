@@ -49,7 +49,7 @@ export default async function PricingPage() {
     <div className="bg-[#F8FAFC] min-h-screen">
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-1 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>

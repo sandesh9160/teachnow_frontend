@@ -83,7 +83,7 @@ export default async function AIResumeBuilderPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header / Breadcrumb */}
       <div className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>

@@ -125,7 +125,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                   <ChevronLeft className="w-3.5 h-3.5" /> Back
                </button>
 
-            <div className="space-y-2">
+               <div className="space-y-2">
                   <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">{job.title}</h1>
                   <div className="flex flex-wrap items-center gap-1.5">
                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
@@ -149,19 +149,19 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
             </div>
 
             <div className="flex flex-wrap items-center gap-2 shrink-0">
-                 <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
-                   <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-100 hover:bg-indigo-50 flex items-center gap-2 shadow-xs hover:scale-100 active:scale-100">
-                      <Users className="w-4 h-4" /> View Applicants {totalApplications > 0 && `(${totalApplications})`}
-                   </Button>
-                </Link>
+               <Link href={`${basePath}/jobs/view/${job.id}/applicants`}>
+                  <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-indigo-600 bg-white border-indigo-100 hover:bg-indigo-50 flex items-center gap-2 shadow-xs hover:scale-100 active:scale-100">
+                     <Users className="w-4 h-4" /> View Applicants {totalApplications > 0 && `(${totalApplications})`}
+                  </Button>
+               </Link>
 
-                 {job.job_status !== 'filled' && (
-                    <Link href={`${basePath}/jobs/edit/${job.id}`}>
-                      <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-slate-700 bg-white border-slate-200 hover:bg-slate-50 flex items-center gap-2 shadow-xs hover:scale-100 active:scale-100">
-                         <Edit2 className="w-4 h-4" /> Edit Requirement
-                      </Button>
-                   </Link>
-                 )}
+               {job.job_status !== 'filled' && (
+                  <Link href={`${basePath}/jobs/edit/${job.id}`}>
+                     <Button variant="outline" className="h-9 px-4 rounded-xl text-[12px] font-semibold text-slate-700 bg-white border-slate-200 hover:bg-slate-50 flex items-center gap-2 shadow-xs hover:scale-100 active:scale-100">
+                        <Edit2 className="w-4 h-4" /> Edit Requirement
+                     </Button>
+                  </Link>
+               )}
 
                {job.status === 'approved' ? (
                   <Link href={`/jobs/${job.slug}`} target="_blank">
@@ -170,7 +170,7 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      </Button>
                   </Link>
                ) : (
-                  <Button 
+                  <Button
                      onClick={() => toast.warning("Not Live Yet", {
                         description: "This job is waiting for approval. It will be live soon!",
                         style: { borderLeft: '4px solid #f59e0b' }
@@ -278,9 +278,14 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                      </div>
 
                      <div
-                        className="prose prose-sm max-w-none text-slate-900 leading-relaxed font-medium tiptap-preview px-1"
+                        className="rich-text font-normal text-slate-900 leading-relaxed px-1 tiptap-no-bold"
                         dangerouslySetInnerHTML={{ __html: job.description }}
                      />
+                     <style>{`
+                        .tiptap-no-bold strong, .tiptap-no-bold b {
+                           font-weight: 400 !important;
+                        }
+                     `}</style>
                   </div>
 
                   {questions && questions.length > 0 && (
@@ -318,16 +323,16 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                <div className="grid grid-cols-1 gap-2.5">
                   <DetailItem label="Subject" value={job.category?.name || "General"} icon={Layers} colorClass="bg-blue-50 text-blue-600 border-blue-200" />
                   <DetailItem label="Openings" value={`${job.vacancies} Positions`} icon={Users} colorClass="bg-indigo-50 text-indigo-600 border-indigo-200" />
-                  <DetailItem 
-                     label="Monthly Salary" 
+                  <DetailItem
+                     label="Monthly Salary"
                      value={
-                        (!job.salary_min || job.salary_min === "null" || job.salary_min === "0") && 
-                        (!job.salary_max || job.salary_max === "null" || job.salary_max === "0")
-                        ? "Salary Undisclosed" 
-                        : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
-                     } 
-                     icon={DollarSign} 
-                     colorClass="bg-emerald-50 text-emerald-600 border-emerald-200" 
+                        (!job.salary_min || job.salary_min === "null" || job.salary_min === "0") &&
+                           (!job.salary_max || job.salary_max === "null" || job.salary_max === "0")
+                           ? "Salary Undisclosed"
+                           : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
+                     }
+                     icon={DollarSign}
+                     colorClass="bg-emerald-50 text-emerald-600 border-emerald-200"
                   />
                   <DetailItem label="Experience" value={`${job.experience_required}y (${formatTerm(job.experience_type)})`} icon={Briefcase} colorClass="bg-purple-50 text-purple-600 border-purple-200" />
                   <DetailItem
@@ -408,8 +413,8 @@ export default function RecruiterJobViewClient({ job, totalApplications = 0 }: R
                               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                            ) : (
                               <Star className={cn("w-3.5 h-3.5", isActuallyFeatured ? "fill-indigo-500 text-indigo-500" : "fill-none text-[#312E81]")} />
-                         )}
-                         {isActuallyFeatured ? "Featured" : isAwaitingFeatured ? "Awaiting Admin" : "Feature on Home"}
+                           )}
+                           {isActuallyFeatured ? "Featured" : isAwaitingFeatured ? "Awaiting Admin" : "Feature on Home"}
                         </Button>
                      )}
                   </div>

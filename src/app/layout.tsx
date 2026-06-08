@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+// import { Suspense } from "react";
 import { Providers } from "@/providers";
 import "./globals.css";
 
@@ -47,9 +47,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
       </head>
-      <body className="antialiased font-sans">
+      <body className="antialiased font-sans" suppressHydrationWarning>
         <noscript>
-          <link rel="stylesheet" href="/no-js.css" />
+          <link rel="stylesheet" href="/no-js.css" />  
         </noscript>
         <Providers>
           <RootLayoutContent>{children}</RootLayoutContent>
@@ -60,15 +60,7 @@ export default function RootLayout({
 }
 
 function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <Suspense fallback={
-      <LayoutDataProvider navigationData={null} footerData={null} heroCTA={null}>
-        <main className="pt-16 min-h-screen flex flex-col">{children}</main>
-      </LayoutDataProvider>
-    }>
-      <RootLayoutContentInner>{children}</RootLayoutContentInner>
-    </Suspense>
-  );
+  return <RootLayoutContentInner>{children}</RootLayoutContentInner>;
 }
 
 async function RootLayoutContentInner({ children }: Readonly<{ children: React.ReactNode }>) {

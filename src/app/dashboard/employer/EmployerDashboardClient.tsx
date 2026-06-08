@@ -232,8 +232,9 @@ export default function EmployerDashboardClient({
 
    const [isFeatured, setIsFeatured] = useState(
       dashboardData?.company_featured === true ||
-      dashboardData?.is_featured === 1 ||
-      dashboardData?.employer?.is_featured === 1 ||
+      String(dashboardData?.company_featured) === "1" ||
+      Number(dashboardData?.is_featured) === 1 ||
+      Number(dashboardData?.employer?.is_featured) === 1 ||
       false
    );
    const [loadingFeature, setLoadingFeature] = useState(false);
@@ -491,15 +492,33 @@ export default function EmployerDashboardClient({
                      <span className="text-[13px] font-bold text-slate-900 block leading-none">Home Page Visibility</span>
                      {(() => {
                         const date = dashboardData?.company_featured_until || dashboardData?.featured_until || dashboardData?.employer?.featured_until;
-                        if (!date) return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Status: Standard Placement</p>;
+                        
+                        const isAdminFeatured = Number(dashboardData?.is_featured) === 1 || 
+                                                Number(dashboardData?.employer?.is_featured) === 1;
+
+                        if (!date) {
+                           if (isFeatured && !isAdminFeatured) {
+                              return <p className="text-[11px] text-amber-600 font-bold flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Request Pending Approval</p>;
+                           }
+                           return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Status: Standard Placement</p>;
+                        }
 
                         const isExpired = new Date(date) < new Date();
                         const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-                        if (isFeatured && !isExpired) {
+                        if (isAdminFeatured && !isExpired) {
                            return <p className="text-[11px] text-indigo-600 font-bold flex items-center gap-1"><Zap className="w-2.5 h-2.5" /> Active until {formattedDate}</p>;
                         }
-                        return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Featured status ended on {formattedDate}</p>;
+                        
+                        if (isFeatured && !isAdminFeatured) {
+                           return <p className="text-[11px] text-amber-600 font-bold flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Request Pending Approval</p>;
+                        }
+
+                        if (isAdminFeatured && isExpired) {
+                           return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Featured status ended on {formattedDate}</p>;
+                        }
+
+                        return <p className="text-[11px] text-slate-500 font-semibold tracking-tight">Status: Standard Placement</p>;
                      })()}
                   </div>
                </div>

@@ -64,10 +64,10 @@ export default function TestimonialsPage() {
       setSaving(true);
       if (editingId) {
         await updateTestimonial(editingId, formData);
-        toast.success("Success: Testimonial updated!");
+        toast.success("Success: Feedback updated!");
       } else {
         await createTestimonial(formData);
-        toast.success("Success: Testimonial added to profile!");
+        toast.success("Success: Feedback added to profile!");
       }
       setFormData({ 
         name: user?.name || "", 
@@ -119,25 +119,29 @@ export default function TestimonialsPage() {
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-6">
         <div>
           <h1 className="text-2xl font-bold text-black">
-            Testimonials
+            Feedback
           </h1>
           <p className="text-black/40 font-bold text-[10px] mt-0.5">Total entries: {testimonials.length}</p>
         </div>
 
-        <Button
-          variant={showForm ? "outline" : "default"}
+        <button
           onClick={() => { setShowForm(!showForm); if (!showForm) setEditingId(null); }}
-          className="rounded-xl font-bold h-9 px-5 active:scale-95 transition-all text-xs"
+          className={cn(
+            "rounded-xl font-bold h-9 px-5 transition-all text-xs flex items-center gap-1.5",
+            showForm
+              ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/15"
+          )}
         >
-          {showForm ? <><X className="w-3.5 h-3.5 mr-1.5" /> Cancel</> : <><Plus className="w-3.5 h-3.5 mr-1.5" /> Add New</>}
-        </Button>
+          {showForm ? <><X className="w-3.5 h-3.5" /> Cancel</> : <><Plus className="w-3.5 h-3.5" /> Add New</>}
+        </button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h2 className="text-lg font-bold text-black mb-6 flex items-center gap-2">
             <Edit2 className="w-4 h-4 text-indigo-600" />
-            {editingId ? "Edit Testimonial" : "Add New Testimonial"}
+            {editingId ? "Edit Feedback" : "Add New Feedback"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">

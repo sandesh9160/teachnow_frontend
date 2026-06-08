@@ -55,7 +55,7 @@ export const JobSeekerSteps = () => {
                   alt={s.title}
                   width={200}
                   height={112}
-
+                  style={{ width: "auto", height: "auto" }}
                   quality={75}
                   sizes="(max-width: 768px) 200px, 200px"
                   className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover:scale-105"

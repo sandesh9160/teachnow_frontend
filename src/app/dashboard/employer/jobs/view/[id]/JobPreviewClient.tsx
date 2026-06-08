@@ -221,9 +221,9 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                      disabled={!!loadingAction}
                      className={cn(
                         "h-10 px-5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm",
-                         job.featured === 1
-                            ? "bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50"
-                            : "bg-white text-[#312E81] border border-[#312E81] hover:bg-indigo-50"
+                        job.featured === 1
+                           ? "bg-white text-indigo-700 border border-indigo-600 hover:bg-indigo-50"
+                           : "bg-white text-[#312E81] border border-[#312E81] hover:bg-indigo-50"
                      )}
                   >
                      {loadingAction === 'toggle-feature' ? (
@@ -247,13 +247,18 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                         <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
                            <FileText className="w-4 h-4" />
                         </div>
-                        <h2 className="text-sm font-semibold text-slate-900">About the Role</h2>
+                        <h2 className="text-sm font-bold text-slate-900">About the Role</h2>
                      </div>
 
                      <div
-                        className="prose prose-sm max-w-none text-slate-900 leading-relaxed font-medium tiptap-preview px-1"
+                        className="rich-text font-normal text-slate-900 leading-relaxed px-1 tiptap-no-bold"
                         dangerouslySetInnerHTML={{ __html: job.description }}
                      />
+                     <style>{`
+                        .tiptap-no-bold strong, .tiptap-no-bold b {
+                           font-weight: 400 !important;
+                        }
+                     `}</style>
                   </div>
 
                   {questions && questions.length > 0 && (
@@ -262,7 +267,7 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
                               <Target className="w-4.5 h-4.5" />
                            </div>
-                           <h2 className="text-sm font-semibold text-slate-900">Candidate Questions</h2>
+                           <h2 className="text-sm font-bold text-slate-900">Candidate Questions</h2>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                            {questions.map((q, idx) => (
@@ -307,10 +312,10 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                   <DetailItem
                      label="Monthly Salary"
                      value={
-                        (!job.salary_min || job.salary_min === "null" || job.salary_min === "0") && 
-                        (!job.salary_max || job.salary_max === "null" || job.salary_max === "0")
-                        ? "Salary Undisclosed" 
-                        : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
+                        (!job.salary_min || job.salary_min === "null" || job.salary_min === "0") &&
+                           (!job.salary_max || job.salary_max === "null" || job.salary_max === "0")
+                           ? "Salary Undisclosed"
+                           : `₹${(job.salary_min && job.salary_min !== "null" ? job.salary_min : "0").split('.')[0]} - ₹${(job.salary_max && job.salary_max !== "null" ? job.salary_max : "0").split('.')[0]}`
                      }
                      icon={DollarSign}
                      colorClass="bg-emerald-50 text-emerald-600 border-emerald-200"
@@ -403,9 +408,9 @@ export default function JobPreviewClient({ data }: JobPreviewClientProps) {
                            variant="outline"
                            className={cn(
                               "w-full h-10 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm",
-                               job.featured === 1
-                                  ? "text-indigo-700 border border-indigo-600 bg-white hover:bg-indigo-50"
-                                  : "text-[#312E81] border border-[#312E81] bg-white hover:bg-indigo-50"
+                              job.featured === 1
+                                 ? "text-indigo-700 border border-indigo-600 bg-white hover:bg-indigo-50"
+                                 : "text-[#312E81] border border-[#312E81] bg-white hover:bg-indigo-50"
                            )}
                         >
                            {loadingAction === 'toggle-feature' ? (

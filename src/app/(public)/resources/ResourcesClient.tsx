@@ -21,7 +21,7 @@ export default function ResourcesClient({ initialResources }: ResourcesClientPro
     <>
       {/* Modern Filter Strip */}
       <section className="bg-white border-b border-slate-100 shadow-sm sticky top-[101px] z-30">
-        <div className="w-full px-4 py-4 sm:px-6 lg:px-12">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex flex-wrap items-center gap-3">
               {/* Filter buttons removed */}
@@ -44,7 +44,7 @@ export default function ResourcesClient({ initialResources }: ResourcesClientPro
       </section>
 
       {/* Sectioned Grid Content */}
-      <div className="w-full px-4 pt-10 pb-12 sm:px-6 lg:px-12 space-y-12">
+      <div className="mx-auto max-w-7xl px-4 pt-10 pb-12 sm:px-6 lg:px-8 space-y-12">
         {displayResources.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm text-slate-500 font-medium italic">
             <p className="text-lg">We couldn't find any resources matching your search.</p>

@@ -87,14 +87,16 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
 
   return (
     <div className="min-h-screen bg-slate-50/50">
-      {/* --- Breadcrumb (Minimal) --- */}
-      <div className="container mx-auto px-4 md:px-8 py-6">
-        <Breadcrumb
-          items={[
-            { label: "Resources", href: "/resources" },
-            { label: resource.title, isCurrent: true }
-          ]}
-        />
+      {/* Consistent Breadcrumb Bar */}
+      <div className="border-b border-slate-100 bg-white sticky top-16 z-40">
+        <div className="px-4 md:px-12 lg:px-20 py-1.5 w-full max-w-[1600px] mx-auto">
+          <Breadcrumb
+            items={[
+              { label: "Resources", href: "/resources" },
+              { label: resource.title, isCurrent: true }
+            ]}
+          />
+        </div>
       </div>
 
       {/* --- Modern Hero Section --- */}

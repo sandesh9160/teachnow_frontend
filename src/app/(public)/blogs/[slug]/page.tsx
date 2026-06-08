@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBlogBySlug } from "@/hooks/useBlogs";
-import { ChevronRight, Clock, Search, Calendar } from "lucide-react";
+import { Clock, Search, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
 export const dynamic = "force-dynamic";
 
@@ -42,16 +43,15 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
   return (
     <div className="min-h-screen bg-white pb-16 font-sans">
-      {/* breadcrumb */}
-      <div className="border-b border-slate-100 bg-white sticky top-0 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2.5 sm:px-6 lg:px-8 flex items-center justify-between">
-          <nav className="flex items-center gap-2 text-[12px] text-slate-400 font-medium">
-            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
-            <ChevronRight className="h-3 w-3" />
-            <Link href="/blogs" className="hover:text-blue-600 transition-colors">Blog</Link>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-slate-900 font-semibold line-clamp-1">{blogData.title}</span>
-          </nav>
+      {/* Consistent Breadcrumb Bar */}
+      <div className="border-b border-slate-100 bg-white sticky top-16 z-40">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
+          <Breadcrumb
+            items={[
+              { label: "Blog", href: "/blogs" },
+              { label: blogData.title, isCurrent: true },
+            ]}
+          />
         </div>
       </div>
 

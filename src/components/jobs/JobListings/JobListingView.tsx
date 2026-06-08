@@ -4,7 +4,7 @@ import Link from "next/link";
 // import { Filter } from "lucide-react";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Job } from "@/types/homepage";
-// import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 
 import { useState, useEffect, useRef } from "react";
 import type { JobsFilters } from "@/types/jobs";
@@ -16,7 +16,7 @@ import JobsHeader from "@/components/jobs/JobsHeader/JobsHeader";
 import { useRouter } from "next/navigation";
 import PaginationFilter from "@/shared/filters/PaginationFilter/PaginationFilter";
 import JobPagination from "@/components/jobs/JobPagination/JobPagination";
-import { fetchJobsPaginated } from "@/lib/jobs/api";
+// import { fetchJobsPaginated } from "@/lib/jobs/api";
 
 
 interface JobListingViewProps {
@@ -60,9 +60,9 @@ export default function JobListingView({
   // Dynamic Backend Fetching States for Catch-all Landing Pages
   const [jobsList, setJobsList] = useState<Job[]>(jobs);
   const [similarJobsList, setSimilarJobsList] = useState<Job[]>(similarJobs);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading] = useState<boolean>(false);
 
-  const [fetchError, setFetchError] = useState<string | undefined>(undefined);
+  const [fetchError] = useState<string | undefined>(undefined);
 
   const isFirstRender = useRef(true);
 
@@ -74,75 +74,11 @@ export default function JobListingView({
     isFirstRender.current = true;
   }, [jobs, similarJobs]);
 
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+  // Removed client-side fetching as server provides jobs data directly.
+  // The component will now rely on the jobs prop passed from the server without additional loading cycles.
+  // Consequently, the loading spinner and related state management are omitted.
+  // This eliminates continuous loading issues on category and job pages.
 
-    let active = true;
-
-    const fetchJobs = async () => {
-      setIsLoading(true);
-      setFetchError(undefined);
-
-      const backendFilters: any = {};
-
-      if (selectedFilters.job_type?.length) {
-        backendFilters.job_type = selectedFilters.job_type.map((v: string) =>
-          v.toLowerCase().replace(" ", "_").replace("-", "_")
-        );
-      }
-
-      if (selectedFilters.experience?.length) {
-        backendFilters.experience = selectedFilters.experience.map(Number);
-      }
-
-      if (selectedFilters.institution_type?.length) {
-        backendFilters.institution_type = selectedFilters.institution_type.map((v: string) => v.toLowerCase());
-      }
-
-      if (selectedFilters.gender?.length) {
-        backendFilters.gender = selectedFilters.gender.map((v: string) => v.toLowerCase());
-      }
-
-      try {
-        const { jobs: fetchedJobs, similarJobs: fetchedSimilar, error: fetchErr } = await fetchJobsPaginated({
-          keyword: initialKeyword,
-          location: initialLocation,
-          filters: backendFilters,
-          limit: 100
-        });
-
-        if (!active) return;
-
-        if (fetchErr) {
-          setFetchError(fetchErr);
-        } else {
-          setJobsList(fetchedJobs || []);
-          setSimilarJobsList(fetchedSimilar || []);
-          setCurrentPage(1);
-        }
-      } catch (err) {
-        if (active) {
-          setFetchError("Failed to fetch jobs");
-        }
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    const handler = setTimeout(() => {
-      fetchJobs();
-    }, 300);
-
-    return () => {
-      active = false;
-      clearTimeout(handler);
-    };
-  }, [selectedFilters]);
 
 
 
@@ -176,18 +112,18 @@ export default function JobListingView({
 
 
 
-  // const normalizedPageName = String(pageName || "Search")
-  //   .trim()
-  //   .replace(/^in\s+/i, "") // Remove leading "In" for location pages
-  //   .replace(/\s*(teaching|teacher|jobs?)$/i, "")
-  //   .split(/[\s-]+/)
-  //   .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-  //   .join(" ");
+  const normalizedPageName = String(pageName || "Search")
+    .trim()
+    .replace(/^in\s+/i, "") // Remove leading "In" for location pages
+    .replace(/\s*(teaching|teacher|jobs?)$/i, "")
+    .split(/[\s-]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 
-  // const breadcrumbItems = [
-  //   { label: "Jobs", href: "/jobs" },
-  //   { label: `${normalizedPageName} Jobs`, isCurrent: true },
-  // ];
+  const breadcrumbItems = [
+    { label: "Jobs", href: "/jobs" },
+    { label: `${normalizedPageName} Jobs`, isCurrent: true },
+  ];
 
   const [isSearching, setIsSearching] = useState(false);
 
@@ -354,27 +290,32 @@ export default function JobListingView({
   return (
     <div className="bg-[#F8FAFC] lg:h-[calc(100vh-5rem)] lg:overflow-hidden flex flex-col">
       {/* Consistent Breadcrumb Bar */}
-      <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-20 lg:static lg:shrink-0 z-40">
-        <div className="mx-auto w-full px-4 py-1 sm:px-6 lg:px-8 xl:px-12">
-          <div className="flex flex-col items-center w-full">
-            <div className="w-full max-w-5xl">
-              <JobsHeader
-                search={internalSearch}
-                setSearch={(val) => { setInternalSearch(val); }}
-                location={internalLocation}
-                setLocation={(val) => { setInternalLocation(val); }}
-                onOpenFilters={() => setMobileFiltersOpen(true)}
-                onSearch={handleSearch}
-                activeFilterCount={Object.values(selectedFilters).flat().length}
-                loading={isLoading}
-              />
-              {fetchError && <p className="text-red-500 mt-2">{fetchError}</p>}
-            </div>
+      <div className="border-b border-border bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+      </div>
+
+      {/* Search Bar / Header Section */}
+      <div className="sticky top-16 lg:static lg:shrink-0 z-30">
+        <div className="w-full px-4 py-1 sm:px-6 lg:px-8 xl:px-12">
+          <div className="max-w-5xl mx-auto w-full">
+          <JobsHeader
+            search={internalSearch}
+            setSearch={(val) => { setInternalSearch(val); }}
+            location={internalLocation}
+            setLocation={(val) => { setInternalLocation(val); }}
+            onOpenFilters={() => setMobileFiltersOpen(true)}
+            onSearch={handleSearch}
+            activeFilterCount={Object.values(selectedFilters).flat().length}
+            loading={isLoading}
+          />
+            {fetchError && <p className="text-red-500 mt-2">{fetchError}</p>}
           </div>
         </div>
       </div>
 
-      <div className="flex-1 lg:overflow-hidden mx-auto w-full px-4 sm:px-6 lg:px-8 xl:px-12">
+      <div className="flex-1 lg:overflow-hidden mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row h-full gap-10">
           <aside className="hidden w-72 shrink-0 lg:block h-full py-8 sticky top-0">
             <FilterCard className="h-full overflow-y-auto custom-scrollbar">

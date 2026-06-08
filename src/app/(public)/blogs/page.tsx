@@ -16,8 +16,8 @@ export default async function BlogPage() {
   return (
     <div className="min-h-screen bg-[#f8faff]">
       {/* Consistent Breadcrumb Bar */}
-      <div className="border-b border-slate-100 bg-white sticky top-0 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+      <div className="border-b border-slate-100 bg-white sticky top-16 z-40">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>

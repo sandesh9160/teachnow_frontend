@@ -8,6 +8,7 @@ import JobListingView from "@/components/jobs/JobListings/JobListingView";
 
 import { getJobBySlug, getCategoryJobs, fullSearchJobs, fetchJobsPaginated } from "@/lib/jobs/api";
 import { getCompanies, getCompanyProfileWithJobs } from "@/hooks/useCompanies";
+
 // import { getLocationJobs } from "@/hooks/useHomepage";
 import { getFilters } from "@/hooks/useHomepage";
 import { normalizeJob, toArray } from "@/lib/jobs/normalizeJob";
@@ -29,6 +30,7 @@ function isStaticOrIconRoute(slug: string): boolean {
     s === "sitemap.xml"
   );
 }
+
 
 
 export const dynamic = 'force-dynamic';

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useResumes } from "@/hooks/useResumes";
 import { useCV } from "@/hooks/useCV";
 import {
@@ -17,18 +17,30 @@ import {
   Briefcase,
   Zap,
   Sparkles,
+  FileUp,
+  Star,
+  Plus
 } from "lucide-react";
 import { toast } from "sonner";
 import { normalizeMediaUrl } from "@/lib/utils";
 
 export default function ResumeManagementPage() {
+  // Tabs State
+  const [activeTab, setActiveTab] = useState<"builder" | "uploaded">("builder");
+
+  // Hook 1: Resumes Manager
   const {
+    resumes = [],
+    generatedResumes = [],
     loading: resumesLoading,
     fetchResumes,
+    upload,
+    remove,
     removeGenerated,
-    generatedResumes = []
+    setDefault,
   } = useResumes();
 
+  // Hook 2: CV Builder
   const {
     templates,
     loading: cvLoading,
@@ -37,22 +49,118 @@ export default function ResumeManagementPage() {
     resumeLimit,
   } = useCV();
 
+  // Shared / Builder State
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   const [lastGeneratedCV, setLastGeneratedCV] = useState<string | null>(null);
   const [viewingResumeUrl, setViewingResumeUrl] = useState<string | null>(null);
 
+  // Uploaded Manager State
+  const [uploading, setUploading] = useState(false);
+  const [previewingResume, setPreviewingResume] = useState<any | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Parse direct routing ?tab=uploaded
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam === "uploaded") {
+        setActiveTab("uploaded");
+      }
+    }
+  }, []);
+
+  // Fetch initial data
   useEffect(() => {
     void fetchTemplates();
     void fetchResumes();
   }, [fetchTemplates, fetchResumes]);
 
+  // Set default selected template
   useEffect(() => {
     if (templates.length > 0 && !selectedTemplate) {
       setSelectedTemplate(templates[0]);
     }
   }, [templates, selectedTemplate]);
 
+  // Uploaded Resumes: File Change Handler
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size exceeds 5MB limit.");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      await upload(file);
+      toast.success("Resume uploaded successfully!");
+    } catch {
+      toast.error("Failed to upload resume.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  // Uploaded Resumes: Download Handler
+  const handleDownloadUploaded = (resume: any) => {
+    const url = resume.url || resume.file || resume.file_url || resume.resume_file;
+    if (!url) {
+      toast.error("File not found");
+      return;
+    }
+    const fullUrl = normalizeMediaUrl(url);
+    const link = document.createElement("a");
+    link.href = fullUrl;
+    link.setAttribute("download", resume.file_name || "resume.pdf");
+    link.setAttribute("target", "_blank");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Uploaded Resumes: Set Default Handler
+  const handleSetDefault = async (id: number | string) => {
+    try {
+      await setDefault(id);
+      toast.success("Default resume updated.");
+    } catch {
+      toast.error("Failed to set default.");
+    }
+  };
+
+  // Uploaded Resumes: Delete Handler
+  const handleDeleteUploaded = async (id: number | string) => {
+    toast("Delete this resume?", {
+      id: "confirm-delete",
+      duration: Infinity,
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            await remove(id);
+            toast.success("Deleted.");
+          } catch {
+            toast.error("Failed to delete.");
+          }
+        }
+      },
+      cancel: {
+        label: "Keep",
+        onClick: () => { }
+      },
+      classNames: {
+        actionButton: "!bg-rose-600 !text-white hover:!bg-rose-700",
+        cancelButton: "!bg-slate-100 !text-slate-600 hover:!bg-slate-200",
+      }
+    });
+  };
+
+  // CV Builder: Generate Handler
   const handleGenerate = async (templateId?: any) => {
     const tplId = templateId || selectedTemplate?.id;
     if (!tplId) return;
@@ -67,7 +175,7 @@ export default function ResumeManagementPage() {
 
     try {
       const res = await generateCV({ template_id: tplId });
-      console.log("res",res)
+      console.log("res", res)
       const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url || res?.data?.pdf_path || res?.pdf_path;
       if (url) {
         setLastGeneratedCV(normalizeMediaUrl(url));
@@ -84,7 +192,8 @@ export default function ResumeManagementPage() {
     }
   };
 
-  const handleDownload = (url: string) => {
+  // CV Builder: Download Handler
+  const handleDownloadGenerated = (url: string) => {
     if (!url) return;
     const fullUrl = normalizeMediaUrl(url);
     const downloadUrl = `/api/download?url=${encodeURIComponent(fullUrl)}&fileName=${encodeURIComponent('My_Professional_CV.pdf')}`;
@@ -95,6 +204,8 @@ export default function ResumeManagementPage() {
     link.click();
     document.body.removeChild(link);
   };
+
+  // CV Builder: Delete Generated History Handler
   const handleDeleteGenerated = async (id: number | string) => {
     toast("Remove from history?", {
       description: "This will permanently delete this version.",
@@ -116,14 +227,14 @@ export default function ResumeManagementPage() {
     });
   };
 
-  if (resumesLoading && generatedResumes.length === 0) {
+  // Unified skeleton loader on initial load
+  if (resumesLoading && resumes.length === 0 && generatedResumes.length === 0) {
     return (
       <div className="max-w-[1600px] mx-auto p-6 space-y-10 animate-pulse">
         <div className="h-16 bg-slate-50 rounded-2xl w-full" />
         <div className="flex gap-6">
-          <div className="w-64 h-96 bg-slate-50 rounded-2xl" />
-          <div className="flex-1 h-[600px] bg-slate-50 rounded-2xl" />
-          <div className="w-80 h-[500px] bg-slate-50 rounded-2xl" />
+          <div className="w-64 h-96 bg-slate-50 rounded-2xl animate-pulse" />
+          <div className="flex-1 h-[600px] bg-slate-50 rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -146,279 +257,556 @@ export default function ResumeManagementPage() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Header Area */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex-1">
-          <h1 className="text-xl md:text-2xl font-bold text-black tracking-tight">
-            AI Resume Builder
+          <h1 className="text-2xl md:text-3xl font-bold text-black tracking-tight">
+            My Resumes
           </h1>
-          <p className="text-slate-500 mt-1 font-medium text-[11px] md:text-xs">Generate professional Resumes tailored for specific job roles.</p>
-          {/* <div className="flex items-center gap-2 mt-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-            <p className="text-slate-400 font-semibold text-[10px] md:text-[11px] uppercase tracking-wider">High Fidelity Templates</p>
-          </div> */}
+          <p className="text-slate-500 mt-1 font-medium text-xs md:text-sm">
+            Generate professional teacher resumes using AI templates or upload and manage your own documents.
+          </p>
         </div>
 
-        {/* Professional & Colorful Usage Cards */}
-        {resumeLimit && (
-          <div className="flex flex-col lg:items-end items-start gap-3 w-full lg:w-auto">
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              {/* Card 1: Resume Usage */}
-              <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:min-w-[220px] w-full shadow-sm">
-                <div className="flex items-center gap-2 mb-5">
-                  <h3 className="text-[9px] font-bold text-slate-500 tracking-wide">Resume Usage</h3>
-                  <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[7px] font-bold rounded border border-emerald-100">Live</span>
-                </div>
-                <div className="flex gap-10">
-                  <div>
-                    <p className="text-[10px] font-medium text-slate-400 mb-1">Total Limit</p>
-                    <p className="text-xl font-bold text-slate-800 leading-none">{resumeLimit.limit}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-medium text-slate-400 mb-1">Used</p>
-                    <p className="text-xl font-bold text-slate-800 leading-none">{resumeLimit.used}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2: Remaining Credits */}
-              <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:min-w-[220px] w-full shadow-sm">
-                <div className="flex items-center gap-2 mb-5">
-                  <h3 className="text-[9px] font-bold text-indigo-500 tracking-wide">Remaining Credits</h3>
-                  <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[7px] font-bold rounded border border-indigo-100">Available</span>
-                </div>
-                <div className="flex gap-10">
-                  <div>
-                    <p className="text-[10px] font-medium text-slate-400 mb-1">Remaining</p>
-                    <p className="text-xl font-bold text-indigo-600 leading-none">{resumeLimit.remaining}</p>
-                  </div>
-                </div>
-              </div>
+        {/* Dynamic Action / Metrics Area */}
+        <div className="flex items-center justify-start lg:justify-end">
+          {activeTab === "uploaded" ? (
+            <div className="w-full sm:w-auto">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full sm:w-auto rounded-xl md:rounded-2xl font-bold bg-indigo-600 text-white h-11 md:h-12 px-6 md:px-8 active:scale-95 transition-all text-sm shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 hover:bg-indigo-700"
+              >
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Upload Resume
+              </button>
             </div>
+          ) : (
+            resumeLimit && (
+              <div className="flex flex-col lg:items-end items-start gap-3 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  {/* Card 1: Resume Usage */}
+                  <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:min-w-[200px] w-full shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                      <h3 className="text-[9px] font-bold text-slate-500 tracking-wide">Resume Usage</h3>
+                      <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[7px] font-bold rounded border border-emerald-100">Live</span>
+                    </div>
+                    <div className="flex gap-8">
+                      <div>
+                        <p className="text-[10px] font-medium text-slate-400 mb-1">Total Limit</p>
+                        <p className="text-xl font-bold text-slate-800 leading-none">{resumeLimit.limit}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-medium text-slate-400 mb-1">Used</p>
+                        <p className="text-xl font-bold text-slate-800 leading-none">{resumeLimit.used}</p>
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Colorful Progress Bar with Percentage */}
-            <div className="flex flex-col gap-1.5 w-full lg:max-w-[452px]">
-              <div className="flex justify-between items-center px-0.5">
-                <span className="text-[9px] font-bold text-slate-400">Usage Progress</span>
-                <span className={`text-[10px] font-black ${resumeLimit.remaining <= 0 ? 'text-rose-500' : 'text-indigo-600'}`}>
-                  {Math.round((resumeLimit.used / resumeLimit.limit) * 100)}%
-                </span>
+                  {/* Card 2: Remaining Credits */}
+                  <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:min-w-[200px] w-full shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                      <h3 className="text-[9px] font-bold text-indigo-500 tracking-wide">Remaining Credits</h3>
+                      <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[7px] font-bold rounded border border-indigo-100">Available</span>
+                    </div>
+                    <div className="flex gap-8">
+                      <div>
+                        <p className="text-[10px] font-medium text-slate-400 mb-1">Remaining</p>
+                        <p className="text-xl font-bold text-indigo-600 leading-none">{resumeLimit.remaining}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Colorful Progress Bar with Percentage */}
+                <div className="flex flex-col gap-1.5 w-full lg:max-w-[412px]">
+                  <div className="flex justify-between items-center px-0.5">
+                    <span className="text-[9px] font-bold text-slate-400">Usage Progress</span>
+                    <span className={`text-[10px] font-black ${resumeLimit.remaining <= 0 ? 'text-rose-500' : 'text-indigo-600'}`}>
+                      {Math.round((resumeLimit.used / resumeLimit.limit) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                    <div
+                      className={`h-full transition-all duration-1000 ease-out ${resumeLimit.remaining <= 0 ? 'bg-rose-500' : 'bg-indigo-600'}`}
+                      style={{ width: `${Math.min(100, (resumeLimit.used / resumeLimit.limit) * 100)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
-                <div
-                  className={`h-full transition-all duration-1000 ease-out ${resumeLimit.remaining <= 0 ? 'bg-rose-500' : 'bg-indigo-600'}`}
-                  style={{ width: `${Math.min(100, (resumeLimit.used / resumeLimit.limit) * 100)}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+            )
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+      {/* Tab Switcher */}
+      <div className="flex border-b border-slate-100 pb-1">
+        <div className="flex space-x-1 p-1 bg-slate-50 rounded-xl border border-slate-200/50">
+          <button
+            onClick={() => setActiveTab("builder")}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              activeTab === "builder"
+                ? "bg-white text-indigo-700 shadow-sm border border-slate-200/40"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            <span>AI Resume Builder</span>
+            {generatedResumes.length > 0 && (
+              <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[9px] font-black ${
+                activeTab === "builder" ? "bg-indigo-50 text-indigo-700" : "bg-slate-200/60 text-slate-500"
+              }`}>
+                {generatedResumes.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("uploaded")}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+              activeTab === "uploaded"
+                ? "bg-white text-indigo-700 shadow-sm border border-slate-200/40"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <FileUp className="w-4 h-4 text-indigo-600" />
+            <span>Uploaded Resumes</span>
+            {resumes.length > 0 && (
+              <span className={`ml-1 px-1.5 py-0.5 rounded-md text-[9px] font-black ${
+                activeTab === "uploaded" ? "bg-indigo-50 text-indigo-700" : "bg-slate-200/60 text-slate-500"
+              }`}>
+                {resumes.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Contents */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 mt-6">
         <div className="xl:col-span-12 space-y-12">
+          
+          {/* TAB 1: AI RESUME BUILDER */}
+          {activeTab === "builder" && (
+            <div className="space-y-12 animate-in fade-in duration-300">
+              {/* Template Selection */}
+              <section className="space-y-6">
+                <div className="flex items-center gap-2 px-1">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">
+                    <FileCheck className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-lg font-bold text-black tracking-tight">Select a Template</h2>
+                </div>
 
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 px-1">
-              <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">
-                <FileCheck className="w-4 h-4" />
-              </div>
-              <h2 className="text-lg font-bold text-black tracking-tight">Select a Template</h2>
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {templates.map((tpl, index) => (
+                    <div
+                      key={tpl.id}
+                      className={`group flex flex-col bg-white border rounded-2xl overflow-hidden transition-all duration-300 ${
+                        selectedTemplate?.id === tpl.id
+                          ? 'border-indigo-500 shadow-lg ring-1 ring-indigo-500/20'
+                          : 'border-slate-100 hover:border-indigo-200 hover:shadow-md'
+                      }`}
+                      onClick={() => setSelectedTemplate(selectedTemplate?.id === tpl.id ? null : tpl)}
+                    >
+                      {/* Image Container */}
+                      <div className="aspect-[4/5] relative overflow-hidden p-3 bg-slate-50/50">
+                        <div className="relative w-full h-full bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100 transition-all duration-300 group-hover:shadow-md">
+                          {(tpl.preview_image || tpl.preview_url) ? (
+                            <img
+                              src={normalizeMediaUrl(tpl.preview_image || tpl.preview_url || "")}
+                              alt={tpl.name}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-white">
+                              <FileText className="w-8 h-8 text-slate-200" />
+                              <span className="text-[9px] font-bold text-slate-300 uppercase mt-2">No Preview</span>
+                            </div>
+                          )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {templates.map((tpl, index) => (
-                <div
-                  key={tpl.id}
-                  className={`group flex flex-col bg-white border rounded-2xl overflow-hidden transition-all duration-300 ${selectedTemplate?.id === tpl.id ? 'border-indigo-500 shadow-lg ring-1 ring-indigo-500/20' : 'border-slate-100 hover:border-indigo-200 hover:shadow-md'}`}
-                  onClick={() => setSelectedTemplate(selectedTemplate?.id === tpl.id ? null : tpl)}
-                >
-                  {/* Image Container */}
-                  <div className="aspect-[4/5] relative overflow-hidden p-3 bg-slate-50/50">
-                    <div className="relative w-full h-full bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100 transition-all duration-300 group-hover:shadow-md">
-                      {(tpl.preview_image || tpl.preview_url) ? (
-                        <img
-                          src={normalizeMediaUrl(tpl.preview_image || tpl.preview_url || "")}
-                          alt={tpl.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-white">
-                          <FileText className="w-8 h-8 text-slate-200" />
-                          <span className="text-[9px] font-bold text-slate-300 uppercase mt-2">No Preview</span>
+                          {/* Floating Preview Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewTemplate(tpl);
+                            }}
+                            className="absolute top-2.5 left-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md shadow-sm flex items-center justify-center text-slate-400 hover:text-indigo-600 border border-white/50 transition-all z-20 active:scale-95"
+                            title="View Preview"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Floating Primary Action */}
+                          <div className="absolute bottom-3 left-3 right-3 pointer-events-auto transition-opacity opacity-100">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGenerate(tpl.id);
+                              }}
+                              disabled={cvLoading}
+                              className="h-8 w-full bg-[#36D7B7] hover:bg-[#2EB89C] text-white rounded-sm font-bold text-[10px] shadow-lg shadow-[#36D7B7]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                              {cvLoading && selectedTemplate?.id === tpl.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Zap className="w-3 h-3" />
+                              )}
+                              Apply Theme
+                            </button>
+                          </div>
+
+                          {/* Selection Checkmark */}
+                          {selectedTemplate?.id === tpl.id && (
+                            <div className="absolute top-2.5 right-2.5 bg-indigo-600 text-white p-1 rounded-full shadow-lg animate-in zoom-in duration-200">
+                              <CheckCircle2 className="w-3 h-3" />
+                            </div>
+                          )}
                         </div>
-                      )}
-
-                      {/* Floating Preview Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewTemplate(tpl);
-                        }}
-                        className="absolute top-2.5 left-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md shadow-sm flex items-center justify-center text-slate-400 hover:text-indigo-600 border border-white/50 transition-all z-20 active:scale-95"
-                        title="View Preview"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Floating Primary Action */}
-                      <div className="absolute bottom-3 left-3 right-3 pointer-events-auto transition-opacity opacity-100">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleGenerate(tpl.id);
-                          }}
-                          disabled={cvLoading}
-                          className="h-8 w-full bg-[#36D7B7] hover:bg-[#2EB89C] text-white rounded-sm font-bold text-[10px] shadow-lg shadow-[#36D7B7]/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                        >
-                          {cvLoading && selectedTemplate?.id === tpl.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-                          Apply Theme
-                        </button>
                       </div>
 
-                      {/* Selection Checkmark */}
-                      {selectedTemplate?.id === tpl.id && (
-                        <div className="absolute top-2.5 right-2.5 bg-indigo-600 text-white p-1 rounded-full shadow-lg animate-in zoom-in duration-200">
-                          <CheckCircle2 className="w-3 h-3" />
+                      {/* Info Footer */}
+                      <div className="p-4 bg-white">
+                        <div className="flex items-start justify-between mb-1.5">
+                          <h4 className="text-sm font-bold text-slate-900 leading-snug flex-1 line-clamp-1">{tpl.name}</h4>
+                          <span className="text-xs font-bold text-slate-400 ml-3">{index + 1}/{templates.length}</span>
                         </div>
-                      )}
+                        {tpl.description && (
+                          <p className="text-[11px] text-slate-500 font-medium leading-relaxed line-clamp-2">
+                            {tpl.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Build Success Area */}
+              {lastGeneratedCV && (
+                <div className="bg-black rounded-xl md:rounded-2xl border border-slate-800 p-6 md:p-10 mb-8 md:mb-10 animate-in slide-in-from-bottom duration-700 shadow-2xl relative overflow-hidden">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8 pb-4 md:pb-6 border-b border-white/5 relative z-10">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="p-2 md:p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg md:rounded-xl border border-emerald-500/20">
+                        <FileCheck className="w-5 h-5 md:w-5.5 md:h-5.5" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold text-sm md:text-lg">Build Successful</h3>
+                        <p className="text-slate-400 text-[10px] md:text-[11px] font-medium mt-0.5">Professional teacher resume is ready.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-end">
+                      <button
+                        className="text-white hover:bg-white/5 h-8 md:h-9 px-3 md:px-5 rounded-lg font-semibold text-[10px] md:text-xs transition-colors"
+                        onClick={() => setLastGeneratedCV(null)}
+                      >
+                        Dismiss
+                      </button>
+                      <button
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg md:rounded-xl font-semibold h-8 md:h-9 px-4 md:px-6 shadow-lg shadow-indigo-600/10 transition-all flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs"
+                        onClick={() => handleDownloadGenerated(lastGeneratedCV)}
+                      >
+                        <Download className="w-3.5 h-3.5 md:w-4 md:h-4" /> Download
+                      </button>
                     </div>
                   </div>
-
-                  {/* Info Footer */}
-                  <div className="p-4 bg-white">
-                    <div className="flex items-start justify-between mb-1.5">
-                      <h4 className="text-sm font-bold text-slate-900 leading-snug flex-1 line-clamp-1">{tpl.name}</h4>
-                      <span className="text-xs font-bold text-slate-400 ml-3">{index + 1}/{templates.length}</span>
-                    </div>
-                    {tpl.description && (
-                      <p className="text-[11px] text-slate-500 font-medium leading-relaxed line-clamp-2">
-                        {tpl.description}
-                      </p>
-                    )}
+                  <div className="aspect-[4/6] w-full max-w-2xl mx-auto rounded-2xl overflow-hidden border border-white/5 bg-white relative z-10 shadow-2xl">
+                    <iframe
+                      src={`/api/view?url=${encodeURIComponent(lastGeneratedCV)}#toolbar=0&view=FitH`}
+                      className="w-full h-full"
+                      style={{ border: 'none' }}
+                      title="CV Preview"
+                    />
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Generated History */}
+              <section className="space-y-6 pt-8">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-lg font-bold text-black tracking-tight">
+                      Generated History <span className="text-slate-800 ml-2 font-medium">({generatedResumes.length})</span>
+                    </h2>
+                  </div>
+                </div>
+
+                {resumesLoading && generatedResumes.length === 0 ? (
+                  <div className="flex justify-center py-20 bg-indigo-50/20 rounded-2xl border border-indigo-100/50">
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-200" />
+                  </div>
+                ) : generatedResumes.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+                    {generatedResumes.map((cv: any) => (
+                      <div
+                        key={cv.id}
+                        className="group flex flex-col bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300"
+                      >
+                        <div className="aspect-[3/4.2] bg-slate-50 relative overflow-hidden border-b border-slate-50">
+                          {/* Document Render Container */}
+                          <div className="absolute inset-0 pointer-events-none origin-top-left scale-[0.2] sm:scale-[0.25] w-[500%] sm:w-[400%] h-[500%] sm:h-[400%] bg-white opacity-90 transition-opacity">
+                            <iframe
+                              src={`/api/view?url=${encodeURIComponent(normalizeMediaUrl(cv.pdf_path))}#toolbar=0&navpanes=0&scrollbar=0`}
+                              className="w-full h-full border-none"
+                              title="CV Preview"
+                            />
+                          </div>
+
+                          {/* Always Visible Delete Button */}
+                          <button
+                            onClick={() => handleDeleteGenerated(cv.id)}
+                            className="absolute top-1.5 right-1.5 h-6 w-6 sm:h-7 sm:w-7 flex items-center justify-center bg-white/90 backdrop-blur-md text-rose-500 hover:bg-rose-600 hover:text-white rounded-md shadow-sm transition-all z-10"
+                          >
+                            <Trash2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="p-2 sm:p-2.5 bg-white flex flex-col gap-2 sm:gap-3">
+                          <div>
+                            <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-900 truncate leading-tight mb-0.5 sm:mb-1">
+                              {cv.title || "AI Generated Resume"}
+                            </h4>
+                            <div className="flex items-center gap-1 text-slate-400">
+                              <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+                              <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-tight">
+                                {cv.created_at
+                                  ? new Date(cv.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                                  : "Draft"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Always Visible Actions */}
+                          <div className="flex gap-1.5 sm:gap-2">
+                            <button
+                              className="flex-1 h-6 sm:h-7 bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-md font-bold text-[8px] sm:text-[9px] transition-all flex items-center justify-center gap-1 sm:gap-1.5 border border-slate-100/50"
+                              onClick={() => setViewingResumeUrl(normalizeMediaUrl(cv.pdf_path))}
+                            >
+                              <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> View
+                            </button>
+                            <button
+                              className="flex-1 h-6 sm:h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-bold text-[8px] sm:text-[9px] transition-all shadow-sm flex items-center justify-center gap-1 sm:gap-1.5"
+                              onClick={() => handleDownloadGenerated(cv.pdf_path)}
+                            >
+                              <Download className="w-2.5 h-2.5 sm:w-2.5 sm:h-2.5" /> Download
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-indigo-50/30 rounded-xl md:rounded-2xl p-10 md:p-16 text-center border border-dashed border-indigo-100">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 border border-indigo-100">
+                      <Clock className="w-6 h-6 text-indigo-300" />
+                    </div>
+                    <p className="text-black font-semibold text-sm md:text-base mb-1">No build history yet</p>
+                    <p className="text-slate-500 text-[10px] md:text-xs font-medium">Use a template above to generate your first professional CV.</p>
+                  </div>
+                )}
+              </section>
             </div>
-          </section>
+          )}
 
-          {lastGeneratedCV && (
-            <div className="bg-black rounded-xl md:rounded-2xl border border-slate-800 p-6 md:p-10 mb-8 md:mb-10 animate-in slide-in-from-bottom duration-700 shadow-2xl relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8 pb-4 md:pb-6 border-b border-white/5 relative z-10">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className="p-2 md:p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg md:rounded-xl border border-emerald-500/20">
-                    <FileCheck className="w-5 h-5 md:w-5.5 md:h-5.5" />
+          {/* TAB 2: UPLOADED RESUMES */}
+          {activeTab === "uploaded" && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* List Section */}
+              <div className="space-y-4 pt-2">
+                {resumes.length > 0 ? (
+                  resumes.map((resume: any) => {
+                    const ext = resume.file_name?.split('.').pop()?.toLowerCase() || 'PDF';
+
+                    return (
+                      <div
+                        key={resume.id}
+                        className={`rounded-[22px] p-5 md:px-6 md:py-5 flex flex-col group transition-all duration-300 ${
+                          resume.is_default
+                            ? 'bg-indigo-50/40 border-[1.5px] border-indigo-100 shadow-sm'
+                            : 'bg-white border border-slate-100 hover:border-indigo-200'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3 md:gap-4 min-w-0">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
+                            <FileText className="w-5 h-5 md:w-6 md:h-6 text-indigo-700" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-bold text-black text-[14px] md:text-[15px] leading-tight truncate max-w-[200px] sm:max-w-none">
+                                {resume.title && resume.title !== "0" ? resume.title : resume.file_name}
+                              </h4>
+                              {resume.is_default && (
+                                <span className="text-[8px] md:text-[9px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1 md:mt-1.5 text-[10px] md:text-[11px] text-slate-500 font-medium overflow-hidden">
+                              <span className="uppercase shrink-0">{ext}</span>
+                              <span>•</span>
+                              <span className="shrink-0">
+                                {resume.file_size && resume.file_size > 0 ? `${(resume.file_size / 1024).toFixed(0)} KB` : "Document"}
+                              </span>
+                              <span className="hidden sm:inline">•</span>
+                              <span className="truncate hidden sm:inline">
+                                Uploaded {new Date(resume.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-between md:justify-end gap-3 md:gap-7 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100/50">
+                          <div className="flex items-center gap-4 md:gap-7">
+                            <button
+                              onClick={() => setPreviewingResume(resume)}
+                              className="w-9 h-9 flex items-center justify-center md:w-auto md:h-auto text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 md:hover:bg-transparent rounded-lg transition-all"
+                              title="View"
+                            >
+                              <Eye className="w-[18px] h-[18px]" />
+                              <span className="sm:hidden ml-2 text-[10px] font-bold">View</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDownloadUploaded(resume)}
+                              className="w-9 h-9 flex items-center justify-center md:w-auto md:h-auto text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 md:hover:bg-transparent rounded-lg transition-all"
+                              title="Download"
+                            >
+                              <Download className="w-[18px] h-[18px]" />
+                              <span className="sm:hidden ml-2 text-[10px] font-bold">Get</span>
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-4 md:gap-7">
+                            <button
+                              onClick={() => handleSetDefault(resume.id)}
+                              className={`w-9 h-9 flex items-center justify-center md:w-auto md:h-auto rounded-lg transition-all ${
+                                resume.is_default
+                                  ? 'text-indigo-700 bg-indigo-50 md:bg-transparent'
+                                  : 'text-slate-300 hover:text-indigo-700 hover:bg-indigo-50 md:hover:bg-transparent'
+                              }`}
+                              title="Set Default"
+                            >
+                              <Star className={`w-[19px] h-[19px] ${resume.is_default ? 'fill-indigo-700' : ''}`} />
+                              {!resume.is_default && <span className="sm:hidden ml-2 text-[10px] font-bold">Star</span>}
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteUploaded(resume.id)}
+                              className="w-9 h-9 flex items-center justify-center md:w-auto md:h-auto text-slate-400 hover:text-rose-500 hover:bg-rose-50 md:hover:bg-transparent rounded-lg transition-all"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-[19px] h-[19px]" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-20 text-center flex flex-col items-center bg-white border border-dashed border-slate-200 rounded-3xl">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-slate-200">
+                      <FileUp className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-black font-bold text-lg mb-1">No uploaded resumes found</h3>
+                    <p className="text-slate-500 font-medium text-sm">Upload your first resume to get started.</p>
                   </div>
-                  <div>
-                    <h3 className="text-white font-semibold text-sm md:text-lg">Build Successful</h3>
-                    <p className="text-slate-400 text-[10px] md:text-[11px] font-medium mt-0.5">Professional teacher resume is ready.</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-end">
-                  <button className="text-white hover:bg-white/5 h-8 md:h-9 px-3 md:px-5 rounded-lg font-semibold text-[10px] md:text-xs transition-colors" onClick={() => setLastGeneratedCV(null)}>
-                    Dismiss
-                  </button>
-                  <button className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg md:rounded-xl font-semibold h-8 md:h-9 px-4 md:px-6 shadow-lg shadow-indigo-600/10 transition-all flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs" onClick={() => handleDownload(lastGeneratedCV)}>
-                    <Download className="w-3.5 h-3.5 md:w-4 md:h-4" /> Download
-                  </button>
-                </div>
+                )}
               </div>
-              <div className="aspect-[4/6] w-full max-w-2xl mx-auto rounded-2xl overflow-hidden border border-white/5 bg-white relative z-10 shadow-2xl">
-                <iframe
-                  src={`/api/view?url=${encodeURIComponent(lastGeneratedCV)}#toolbar=0&view=FitH`}
-                  className="w-full h-full"
-                  style={{ border: 'none' }}
-                  title="CV Preview"
-                />
+
+              {/* Resume Tips */}
+              <div className="mt-12 bg-[#F1F9F9] border border-[#DEEFEF] rounded-2xl p-6 md:p-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-yellow-500">💡</span>
+                  <h3 className="text-black font-bold text-sm">Resume Tips</h3>
+                </div>
+                <ul className="space-y-3">
+                  {[
+                    "Keep different resumes tailored for different job types",
+                    "Set your most relevant resume as default for quick applications",
+                    "Update your resumes regularly with latest experience",
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start gap-3 text-slate-600 text-[13px] font-medium leading-relaxed">
+                      <span className="mt-1.5 w-1 h-1 rounded-full bg-slate-400 shrink-0" />
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           )}
 
-          {/* List Section Removed and moved to Resume Manager */}
-
-          {/* Generated History */}
-          <section className="space-y-6 pt-8">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 shadow-sm">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <h2 className="text-lg font-bold text-black tracking-tight">Generated  History <span className="text-slate-300 ml-2 font-medium">({generatedResumes.length})</span></h2>
-              </div>
-            </div>
-
-            {resumesLoading && generatedResumes.length === 0 ? (
-              <div className="flex justify-center py-20 bg-indigo-50/20 rounded-2xl border border-indigo-100/50">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-200" />
-              </div>
-            ) : generatedResumes.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-                {generatedResumes.map((cv: any) => (
-                  <div key={cv.id} className="group flex flex-col bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                    <div className="aspect-[3/4.2] bg-slate-50 relative overflow-hidden border-b border-slate-50">
-                      {/* Document Render Container */}
-                      <div className="absolute inset-0 pointer-events-none origin-top-left scale-[0.2] sm:scale-[0.25] w-[500%] sm:w-[400%] h-[500%] sm:h-[400%] bg-white opacity-90 transition-opacity">
-                        <iframe
-                          src={`/api/view?url=${encodeURIComponent(normalizeMediaUrl(cv.pdf_path))}#toolbar=0&navpanes=0&scrollbar=0`}
-                          className="w-full h-full border-none"
-                          title="CV Preview"
-                        />
-                      </div>
-
-                      {/* Always Visible Delete Button */}
-                      <button
-                        onClick={() => handleDeleteGenerated(cv.id)}
-                        className="absolute top-1.5 right-1.5 h-6 w-6 sm:h-7 sm:w-7 flex items-center justify-center bg-white/90 backdrop-blur-md text-rose-500 hover:bg-rose-600 hover:text-white rounded-md shadow-sm transition-all z-10"
-                      >
-                        <Trash2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="p-2 sm:p-2.5 bg-white flex flex-col gap-2 sm:gap-3">
-                      <div>
-                        <h4 className="text-[10px] sm:text-[11px] font-bold text-slate-900 truncate leading-tight mb-0.5 sm:mb-1">{cv.title || "AI Generated Resume"}</h4>
-                        <div className="flex items-center gap-1 text-slate-400">
-                          <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-                          <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-tight">
-                            {cv.created_at ? new Date(cv.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "Draft"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Always Visible Actions */}
-                      <div className="flex gap-1.5 sm:gap-2">
-                        <button
-                          className="flex-1 h-6 sm:h-7 bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-md font-bold text-[8px] sm:text-[9px] transition-all flex items-center justify-center gap-1 sm:gap-1.5 border border-slate-100/50"
-                          onClick={() => setViewingResumeUrl(normalizeMediaUrl(cv.pdf_path))}
-                        >
-                          <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> View
-                        </button>
-                        <button
-                          className="flex-1 h-6 sm:h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-bold text-[8px] sm:text-[9px] transition-all shadow-sm flex items-center justify-center gap-1 sm:gap-1.5"
-                          onClick={() => handleDownload(cv.pdf_path)}
-                        >
-                          <Download className="w-2.5 h-2.5 sm:w-2.5 sm:h-2.5" /> Download
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-indigo-50/30 rounded-xl md:rounded-2xl p-10 md:p-16 text-center border border-dashed border-indigo-100">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                  <Clock className="w-6 h-6 text-indigo-300" />
-                </div>
-                <p className="text-black font-semibold text-sm md:text-base mb-1">No build history yet</p>
-                <p className="text-slate-500 text-[10px] md:text-xs font-medium">Use a template above to generate your first professional CV.</p>
-              </div>
-            )}
-          </section>
-
         </div>
       </div>
 
-      {/* Template Preview Sidebar */}
+      {/* Uploaded Resumes: Preview Sidebar */}
+      {previewingResume && (
+        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPreviewingResume(null)} />
+          <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col p-0 overflow-hidden animate-in slide-in-from-right duration-500 border-l border-slate-100">
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-50 bg-white sticky top-0 z-10">
+              <div>
+                <h3 className="text-black font-bold text-lg leading-none">
+                  {previewingResume.title && previewingResume.title !== "0" ? previewingResume.title : previewingResume.file_name}
+                </h3>
+                <p className="text-[#0046B5] text-[11px] font-semibold mt-2 tracking-wide uppercase">Document Preview</p>
+              </div>
+              <button
+                onClick={() => setPreviewingResume(null)}
+                className="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Sidebar Content */}
+            <div className="flex-1 overflow-hidden bg-slate-50 relative p-4">
+              <div className="w-full h-full rounded-2xl overflow-hidden border border-slate-200 shadow-xl bg-white">
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                    normalizeMediaUrl(previewingResume.url || previewingResume.file || previewingResume.file_url || previewingResume.resume_file)
+                  )}&embedded=true`}
+                  className="w-full h-full border-none"
+                  title="Resume Preview"
+                />
+              </div>
+            </div>
+
+            {/* Sidebar Actions */}
+            <div className="p-6 border-t border-slate-50 bg-white grid grid-cols-2 gap-3 sticky bottom-0">
+              <button
+                onClick={() => handleDownloadUploaded(previewingResume)}
+                className="h-12 rounded-2xl bg-[#0046B5] text-white text-[13px] font-bold shadow-lg shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download Copy
+              </button>
+              {!previewingResume.is_default && (
+                <button
+                  onClick={() => {
+                    handleSetDefault(previewingResume.id);
+                    setPreviewingResume(null);
+                  }}
+                  className="h-12 rounded-2xl bg-indigo-600 text-white text-[13px] font-bold shadow-lg shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-indigo-700"
+                >
+                  <Star className="w-4 h-4 fill-white" />
+                  Set Primary
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CV Builder: Template Preview Sidebar */}
       {previewTemplate && (
         <div className="fixed inset-0 z-100 flex justify-end animate-in fade-in duration-300">
           <div
@@ -507,7 +895,7 @@ export default function ResumeManagementPage() {
         </div>
       )}
 
-      {/* Resume View Modal */}
+      {/* CV Builder: Resume View Modal */}
       {viewingResumeUrl && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-300 p-4 sm:p-6">
           <div
@@ -519,7 +907,7 @@ export default function ResumeManagementPage() {
               <h3 className="font-bold text-slate-800">Resume Preview</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleDownload(viewingResumeUrl)}
+                  onClick={() => handleDownloadGenerated(viewingResumeUrl)}
                   className="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" /> Download

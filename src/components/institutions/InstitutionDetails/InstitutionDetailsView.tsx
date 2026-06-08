@@ -49,7 +49,7 @@ export default function InstitutionDetailsView({
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
       {/* Breadcrumb Bar */}
-      <div className="bg-white border-b border-slate-100">
+      <div className="bg-white border-b border-slate-100 sticky top-16 z-40">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} />
         </div>

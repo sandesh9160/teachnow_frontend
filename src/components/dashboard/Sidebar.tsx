@@ -41,9 +41,8 @@ export function DashboardSidebar({
     { label: "Profile", href: "/dashboard/jobseeker/profile", icon: User },
     { label: "My Applications", href: "/dashboard/jobseeker/applied-jobs", icon: Briefcase },
     { label: "Saved Jobs", href: "/dashboard/jobseeker/saved-jobs", icon: Bookmark },
-    { label: "AI Resume Builder", href: "/dashboard/jobseeker/resume", icon: FileText },
-    { label: "Resume Manager", href: "/dashboard/jobseeker/resume-manager", icon: ClipboardList },
-    { label: "Testimonials", href: "/dashboard/jobseeker/testimonials", icon: MessageSquare },
+    { label: "My Resumes", href: "/dashboard/jobseeker/resume", icon: FileText },
+    { label: "Feedback", href: "/dashboard/jobseeker/testimonials", icon: MessageSquare },
   ];
 
   const employerLinks = [
@@ -55,7 +54,7 @@ export function DashboardSidebar({
     { label: "Company Profile", href: "/dashboard/employer/company-profile", icon: Building2 },
     { label: "Billing", href: "/dashboard/employer/purchase-history", icon: CreditCard },
     { label: "Alerts", href: "/dashboard/employer/notifications", icon: Bell },
-    { label: "Testimonials", href: "/dashboard/employer/testimonials", icon: MessageSquare },
+    { label: "Feedback", href: "/dashboard/employer/testimonials", icon: MessageSquare },
   ];
 
 
@@ -65,7 +64,7 @@ export function DashboardSidebar({
     { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
     { label: "Manage Jobs", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
     { label: "Alerts", href: "/dashboard/recruiter/notifications", icon: Bell },
-    { label: "Testimonials", href: "/dashboard/recruiter/testimonials", icon: MessageSquare },
+    { label: "Feedback", href: "/dashboard/recruiter/testimonials", icon: MessageSquare },
   ];
 
   const links =
@@ -141,7 +140,7 @@ export function DashboardSidebar({
                       {link.label}
                     </span>
                   )}
-                  
+
                   {collapsed && (
                     <div className="absolute left-full ml-3 px-2 py-1 bg-indigo-900 text-white text-[10px] rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-[70] whitespace-nowrap translate-x-2 group-hover:translate-x-0">
                       {link.label}

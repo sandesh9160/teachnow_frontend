@@ -254,6 +254,14 @@
   .rich-text h4 {
     @apply text-[16px] font-semibold mt-[1.25em] mb-[0.5em] text-slate-900 leading-[1.5];
   }
+  .privacy-policy-headings h1,
+  .privacy-policy-headings h2,
+  .privacy-policy-headings h3,
+  .privacy-policy-headings h4,
+  .privacy-policy-headings h5,
+  .privacy-policy-headings h6 {
+    @apply text-[20px] font-bold mt-[1.5em] mb-[0.5em] tracking-tight text-slate-900 leading-[1.35];
+  }
   .rich-text li p {
     @apply mb-0 inline;
   }

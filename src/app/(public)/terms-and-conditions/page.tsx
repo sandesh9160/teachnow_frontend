@@ -25,9 +25,11 @@ export default async function TermsAndConditionsPage() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* --- Breadcrumb Bar --- */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
-        <Breadcrumb items={breadcrumbItems} />
+      {/* Consistent Breadcrumb Bar */}
+      <div className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-16 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-1.5">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
       </div>
 
       <TermsPageClient sections={sections} lastUpdated={lastUpdated} />

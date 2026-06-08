@@ -340,7 +340,7 @@ export default function ApplyJobPage() {
     return (
       <div className="bg-[#F8FAFC] min-h-screen">
         <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-          <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
             <Breadcrumb items={[{ label: "Jobs", href: "/jobs" }, { label: "Apply", isCurrent: true }]} />
           </div>
         </div>
@@ -533,7 +533,7 @@ export default function ApplyJobPage() {
     <div className="bg-[#F8FAFC] min-h-screen pb-12">
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-border bg-white/80 backdrop-blur-md sticky top-16 z-40">
-        <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
           <Breadcrumb items={[
             { label: "Jobs", href: "/jobs" },
             { label: "Apply", isCurrent: true }
@@ -1008,7 +1008,7 @@ export default function ApplyJobPage() {
                 <Button 
                   variant="outline" 
                   className="w-full h-11 rounded-xl text-[13px] font-semibold gap-1.5 border-slate-200 hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center bg-white" 
-                  onClick={() => router.push("/dashboard/jobseeker/resume-manager")}
+                  onClick={() => router.push("/dashboard/jobseeker/resume?tab=uploaded")}
                 >
                   <Plus className="h-4 w-4 shrink-0" /> Manage Resumes
                 </Button>

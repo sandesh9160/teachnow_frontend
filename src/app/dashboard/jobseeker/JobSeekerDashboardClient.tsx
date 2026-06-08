@@ -107,7 +107,7 @@ export default function JobSeekerDashboardClient({ displayName }: { displayName:
                 { label: "Browse Jobs", desc: "Explore teaching opportunities", icon: Search, color: "text-blue-500", bg: "bg-blue-50", href: "/jobs" },
                 { label: "Saved Jobs", desc: "View your bookmarked positions", icon: Bookmark, color: "text-indigo-500", bg: "bg-indigo-50", href: "/dashboard/jobseeker/saved-jobs" },
                 { label: "My Applications", desc: "Track your application status", icon: Briefcase, color: "text-emerald-500", bg: "bg-emerald-50", href: "/dashboard/jobseeker/applied-jobs" },
-                { label: "Update Resume", desc: "Keep your resume current", icon: FileText, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/jobseeker/resume-manager" },
+                { label: "Update Resume", desc: "Keep your resume current", icon: FileText, color: "text-blue-600", bg: "bg-blue-50", href: "/dashboard/jobseeker/resume?tab=uploaded" },
               ].map((action) => (
                 <Link 
                   key={action.label} 

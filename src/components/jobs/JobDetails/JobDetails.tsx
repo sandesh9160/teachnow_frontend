@@ -135,7 +135,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   };
 
 
-  
+
 
   const handleShare = async () => {
     const shareData = {
@@ -194,11 +194,9 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden">
       {/* Breadcrumb Bar */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="w-full px-4 sm:px-6 lg:px-12 py-2">
-          <div className="overflow-x-auto no-scrollbar whitespace-nowrap">
-            <Breadcrumb items={breadcrumbItems} className="py-0" />
-          </div>
+      <div className="bg-white border-b border-slate-200 relative z-10">
+        <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
+          <Breadcrumb items={breadcrumbItems} />
         </div>
       </div>
 
@@ -217,7 +215,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-white/60" />
       </div>
 
-      <div className="relative w-full px-4 -mt-12 sm:-mt-24 md:-mt-32 pb-16 sm:px-6 lg:px-12 overflow-x-hidden">
+      <div className="relative mx-auto max-w-7xl px-4 -mt-12 sm:-mt-24 md:-mt-32 pb-16 sm:px-6 lg:px-8 overflow-x-hidden">
         <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_340px] w-full">
 
           {/* Main Content Area */}
