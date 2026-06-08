@@ -302,7 +302,7 @@ export default function RecruiterJobsClient({ initialData }: RecruiterJobsClient
                     </span>
                     {job.featured === 1 && job.admin_featured === 1 && job.featured_until && (
                       <span className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
-                        <TrendingUp className="w-3.5 h-3.5" /> Featured {job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"}
+                        <TrendingUp className="w-3.5 h-3.5" /> Feature Expiry {job.featured_until && !isNaN(new Date(job.featured_until).getTime()) ? new Date(job.featured_until).toLocaleDateString('en-GB') : "Expired"}
                       </span>
                     )}
                     {job.admin_featured === 1 && (

@@ -595,11 +595,51 @@ export default function PostJobClient({
                 {errors.location && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.location}</p>}
               </div>
               <div className="space-y-1.5">
+                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_type ? "text-red-500" : "text-slate-700")}>
+                  Experience Type <span className="text-red-500 ml-0.5">*</span>
+                </Label>
+                <select
+                  value={formData.experience_type}
+                  suppressHydrationWarning
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    updateField("experience_type", newType);
+                    
+                    if (newType === "fresher") {
+                      updateField("experience_required", "0");
+                      if (errors.experience_required) setErrors(prev => {
+                        const n = { ...prev };
+                        delete n.experience_required;
+                        return n;
+                      });
+                    } else if (formData.experience_required === "0" || formData.experience_required === 0) {
+                      updateField("experience_required", "");
+                    }
+
+                    if (errors.experience_type) setErrors(prev => {
+                      const n = { ...prev };
+                      delete n.experience_type;
+                      return n;
+                    });
+                  }}
+                  className={cn(
+                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
+                    errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  )}
+                >
+                  <option value="">Select experience type</option>
+                  <option value="fresher">Fresher</option>
+                  <option value="experienced">Experienced</option>
+                </select>
+                {errors.experience_type && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.experience_type}</p>}
+              </div>
+              <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_required ? "text-red-500" : "text-slate-700")}>
                   Experience Required <span className="text-red-500 ml-0.5">*</span>
                 </Label>
                 <Input
                   value={formData.experience_required}
+                  disabled={formData.experience_type === "fresher"}
                   suppressHydrationWarning
                   onChange={(e) => {
                     const val = e.target.value;
@@ -621,36 +661,11 @@ export default function PostJobClient({
                   placeholder="e.g. 5"
                   className={cn(
                     "h-10 rounded-xl text-xs transition-all",
-                    (errors.experience_required || limitReachedField === "experience_required") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    (errors.experience_required || limitReachedField === "experience_required") ? "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100",
+                    formData.experience_type === "fresher" && "opacity-60 cursor-not-allowed bg-slate-100"
                   )}
                 />
                 {errors.experience_required && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.experience_required}</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.experience_type ? "text-red-500" : "text-slate-700")}>
-                  Experience Type <span className="text-red-500 ml-0.5">*</span>
-                </Label>
-                <select
-                  value={formData.experience_type}
-                  suppressHydrationWarning
-                  onChange={(e) => {
-                    updateField("experience_type", e.target.value);
-                    if (errors.experience_type) setErrors(prev => {
-                      const n = { ...prev };
-                      delete n.experience_type;
-                      return n;
-                    });
-                  }}
-                  className={cn(
-                    "w-full h-10 rounded-xl px-4 text-xs outline-none transition-all",
-                    errors.experience_type ? "border border-red-500 bg-red-50/50 focus:border-red-600" : "bg-slate-50 border-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-                  )}
-                >
-                  <option value="">Select experience type</option>
-                  <option value="fresher">Fresher</option>
-                  <option value="experienced">Experienced</option>
-                </select>
-                {errors.experience_type && <p className="text-[10px] font-bold text-red-500 px-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.experience_type}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[11px] font-bold px-1 capitalize transition-colors", errors.gender ? "text-red-500" : "text-slate-700")}>

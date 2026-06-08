@@ -324,7 +324,7 @@ export default function JobsClient({
                     </span>
                     {job.featured === 1 && job.admin_featured === 1 && job.featured_until && (
                       <span className="flex items-center gap-1.5 text-[12px] font-semibold text-indigo-600">
-                        <TrendingUp className="w-3.5 h-3.5" /> Featured {new Date(job.featured_until).toLocaleDateString('en-GB')}
+                        <TrendingUp className="w-3.5 h-3.5" /> Feature Expiry {new Date(job.featured_until).toLocaleDateString('en-GB')}
                       </span>
                     )}
                     {job.admin_featured === 1 && (
