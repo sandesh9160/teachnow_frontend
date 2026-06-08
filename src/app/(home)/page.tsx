@@ -7,6 +7,7 @@ import JobSeekerSteps from "@/components/home/Steps/JobSeekerSteps";
 import EmployerSteps from "@/components/home/Steps/EmployerSteps";
 import Features from "@/components/home/Features/Features";
 
+
 // Homepage Sections (imported statically to support server rendering)
 import Categories from "@/components/home/Categories/Categories";
 import FeaturedInstitutions from "@/components/home/FeaturedInstitutions/FeaturedInstitutions";
@@ -30,6 +31,8 @@ import {
   getCategories,
 } from "@/hooks/useHomepage";
 import { getBlogs } from "@/hooks/useBlogs";
+
+import { preload } from "react-dom";
 
 export default async function HomePage() {
   // Fetch all sections concurrently on the server
@@ -60,16 +63,13 @@ export default async function HomePage() {
   const cta = heroCTA?.cta ?? [];
   const heroImageUrl = hero?.background_image ? normalizeMediaUrl(hero.background_image) : null;
 
+  if (heroImageUrl) {
+    preload(heroImageUrl, { as: "image", fetchPriority: "high" });
+  }
+
+  console.log("heroCTA", heroCTA);
   return (
     <div className="flex flex-col min-h-screen">
-      {heroImageUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={heroImageUrl}
-          fetchPriority="high"
-        />
-      )}
       {/* Hero renders immediately as it uses layout-level cached data */}
       <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
 
