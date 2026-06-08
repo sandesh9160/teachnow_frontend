@@ -40,6 +40,7 @@ export default function InstitutionDetailsView({
   const logoFallback = (company?.company_name?.[0] || "I").toUpperCase();
 
   const breadcrumbItems = [
+    { label: "Institutions", href: "/institutions" },
     { label: company.company_name || "Institution", isCurrent: true }
   ];
 
