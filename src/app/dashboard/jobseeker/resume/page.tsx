@@ -177,11 +177,13 @@ export default function ResumeManagementPage() {
       const res = await generateCV({ template_id: tplId });
       console.log("res", res)
       const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url || res?.data?.pdf_path || res?.pdf_path;
+      
+      toast.success("Generation complete! Successfully created Resume.", {
+        style: { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
+      });
+
       if (url) {
         setLastGeneratedCV(normalizeMediaUrl(url));
-        toast.success("Generation complete! Successfully created Resume.", {
-          style: { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
-        });
       }
       await fetchResumes();
       await fetchTemplates();
@@ -546,7 +548,7 @@ export default function ResumeManagementPage() {
                   </div>
                 ) : generatedResumes.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-                    {generatedResumes.map((cv: any) => (
+                    {generatedResumes.map((cv: any, index: number) => (
                       <div
                         key={cv.id}
                         className="group flex flex-col bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300"
@@ -560,6 +562,14 @@ export default function ResumeManagementPage() {
                               title="CV Preview"
                             />
                           </div>
+
+                          {/* Latest Badge */}
+                          {index === 0 && (
+                            <div className="absolute top-1.5 left-1.5 bg-indigo-600 text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-md shadow-sm z-10 flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              Latest
+                            </div>
+                          )}
 
                           {/* Always Visible Delete Button */}
                           <button
