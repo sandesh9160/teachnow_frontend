@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/Modal/Modal";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 import { Input } from "@/shared/ui/Input/Input";
@@ -9,8 +9,8 @@ import { EmailSignInAction } from "@/lib/sign-in";
 import { fetchAPI } from "@/services/api/client";
 import { toast } from "sonner";
 import { resetSharedClientSession } from "@/hooks/useClientSession";
-import { Mail, Lock, User, ArrowLeft} from "lucide-react";
-
+import { Mail, Lock, User, ArrowLeft, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 interface QuickAuthModalProps {
   open: boolean;
   onClose: () => void;
@@ -42,14 +42,21 @@ export default function QuickAuthModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [regName, setRegName] = useState("");
-  const [regPhone, setRegPhone] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const captchaRef = useRef<any>(null);
 
-  const hasMinLength = password.length >= 8;
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  const isPasswordValid = hasMinLength && hasUpperCase && hasNumber && hasSpecialChar;
+  // Email verification state
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,17 +79,62 @@ export default function QuickAuthModal({
     }
   };
 
+  const sendEmail = async () => {
+    if (!email) return;
+    try {
+      setSendingEmail(true);
+      await fetchAPI("/auth/send-email", {
+        method: "POST",
+        body: { 
+          email, 
+          role: role === "job_seeker" ? role : null 
+        },
+      });
+      setEmailSent(true);
+      toast.success("Verification code sent to your email!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to send email");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    try {
+      setVerifyingOtp(true);
+      await fetchAPI("/auth/verify-email", {
+        method: "POST",
+        body: { email, otp },
+      });
+      setEmailVerified(true);
+      toast.success("Email verified successfully!");
+    } catch (err: any) {
+      toast.error(err?.message || "Invalid OTP");
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!emailVerified) {
+      toast.error("Please verify your email address");
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    if (!isPasswordValid) {
-      toast.error("Password is too weak", {
-        description: "Please follow the complexity requirements."
-      });
+    if (!acceptedTerms) {
+      toast.error("Please accept the Terms of Service and Privacy Policy");
+      return;
+    }
+
+    if (!captchaToken) {
+      toast.error("Please complete the captcha verification");
       return;
     }
 
@@ -91,11 +143,11 @@ export default function QuickAuthModal({
       await fetchAPI("/auth/register", {
         method: "POST",
         body: {
-          full_name: regName,
+          name: regName,
           email,
-          phone: regPhone,
           password,
-          role: role,
+          role: role === "job_seeker" ? role : null,
+          captcha_token: captchaToken,
         },
       });
       toast.success("Account created! Logging you in...");
@@ -143,53 +195,87 @@ export default function QuickAuthModal({
 
           <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-2">
             {mode === "register" && (
-              <div className="grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="space-y-1">
-                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">
-                    {role === "job_seeker" ? "Full Name" : "Institution"}
-                  </Label>
-                  <div className="relative group">
-                    <Input 
-                      placeholder={role === "job_seeker" ? "Full Name" : "Institution"}
-                      className="pl-3 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
-                      value={regName} 
-                      onChange={(e) => setRegName(e.target.value)} 
-                      required 
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Phone</Label>
-                  <div className="relative group">
-                    <Input 
-                      type="tel" 
-                      placeholder="+91 98765" 
-                      className="pl-3 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
-                      value={regPhone} 
-                      onChange={(e) => setRegPhone(e.target.value)} 
-                      required 
-                    />
-                  </div>
+              <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">
+                  {role === "job_seeker" ? "Full Name" : "Institution"}
+                </Label>
+                <div className="relative group">
+                  <Input 
+                    placeholder={role === "job_seeker" ? "Full Name" : "Institution"}
+                    className="pl-3 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
+                    value={regName} 
+                    onChange={(e) => setRegName(e.target.value)} 
+                    required 
+                  />
                 </div>
               </div>
             )}
 
             <div className="space-y-1">
               <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Email Address</Label>
-              <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
-                  <Mail className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <div className="flex gap-1.5">
+                <div className="relative group flex-1">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
+                    <Mail className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                  </div>
+                  <Input 
+                    type="email" 
+                    placeholder="you@email.com" 
+                    className="pl-12 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold w-full"
+                    value={email} 
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (mode === "register") {
+                        setEmailVerified(false);
+                        setEmailSent(false);
+                      }
+                    }} 
+                    required 
+                  />
                 </div>
-                <Input 
-                  type="email" 
-                  placeholder="you@email.com" 
-                  className="pl-12 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
-                />
+                {mode === "register" && !emailVerified && (
+                  <button
+                    type="button"
+                    onClick={sendEmail}
+                    disabled={sendingEmail || !email}
+                    className="px-3 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm disabled:opacity-50 transition-all shrink-0 w-[70px] flex items-center justify-center"
+                  >
+                    {sendingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (emailSent ? "Resend" : "Verify")}
+                  </button>
+                )}
+                {mode === "register" && emailVerified && (
+                  <div className="px-3 h-11 rounded-xl bg-green-50 border border-green-200 text-green-600 flex items-center justify-center shrink-0 w-[70px]">
+                    <Check className="h-4 w-4" />
+                  </div>
+                )}
               </div>
             </div>
+
+            {mode === "register" && emailSent && !emailVerified && (
+              <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
+                <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Verification OTP</Label>
+                <div className="flex gap-1.5">
+                  <div className="relative group flex-1">
+                    <Input
+                      type="text"
+                      placeholder="Enter OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      className="pl-3 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold w-full"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={verifyOtp}
+                    disabled={verifyingOtp || otp.length < 4}
+                    className="px-3 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm disabled:opacity-50 transition-all shrink-0 w-[80px] flex items-center justify-center"
+                  >
+                    {verifyingOtp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Verify OTP"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className={`${mode === "register" ? "grid grid-cols-2 gap-2" : "space-y-1"} animate-in fade-in slide-in-from-top-1 duration-300`}>
               <div className="space-y-1">
@@ -199,49 +285,74 @@ export default function QuickAuthModal({
                     <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                   </div>
                   <Input 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     placeholder="••••" 
-                    className="pl-12 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
+                    className="pl-12 pr-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
                     required 
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
               {mode === "register" && (
                 <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Confirm</Label>
-                   <div className="relative group">
+                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Confirm Password</Label>
+                  <div className="relative group">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
                       <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                     </div>
                     <Input 
-                      type="password" 
+                      type={showConfirmPassword ? "text" : "password"} 
                       placeholder="••••" 
-                      className="pl-12 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
+                      className="pl-12 pr-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
                       value={confirmPassword} 
                       onChange={(e) => setConfirmPassword(e.target.value)} 
                       required 
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
               )}
             </div>
 
             {mode === "register" && (
-              <div className="mt-1 space-y-1 px-1">
-                <div className="flex gap-0.5 h-1 w-full">
-                  <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength ? "bg-green-500" : "bg-slate-200"}`} />
-                  <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase ? "bg-green-500" : "bg-slate-200"}`} />
-                  <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase && hasNumber ? "bg-green-500" : "bg-slate-200"}`} />
-                  <div className={`h-full flex-1 rounded-full transition-colors ${isPasswordValid ? "bg-green-500" : "bg-slate-200"}`} />
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-300 mt-2">
+                <div className="space-y-1">
+                  <CaptchaField
+                    ref={captchaRef}
+                    onChange={(token) => setCaptchaToken(token || "")}
+                    className="mt-1"
+                  />
                 </div>
-                <div className="flex flex-wrap gap-x-2 gap-y-0.5 opacity-80 leading-none">
-                  <div className={`flex items-center gap-0.5 text-[7.5px] uppercase tracking-tighter ${hasMinLength ? "text-green-600 font-bold" : "text-slate-400"}`}>8+ CHARS</div>
-                  <div className={`flex items-center gap-0.5 text-[7.5px] uppercase tracking-tighter ${hasUpperCase ? "text-green-600 font-bold" : "text-slate-400"}`}>UPPERCASE</div>
-                  <div className={`flex items-center gap-0.5 text-[7.5px] uppercase tracking-tighter ${hasNumber ? "text-green-600 font-bold" : "text-slate-400"}`}>NUMBER</div>
-                  <div className={`flex items-center gap-0.5 text-[7.5px] uppercase tracking-tighter ${hasSpecialChar ? "text-green-600 font-bold" : "text-slate-400"}`}>SPECIAL</div>
+
+                <div className="flex items-start gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 h-3.5 w-3.5 rounded border-slate-300 text-primary focus:ring-primary"
+                    required
+                  />
+                  <label htmlFor="terms" className="text-[11px] text-slate-500 leading-tight">
+                    I agree to the{" "}
+                    <a href="/terms-and-conditions" className="font-medium hover:underline text-primary">Terms of Service</a> and{" "}
+                    <a href="/privacy-policy" className="font-medium hover:underline text-primary">Privacy Policy</a>.
+                  </label>
                 </div>
               </div>
             )}
