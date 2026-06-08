@@ -9,7 +9,7 @@ import { EmailSignInAction } from "@/lib/sign-in";
 import { fetchAPI } from "@/services/api/client";
 import { toast } from "sonner";
 import { resetSharedClientSession } from "@/hooks/useClientSession";
-import { Mail, Lock, User, ArrowLeft, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, Eye, EyeOff, Check, Loader2, X, AlertCircle } from "lucide-react";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 interface QuickAuthModalProps {
   open: boolean;
@@ -44,10 +44,12 @@ export default function QuickAuthModal({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [regName, setRegName] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const captchaRef = useRef<any>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Email verification state
   const [emailSent, setEmailSent] = useState(false);
@@ -56,10 +58,29 @@ export default function QuickAuthModal({
   const [sendingEmail, setSendingEmail] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
+  const hasMinLength = password.length >= 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const isPasswordValid = hasMinLength && hasUpperCase && hasNumber && hasSpecialChar;
+
 
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: Record<string, string> = {};
+    if (!email.trim()) errors.email = "Email Address is required";
+    if (!password) errors.password = "Password is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    setFormErrors({});
+
     try {
       setLoading(true);
       const res = await EmailSignInAction({ email, password, role });
@@ -118,8 +139,29 @@ export default function QuickAuthModal({
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const errors: Record<string, string> = {};
+    if (!regName.trim()) errors.regName = "Full Name is required";
+    if (!email.trim()) errors.email = "Email Address is required";
+    if (!password) errors.password = "Password is required";
+    if (!confirmPassword) errors.confirmPassword = "Confirm Password is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    setFormErrors({});
+
     if (!emailVerified) {
       toast.error("Please verify your email address");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      toast.error("Password is too weak", {
+        description: "Please follow the complexity requirements."
+      });
       return;
     }
 
@@ -193,26 +235,38 @@ export default function QuickAuthModal({
             </div>
           </div>
 
-          <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-2">
+          <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-2" noValidate>
             {mode === "register" && (
               <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
                 <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">
-                  {role === "job_seeker" ? "Full Name" : "Institution"}
+                  {role === "job_seeker" ? "Full Name" : "Institution"} <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative group">
                   <Input 
                     placeholder={role === "job_seeker" ? "Full Name" : "Institution"}
-                    className="pl-3 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
+                    className={`pl-3 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold ${
+                      formErrors.regName 
+                        ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
+                        : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
+                    }`}
                     value={regName} 
-                    onChange={(e) => setRegName(e.target.value)} 
+                    onChange={(e) => {
+                      setRegName(e.target.value);
+                      if (formErrors.regName) setFormErrors({ ...formErrors, regName: "" });
+                    }} 
                     required 
                   />
+                  {formErrors.regName && (
+                    <p className="flex items-center gap-1 mt-1 text-[10px] font-bold text-red-500">
+                      <AlertCircle size={10} /> {formErrors.regName}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
 
             <div className="space-y-1">
-              <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Email Address</Label>
+              <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Email Address <span className="text-red-500">*</span></Label>
               <div className="flex gap-1.5">
                 <div className="relative group flex-1">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
@@ -221,10 +275,15 @@ export default function QuickAuthModal({
                   <Input 
                     type="email" 
                     placeholder="you@email.com" 
-                    className="pl-12 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold w-full"
+                    className={`pl-12 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold w-full ${
+                      formErrors.email 
+                        ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
+                        : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
+                    }`}
                     value={email} 
                     onChange={(e) => {
                       setEmail(e.target.value);
+                      if (formErrors.email) setFormErrors({ ...formErrors, email: "" });
                       if (mode === "register") {
                         setEmailVerified(false);
                         setEmailSent(false);
@@ -232,6 +291,11 @@ export default function QuickAuthModal({
                     }} 
                     required 
                   />
+                  {formErrors.email && (
+                    <p className="flex items-center gap-1 mt-1 text-[10px] font-bold text-red-500">
+                      <AlertCircle size={10} /> {formErrors.email}
+                    </p>
+                  )}
                 </div>
                 {mode === "register" && !emailVerified && (
                   <button
@@ -279,7 +343,7 @@ export default function QuickAuthModal({
 
             <div className={`${mode === "register" ? "grid grid-cols-2 gap-2" : "space-y-1"} animate-in fade-in slide-in-from-top-1 duration-300`}>
               <div className="space-y-1">
-                <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Password</Label>
+                <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Password <span className="text-red-500">*</span></Label>
                 <div className="relative group">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
                     <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
@@ -287,9 +351,20 @@ export default function QuickAuthModal({
                   <Input 
                     type={showPassword ? "text" : "password"} 
                     placeholder="••••" 
-                    className="pl-12 pr-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
+                    className={`pl-12 pr-10 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold ${
+                      formErrors.password 
+                        ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
+                        : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
+                    }`}
                     value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (formErrors.password) setFormErrors({ ...formErrors, password: "" });
+                    }} 
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => {
+                      if (!password) setPasswordFocused(false);
+                    }}
                     required 
                   />
                   <button
@@ -299,12 +374,17 @@ export default function QuickAuthModal({
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
+                  {formErrors.password && (
+                    <p className="flex items-center gap-1 mt-1 absolute -bottom-5 text-[10px] font-bold text-red-500">
+                      <AlertCircle size={10} /> {formErrors.password}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {mode === "register" && (
                 <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Confirm Password</Label>
+                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Confirm Password <span className="text-red-500">*</span></Label>
                   <div className="relative group">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
                       <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
@@ -312,9 +392,16 @@ export default function QuickAuthModal({
                     <Input 
                       type={showConfirmPassword ? "text" : "password"} 
                       placeholder="••••" 
-                      className="pl-12 pr-10 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold"
+                      className={`pl-12 pr-10 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold ${
+                        formErrors.confirmPassword 
+                          ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
+                          : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
+                      }`}
                       value={confirmPassword} 
-                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (formErrors.confirmPassword) setFormErrors({ ...formErrors, confirmPassword: "" });
+                      }} 
                       required 
                     />
                     <button
@@ -324,6 +411,41 @@ export default function QuickAuthModal({
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
+                    {formErrors.confirmPassword && (
+                      <p className="flex items-center gap-1 mt-1 absolute -bottom-5 text-[10px] font-bold text-red-500">
+                        <AlertCircle size={10} /> {formErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {mode === "register" && password && passwordFocused && (
+                <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex gap-1.5 h-1.5 w-full">
+                    <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength ? "bg-green-500" : "bg-slate-200"}`} />
+                    <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase ? "bg-green-500" : "bg-slate-200"}`} />
+                    <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase && hasNumber ? "bg-green-500" : "bg-slate-200"}`} />
+                    <div className={`h-full flex-1 rounded-full transition-colors ${isPasswordValid ? "bg-green-500" : "bg-slate-200"}`} />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-[10px]">
+                    <div className={`flex items-center gap-1.5 transition-colors ${hasMinLength ? "text-green-600 font-bold" : "text-slate-400"}`}>
+                      {hasMinLength ? <Check className="h-3 w-3" /> : <X className="h-3 w-3 opacity-50" />}
+                      <span>At least 8 chars</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 transition-colors ${hasUpperCase ? "text-green-600 font-bold" : "text-slate-400"}`}>
+                      {hasUpperCase ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
+                      <span>One uppercase</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-green-600 font-bold" : "text-slate-400"}`}>
+                      {hasNumber ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
+                      <span>One number</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 transition-colors ${hasSpecialChar ? "text-green-600 font-bold" : "text-slate-400"}`}>
+                      {hasSpecialChar ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
+                      <span>Special character</span>
+                    </div>
                   </div>
                 </div>
               )}
