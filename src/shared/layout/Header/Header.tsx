@@ -425,7 +425,22 @@ const Header = ({
   };
 
   // --- Dynamic Data Mapping with Fallbacks (Memoized) ---
-  const mappedMenus = useMemo(() => (navigationData as any)?.mappedMenus || [], [navigationData]);
+  const mappedMenus = useMemo(() => {
+    const menus = (navigationData as any)?.mappedMenus || [];
+    return menus.filter((menu: any) => {
+      const titleLower = menu.title?.toLowerCase() || "";
+      const isResumeBuilder = titleLower.includes("resume");
+      const isEmployer = titleLower === "employer" || titleLower === "employers" || titleLower.includes("post a job");
+      
+      if (isResumeBuilder && (user?.role === "employer" || user?.role === "recruiter")) {
+        return false;
+      }
+      if (isEmployer && user?.role === "job_seeker") {
+        return false;
+      }
+      return true;
+    });
+  }, [navigationData, user?.role]);
 
   const dashboardPath = useMemo(() =>
     user?.role === "employer"
