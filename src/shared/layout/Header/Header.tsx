@@ -504,11 +504,7 @@ const Header = ({
                 height={40}
               />
             </div>
-          ) : (
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary text-white font-display font-bold text-lg sm:text-xl transition-all duration-300 group-hover:scale-105 shadow-md shadow-primary/10">
-              {companyName[0] || "T"}
-            </div>
-          )}
+          ) : null}
           <span className="font-display text-base sm:text-xl font-extrabold text-gray-900 tracking-tight transition-colors leading-none block">
             {brandSecondaryPart}
             {brandPrimaryPart ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut,  Menu, GraduationCap } from "lucide-react";
+import { LogOut,  Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { LogoutSubmitButton } from "@/components/auth/LogoutSubmitButton";
 import { normalizeMediaUrl } from "@/services/api/client";
@@ -54,11 +54,7 @@ export function DashboardHeader({
               alt={branding?.name || "Brand Logo"} 
               className="h-8 w-auto object-contain transition-transform group-hover:scale-105" 
             />
-          ) : (
-            <div className="w-8 h-8 bg-indigo-900 rounded-xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-          )}
+          ) : null}
           <span className="text-[17px] font-bold text-indigo-950 tracking-tight hidden md:inline">
             {branding?.secondary || branding?.name || "Teach"}
             {branding?.primary && (

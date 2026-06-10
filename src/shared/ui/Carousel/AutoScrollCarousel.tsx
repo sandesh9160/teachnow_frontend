@@ -9,6 +9,7 @@ interface AutoScrollCarouselProps {
   className?: string;
   isContinuous?: boolean;
   showArrows?: boolean;
+  gapClass?: string;
 }
 
 const AutoScrollCarousel = ({ 
@@ -16,7 +17,8 @@ const AutoScrollCarousel = ({
   speed = 40, // Increased default as it's now duration based
   className = "", 
   isContinuous = true,
-  showArrows = false
+  showArrows = false,
+  gapClass = "gap-6 md:gap-8"
 }: AutoScrollCarouselProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -89,7 +91,7 @@ const AutoScrollCarousel = ({
       >
         <div 
           ref={scrollRef}
-          className={`flex gap-6 md:gap-8 w-max ${isContinuous && isInView ? "animate-marquee" : ""}`}
+          className={`flex ${gapClass} w-max ${isContinuous && isInView ? "animate-marquee" : ""}`}
           style={{ 
             animationDuration: animationDuration,
             animationPlayState: isPaused ? 'paused' : 'running',
@@ -98,10 +100,10 @@ const AutoScrollCarousel = ({
           }}
         >
           {/* We double the children to ensure seamless looping with lower DOM overhead */}
-          <div className="flex gap-6 md:gap-8 shrink-0">
+          <div className={`flex ${gapClass} shrink-0`}>
             {children}
           </div>
-          <div className="flex gap-6 md:gap-8 shrink-0">
+          <div className={`flex ${gapClass} shrink-0`}>
             {children}
           </div>
         </div>

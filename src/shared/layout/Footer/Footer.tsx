@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { GraduationCap } from "lucide-react";
+// import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { normalizeMediaUrl } from "@/services/api/client";
 import type { FooterData, FooterTopSearch } from "@/lib/globalLayout/getGlobalLayoutData";
@@ -112,11 +112,7 @@ export const Footer = ({
                   className="h-8 w-8 object-contain rounded-lg"
                   loading="lazy"
                 />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-primary">
-                  <GraduationCap className="h-4 w-4 text-primary-foreground" />
-                </div>
-              )}
+              ) : null}
               <span className="font-display text-lg font-bold text-foreground">
                 {brandSecondaryPart}
                 {brandPrimaryPart ? (

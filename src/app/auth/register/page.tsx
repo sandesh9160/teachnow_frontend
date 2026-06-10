@@ -2,7 +2,7 @@
 import { useState, useRef} from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { GraduationCap, User, Building2, Check, X, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import {User, Building2, Check, X, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/services/api/client";
@@ -156,11 +156,7 @@ export default function RegisterPage() {
             <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white shadow-2xl overflow-hidden p-4 transition-transform hover:scale-110 duration-500">
               <Image src={companyLogo} alt={companyName} width={112} height={112} className="h-full w-full object-contain" priority />
             </div>
-          ) : (
-            <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] bg-white shadow-2xl transition-transform hover:scale-110 duration-500">
-              <GraduationCap className="h-14 w-14 text-primary" />
-            </div>
-          )}
+          ) : null}
           <div className="text-center">
             <h2 className="font-display text-4xl font-black text-foreground tracking-tighter">
               {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
@@ -187,11 +183,7 @@ export default function RegisterPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-md overflow-hidden p-1.5 border border-border">
                   <Image src={companyLogo} alt={companyName} width={40} height={40} className="h-full w-full object-contain" />
                 </div>
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-md">
-                  <GraduationCap className="h-5 w-5 text-primary-foreground" />
-                </div>
-              )}
+              ) : null}
               <span className="font-display text-xl font-bold text-foreground">
                 {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
               </span>

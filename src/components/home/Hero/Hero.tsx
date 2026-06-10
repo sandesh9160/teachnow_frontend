@@ -4,6 +4,7 @@ import { Button } from "@/shared/ui/Buttons/Buttons";
 import { SearchBar } from "./SearchBar";
 import type { CTASection, HeroSection } from "@/types/homepage";
 import { normalizeMediaUrl } from "@/services/api/client";
+import AutoScrollCarousel from "@/shared/ui/Carousel/AutoScrollCarousel";
 
 export const Hero = ({
   hero,
@@ -122,18 +123,23 @@ export const Hero = ({
 
           {/* Popular Searches */}
           {popularSearches && popularSearches.length > 0 && (
-            <div className="w-full max-w-4xl mx-auto px-1.5 md:px-2">
-              <div className="mt-5 flex flex-wrap items-center justify-start gap-2">
-                <span className="text-slate-500 font-medium text-[13px] mr-1">Popular:</span>
-                {popularSearches.map((search) => (
-                  <Link
-                    key={search.slug}
-                    href={`/jobs/${search.slug}`}
-                    className="px-3 py-1 bg-white border border-slate-300 rounded-full text-[13px] font-medium text-[#5a6b82] hover:border-indigo-400 hover:text-indigo-600 transition-all hover:-translate-y-0.5 active:scale-95 duration-200"
-                  >
-                    {search.name}
-                  </Link>
-                ))}
+            <div className="w-full max-w-4xl mx-auto px-1.5 md:px-2 mt-5 flex items-center overflow-hidden">
+              <span className="text-slate-500 font-medium text-[13px] mr-3 shrink-0">Popular:</span>
+              <div className="flex-1 min-w-0 relative">
+                {/* Gradient masks for smooth fading at edges */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-[#F7F9FC] to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-[#F7F9FC] to-transparent z-10 pointer-events-none"></div>
+                <AutoScrollCarousel speed={50} isContinuous={true} gapClass="gap-2">
+                  {popularSearches.map((search) => (
+                    <Link
+                      key={search.slug}
+                      href={`/jobs/${search.slug}`}
+                      className="px-3 py-1 bg-white border border-slate-300 rounded-full text-[13px] font-medium text-[#5a6b82] hover:border-indigo-400 hover:text-indigo-600 transition-all hover:-translate-y-0.5 active:scale-95 duration-200 whitespace-nowrap block"
+                    >
+                      {search.name}
+                    </Link>
+                  ))}
+                </AutoScrollCarousel>
               </div>
             </div>
           )}
