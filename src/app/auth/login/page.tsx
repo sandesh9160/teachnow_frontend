@@ -26,24 +26,33 @@ function LoginContent() {
 
   const { companyName, companyLogo, brandSecondaryPart, brandPrimaryPart } = useBranding();
 
+  // Redirect if already authenticated
+  const [isRedirecting] = useState(() => {
+    if (typeof window !== "undefined") {
+      const isSessionExpired = searchParams?.get("session_expired");
+      const redirectMsg = searchParams?.get("message");
+      
+      const cookieMatch = document.cookie.split(';').find(item => item.trim().startsWith('userData='));
+
+      if (cookieMatch && !isSessionExpired && !redirectMsg) {
+        try {
+          const userDataStr = cookieMatch.split('=')[1];
+          const userObj = JSON.parse(decodeURIComponent(userDataStr));
+          const dashUrl = dashboardUrlAfterLogin(userObj);
+          window.location.replace(`${dashUrl}?message=already_auth`);
+        } catch (e) {
+          window.location.replace(`/dashboard/jobseeker?message=already_auth`);
+        }
+        return true; // We are redirecting
+      }
+    }
+    return false;
+  });
+
   // Show redirect message or session expired as toast if present
   useState(() => {
     if (typeof window !== "undefined") {
       const isSessionExpired = searchParams?.get("session_expired");
-      
-      // Check if already authenticated (userData cookie exists)
-      const hasUserData = document.cookie.split(';').some((item) => item.trim().startsWith('userData='));
-
-
-      if (hasUserData && !isSessionExpired && !redirectMessage) {
-        setTimeout(() => {
-          toast.warning("You are already authenticated.", {
-            id: "already-auth-toast",
-            description: "Please logout first if you wish to login with another account.",
-            duration: 5000,
-          });
-        }, 200);
-      }
 
       if (isSessionExpired || redirectMessage) {
         setTimeout(() => {
@@ -85,7 +94,7 @@ function LoginContent() {
       } else {
         toast.success("Logged in!");
         const u = "user" in res ? (res as { user?: { user_type?: string } }).user : undefined;
-        
+
         // Priority: Check for explicit redirect parameter
         const redirectUrl = searchParams?.get("redirect");
         if (redirectUrl && redirectUrl.startsWith("/")) {
@@ -101,6 +110,14 @@ function LoginContent() {
       setAuthLoading(false);
     }
   };
+
+  if (isRedirecting) {
+    return (
+      <div className="flex flex-1 h-screen items-center justify-center bg-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 items-start md:items-center justify-center bg-white px-4 pt-8 pb-10 md:py-12">
@@ -146,100 +163,100 @@ function LoginContent() {
                 {brandSecondaryPart}<span className="text-primary">{brandPrimaryPart}</span>
               </span>
             </div>
-            
+
             <h1 className="font-display text-2xl font-bold text-foreground">Welcome back</h1>
           </div>
 
-            <>
-              <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/20 p-1">
-                <button
-                  type="button"
+          <>
+            <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/20 p-1">
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => setRole("job_seeker")}
+                className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                  }`}
+              >
+                <User className="h-3 w-3" /> Job Seeker
+              </button>
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => setRole("employer_recruiter")}
+                className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold transition-all ${role === "employer_recruiter" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                  }`}
+              >
+                <Building2 className="h-3 w-3" /> Employer
+              </button>
+            </div>
+
+            <form className="space-y-3 flex-1" onSubmit={handleLogin}>
+              <div>
+                <label htmlFor="login_email" className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-tight opacity-70">Email Address</label>
+                <input
+                  id="login_email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   suppressHydrationWarning
-                  onClick={() => setRole("job_seeker")}
-                  className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold transition-all ${role === "job_seeker" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  <User className="h-3 w-3" /> Job Seeker
-                </button>
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  onClick={() => setRole("employer_recruiter")}
-                  className={`flex items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold transition-all ${role === "employer_recruiter" ? "bg-white text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  <Building2 className="h-3 w-3" /> Employer
-                </button>
+                  placeholder="you@example.com"
+                  className="w-full rounded-xl border border-border bg-slate-50 px-4 py-1.5 text-sm text-foreground focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium"
+                />
               </div>
 
-              <form className="space-y-3 flex-1" onSubmit={handleLogin}>
-                <div>
-                  <label htmlFor="login_email" className="mb-1.5 block text-[11px] font-bold text-slate-700 uppercase tracking-tight opacity-70">Email Address</label>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="login_password" className="block text-[11px] font-bold text-slate-700 uppercase tracking-tight opacity-70">Password</label>
+                  <Link href="/auth/forget-password" className="px-0 text-[10px] text-primary font-bold hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
                   <input
-                    id="login_email"
-                    type="email"
+                    id="login_password"
+                    type={showPassword ? "text" : "password"}
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     suppressHydrationWarning
-                    placeholder="you@example.com"
-                    className="w-full rounded-xl border border-border bg-slate-50 px-4 py-1.5 text-sm text-foreground focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium"
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-border bg-slate-50 px-4 py-1.5 pr-10 text-sm text-foreground focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    suppressHydrationWarning
+                    className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
+              </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label htmlFor="login_password" className="block text-[11px] font-bold text-slate-700 uppercase tracking-tight opacity-70">Password</label>
-                    <Link href="/auth/forget-password" className="px-0 text-[10px] text-primary font-bold hover:underline">
-                      Forgot password?
-                    </Link>
+              <Button
+                type="submit"
+                variant="hero"
+                disabled={authLoading}
+                suppressHydrationWarning
+                className="w-full rounded-xl py-2.5 text-xs font-bold mt-2 h-auto"
+              >
+                {authLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Signing in...
                   </div>
-                  <div className="relative">
-                    <input
-                      id="login_password"
-                      type={showPassword ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      suppressHydrationWarning
-                      placeholder="••••••••"
-                      className="w-full rounded-xl border border-border bg-slate-50 px-4 py-1.5 pr-10 text-sm text-foreground focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all font-medium"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      suppressHydrationWarning
-                      className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
+                ) : (
+                  `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`
+                )}
+              </Button>
 
-                <Button
-                  type="submit"
-                  variant="hero"
-                  disabled={authLoading}
-                  suppressHydrationWarning
-                  className="w-full rounded-xl py-2.5 text-xs font-bold mt-2 h-auto"
-                >
-                  {authLoading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Signing in...
-                    </div>
-                  ) : (
-                    `Log In as ${role === "job_seeker" ? "Job Seeker" : "Employer"}`
-                  )}
-                </Button>
+              <p className="mt-4 text-center text-xs text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link href="/auth/register" className="font-semibold text-primary hover:underline">Create an account</Link>
+              </p>
+            </form>
+          </>
 
-                <p className="mt-4 text-center text-xs text-muted-foreground">
-                  Don&apos;t have an account?{" "}
-                  <Link href="/auth/register" className="font-semibold text-primary hover:underline">Create an account</Link>
-                </p>
-              </form>
-            </>
-          
         </div>
       </div>
     </div>

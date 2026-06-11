@@ -201,7 +201,7 @@ export default async function ResourceDetailPage({ params }: ResourcePageProps) 
           </main>
 
           <aside className="w-full lg:w-[320px] space-y-6">
-            <div className="sticky top-6 space-y-6">
+            <div className="sticky top-36 space-y-6 z-10">
               <div className="bg-white rounded-xl border border-slate-100 shadow-lg shadow-slate-200/30 p-5">
                 <h3 className="font-bold text-slate-900 mb-5 text-sm uppercase tracking-wider">Specifications</h3>
 

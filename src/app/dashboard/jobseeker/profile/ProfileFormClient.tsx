@@ -268,6 +268,7 @@ export default function ProfileFormClient({
     if (!val) return;
     if (!profileData.skills.includes(val)) {
       setProfileData(prev => ({ ...prev, skills: [...prev.skills, val] }));
+      if (errors.skills) setErrors(prev => { const newErrs = { ...prev }; delete newErrs.skills; return newErrs; });
     }
     setSkillInput("");
   };
@@ -559,6 +560,10 @@ export default function ProfileFormClient({
       newErrors.profile_photo = "Profile picture is mandatory. Please upload a photo.";
     }
 
+    if (!profileData.skills || profileData.skills.length === 0) {
+      newErrors.skills = "At least one skill is required";
+    }
+
     setErrors(newErrors);
     const firstError = Object.values(newErrors)[0];
     if (firstError) {
@@ -733,27 +738,48 @@ export default function ProfileFormClient({
       <div className="h-20 bg-indigo-500 bg-linear-to-r from-indigo-500 to-blue-400" />
       <div className="px-4 sm:px-5 pb-4 sm:pb-5 relative">
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 -mt-10 mb-4">
-          <div
-            className={`w-20 h-20 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative ${isEdit ? 'cursor-pointer group' : ''}`}
-            onClick={() => isEdit && document.getElementById("photo-upload")?.click()}
-          >
-            {photoPreview || profileData.profile_photo ? (
-              <img
-                src={photoPreview || getFullImageUrl(profileData.profile_photo)!}
-                alt=""
-                className="w-full h-full object-cover rounded-xl"
-                onError={() => toast.error("Profile photo failed to load", { duration: 3000 })}
-              />
-            ) : (
-              <div className="w-full h-full bg-slate-50 flex items-center justify-center text-xl font-bold text-indigo-900">
-                {profileData.name?.[0]}
-              </div>
-            )}
-            {isEdit && (
+          <div className="relative">
+            <div
+              className={`w-20 h-20 rounded-2xl bg-white p-1 shadow-md border border-slate-50 overflow-hidden shrink-0 relative cursor-pointer group`}
+              onClick={() => {
+                if (isEdit) {
+                  document.getElementById("photo-upload")?.click();
+                } else {
+                  setMode("edit");
+                  setTimeout(() => document.getElementById("photo-upload")?.click(), 100);
+                }
+              }}
+            >
+              {photoPreview || profileData.profile_photo ? (
+                <img
+                  src={photoPreview || getFullImageUrl(profileData.profile_photo)!}
+                  alt=""
+                  className="w-full h-full object-cover rounded-xl"
+                  onError={() => toast.error("Profile photo failed to load", { duration: 3000 })}
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-50 flex items-center justify-center text-xl font-bold text-indigo-900 rounded-xl">
+                  {profileData.name?.[0]}
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Camera className="w-5 h-5 text-white" />
               </div>
-            )}
+            </div>
+            <div 
+              className="absolute -bottom-1 -right-1 bg-indigo-500 text-white p-1.5 rounded-full shadow-md cursor-pointer hover:bg-indigo-600 transition-colors border-2 border-white"
+              onClick={() => {
+                if (isEdit) {
+                  document.getElementById("photo-upload")?.click();
+                } else {
+                  setMode("edit");
+                  setTimeout(() => document.getElementById("photo-upload")?.click(), 100);
+                }
+              }}
+              title="Edit Profile Photo"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </div>
           </div>
           <div className="min-w-0 pt-1 w-full">
             <h2 className="text-xl font-bold text-black tracking-tight">{profileData.name || "Name not set"}</h2>
@@ -914,7 +940,7 @@ export default function ProfileFormClient({
           </h3>
           <div className="flex flex-wrap gap-2.5">
             {(profileData.skills || []).map((item: any, i: number) => (
-              <span key={i} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-[11px] uppercase tracking-wider border border-indigo-100 shadow-sm transition-all hover:scale-105 hover:bg-indigo-100 cursor-default">
+              <span key={i} className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md font-bold text-[11px] uppercase tracking-wider border border-blue-200 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 cursor-default flex items-center">
                 {typeof item === 'string' ? item : item.name}
               </span>
             ))}
@@ -1390,8 +1416,8 @@ export default function ProfileFormClient({
             </div>
             <div className="space-y-8 pt-1">
               <div className="space-y-4 relative">
-                <h3 className="text-[13px] font-bold text-slate-700 flex items-center gap-2">
-                  <Award className="w-3.5 h-3.5 text-slate-400" /> Skills
+                <h3 className={cn("text-[13px] font-bold flex items-center gap-2 transition-colors", errors.skills ? "text-red-500" : "text-slate-700")}>
+                  <Award className={cn("w-3.5 h-3.5", errors.skills ? "text-red-400" : "text-slate-400")} /> Skills <span className="text-red-500">*</span>
                 </h3>
                 <div className="flex items-center gap-2">
                   <Input
@@ -1405,10 +1431,15 @@ export default function ProfileFormClient({
                       if (skillInput.length > 0) fetchSkills(skillInput);
                     }}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomSkill())}
-                    className="h-10 rounded-xl bg-white border border-slate-200 px-5 text-[13px]"
+                    className={cn("h-10 rounded-xl bg-white border px-5 text-[13px] transition-all", errors.skills ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")}
                   />
                   <Button type="button" onClick={handleAddCustomSkill} className="h-10 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-[12px]">Add</Button>
                 </div>
+                {errors.skills && (
+                  <p className="flex items-center gap-1 text-[10px] font-bold text-red-500 mt-1 px-1">
+                    <AlertCircle size={10} /> {errors.skills}
+                  </p>
+                )}
                 {skillInput.length > 0 && (
                   <ul className="absolute z-50 w-full bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto custom-scrollbar">
                     {availableSkills
@@ -1434,6 +1465,7 @@ export default function ProfileFormClient({
                           onClick={() => {
                             setProfileData(prev => ({ ...prev, skills: [...prev.skills, skill.name] }));
                             setSkillInput("");
+                            if (errors.skills) setErrors(prev => { const newErrs = { ...prev }; delete newErrs.skills; return newErrs; });
                           }}
                         >
                           <div className="flex items-center gap-3">
@@ -1454,11 +1486,11 @@ export default function ProfileFormClient({
                     )}
                   </ul>
                 )}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5 pt-1">
                   {profileData.skills.map((s: any, idx: number) => (
-                    <span key={idx} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-50 text-black/80 font-semibold text-[11px] rounded-lg border border-slate-100">
+                    <span key={idx} className="flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 bg-blue-50 text-blue-700 font-bold text-[11px] tracking-wide rounded-md border border-blue-200 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
                       {typeof s === 'string' ? s : s.name}
-                      <button type="button" onClick={() => setProfileData(p => ({ ...p, skills: p.skills.filter((_: any, i: number) => i !== idx) }))} className="p-0.5 text-black/20 hover:text-red-500"><X className="w-3 h-3" /></button>
+                      <button type="button" onClick={() => setProfileData(p => ({ ...p, skills: p.skills.filter((_: any, i: number) => i !== idx) }))} className="p-1 ml-0.5 rounded-md text-blue-500 hover:text-white hover:bg-red-500 transition-colors bg-white/60 shadow-xs"><X className="w-3 h-3" /></button>
                     </span>
                   ))}
                 </div>

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { toast } from "sonner";
 import { DashboardSidebar } from "./Sidebar";
 import { DashboardHeader } from "./Header";
 import { normalizeMediaUrl } from "@/services/api/client";
@@ -19,6 +21,26 @@ export function DashboardShell({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const layoutCtx = useLayoutData();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (searchParams?.get("message") === "already_auth") {
+      setTimeout(() => {
+        toast.warning("You are already authenticated.", {
+          id: "already-auth-toast",
+          description: "Please logout first if you wish to login with another account.",
+          duration: 5000,
+        });
+      }, 100);
+      
+      // Clean URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("message");
+      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`);
+    }
+  }, [searchParams, pathname, router]);
 
   // Branding logic shared across header and sidebar
   const navData = layoutData?.navigation ?? layoutCtx?.navigationData;

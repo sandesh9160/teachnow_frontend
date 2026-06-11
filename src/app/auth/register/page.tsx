@@ -306,7 +306,7 @@ export default function RegisterPage() {
               {role === "employer" ? (
                 <div className="space-y-1">
                   <label htmlFor="company_name_reg" className="block text-sm font-medium text-foreground">
-                    Company Name <span className="text-red-500">*</span>
+                    Institute Name <span className="text-red-500">*</span>
                   </label>
                   <input 
                     id="company_name_reg" 
