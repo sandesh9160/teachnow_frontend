@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/services/api/client";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
+import { EmailSignInAction } from "@/lib/sign-in";
+import { dashboardUrlAfterLogin, getEmployerRedirectUrl } from "@/lib/postLoginRedirect";
 import { useBranding } from "@/hooks/useBranding";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -138,8 +140,24 @@ export default function RegisterPage() {
         method: "POST",
         body: payload,
       });
-      toast.success("Account created!");
-      router.push("/auth/login");
+      toast.success("Account created! Logging you in...");
+      
+      const loginRes = await EmailSignInAction({ 
+        email: data.email, 
+        password: data.password, 
+        role: data.role as "job_seeker" | "employer" | "recruiter" 
+      });
+      if (!loginRes.status) {
+        router.push("/auth/login");
+      } else {
+        const u = "user" in loginRes ? (loginRes as { user?: { user_type?: string } }).user : undefined;
+        const t = String(u?.user_type ?? "").toLowerCase();
+        if (t.includes("employer") || t.includes("institution") || t.includes("school")) {
+          window.location.href = await getEmployerRedirectUrl();
+        } else {
+          window.location.href = dashboardUrlAfterLogin(u);
+        }
+      }
     } catch (err: any) {
       toast.error(err?.message || "Registration failed");
     } finally {

@@ -31,13 +31,18 @@ interface PricingClientProps {
 
 export default function PricingClient({ initialPlans }: PricingClientProps) {
   const [activePlanId, setActivePlanId] = useState<number | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const router = useRouter();
   const { isLoggedIn, role, user } = useClientSession();
 
   const { isProcessing, purchasePlan } = useRazorpay({
     onSuccess: () => {
       setActivePlanId(null);
-      router.push("/dashboard/employer/purchase-history");
+      setIsRedirecting(true);
+      document.cookie = "show_welcome_toast=1; path=/; max-age=60";
+      setTimeout(() => {
+        router.push("/dashboard/employer?welcome=1");
+      }, 3000);
     },
     onFailure: () => {
       setActivePlanId(null);
@@ -80,7 +85,11 @@ export default function PricingClient({ initialPlans }: PricingClientProps) {
         });
         const data = await res.json();
         if (data.status) {
-          router.push("/dashboard/employer/purchase-history");
+          setIsRedirecting(true);
+          document.cookie = "show_welcome_toast=1; path=/; max-age=60";
+          setTimeout(() => {
+            router.push("/dashboard/employer?welcome=1");
+          }, 2000);
         }
       } catch {
         // Fallback
@@ -199,6 +208,25 @@ export default function PricingClient({ initialPlans }: PricingClientProps) {
           </div>
         );
       })}
+
+      {/* Redirecting Modal */}
+      {isRedirecting && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-2">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900">Thank You!</h3>
+            <p className="text-sm text-slate-500 font-medium">
+              Your subscription plan has been purchased successfully. You can now start posting jobs and hiring candidates.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-indigo-600 font-semibold pt-4">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Redirecting to Dashboard...
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

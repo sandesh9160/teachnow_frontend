@@ -64,10 +64,10 @@ export default function TestimonialsPage() {
       setSaving(true);
       if (editingId) {
         await updateTestimonial(editingId, formData);
-        toast.success("Success: Feedback updated!");
+        toast.success("Thank you for your valuable feedback and continued support!");
       } else {
         await createTestimonial(formData);
-        toast.success("Success: Feedback added to profile!");
+        toast.success("Thank you for your valuable feedback and continued support!");
       }
       setFormData({ 
         name: user?.name || "", 

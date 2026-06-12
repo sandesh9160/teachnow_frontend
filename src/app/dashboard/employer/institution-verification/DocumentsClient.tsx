@@ -43,6 +43,7 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
    const [previewData, setPreviewData] = useState<{ url: string; original: string; name: string; isPending?: boolean } | null>(null);
    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
    const [pendingFile, setPendingFile] = useState<File | null>(null);
+   const [isRedirecting, setIsRedirecting] = useState(false);
 
    const fetchDocuments = useCallback(async () => {
       try {
@@ -149,12 +150,16 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
          });
 
          if (res?.status) {
-            toast.success("Document uploaded!");
+            setIsRedirecting(true);
             setShowUploadForm(false);
             setSelectedDocType("");
             setPendingFile(null);
             setPreviewData(null);
-            void fetchDocuments();
+            
+            // Redirect to Billing Section
+            setTimeout(() => {
+               window.location.href = "/dashboard/employer/purchase-history";
+            }, 3000);
          } else {
             toast.error(res?.message || "Upload failed.");
          }
@@ -465,8 +470,8 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
 
          <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-               <h2 className="text-[13px] font-bold text-[#1E1B4B] uppercase tracking-wider">Secure Vault</h2>
-               <span className="text-[10px] font-bold text-slate-300">{documents.length} Records</span>
+               <h2 className="text-[13px] font-bold text-[#1E1B4B] uppercase tracking-wider">Your Documents</h2>
+               <span className="text-[10px] font-bold text-slate-400">{documents.length} Records</span>
             </div>
             
             <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
@@ -517,16 +522,35 @@ export default function DocumentsClient({ isVerified = false }: { isVerified?: b
                ) : (
                   <div className="py-24 text-center flex flex-col items-center justify-center">
                      <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
-                        <PlusCircle className="w-8 h-8 text-slate-200" />
+                        <PlusCircle className="w-8 h-8 text-slate-300" />
                      </div>
-                     <h3 className="text-sm font-bold text--400 uppercase tracking-widest">Vault Empty</h3>
-                     <p className="text-[11px] text-slate-300 mt-1">Upload institutional documents to start.</p>
+                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">No Documents Yet</h3>
+                     <p className="text-[11px] text-slate-400 mt-1">Please upload your first document to begin the verification process.</p>
                   </div>
                )}
             </div>
          </div>
 
          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept=".svg,.jpg,.jpeg,.png,.webp,.pdf" disabled={uploading} />
+         
+         {/* Redirecting Modal */}
+         {isRedirecting && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+               <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-300">
+               <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-2">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+               </div>
+               <h3 className="text-xl font-bold text-slate-900">Success!</h3>
+               <p className="text-sm text-slate-500 font-medium">
+                  Document uploaded successfully. Redirecting to Billing Section...
+               </p>
+               <div className="flex items-center justify-center gap-2 text-sm text-indigo-600 font-semibold pt-4">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Redirecting...
+               </div>
+               </div>
+            </div>
+         )}
       </div>
    );
 }

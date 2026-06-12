@@ -47,16 +47,30 @@ type TabType = "identity" | "contact" | "location";
 
 export default function CompanyProfileClient({
   initialData,
+  isProfileComplete = true,
 }: {
   initialData: EmployerProfile | null;
+  isProfileComplete?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<EmployerProfile | null>(initialData);
+  const [profile, setProfile] = useState<EmployerProfile>(initialData || ({} as EmployerProfile));
   const [activeTab, setActiveTab] = useState<TabType>("identity");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const isProfileLocallyComplete = Boolean(
+    isProfileComplete ||
+    (initialData?.company_name && initialData?.address && initialData?.industry && initialData?.email && initialData?.phone && initialData?.city && initialData?.country && initialData?.institution_type && initialData?.latitude && initialData?.longitude && initialData?.latitude !== "0" && initialData?.longitude !== "0")
+  );
+
+  const [isEditing, setIsEditing] = useState(!isProfileLocallyComplete);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [limitReachedField, setLimitReachedField] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Auto-fetch location when switching to location tab if coordinates are missing
   useEffect(() => {
@@ -77,6 +91,7 @@ export default function CompanyProfileClient({
       { key: "institution_type", label: "Institution Type", tab: "identity" as TabType },
       { key: "company_description", label: "Detailed introduction", tab: "identity" as TabType },
       { key: "email", label: "Official Email", tab: "contact" as TabType },
+      { key: "phone", label: "Contact Phone", tab: "contact" as TabType },
       { key: "address", label: "Physical Address", tab: "location" as TabType },
       { key: "city", label: "City", tab: "location" as TabType },
       { key: "country", label: "Country", tab: "location" as TabType },
@@ -228,7 +243,7 @@ export default function CompanyProfileClient({
     );
   };
 
-  const getLogoUrl = (path: string | null) => {
+  const getLogoUrl = (path?: string | null) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
     const baseUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
@@ -342,8 +357,18 @@ export default function CompanyProfileClient({
         setLogoFile(null);
         setLogoPreview(null);
         setErrors({});
-        setIsEditing(false);
-        router.refresh();
+
+        const finalProfileComplete = result.data?.is_profile_verified === 1 || isProfileComplete;
+
+        if (!finalProfileComplete) {
+           setIsRedirecting(true);
+           setTimeout(() => {
+              router.push("/dashboard/employer/institution-verification");
+           }, 3000);
+        } else {
+           setIsEditing(false);
+           router.refresh();
+        }
       } else {
         toast.warning(result.message || "Something went wrong during update.", {
           style: {
@@ -362,11 +387,19 @@ export default function CompanyProfileClient({
     }
   };
 
-  if (!profile) {
+  if (!mounted || loading || isRedirecting) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
         <p className="text-xs text-slate-600 font-medium capitalize">Loading profile data...</p>
+      </div>
+    );
+  }
+
+  if (!initialData && Object.keys(profile).length === 0 && !isEditing) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <p className="text-xs text-slate-600 font-medium capitalize">Profile data not available.</p>
       </div>
     );
   }
@@ -571,7 +604,7 @@ export default function CompanyProfileClient({
                     {errors.institution_type && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.institution_type}</p>}
                   </div>
                   <div className="space-y-2.0 sm:col-span-2">
-                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_description ? "text-red-500" : "text-slate-500")}>
+                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", (errors.company_description || limitReachedField === "company_description") ? "text-red-500" : "text-slate-500")}>
                       Detailed introduction <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <textarea
@@ -579,10 +612,35 @@ export default function CompanyProfileClient({
                       rows={4}
                       placeholder="Describe your institution..."
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => {
+                        let val = e.target.value;
+                        if (val.length > 1000) {
+                          setLimitReachedField("company_description");
+                          toast.error("Character limit reached for Detailed Introduction", { id: "limit-toast" });
+                          setErrors(prev => ({ ...prev, company_description: "Maximum 1000 characters allowed" }));
+                          setDescription(val.slice(0, 1000));
+                          setTimeout(() => {
+                            setLimitReachedField(null);
+                            setErrors(prev => {
+                              const n = { ...prev };
+                              if (n.company_description === "Maximum 1000 characters allowed") delete n.company_description;
+                              return n;
+                            });
+                          }, 2000);
+                        } else {
+                          setDescription(val);
+                          if (errors.company_description === "Maximum 1000 characters allowed") {
+                            setErrors(prev => {
+                              const n = { ...prev };
+                              delete n.company_description;
+                              return n;
+                            });
+                          }
+                        }
+                      }}
                       className={cn(
                         "w-full text-[13px] font-semibold p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black min-h-[120px] scrollbar-thin shadow-xs-soft",
-                        errors.company_description && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
+                        (errors.company_description || limitReachedField === "company_description") && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                       )}
                     />
                     <div className="flex items-center justify-between mt-1 px-1">
@@ -630,6 +688,27 @@ export default function CompanyProfileClient({
                         )}
                       />
                       {errors.email && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.email}</p>}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.phone ? "text-red-500" : "text-slate-500")}>
+                      Contact Phone <span className="text-red-500 ml-0.5">*</span>
+                    </Label>
+                    <div className="relative group">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400">
+                        <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.864-1.051l-3.215-.532c-.504-.084-.966.21-1.15.688l-.8 2.083a15.05 15.05 0 0 1-6.5-6.5l2.083-.8c.478-.184.772-.646.688-1.15l-.532-3.215C10.137 2.6 9.687 2.25 9.172 2.25H7.75A2.25 2.25 0 0 0 5.5 4.5v1.25" />
+                        </svg>
+                      </div>
+                      <Input
+                        name="phone"
+                        defaultValue={profile.phone || ""}
+                        className={cn(
+                          "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
+                          errors.phone && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
+                        )}
+                      />
+                      {errors.phone && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.phone}</p>}
                     </div>
                   </div>
                 </div>
@@ -768,6 +847,25 @@ export default function CompanyProfileClient({
             </form>
           </div>
         </div>
+        
+        {/* Redirecting Modal */}
+        {isRedirecting && (
+           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+              <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-300">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-2">
+                 <BadgeCheck className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Success!</h3>
+              <p className="text-sm text-slate-500 font-medium">
+                 Thanks for completing your profile! Now redirecting to Documents Verification Page...
+              </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-indigo-600 font-semibold pt-4">
+                 <Loader2 className="w-4 h-4 animate-spin" />
+                 Redirecting...
+              </div>
+              </div>
+           </div>
+        )}
       </div>
     );
   }
@@ -794,7 +892,6 @@ export default function CompanyProfileClient({
       <div className="relative bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group">
         {/* Banner with Gradient Background */}
         <div className="h-32 sm:h-36 w-full bg-gradient-to-r from-indigo-600 via-[#312E81] to-indigo-800 relative">
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
           <div className="absolute top-3 right-3 flex items-center gap-2">
             {profile.is_profile_verified === 1 && (
               <div className="bg-white/95 backdrop-blur-md border border-white text-emerald-600 px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 shadow-lg">
@@ -897,7 +994,7 @@ export default function CompanyProfileClient({
               </div>
               <h3 className="text-base font-semibold text-black tracking-tight">About Institution</h3>
             </div>
-            <p className="text-[13px] font-medium text-slate-600 leading-relaxed text-justify">
+            <p className="text-[13px] font-medium text-slate-600 leading-relaxed text-justify whitespace-pre-wrap break-words">
               {profile.company_description || "No description provided for this institution."}
             </p>
           </div>
@@ -946,7 +1043,7 @@ export default function CompanyProfileClient({
             <div className="space-y-4">
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-semibold text-slate-500 capitalize px-1">Registered Address</span>
-                <p className="text-[13px] font-semibold text-slate-800 leading-relaxed px-1">
+                <p className="text-[13px] font-semibold text-slate-800 leading-relaxed px-1 break-words whitespace-pre-wrap">
                   {[profile.address, profile.city, profile.country].filter(Boolean).join(", ") || "Location details not specified"}
                 </p>
               </div>

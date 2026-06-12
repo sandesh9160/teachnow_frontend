@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, User, Building2 } from "lucide-react";
 import Link from "next/link";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
+import { EmailSignInAction } from "@/lib/sign-in";
+import { dashboardUrlAfterLogin, getEmployerRedirectUrl } from "@/lib/postLoginRedirect";
 
 
 const RegisterForm = () => {
@@ -64,8 +66,20 @@ const RegisterForm = () => {
       });
 
       if (res.status || res.success) {
-        toast.success("Account created successfully!");
-        router.push("/auth/login?message=Registration successful. Please login to continue.");
+        toast.success("Account created successfully! Logging you in...");
+        
+        const loginRes = await EmailSignInAction({ email, password });
+        if (!loginRes.status) {
+          router.push("/auth/login?message=Registration successful. Please login to continue.");
+        } else {
+          const u = "user" in loginRes ? (loginRes as { user?: { user_type?: string } }).user : undefined;
+          const t = String(u?.user_type ?? "").toLowerCase();
+          if (t.includes("employer") || t.includes("institution") || t.includes("school")) {
+            window.location.href = await getEmployerRedirectUrl();
+          } else {
+            window.location.href = dashboardUrlAfterLogin(u);
+          }
+        }
       }
     } catch (err: any) {
       toast.error(err?.message || "Registration failed");

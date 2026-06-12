@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { User, Building2, Eye, EyeOff } from "lucide-react";
 import { useBranding } from "@/hooks/useBranding";
 import { EmailSignInAction } from "@/lib/sign-in";
-import { dashboardUrlAfterLogin } from "@/lib/postLoginRedirect";
+import { dashboardUrlAfterLogin, getEmployerRedirectUrl } from "@/lib/postLoginRedirect";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui/Buttons/Buttons";
 
@@ -101,6 +101,11 @@ function LoginContent() {
           // Strip any trailing # fragment that may have been appended
           window.location.href = redirectUrl.split("#")[0];
         } else {
+          const t = String(u?.user_type ?? "").toLowerCase();
+          if (t.includes("employer") || t.includes("institution") || t.includes("school")) {
+            window.location.href = await getEmployerRedirectUrl();
+            return;
+          }
           window.location.href = dashboardUrlAfterLogin(u);
         }
       }

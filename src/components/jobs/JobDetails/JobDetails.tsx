@@ -206,13 +206,12 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
           src={bannerImg}
           alt="Job Banner"
           fill
-          className="w-full h-full object-cover brightness-95"
+          className="w-full h-full object-cover"
           priority
           fetchPriority="high"
           sizes="100vw"
           onError={(e) => { (e.target as any).src = "https://images.unsplash.com/photo-1541339907198-e08756ebafe1?q=80&w=2070&auto=format&fit=crop"; }}
         />
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-white/60" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 -mt-12 sm:-mt-24 md:-mt-32 pb-16 sm:px-6 lg:px-8 overflow-x-hidden">

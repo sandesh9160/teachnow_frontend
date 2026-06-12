@@ -57,6 +57,8 @@ export default function RecruiterCompanyProfileClient({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [limitReachedField, setLimitReachedField] = useState<string | null>(null);
+
 
   const validateForm = (formData: FormData) => {
     const newErrors: Record<string, string> = {};
@@ -88,6 +90,12 @@ export default function RecruiterCompanyProfileClient({
         newErrors[field.key] = `${field.label} must be at least 50 characters`;
       } else if (field.key === "email" && !/\S+@\S+\.\S+/.test(stringValue)) {
         newErrors[field.key] = "Please enter a valid email address";
+      } else if (field.key === "phone") {
+        if (stringValue.length !== 10) {
+          newErrors[field.key] = "Phone number must be exactly 10 digits";
+        } else if (!/^[6-9]\d{9}$/.test(stringValue)) {
+          newErrors[field.key] = "Please enter a valid Indian mobile number";
+        }
       }
     });
 
@@ -391,7 +399,7 @@ export default function RecruiterCompanyProfileClient({
                     </div>
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", errors.company_description ? "text-red-500" : "text-slate-500")}>
+                    <Label className={cn("text-[10px] font-bold px-1 capitalize transition-colors", (errors.company_description || limitReachedField === "company_description") ? "text-red-500" : "text-slate-500")}>
                       Detailed introduction <span className="text-red-500 ml-0.5">*</span>
                     </Label>
                     <textarea
@@ -399,11 +407,43 @@ export default function RecruiterCompanyProfileClient({
                       rows={4}
                       placeholder="Describe the institution..."
                       defaultValue={profile.company_description || ""}
+                      onInput={(e) => {
+                        let val = e.currentTarget.value;
+                        if (val.length > 1000) {
+                          setLimitReachedField("company_description");
+                          toast.error("Character limit reached for Detailed Introduction", { id: "limit-toast" });
+                          setErrors(prev => ({ ...prev, company_description: "Maximum 1000 characters allowed" }));
+                          e.currentTarget.value = val.slice(0, 1000);
+                          setTimeout(() => {
+                            setLimitReachedField(null);
+                            setErrors(prev => {
+                              const n = { ...prev };
+                              if (n.company_description === "Maximum 1000 characters allowed") delete n.company_description;
+                              return n;
+                            });
+                          }, 2000);
+                        } else {
+                          if (errors.company_description === "Maximum 1000 characters allowed") {
+                            setErrors(prev => {
+                              const n = { ...prev };
+                              delete n.company_description;
+                              return n;
+                            });
+                          }
+                        }
+                      }}
                       className={cn(
                         "w-full text-[13px] font-semibold p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all resize-none bg-white text-black min-h-[120px] scrollbar-thin shadow-xs-soft",
-                        errors.company_description && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
+                        (errors.company_description || limitReachedField === "company_description") && "border-red-500 bg-red-50/50 focus:border-red-600 ring-2 ring-red-500/20 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]"
                       )}
                     />
+                    <div className="flex items-center justify-between mt-1 px-1">
+                      {errors.company_description ? (
+                        <p className="text-[10px] font-bold text-red-500">{errors.company_description}</p>
+                      ) : (
+                        <div />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -446,6 +486,13 @@ export default function RecruiterCompanyProfileClient({
                       <Input
                         name="phone"
                         defaultValue={profile.phone || ""}
+                        onChange={(e) => {
+                          let val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          if (val.length > 0 && !/^[6-9]/.test(val)) {
+                            val = "";
+                          }
+                          e.target.value = val;
+                        }}
                         className={cn(
                           "h-10 pl-9 rounded-xl text-[13px] font-semibold border-slate-200 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white text-black shadow-xs-soft",
                           errors.phone && "border-red-500 bg-red-50/50 focus:border-red-600 focus:ring-red-200 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]"
@@ -602,7 +649,6 @@ export default function RecruiterCompanyProfileClient({
       {/* Hero Banner Section */}
       <div className="relative bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden group">
         <div className="h-32 sm:h-40 w-full bg-gradient-to-r from-indigo-600 via-[#312E81] to-indigo-800 relative">
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "24px 24px" }} />
           <div className="absolute top-4 right-4 flex items-center gap-2">
             {profile.is_profile_verified === 1 && (
               <div className="bg-white/95 backdrop-blur-md border border-white text-emerald-600 px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 shadow-lg">

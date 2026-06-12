@@ -94,12 +94,14 @@ export const Footer = ({
     brandPrimaryPart = brandNameParts.length > 1 ? brandNameParts.at(-1) || "" : "";
   }
 
-  const gridSections = brandSection ? sections.filter((s) => s !== brandSection) : sections;
+  const allGridSections = brandSection ? sections.filter((s) => s !== brandSection) : sections;
+  const socialSection = allGridSections.find((s) => String(s?.title || "").toLowerCase().includes("social")) ?? null;
+  const dynamicSections = allGridSections.filter((s) => s !== socialSection);
 
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-[1440px] px-6 py-12 md:py-16 lg:px-12">
-        <div className="grid grid-cols-1 gap-y-10 gap-x-8 sm:grid-cols-4">
+        <div className={`grid grid-cols-1 gap-y-10 gap-x-8 ${dynamicSections.length < 2 ? "sm:grid-cols-3" : "sm:grid-cols-4"}`}>
           {/* Column 1 – Brand */}
           <div className="space-y-4">
             <Link href="/" className="mb-4 flex items-center gap-2">
@@ -120,13 +122,44 @@ export const Footer = ({
                 ) : null}
               </span>
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground max-w-[300px]">
               {brandDescription}
             </p>
+            {/* Social Media Links below brand */}
+            {socialSection && (
+              <div className="pt-2 flex flex-wrap gap-3">
+                {(Array.isArray(socialSection.links) ? socialSection.links : []).map((link) => {
+                  const href = toAbsoluteUrl(link.url);
+                  return (
+                    <a
+                      key={link.id || link.title}
+                      href={href}
+                      className="group relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-50 text-muted-foreground shadow-sm border border-slate-100 transition-all hover:shadow-md"
+                      target={href === "#" ? undefined : "_blank"}
+                      rel={href === "#" ? undefined : "noreferrer"}
+                      title={link.title}
+                    >
+                      {link.icon ? (
+                        <Image
+                          src={normalizeMediaUrl(link.icon)}
+                          alt={link.title || "social icon"}
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 object-contain transition-transform group-hover:scale-110"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium">{link.title?.[0]?.toUpperCase() || "?"}</span>
+                      )}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Columns 2 & 3 – Dynamic sections (Social Media, Top Cities, etc.) */}
-          {gridSections.map((section) => (
+          {/* Columns 2 & 3 – Dynamic sections (Top Cities, etc.) */}
+          {dynamicSections.map((section) => (
             <div key={section.title}>
               <h4 className="mb-4 text-sm font-semibold text-foreground">{section.title}</h4>
               <ul className="space-y-2.5">
@@ -207,16 +240,16 @@ export const Footer = ({
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
+        <div className="mt-12 flex flex-col items-center gap-4 border-t border-slate-200 pt-8 text-sm text-slate-500 sm:flex-row sm:justify-between">
           <span>© {new Date().getFullYear()} {companyName || "TeachNow"}.in — All rights reserved.</span>
-          <div className="flex gap-4">
-            <Link href="/privacy-policy" className="hover:text-primary transition-colors">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <Link href="/privacy-policy" className="hover:text-[#1e3a8a] transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms-and-conditions" className="hover:text-primary transition-colors">
+            <Link href="/terms-and-conditions" className="hover:text-[#1e3a8a] transition-colors">
               Terms of Service
             </Link>
-            <Link href="/contact-us" className="hover:text-primary transition-colors">
+            <Link href="/contact-us" className="hover:text-[#1e3a8a] transition-colors">
               Contact Us
             </Link>
           </div>

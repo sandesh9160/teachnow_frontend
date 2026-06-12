@@ -420,7 +420,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
     <div className="max-w-7xl mx-auto px-4 py-4 space-y-6 font-sans text-black pb-20" suppressHydrationWarning>
       
       {/* Header Pipeline */}
-      <div className="bg-white p-5 rounded-[20px] border border-slate-100 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all hover:border-indigo-100/10">
+      <div className="bg-white p-5 rounded-[20px] border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6 transition-all hover:border-indigo-100/10">
         <div className="space-y-3">
            <button 
              onClick={() => window.history.back()} 
@@ -453,7 +453,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
       {/* Pipeline Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((s, i) => (
-          <div key={i} className="bg-white p-4 rounded-[20px] border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:border-slate-200">
+          <div key={i} className="bg-white p-4 rounded-[20px] border border-slate-200 shadow-sm flex items-center gap-4 transition-all hover:border-slate-300">
             <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-current/10", s.bg, s.text)}>
               <s.icon className="w-5 h-5" />
             </div>
@@ -467,7 +467,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
 
       {/* Filter Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-[18px] border border-slate-100 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-[18px] border border-slate-200 overflow-x-auto no-scrollbar">
           {[
             { id: 'all', label: 'All', count: apps.length },
             { id: 'shortlisted', label: 'Shortlisted' },
@@ -498,13 +498,13 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search candidate name..." 
-            className="h-10 pl-10 bg-white border-slate-100 rounded-xl text-[12.5px] font-medium focus:ring-2 focus:ring-indigo-100 shadow-sm placeholder:text-black/30" 
+            className="h-10 pl-10 bg-white border-slate-200 rounded-xl text-[12.5px] font-medium focus:ring-2 focus:ring-indigo-100 shadow-sm placeholder:text-black/30" 
           />
         </div>
       </div>
 
       {/* Advanced Filters Bar */}
-      <div className="bg-white p-4 rounded-[20px] border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-3">
+      <div className="bg-white p-4 rounded-[20px] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-3">
          <div className="text-[10px] font-bold text-[#312E81] uppercase tracking-wider flex items-center gap-1.5 shrink-0 select-none">
             <span className="w-1.5 h-1.5 rounded-full bg-[#312E81] animate-pulse" />
             Filters
@@ -573,11 +573,11 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
       <div className="space-y-4">
         {filteredApps.length > 0 ? (
           filteredApps.map((app) => (
-            <div key={app.id} className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden p-5 group transition-all hover:border-indigo-100/30">
+            <div key={app.id} className="bg-white rounded-[20px] border border-slate-200 shadow-sm overflow-hidden p-5 group transition-all hover:border-indigo-100/30">
                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                  
                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="relative w-12 h-12 rounded-xl border border-slate-100 bg-slate-50 overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                    <div className="relative w-12 h-12 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform">
                       {app.job_seeker?.profile_photo ? (
                         <img 
                           src={getFullUrl(app.job_seeker.profile_photo)} 
@@ -616,7 +616,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                  </div>
 
                   {/* Card Actions — Download + View Detail */}
-                   <div className="flex items-center gap-2 shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-4">
+                   <div className="flex items-center gap-2 shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-200 lg:pl-4">
                       <Button
                          variant="outline"
                          className="flex-1 lg:flex-none h-8 px-4 rounded-lg text-[10px] font-normal text-blue-700 bg-blue-50 border-blue-300 hover:bg-blue-100 flex items-center justify-center gap-2 tracking-tight disabled:opacity-50 transition-colors shadow-xs"
@@ -912,7 +912,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
                                  <div key={idx} className="p-4 rounded-xl border border-slate-300 bg-white shadow-sm flex flex-col gap-3.5 hover:border-slate-400 transition-colors">
                                     <p className="text-[11.5px] font-normal text-slate-900 tracking-tight leading-snug">{String(questionText)}</p>
                                     
-                                    <div className="space-y-3 pt-2.5 border-t border-slate-100">
+                                    <div className="space-y-3 pt-2.5 border-t border-slate-200">
                                        <div className="space-y-1">
                                           <span className="text-[10px] font-normal text-slate-500">Ideal Answer</span>
                                           <div className="p-2.5 rounded-lg bg-[#312E81]/5 border border-[#312E81]/10 text-[10px] font-normal text-slate-900 leading-relaxed">
@@ -1098,7 +1098,7 @@ export default function RecruiterApplicantsClient({ initialData }: RecruiterAppl
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed inset-2 md:inset-6 bg-white rounded-3xl shadow-2xl z-[70] overflow-hidden flex flex-col border border-white/10"
             >
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-inner">
                        <FileText className="w-5 h-5" />

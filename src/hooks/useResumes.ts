@@ -31,8 +31,11 @@ export function useResumes(options?: UseResumesOptions) {
     const list = Array.isArray(res?.data) ? (res.data as Resume[]) : [];
     
     // Sort generated resumes by created_at descending
-    const generated = Array.isArray(res?.generated_resumes) 
-      ? [...res.generated_resumes].sort((a, b) => {
+    const rawGenerated = res?.generated_resumes || res?.data?.generated_resumes || res?.cv_generations || res?.data?.cv_generations || res?.cvs || res?.data?.cvs;
+    const generatedArray = Array.isArray(rawGenerated) ? rawGenerated : (rawGenerated ? Object.values(rawGenerated) : []);
+    
+    const generated = generatedArray.length > 0 
+      ? [...generatedArray].sort((a: any, b: any) => {
           const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
           const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
           const validA = isNaN(dateA) ? 0 : dateA;

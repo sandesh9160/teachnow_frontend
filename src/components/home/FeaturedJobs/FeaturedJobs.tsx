@@ -52,9 +52,9 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
 
   return (
     <section className="pt-12 pb-20 bg-white overflow-hidden relative">
-      <div className="max-w-none w-full">
+      <div className="max-w-none w-full px-4 md:px-12">
         {/* Header - Center Title with Right-aligned "View All" */}
-        <div className="relative mb-10 px-4 md:px-12">
+        <div className="relative mb-10">
           <div className="text-center mb-14 px-4">
             <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
               Featured Jobs
@@ -63,7 +63,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
               Hand-picked opportunities from top institutions
             </p>
           </div>
-          <div className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 hidden md:block z-10">
+          <div className="absolute right-0 md:right-0 top-1/2 -translate-y-1/2 hidden md:block z-10">
             <Link
               href="/jobs"
               className="group flex items-center gap-2 text-blue-600 font-semibold"
@@ -95,7 +95,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
                     setTimeout(checkScroll, 500);
                   }}
                   aria-label="Scroll jobs left"
-                  className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                  className="absolute -left-4 md:-left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
                 >
                   <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
                 </button>
@@ -110,7 +110,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
                     setTimeout(checkScroll, 500);
                   }}
                   aria-label="Scroll jobs right"
-                  className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                  className="absolute -right-4 md:-right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
                 >
                   <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
                 </button>
@@ -118,7 +118,7 @@ export const FeaturedJobs = ({ jobs }: FeaturedJobsProps) => {
 
               <div
                 ref={jobsRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-[calc(50%-150px)] md:px-12 snap-x snap-mandatory"
+                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-10 pt-2 px-[calc(50%-150px)] md:px-0 snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {/* Start Spacer */}

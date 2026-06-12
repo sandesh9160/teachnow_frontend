@@ -31,7 +31,7 @@ export const CaptchaField = forwardRef<ReCAPTCHA, CaptchaFieldProps>(
 
     return (
       <div className={`space-y-2 ${className}`}>
-        <div className={`relative flex flex-col items-center gap-2 overflow-hidden rounded-xl border transition-all p-3 ${isVerified ? "border-green-200 bg-green-50/50" : "border-border bg-muted/3 hover:bg-muted/5"
+        <div className={`relative flex flex-col items-center gap-1 overflow-hidden rounded-xl border transition-all p-2 ${isVerified ? "border-green-200 bg-green-50/50" : "border-border bg-muted/3 hover:bg-muted/5"
           }`}>
           <div className="w-full text-center">
             {isVerified ? (

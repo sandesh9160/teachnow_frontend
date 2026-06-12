@@ -104,7 +104,7 @@ export default function ProfileFormClient({
   const [saving, setSaving] = useState(false);
   const [isNew] = useState(isNewProfile);
 
-  const [showEduForm, setShowEduForm] = useState(false);
+  const [showEduForm, setShowEduForm] = useState(true);
   const [editingEduId, setEditingEduId] = useState<number | string | null>(null);
 
   const [showExpForm, setShowExpForm] = useState(false);
@@ -263,12 +263,26 @@ export default function ProfileFormClient({
     return `${baseUrl}/${path.startsWith('/') ? path.slice(1) : path}`;
   };
 
-  const handleAddCustomSkill = () => {
+  const handleAddCustomSkill = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
     const val = skillInput.trim();
     if (!val) return;
-    if (!profileData.skills.includes(val)) {
-      setProfileData(prev => ({ ...prev, skills: [...prev.skills, val] }));
-      if (errors.skills) setErrors(prev => { const newErrs = { ...prev }; delete newErrs.skills; return newErrs; });
+    
+    setProfileData(prev => {
+      const currentSkills = Array.isArray(prev.skills) ? prev.skills : [];
+      const exists = currentSkills.some((s: any) => {
+        const sName = typeof s === 'string' ? s : (s.name || "");
+        return sName.toLowerCase() === val.toLowerCase();
+      });
+      
+      if (!exists) {
+        return { ...prev, skills: [...currentSkills, val] };
+      }
+      return prev;
+    });
+
+    if (errors.skills) {
+      setErrors(prev => { const newErrs = { ...prev }; delete newErrs.skills; return newErrs; });
     }
     setSkillInput("");
   };
@@ -500,6 +514,30 @@ export default function ProfileFormClient({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (e.target.name === "phone") {
+      let val = e.target.value.replace(/\D/g, '').slice(0, 10);
+      if (val.length > 0 && !/^[6-9]/.test(val)) {
+        val = "";
+      }
+      setProfileData({ ...profileData, phone: val });
+      return;
+    }
+    if (e.target.name === "title" || e.target.name === "name") {
+      let rawVal = e.target.value.replace(/[^a-zA-Z\s.\-]/g, '');
+      if (rawVal.length > 100) {
+        const fieldName = e.target.name === "name" ? "Full Name" : "Professional Title";
+        setErrors(prev => ({ ...prev, [e.target.name]: "Maximum 100 characters allowed" }));
+        toast.error(`Character limit reached for ${fieldName}`, { id: "limit-toast" });
+        setTimeout(() => {
+          setErrors(prev => { const n = { ...prev }; delete n[e.target.name]; return n; });
+        }, 2000);
+      } else {
+        setErrors(prev => { const n = { ...prev }; delete n[e.target.name]; return n; });
+      }
+      let val = rawVal.slice(0, 100);
+      setProfileData({ ...profileData, [e.target.name]: val });
+      return;
+    }
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
 
@@ -554,6 +592,14 @@ export default function ProfileFormClient({
 
     if (profileData.dob && isAfter(parseISO(profileData.dob), new Date())) {
       newErrors.dob = "Date of Birth cannot be in the future";
+    }
+
+    if (!profileData.notice_period || String(profileData.notice_period).trim() === "") {
+      newErrors.notice_period = "Notice Period is required";
+    }
+
+    if (!profileData.availability || String(profileData.availability).trim() === "") {
+      newErrors.availability = "Availability is required";
     }
 
     if (!photoFile && !profileData.profile_photo) {
@@ -1008,10 +1054,12 @@ export default function ProfileFormClient({
               <div className="space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.name ? "text-red-500" : "text-slate-700")}>Full Name <span className="text-red-500">*</span></Label>
                 <Input name="name" value={profileData.name} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.name ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
+                {errors.name && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.name}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.title ? "text-red-500" : "text-slate-700")}>Professional Title <span className="text-red-500">*</span></Label>
                 <Input name="title" value={profileData.title} onChange={handleChange} className={cn("h-10 rounded-lg text-[13px] transition-all", errors.title ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border-slate-200")} />
+                {errors.title && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.title}</p>}
               </div>
               <div className="space-y-1.5 relative">
                 <Label className={cn("text-[13px] font-semibold transition-colors", errors.location ? "text-red-500" : "text-slate-700")}>Location <span className="text-red-500">*</span></Label>
@@ -1115,8 +1163,8 @@ export default function ProfileFormClient({
             <h3 className="text-[13px] font-semibold text-slate-900 border-b border-slate-50 pb-2">Job Preferences</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Notice Period</Label>
-                <select name="notice_period" value={profileData.notice_period} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.notice_period ? "text-red-500" : "text-slate-700")}>Notice Period <span className="text-red-500">*</span></Label>
+                <select name="notice_period" value={profileData.notice_period} onChange={handleChange} className={cn("w-full h-10 rounded-lg px-3 text-[13px] outline-none transition-all", errors.notice_period ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border border-slate-200 bg-white")}>
                   <option value="">Select Notice Period</option>
                   <option value="Immediate">Immediate</option>
                   <option value="15">15 Days</option>
@@ -1125,13 +1173,16 @@ export default function ProfileFormClient({
                   <option value="60">60 Days</option>
                   <option value="90">90 Days</option>
                 </select>
+                {errors.notice_period && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.notice_period}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[13px] font-semibold text-slate-700">Availability</Label>
-                <select name="availability" value={profileData.availability} onChange={handleChange} className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-[13px] outline-none">
+                <Label className={cn("text-[13px] font-semibold transition-colors", errors.availability ? "text-red-500" : "text-slate-700")}>Availability <span className="text-red-500">*</span></Label>
+                <select name="availability" value={profileData.availability} onChange={handleChange} className={cn("w-full h-10 rounded-lg px-3 text-[13px] outline-none transition-all", errors.availability ? "border-red-500 bg-red-50/50 ring-2 ring-red-500/20 shadow-[0_0_0_1px_rgba(239,68,68,0.4)]" : "border border-slate-200 bg-white")}>
+                  <option value="">Select Availability</option>
                   <option value="open">Open</option>
                   <option value="not_looking">Not Looking</option>
                 </select>
+                {errors.availability && <p className="text-[10px] font-bold text-red-500 mt-1 px-1">{errors.availability}</p>}
               </div>
             </div>
           </section>

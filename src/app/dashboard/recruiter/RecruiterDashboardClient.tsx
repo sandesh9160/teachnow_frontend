@@ -146,7 +146,7 @@ export default function RecruiterDashboardClient({
 
          {/* Subscription & Credit Summary - Balanced Density */}
          {credits && (
-             <div className="bg-white rounded-[20px] p-4 border border-slate-100 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+             <div className="bg-white rounded-[20px] p-4 border border-slate-200 shadow-sm relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
                <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-50/50 rounded-full -mr-24 -mt-24 pointer-events-none transition-transform group-hover:scale-110 duration-1000" />
 
                <div className="relative z-10 flex gap-3 md:items-center shrink-0">
@@ -162,7 +162,7 @@ export default function RecruiterDashboardClient({
                   </div>
                </div>
 
-               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-3 lg:gap-6 lg:border-l lg:border-slate-100 lg:pl-6">
+               <div className="relative z-10 flex flex-1 flex-col md:flex-row items-stretch justify-center sm:justify-start gap-3 lg:gap-6 lg:border-l lg:border-slate-200 lg:pl-6">
                   {/* Allocation Info Box */}
                   <div className="flex-1 bg-slate-50/30 border border-slate-200 rounded-xl p-3 transition-all hover:bg-slate-50 group/active">
                      <div className="flex items-center gap-2 mb-2">
@@ -246,15 +246,15 @@ export default function RecruiterDashboardClient({
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* Recent Applicants */}
-            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm flex flex-col">
-               <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+            <div className="bg-white rounded-[20px] border border-slate-200 shadow-sm flex flex-col">
+               <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
                   <h2 className="text-[15px] font-medium text-black">Recent candidates</h2>
                   <Link href={`${basePath}/applicants`} className="text-[11px] font-medium text-indigo-600 hover:underline flex items-center gap-1">
                      View All <ChevronRight className="w-3 h-3" />
                   </Link>
                </div>
 
-               <div className="divide-y divide-slate-50">
+               <div className="divide-y divide-slate-200">
                   {dashboardData?.recent_applications && dashboardData.recent_applications.length > 0 ? (
                      dashboardData.recent_applications.slice(0, 5).map((app) => {
                         const targetLink = app.job?.id ? `${basePath}/jobs/view/${app.job.id}/applicants` : `${basePath}/jobs`;
@@ -308,15 +308,15 @@ export default function RecruiterDashboardClient({
             </div>
 
             {/* Active Vacancies */}
-            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm flex flex-col">
-               <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+            <div className="bg-white rounded-[20px] border border-slate-200 shadow-sm flex flex-col">
+               <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
                   <h2 className="text-[15px] font-medium text-black">Active vacancies</h2>
                   <Link href={`${basePath}/jobs`} className="text-[11px] font-medium text-indigo-600 hover:underline flex items-center gap-1">
                      Manage Jobs <ChevronRight className="w-3 h-3" />
                   </Link>
                </div>
 
-               <div className="divide-y divide-slate-50">
+               <div className="divide-y divide-slate-200">
                   {dashboardData?.recent_jobs && dashboardData.recent_jobs.length > 0 ? (
                      dashboardData.recent_jobs.slice(0, 5).map((job) => (
                         <div key={job.id} className="px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors group/item">

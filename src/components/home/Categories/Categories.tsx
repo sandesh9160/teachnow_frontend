@@ -90,7 +90,7 @@ export const Categories = ({ categories }: CategoriesProps) => {
 
   return (
     <section className="pt-20 pb-12 bg-white overflow-hidden relative">
-      <div className="max-w-none w-full px-2">
+      <div className="max-w-none w-full px-4 md:px-12">
 
         {/* Header - Matching requested text and style */}
         <div className="text-center mb-14 px-4">

@@ -63,7 +63,8 @@ export function useCV() {
       const res = await dashboardServerFetch<any>("jobseeker/resumes", {
         method: "GET",
       });
-      const data = Array.isArray(res?.generated_resumes) ? res.generated_resumes : [];
+      const rawData = res?.generated_resumes || res?.data?.generated_resumes || res?.cv_generations || res?.data?.cv_generations || res?.cvs || res?.data?.cvs;
+      const data = Array.isArray(rawData) ? rawData : (rawData ? Object.values(rawData) : []);
       setGeneratedCVs(data);
     } catch (err: any) {
       setGeneratedCVs([]);

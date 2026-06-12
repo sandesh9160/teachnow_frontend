@@ -63,7 +63,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
 
   return (
     <section className="py-12 md:py-16 bg-white overflow-hidden relative">
-      <div className="max-w-none w-full px-2">
+      <div className="max-w-none w-full px-4 md:px-12">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
             Explore teaching jobs in major Indian cities
@@ -72,8 +72,6 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
             Find opportunities {totalJobs ? `among ${totalJobs}+ ` : "in your "}preferred location
           </p>
         </div>
-      </div>
-      <div className="max-w-none w-full px-2">
         <AutoScrollCarousel speed={80} className="!gap-4 md:!gap-4">
           {carouselItems}
         </AutoScrollCarousel>

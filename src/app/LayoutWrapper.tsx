@@ -44,7 +44,7 @@ export function LayoutWrapper({
         <Suspense fallback={null}>
           <ScrollToTop />
         </Suspense>
-        <main>{children}</main>
+        {children}
       </>
     );
   }

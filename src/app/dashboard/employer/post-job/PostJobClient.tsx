@@ -83,6 +83,7 @@ export default function PostJobClient({
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isRewriting, setIsRewriting] = useState(false);
+  const [isAiFeatureBroken, setIsAiFeatureBroken] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [limitReachedField, setLimitReachedField] = useState<string | null>(null);
@@ -177,11 +178,13 @@ export default function PostJobClient({
         });
       } else {
         toast.dismiss(toastId);
-        toast.error(result.message || "Failed to process JD.");
+        toast.error("AI service is currently unavailable. Please write the description manually.");
+        setIsAiFeatureBroken(true);
       }
     } catch (error) {
       toast.dismiss(toastId);
-      toast.error("An error occurred during AI processing.");
+      toast.error("AI service is currently unavailable. Please write the description manually.");
+      setIsAiFeatureBroken(true);
     } finally {
       setIsRewriting(false);
     }
@@ -202,8 +205,8 @@ export default function PostJobClient({
       case 1:
         if (!formData.title?.toString().trim()) {
           newErrors.title = "Please provide a Job Title to continue";
-        } else if (formData.title.length < 7) {
-          newErrors.title = "Job Title is too short (minimum 7 characters required)";
+        } else if (formData.title.length < 4) {
+          newErrors.title = "Job Title is too short (minimum 4 characters required)";
         } else if (formData.title.length > 50) {
           newErrors.title = "Job Title is too long (maximum 50 characters allowed)";
         }
@@ -349,7 +352,7 @@ export default function PostJobClient({
           });
           // No redirect, stay on page (job is saved as draft by backend)
         } else {
-          toast.success(result.message || (isEdit ? "Job updated!" : "Job posted!"), {
+          toast.success("Job submitted successfully and is pending admin approval.", {
             style: {
               background: '#F0FFF4',
               color: '#22543D',
@@ -410,6 +413,7 @@ export default function PostJobClient({
       {/* Top Back Breadcrumb */}
       <button
         onClick={handleBack}
+        suppressHydrationWarning
         className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 active:scale-95 mb-4"
       >
         <ChevronLeft className="w-3.5 h-3.5" /> Back
@@ -495,12 +499,20 @@ export default function PostJobClient({
                   value={formData.title}
                   suppressHydrationWarning
                   onChange={(e) => {
-                    const val = e.target.value;
+                    let val = e.target.value.replace(/[^a-zA-Z\s.\-]/g, '');
                     if (val.length > 50) {
                       setLimitReachedField("title");
-                      toast.error("Character limit reached: Maximum 50 characters allowed", { id: "limit-toast" });
+                      toast.error("Character limit reached for Job Title", { id: "limit-toast" });
+                      setErrors(prev => ({ ...prev, title: "Maximum 50 characters allowed" }));
                       updateField("title", val.slice(0, 50));
-                      setTimeout(() => setLimitReachedField(null), 2000);
+                      setTimeout(() => {
+                        setLimitReachedField(null);
+                        setErrors(prev => {
+                          const n = { ...prev };
+                          if (n.title === "Maximum 50 characters allowed") delete n.title;
+                          return n;
+                        });
+                      }, 2000);
                     } else {
                       updateField("title", val);
                       if (errors.title) setErrors(prev => {
@@ -715,16 +727,18 @@ export default function PostJobClient({
           <div className="space-y-4 animate-in fade-in duration-300 overflow-hidden">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-[#1E1B4B]">Job Description</h2>
-              <Button
-                type="button"
-                suppressHydrationWarning
-                onClick={handleRewriteJD}
-                disabled={isRewriting}
-                className="h-8 px-5 rounded-lg text-[10px] font-bold bg-[#312E81] hover:bg-[#1E1B4B] text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
-              >
-                {isRewriting && <Loader2 className="w-3 h-3 animate-spin" />}
-                {isRewriting ? "AI is rewriting..." : "Rewrite JD with AI"}
-              </Button>
+              {!isAiFeatureBroken && (
+                <Button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={handleRewriteJD}
+                  disabled={isRewriting}
+                  className="h-8 px-5 rounded-lg text-[10px] font-bold bg-[#312E81] hover:bg-[#1E1B4B] text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+                >
+                  {isRewriting && <Loader2 className="w-3 h-3 animate-spin" />}
+                  {isRewriting ? "AI is rewriting..." : "Rewrite JD with AI"}
+                </Button>
+              )}
             </div>
             <div className="min-h-[250px] border border-slate-100 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-100 transition-all">
               <TipTapEditor key={editorKey} value={description} onChange={setDescription} minimal={true} />

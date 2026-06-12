@@ -17,6 +17,7 @@ import HeroStats from "@/components/home/HeroStats/Herostats";
 import Testimonial from "@/components/home/Testimonial/Testimonial";
 import Faq from "@/components/home/FAQ/FAQ";
 import BlogSections from "@/components/home/BlogSections/BlogSections";
+import ExploreTutors from "@/components/home/ExploreTutors/ExploreTutors";
 
 export const revalidate = 30; // Force dynamic server rendering, no static cache
 
@@ -94,6 +95,8 @@ export default async function HomePage() {
       <Faq faqs={faqs || []} />
 
       <BlogSections blogs={blogs || []} />
+
+      <ExploreTutors />
     </div>
   );
 }

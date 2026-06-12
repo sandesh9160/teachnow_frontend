@@ -60,7 +60,7 @@ export function DashboardSidebar({
 
   const recruiterLinks = [
     { label: "Overview", href: "/dashboard/recruiter", icon: LayoutGrid },
-    { label: "Company", href: "/dashboard/recruiter/company-profile", icon: Building2 },
+    { label: "Institute Profile", href: "/dashboard/recruiter/company-profile", icon: Building2 },
     { label: "Post a Job", href: "/dashboard/recruiter/post-job", icon: PlusCircle },
     { label: "Manage Jobs", href: "/dashboard/recruiter/jobs", icon: ClipboardList },
     { label: "Alerts", href: "/dashboard/recruiter/notifications", icon: Bell },

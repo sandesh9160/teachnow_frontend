@@ -9,7 +9,7 @@ import { EmailSignInAction } from "@/lib/sign-in";
 import { fetchAPI } from "@/services/api/client";
 import { toast } from "sonner";
 import { resetSharedClientSession } from "@/hooks/useClientSession";
-import { Mail, Lock, User, ArrowLeft, Eye, EyeOff, Check, Loader2, X, AlertCircle } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, Eye, EyeOff, Check, Loader2,  AlertCircle } from "lucide-react";
 import { CaptchaField } from "@/shared/ui/CaptchaField/CaptchaField";
 interface QuickAuthModalProps {
   open: boolean;
@@ -44,7 +44,7 @@ export default function QuickAuthModal({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
+
   const [regName, setRegName] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -216,7 +216,7 @@ export default function QuickAuthModal({
         Ultra-compact layout: reduced width (380px) and minimal internal padding.
       */}
       <DialogContent className="sm:max-w-[400px] w-[95vw] max-h-[95vh] flex flex-col p-0 overflow-hidden border-none shadow-[0_30px_100px_rgba(0,0,0,0.25)] bg-white rounded-2xl transition-all duration-300 ease-out">
-        <DialogHeader className="p-5 py-4 sm:p-7 sm:pb-4 bg-slate-50/80 border-b border-slate-100/50">
+        <DialogHeader className="p-4 py-3 sm:p-5 sm:pb-3 bg-slate-50/80 border-b border-slate-100/50">
           <DialogTitle className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             {mode === "login" ? title : "Join TeachNow"}
           </DialogTitle>
@@ -227,7 +227,7 @@ export default function QuickAuthModal({
           </p>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 pt-3 sm:pt-3 scrollbar-hide">
+        <div className="flex-1 p-3 sm:p-4 pt-2 sm:pt-2">
           <div className="flex bg-slate-100/80 p-1 rounded-xl mb-4 border border-slate-200/60">
             <div className="flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold text-primary bg-white rounded-lg shadow-sm border border-slate-100">
               <User className="h-3.5 w-3.5" />
@@ -235,7 +235,7 @@ export default function QuickAuthModal({
             </div>
           </div>
 
-          <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-2" noValidate>
+          <form onSubmit={mode === "login" ? handleLogin : handleRegister} className="space-y-1.5" noValidate>
             {mode === "register" && (
               <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
                 <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">
@@ -244,7 +244,7 @@ export default function QuickAuthModal({
                 <div className="relative group">
                   <Input 
                     placeholder={role === "job_seeker" ? "Full Name" : "Institution"}
-                    className={`pl-3 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold ${
+                    className={`pl-3 h-9 bg-white rounded-xl transition-all text-xs font-semibold ${
                       formErrors.regName 
                         ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
                         : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
@@ -275,7 +275,7 @@ export default function QuickAuthModal({
                   <Input 
                     type="email" 
                     placeholder="you@email.com" 
-                    className={`pl-12 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold w-full ${
+                    className={`pl-10 h-9 bg-white rounded-xl transition-all text-xs font-semibold w-full ${
                       formErrors.email 
                         ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
                         : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
@@ -302,13 +302,13 @@ export default function QuickAuthModal({
                     type="button"
                     onClick={sendEmail}
                     disabled={sendingEmail || !email}
-                    className="px-3 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm disabled:opacity-50 transition-all shrink-0 w-[70px] flex items-center justify-center"
+                    className="px-3 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm disabled:opacity-50 transition-all shrink-0 w-[70px] flex items-center justify-center"
                   >
                     {sendingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (emailSent ? "Resend" : "Verify")}
                   </button>
                 )}
                 {mode === "register" && emailVerified && (
-                  <div className="px-3 h-11 rounded-xl bg-green-50 border border-green-200 text-green-600 flex items-center justify-center shrink-0 w-[70px]">
+                  <div className="px-3 h-9 rounded-xl bg-green-50 border border-green-200 text-green-600 flex items-center justify-center shrink-0 w-[70px]">
                     <Check className="h-4 w-4" />
                   </div>
                 )}
@@ -325,7 +325,7 @@ export default function QuickAuthModal({
                       placeholder="Enter OTP"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      className="pl-3 h-11 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-[13px] font-semibold w-full"
+                      className="pl-3 h-9 bg-white border-slate-200 rounded-xl focus:ring-4 focus:ring-primary/5 transition-all text-xs font-semibold w-full"
                       required
                     />
                   </div>
@@ -333,7 +333,7 @@ export default function QuickAuthModal({
                     type="button"
                     onClick={verifyOtp}
                     disabled={verifyingOtp || otp.length < 4}
-                    className="px-3 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm disabled:opacity-50 transition-all shrink-0 w-[80px] flex items-center justify-center"
+                    className="px-3 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm disabled:opacity-50 transition-all shrink-0 w-[80px] flex items-center justify-center"
                   >
                     {verifyingOtp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Verify OTP"}
                   </button>
@@ -341,17 +341,17 @@ export default function QuickAuthModal({
               </div>
             )}
 
-            <div className={`${mode === "register" ? "grid grid-cols-2 gap-2" : "space-y-1"} animate-in fade-in slide-in-from-top-1 duration-300`}>
+            <div className={`${mode === "register" ? "grid grid-cols-2 gap-1.5" : "space-y-1"} animate-in fade-in slide-in-from-top-1 duration-300`}>
               <div className="space-y-1">
-                <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Password <span className="text-red-500">*</span></Label>
+                <Label className="text-slate-700 font-bold ml-0.5 text-[8.5px] tracking-tight uppercase opacity-70 whitespace-nowrap">Password <span className="text-red-500">*</span></Label>
                 <div className="relative group">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
                     <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                   </div>
                   <Input 
                     type={showPassword ? "text" : "password"} 
                     placeholder="••••" 
-                    className={`pl-12 pr-10 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold ${
+                    className={`pl-9 pr-8 h-9 bg-white rounded-xl transition-all text-xs font-semibold ${
                       formErrors.password 
                         ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
                         : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
@@ -361,22 +361,19 @@ export default function QuickAuthModal({
                       setPassword(e.target.value);
                       if (formErrors.password) setFormErrors({ ...formErrors, password: "" });
                     }} 
-                    onFocus={() => setPasswordFocused(true)}
-                    onBlur={() => {
-                      if (!password) setPasswordFocused(false);
-                    }}
+
                     required 
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                   {formErrors.password && (
-                    <p className="flex items-center gap-1 mt-1 absolute -bottom-5 text-[10px] font-bold text-red-500">
-                      <AlertCircle size={10} /> {formErrors.password}
+                    <p className="flex items-center gap-1 mt-1 absolute -bottom-5 text-[10px] font-bold text-red-500 truncate w-full">
+                      <AlertCircle size={10} className="shrink-0" /> <span className="truncate">{formErrors.password}</span>
                     </p>
                   )}
                 </div>
@@ -384,15 +381,15 @@ export default function QuickAuthModal({
 
               {mode === "register" && (
                 <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Label className="text-slate-700 font-bold ml-0.5 text-[9px] tracking-wide uppercase opacity-70">Confirm Password <span className="text-red-500">*</span></Label>
+                  <Label className="text-slate-700 font-bold ml-0.5 text-[8.5px] tracking-tight uppercase opacity-70 whitespace-nowrap">Confirm Password <span className="text-red-500">*</span></Label>
                   <div className="relative group">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
+                    <div className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-slate-50 rounded-lg border border-slate-100 group-focus-within:bg-primary/5 group-focus-within:border-primary/20 transition-all">
                       <Lock className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                     </div>
                     <Input 
                       type={showConfirmPassword ? "text" : "password"} 
                       placeholder="••••" 
-                      className={`pl-12 pr-10 h-11 bg-white rounded-xl transition-all text-[13px] font-semibold ${
+                      className={`pl-9 pr-8 h-9 bg-white rounded-xl transition-all text-xs font-semibold ${
                         formErrors.confirmPassword 
                           ? "border border-red-500 bg-red-50/30 ring-2 ring-red-500/20" 
                           : "border border-slate-200 focus:ring-4 focus:ring-primary/5"
@@ -407,48 +404,20 @@ export default function QuickAuthModal({
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                     {formErrors.confirmPassword && (
-                      <p className="flex items-center gap-1 mt-1 absolute -bottom-5 text-[10px] font-bold text-red-500">
-                        <AlertCircle size={10} /> {formErrors.confirmPassword}
+                      <p className="flex items-center gap-1 mt-1 absolute -bottom-5 text-[10px] font-bold text-red-500 truncate w-full">
+                        <AlertCircle size={10} className="shrink-0" /> <span className="truncate">{formErrors.confirmPassword}</span>
                       </p>
                     )}
                   </div>
                 </div>
               )}
 
-              {mode === "register" && password && passwordFocused && (
-                <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex gap-1.5 h-1.5 w-full">
-                    <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength ? "bg-green-500" : "bg-slate-200"}`} />
-                    <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase ? "bg-green-500" : "bg-slate-200"}`} />
-                    <div className={`h-full flex-1 rounded-full transition-colors ${hasMinLength && hasUpperCase && hasNumber ? "bg-green-500" : "bg-slate-200"}`} />
-                    <div className={`h-full flex-1 rounded-full transition-colors ${isPasswordValid ? "bg-green-500" : "bg-slate-200"}`} />
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-[10px]">
-                    <div className={`flex items-center gap-1.5 transition-colors ${hasMinLength ? "text-green-600 font-bold" : "text-slate-400"}`}>
-                      {hasMinLength ? <Check className="h-3 w-3" /> : <X className="h-3 w-3 opacity-50" />}
-                      <span>At least 8 chars</span>
-                    </div>
-                    <div className={`flex items-center gap-1.5 transition-colors ${hasUpperCase ? "text-green-600 font-bold" : "text-slate-400"}`}>
-                      {hasUpperCase ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                      <span>One uppercase</span>
-                    </div>
-                    <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-green-600 font-bold" : "text-slate-400"}`}>
-                      {hasNumber ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                      <span>One number</span>
-                    </div>
-                    <div className={`flex items-center gap-1.5 transition-colors ${hasSpecialChar ? "text-green-600 font-bold" : "text-slate-400"}`}>
-                      {hasSpecialChar ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5 opacity-50" />}
-                      <span>Special character</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {mode === "register" && (
@@ -481,7 +450,7 @@ export default function QuickAuthModal({
 
             <Button 
               variant="hero" 
-              className="w-full h-10 rounded-lg text-sm font-bold shadow-lg shadow-primary/10 mt-2 active:scale-[0.98]" 
+              className="w-full h-9 rounded-lg text-sm font-bold shadow-lg shadow-primary/10 mt-2 active:scale-[0.98]" 
               disabled={loading}
             >
               {loading ? (

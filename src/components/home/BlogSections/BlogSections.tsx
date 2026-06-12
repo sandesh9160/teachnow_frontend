@@ -50,7 +50,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
   };
 
   return (
-    <section className="pt-12 pb-20 bg-white overflow-hidden relative">
+    <section className="pt-12 pb-8 md:pb-10 bg-white overflow-hidden relative">
       <div className="max-w-none w-full">
         {/* Header with All Posts Link */}
         <div className="relative mb-14 px-4 md:px-12">

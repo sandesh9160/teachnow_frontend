@@ -230,6 +230,42 @@ export default function EmployerDashboardClient({
       }
    }, [isProfileComplete, toastShown, userRole]);
 
+   useEffect(() => {
+      if (document.cookie.includes("new_institute_job=1")) {
+         toast.success("Ready to Hire?", {
+            description: "You have successfully purchased a plan. You can now add a job posting.",
+            duration: 10000,
+            style: {
+               background: '#F0FFF4',
+               color: '#22543D',
+               border: '1px solid #9AE6B4',
+               fontWeight: '600'
+            }
+         });
+         document.cookie = "new_institute_job=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      }
+
+      if (document.cookie.includes("show_welcome_toast=1") || (typeof window !== "undefined" && window.location.search.includes("welcome=1"))) {
+         toast.success("Welcome to TeachNow!", {
+            description: "Your account is now active. You can start posting jobs.",
+            duration: 8000,
+            style: {
+               background: '#F0FFF4',
+               color: '#22543D',
+               border: '1px solid #9AE6B4',
+               fontWeight: '600'
+            }
+         });
+         document.cookie = "show_welcome_toast=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+         
+         if (typeof window !== "undefined" && window.location.search.includes("welcome=1")) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("welcome");
+            window.history.replaceState({}, "", url.toString());
+         }
+      }
+   }, []);
+
    const [isFeatured, setIsFeatured] = useState(
       dashboardData?.company_featured === true ||
       String(dashboardData?.company_featured) === "1" ||

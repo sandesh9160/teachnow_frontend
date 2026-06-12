@@ -24,6 +24,7 @@ import { useBranding } from "@/hooks/useBranding";
 
 // import { toast } from "sonner";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Plan {
   id: number;
@@ -121,6 +122,8 @@ interface ApiResponse {
 }
 
 export default function PurchaseHistoryClient() {
+  const router = useRouter();
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const { companyName, companyLogo } = useBranding();
   const [data, setData] = useState<PurchaseHistoryData | null>(null);
   const [plansArray, setPlansArray] = useState<Plan[]>([]);
@@ -132,8 +135,16 @@ export default function PurchaseHistoryClient() {
   const { isProcessing, purchasePlan } = useRazorpay({
     onSuccess: () => {
       setUpgradingPlanId(null);
-      // Refresh data after successful payment
-      fetchHistory();
+      setShowSuccessPopup(true);
+
+      const isNewInstitute = !data?.subscriptions?.data || data.subscriptions.data.length === 0;
+      if (isNewInstitute) {
+        document.cookie = "new_institute_job=1; path=/";
+      }
+
+      setTimeout(() => {
+        router.push("/dashboard/employer");
+      }, 3000);
     },
     onFailure: () => {
       setUpgradingPlanId(null);
@@ -154,7 +165,10 @@ export default function PurchaseHistoryClient() {
         });
         const data = await res.json();
         if (data.status) {
-          fetchHistory();
+          setShowSuccessPopup(true);
+          setTimeout(() => {
+            router.push("/dashboard/employer");
+          }, 3000);
         }
       } catch {
         // silently handle
@@ -337,14 +351,14 @@ export default function PurchaseHistoryClient() {
       {verificationStatus === 0 && (
         <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl">
           <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 animate-pulse" />
-          <p className="text-[13px] font-semibold text-amber-700">Your profile verification is pending. Plan purchases will be enabled once approved.</p>
+          <p className="text-[13px] font-semibold text-amber-700">Your profile verification is pending.</p>
         </div>
       )}
 
       {verificationStatus === 2 && (
         <div className="flex items-center gap-3 px-5 py-4 bg-rose-50 border border-rose-200 rounded-xl">
           <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
-          <p className="text-[13px] font-semibold text-rose-700">Your profile verification was rejected. Plan purchases are disabled.</p>
+          <p className="text-[13px] font-semibold text-rose-700">Your profile verification was rejected. Please upload valid documents.</p>
         </div>
       )}
 
@@ -435,19 +449,13 @@ export default function PurchaseHistoryClient() {
 
               <div className="mt-8">
                 <button
-                  disabled={verificationStatus !== 1 || isProcessing || upgradingPlanId !== null}
+                  disabled={isProcessing || upgradingPlanId !== null}
                   onClick={() => handleUpgrade(plan)}
                   className={cn(
                     "w-full py-2.5 px-6 rounded-xl font-semibold text-[13px] transition-all duration-200 flex items-center justify-center gap-2 border shadow-sm",
-                    verificationStatus === 1
-                      ? "bg-[#00359E] hover:bg-[#002B80] text-white border-transparent cursor-pointer active:scale-95 shadow-lg shadow-blue-900/10"
-                      : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                    "bg-[#00359E] hover:bg-[#002B80] text-white border-transparent cursor-pointer active:scale-95 shadow-lg shadow-blue-900/10"
                   )}
-                  title={
-                    verificationStatus === 1
-                      ? `Purchase ${plan.name}`
-                      : "Please verify your profile to purchase plans"
-                  }
+                  title={`Purchase ${plan.name}`}
                 >
                   {upgradingPlanId === plan.id ? (
                     <>
@@ -777,6 +785,24 @@ export default function PurchaseHistoryClient() {
           </div>
         </div>
       </div>
+
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center space-y-4 animate-in fade-in zoom-in duration-300 mx-4">
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8" strokeWidth={2.5} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900">Thank You!</h2>
+            <p className="text-slate-600 font-medium">
+              You have successfully purchased the plan.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mt-6 pt-4 border-t border-slate-100">
+              <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+              Redirecting to your dashboard...
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

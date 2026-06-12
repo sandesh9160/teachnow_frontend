@@ -52,7 +52,7 @@ export default function ResumeManagementPage() {
   // Shared / Builder State
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
-  const [lastGeneratedCV, setLastGeneratedCV] = useState<string | null>(null);
+
   const [viewingResumeUrl, setViewingResumeUrl] = useState<string | null>(null);
 
   // Uploaded Manager State
@@ -176,19 +176,28 @@ export default function ResumeManagementPage() {
     try {
       const res = await generateCV({ template_id: tplId });
       console.log("res", res)
-      const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url || res?.data?.pdf_path || res?.pdf_path;
+      
+      if (res?.status === false) {
+        throw new Error(res?.message || "Generation failed on server");
+      }
+      
+      const url = res?.data?.file_url || res?.file_url || res?.data?.url || res?.url || res?.data?.pdf_path || res?.pdf_path || res?.data?.cv?.pdf_path;
       
       toast.success("Generation complete! Successfully created Resume.", {
         style: { background: '#F0FDF4', border: '1px solid #86EFAC', color: '#166534' },
       });
 
       if (url) {
-        setLastGeneratedCV(normalizeMediaUrl(url));
+        // Last generated CV URL: normalizeMediaUrl(url)
       }
       await fetchResumes();
       await fetchTemplates();
-    } catch {
-      toast.error("Failed to generate PDF.", {
+    } catch (err: any) {
+      let errorMessage = err?.message || "Failed to generate PDF.";
+      if (errorMessage.toLowerCase().includes("profile not found")) {
+        errorMessage = "Please complete your profile to generate resume";
+      }
+      toast.error(errorMessage, {
         style: { background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' },
       });
     }
@@ -490,44 +499,7 @@ export default function ResumeManagementPage() {
                 </div>
               </section>
 
-              {/* Build Success Area */}
-              {lastGeneratedCV && (
-                <div className="bg-black rounded-xl md:rounded-2xl border border-slate-800 p-6 md:p-10 mb-8 md:mb-10 animate-in slide-in-from-bottom duration-700 shadow-2xl relative overflow-hidden">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8 pb-4 md:pb-6 border-b border-white/5 relative z-10">
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div className="p-2 md:p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg md:rounded-xl border border-emerald-500/20">
-                        <FileCheck className="w-5 h-5 md:w-5.5 md:h-5.5" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold text-sm md:text-lg">Build Successful</h3>
-                        <p className="text-slate-400 text-[10px] md:text-[11px] font-medium mt-0.5">Professional teacher resume is ready.</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-end">
-                      <button
-                        className="text-white hover:bg-white/5 h-8 md:h-9 px-3 md:px-5 rounded-lg font-semibold text-[10px] md:text-xs transition-colors"
-                        onClick={() => setLastGeneratedCV(null)}
-                      >
-                        Dismiss
-                      </button>
-                      <button
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg md:rounded-xl font-semibold h-8 md:h-9 px-4 md:px-6 shadow-lg shadow-indigo-600/10 transition-all flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs"
-                        onClick={() => handleDownloadGenerated(lastGeneratedCV)}
-                      >
-                        <Download className="w-3.5 h-3.5 md:w-4 md:h-4" /> Download
-                      </button>
-                    </div>
-                  </div>
-                  <div className="aspect-[4/6] w-full max-w-2xl mx-auto rounded-2xl overflow-hidden border border-white/5 bg-white relative z-10 shadow-2xl">
-                    <iframe
-                      src={`/api/view?url=${encodeURIComponent(lastGeneratedCV)}#toolbar=0&view=FitH`}
-                      className="w-full h-full"
-                      style={{ border: 'none' }}
-                      title="CV Preview"
-                    />
-                  </div>
-                </div>
-              )}
+
 
               {/* Generated History */}
               <section className="space-y-6 pt-8">

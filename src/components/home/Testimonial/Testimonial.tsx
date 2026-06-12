@@ -82,7 +82,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
 
   return (
     <section className="py-24 bg-[#F7F9FC] overflow-hidden relative w-full">
-      <div className="w-full">
+      <div className="max-w-none w-full px-4 md:px-12">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
             What Teachers and Schools Say
@@ -103,7 +103,7 @@ export const Testimonial = ({ testimonials }: TestimonialProps) => {
             </AutoScrollCarousel>
           )
         ) : (
-          <div className="text-center py-12 text-slate-400 font-semibold bg-white rounded-2xl mx-4 md:mx-12 border border-[#eef2f8] shadow-sm">
+          <div className="text-center py-12 text-slate-400 font-semibold bg-white rounded-2xl border border-[#eef2f8] shadow-sm">
             No testimonials available at the moment.
           </div>
         )}
