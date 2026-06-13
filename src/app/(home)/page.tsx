@@ -1,23 +1,23 @@
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
-import { normalizeMediaUrl } from "@/services/api/client";
 
-// Server Components (imported statically)
+
 import Hero from "@/components/home/Hero/Hero";
 import JobSeekerSteps from "@/components/home/Steps/JobSeekerSteps";
 import EmployerSteps from "@/components/home/Steps/EmployerSteps";
 import Features from "@/components/home/Features/Features";
 
 
-// Homepage Sections (imported statically to support server rendering)
-import Categories from "@/components/home/Categories/Categories";
-import FeaturedInstitutions from "@/components/home/FeaturedInstitutions/FeaturedInstitutions";
-import BrowseByCity from "@/components/home/BrowseByCity/BrowseByCity";
-import FeaturedJobs from "@/components/home/FeaturedJobs/FeaturedJobs";
-import HeroStats from "@/components/home/HeroStats/Herostats";
-import Testimonial from "@/components/home/Testimonial/Testimonial";
-import Faq from "@/components/home/FAQ/FAQ";
-import BlogSections from "@/components/home/BlogSections/BlogSections";
-import ExploreTutors from "@/components/home/ExploreTutors/ExploreTutors";
+import dynamic from "next/dynamic";
+
+const Categories = dynamic(() => import("@/components/home/Categories/Categories"));
+const FeaturedInstitutions = dynamic(() => import("@/components/home/FeaturedInstitutions/FeaturedInstitutions"));
+const BrowseByCity = dynamic(() => import("@/components/home/BrowseByCity/BrowseByCity"));
+const FeaturedJobs = dynamic(() => import("@/components/home/FeaturedJobs/FeaturedJobs"));
+const HeroStats = dynamic(() => import("@/components/home/HeroStats/Herostats"));
+const Testimonial = dynamic(() => import("@/components/home/Testimonial/Testimonial"));
+const Faq = dynamic(() => import("@/components/home/FAQ/FAQ"));
+const BlogSections = dynamic(() => import("@/components/home/BlogSections/BlogSections"));
+const ExploreTutors = dynamic(() => import("@/components/home/ExploreTutors/ExploreTutors"));
 
 export const revalidate = 30; // Force dynamic server rendering, no static cache
 
@@ -33,7 +33,6 @@ import {
 } from "@/hooks/useHomepage";
 import { getBlogs } from "@/hooks/useBlogs";
 
-import { preload } from "react-dom";
 
 export default async function HomePage() {
   // Fetch all sections concurrently on the server
@@ -62,11 +61,6 @@ export default async function HomePage() {
   const heroCTA = globalData?.heroCTA ?? null;
   const hero = heroCTA?.hero ?? null;
   const cta = heroCTA?.cta ?? [];
-  const heroImageUrl = hero?.background_image ? normalizeMediaUrl(hero.background_image) : null;
-
-  if (heroImageUrl) {
-    preload(heroImageUrl, { as: "image", fetchPriority: "high" });
-  }
 
   console.log("heroCTA", heroCTA);
   return (

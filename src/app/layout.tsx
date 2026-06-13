@@ -60,7 +60,11 @@ export default function RootLayout({
 }
 
 function RootLayoutContent({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <RootLayoutContentInner>{children}</RootLayoutContentInner>;
+  return (
+    <div className="relative flex min-h-screen flex-col overflow-x-clip">
+      <RootLayoutContentInner>{children}</RootLayoutContentInner>
+    </div>
+  );
 }
 
 async function RootLayoutContentInner({ children }: Readonly<{ children: React.ReactNode }>) {

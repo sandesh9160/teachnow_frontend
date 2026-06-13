@@ -40,9 +40,6 @@ export const Hero = ({
   return (
     <section 
       id="main-hero"
-      // elementtiming lets the browser expose this as a named LCP entry
-      // @ts-ignore
-      elementtiming="hero-section"
       className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] lg:min-h-[600px] flex items-center justify-center"
     >
       {imageUrl && (
@@ -57,7 +54,6 @@ export const Hero = ({
             fetchPriority="high"
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
             className="object-cover object-center"
-            unoptimized
           />
         </div>
       )}
@@ -67,9 +63,6 @@ export const Hero = ({
         <div className="mx-auto max-w-5xl">
           <h1 
             id="hero-heading"
-            // elementtiming marks this as an LCP candidate for PerformanceObserver
-            // @ts-ignore
-            elementtiming="hero-heading"
             className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-[#1a202c] leading-[1.1] tracking-tight whitespace-pre-line"
           >
             {hero?.title ? (
