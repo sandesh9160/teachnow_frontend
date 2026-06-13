@@ -4,6 +4,7 @@ import { getBlogBySlug } from "@/hooks/useBlogs";
 import { Clock, Search, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -90,9 +91,13 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
             {/* Featured Image */}
             {blogData.image && (
               <div className="mb-10 overflow-hidden rounded-2xl aspect-21/9 border border-slate-100 shadow-sm relative group">
-                <img 
+                <Image 
                   src={blogData.image} 
                   alt={blogData.title} 
+                  fill
+                  priority
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
                 />
               </div>
@@ -179,9 +184,9 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
               <div className="space-y-6">
                 {related.map((r) => (
                   <Link key={r.id} href={`/blogs/${r.slug || r.id}`} className="group flex gap-4">
-                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100 relative">
                       {r.image ? (
-                        <img src={r.image} alt={r.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <Image src={r.image} alt={r.title} fill sizes="80px" className="object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-[10px] text-slate-300 italic">No Preview</div>
                       )}

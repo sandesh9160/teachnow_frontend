@@ -10,11 +10,15 @@ function ScrollToTop() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    try {
-      window.scrollTo({ top: 0, behavior: "instant" });
-    } catch (error) {
-      window.scrollTo(0, 0);
-    }
+    const handleScroll = () => {
+      try {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      } catch (error) {
+        window.scrollTo(0, 0);
+      }
+    };
+    const rafId = requestAnimationFrame(handleScroll);
+    return () => cancelAnimationFrame(rafId);
   }, [pathname, searchParams]);
 
   return null;

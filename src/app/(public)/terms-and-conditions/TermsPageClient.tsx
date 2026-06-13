@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 interface TermsSection {
@@ -19,11 +18,7 @@ export default function TermsPageClient({ sections, lastUpdated }: { sections: T
     <div className="bg-slate-50 min-h-screen pb-16">
       {/* --- Page Header --- */}
       <header className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
+        <div className="space-y-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
             Terms and Conditions
           </h1>
@@ -32,16 +27,12 @@ export default function TermsPageClient({ sections, lastUpdated }: { sections: T
               Last updated: {lastUpdated}
             </p>
           )}
-        </motion.div>
+        </div>
       </header>
 
       {/* --- Main Content Card --- */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 sm:p-12 md:p-16 motion-div"
-        >
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 sm:p-12 md:p-16 motion-div">
           {sections.length === 0 ? (
             <div className="text-center py-12">
               <Sparkles className="w-8 h-8 text-slate-200 mx-auto mb-3" />
@@ -79,7 +70,7 @@ export default function TermsPageClient({ sections, lastUpdated }: { sections: T
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </main>
 
       {/* --- Compact Footer CTA --- */}

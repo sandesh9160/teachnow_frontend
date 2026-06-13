@@ -2,22 +2,21 @@ import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
 
 import Hero from "@/components/home/Hero/Hero";
-import JobSeekerSteps from "@/components/home/Steps/JobSeekerSteps";
-import EmployerSteps from "@/components/home/Steps/EmployerSteps";
-import Features from "@/components/home/Features/Features";
-
-
 import dynamic from "next/dynamic";
 
-const Categories = dynamic(() => import("@/components/home/Categories/Categories"));
-const FeaturedInstitutions = dynamic(() => import("@/components/home/FeaturedInstitutions/FeaturedInstitutions"));
-const BrowseByCity = dynamic(() => import("@/components/home/BrowseByCity/BrowseByCity"));
-const FeaturedJobs = dynamic(() => import("@/components/home/FeaturedJobs/FeaturedJobs"));
-const HeroStats = dynamic(() => import("@/components/home/HeroStats/Herostats"));
-const Testimonial = dynamic(() => import("@/components/home/Testimonial/Testimonial"));
-const Faq = dynamic(() => import("@/components/home/FAQ/FAQ"));
-const BlogSections = dynamic(() => import("@/components/home/BlogSections/BlogSections"));
-const ExploreTutors = dynamic(() => import("@/components/home/ExploreTutors/ExploreTutors"));
+// Homepage Sections (dynamically imported with SSR enabled to defer client JS loading)
+const Categories = dynamic(() => import("@/components/home/Categories/Categories"), { ssr: true });
+const FeaturedInstitutions = dynamic(() => import("@/components/home/FeaturedInstitutions/FeaturedInstitutions"), { ssr: true });
+const BrowseByCity = dynamic(() => import("@/components/home/BrowseByCity/BrowseByCity"), { ssr: true });
+const FeaturedJobs = dynamic(() => import("@/components/home/FeaturedJobs/FeaturedJobs"), { ssr: true });
+const HeroStats = dynamic(() => import("@/components/home/HeroStats/Herostats"), { ssr: true });
+const JobSeekerSteps = dynamic(() => import("@/components/home/Steps/JobSeekerSteps"), { ssr: true });
+const Features = dynamic(() => import("@/components/home/Features/Features"), { ssr: true });
+const EmployerSteps = dynamic(() => import("@/components/home/Steps/EmployerSteps"), { ssr: true });
+const Testimonial = dynamic(() => import("@/components/home/Testimonial/Testimonial"), { ssr: true });
+const Faq = dynamic(() => import("@/components/home/FAQ/FAQ"), { ssr: true });
+const BlogSections = dynamic(() => import("@/components/home/BlogSections/BlogSections"), { ssr: true });
+const ExploreTutors = dynamic(() => import("@/components/home/ExploreTutors/ExploreTutors"), { ssr: true });
 
 export const revalidate = 30; // Force dynamic server rendering, no static cache
 

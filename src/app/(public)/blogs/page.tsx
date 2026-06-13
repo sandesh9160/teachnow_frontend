@@ -1,5 +1,6 @@
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import Link from "next/link";
+import Image from "next/image";
 export const dynamic = "force-dynamic";
 import { getBlogs } from "@/hooks/useBlogs";
 import { Search, Clock } from "lucide-react";
@@ -39,18 +40,21 @@ export default async function BlogPage() {
           {/* Blog Grid */}
           <div className="lg:col-span-8">
             <div className="grid gap-5 sm:grid-cols-2">
-              {blogPosts.map((post) => (
+              {blogPosts.map((post, index) => (
                 <Link
                   key={post.slug}
                   href={`/blogs/${post.slug}`}
                   className="group rounded-xl border border-slate-200 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-200/50"
                 >
-                  <div className="aspect-video overflow-hidden">
-                    <img
+                  <div className="aspect-video overflow-hidden relative">
+                    <Image
                       src={post.image}
                       alt={post.title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      priority={index === 0}
                     />
                   </div>
                   <div className="p-4">
@@ -113,8 +117,8 @@ export default async function BlogPage() {
                     href={`/blogs/${p.slug}`}
                     className="group flex items-start gap-4"
                   >
-                    <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-50 border border-slate-100">
-                      <img src={p.image} alt={p.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+                    <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-50 border border-slate-100 relative">
+                      <Image src={p.image} alt={p.title} fill sizes="64px" className="object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
                     </div>
                     <div>
                       <p className="text-[13px] font-bold text-[#111827] leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">
