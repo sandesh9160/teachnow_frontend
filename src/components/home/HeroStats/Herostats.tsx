@@ -1,11 +1,3 @@
-"use client";
-
-import { 
-  BookOpen, 
-  Building2, 
-  Users, 
-  MapPin 
-} from "lucide-react";
 import StatsCard from "@/shared/cards/StatsCard/StatsCard";
 
 interface HeroStatsProps {
@@ -19,10 +11,10 @@ interface HeroStatsProps {
 
 export const HeroStats = ({ stats }: HeroStatsProps) => {
   const statsData = [
-    { icon: BookOpen, target: stats?.total_jobs ?? 0, suffix: "+", label: "Teaching Jobs" },
-    { icon: Building2, target: stats?.total_companies ?? 0, suffix: "+", label: "Schools & Institutes" },
-    { icon: Users, target: stats?.total_candidates ?? 0, suffix: "+", label: "Teachers Registered" },
-    { icon: MapPin, target: stats?.total_recruiters ?? 0, suffix: "+", label: "Cities" },
+    { iconName: "BookOpen" as const, target: stats?.total_jobs ?? 0, suffix: "+", label: "Teaching Jobs" },
+    { iconName: "Building2" as const, target: stats?.total_companies ?? 0, suffix: "+", label: "Schools & Institutes" },
+    { iconName: "Users" as const, target: stats?.total_candidates ?? 0, suffix: "+", label: "Teachers Registered" },
+    { iconName: "MapPin" as const, target: stats?.total_recruiters ?? 0, suffix: "+", label: "Cities" },
   ];
 
  return (
@@ -39,3 +31,4 @@ export const HeroStats = ({ stats }: HeroStatsProps) => {
 };
 
 export default HeroStats;
+

@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { LucideIcon } from "lucide-react";
+import { BookOpen, Building2, Users, MapPin } from "lucide-react";
 
+const iconMap = {
+  BookOpen,
+  Building2,
+  Users,
+  MapPin,
+};
 const useCounter = (target: number, duration: number, inView: boolean) => {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -22,7 +28,7 @@ const useCounter = (target: number, duration: number, inView: boolean) => {
 };
 
 interface StatsCardProps {
-  icon: LucideIcon;
+  iconName: keyof typeof iconMap;
   target: number;
   suffix: string;
   label: string;
@@ -30,12 +36,14 @@ interface StatsCardProps {
 }
 
 export const StatsCard = ({
-  icon: Icon,
+  iconName,
   target,
   suffix,
   label,
   color = "#002B7F",
 }: StatsCardProps) => {
+  const Icon = iconMap[iconName];
+
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const count = useCounter(target || 0, 1500, inView);
