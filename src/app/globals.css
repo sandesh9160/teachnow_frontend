@@ -7,8 +7,8 @@
 
 @theme {
   /* Fonts */
-  --font-sans: var(--font-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display), "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   /* Core Colors */
   --color-border: hsl(var(--border));

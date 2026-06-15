@@ -6,21 +6,6 @@ import "./globals.css";
 import { LayoutWrapper } from "./LayoutWrapper";
 import { LayoutDataProvider } from "@/providers/LayoutDataProvider";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
-
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  // 'optional' renders immediately in system font — no font-swap re-render that blocks LCP
-  display: "optional",
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "optional",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://jobsvedika.in"),
@@ -46,9 +31,12 @@ export default function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakartaSans.variable}`}>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Preconnect to backend CDN as early as possible */}
+        {/* Preconnect to Google Fonts and backend CDN */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet" />
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
       </head>
