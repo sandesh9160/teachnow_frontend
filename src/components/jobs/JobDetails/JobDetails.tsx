@@ -58,9 +58,9 @@ function formatPostedDate(date?: string): string {
   const postedDate = new Date(date);
   if (Number.isNaN(postedDate.getTime())) return "Posted recently";
 
-  const refTime = (typeof window !== "undefined" && (window as any).__serverTime)
-    ? (window as any).__serverTime
-    : Date.now();
+  const refTime = (typeof window !== "undefined")
+    ? ((window as any).__serverTime || Date.now())
+    : ((globalThis as any).__serverTime || Date.now());
 
   const diffInHours = Math.max(1, Math.floor((refTime - postedDate.getTime()) / (1000 * 60 * 60)));
   if (diffInHours < 24) return `Posted ${diffInHours} hours ago`;
@@ -81,9 +81,9 @@ function formatDeadline(date?: string): string {
   const deadline = new Date(date);
   if (Number.isNaN(deadline.getTime())) return "Ongoing";
 
-  const refTime = (typeof window !== "undefined" && (window as any).__serverTime)
-    ? (window as any).__serverTime
-    : Date.now();
+  const refTime = (typeof window !== "undefined")
+    ? ((window as any).__serverTime || Date.now())
+    : ((globalThis as any).__serverTime || Date.now());
 
   const now = new Date(refTime);
   if (deadline < now) return "Expired";

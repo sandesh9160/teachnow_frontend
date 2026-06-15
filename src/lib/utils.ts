@@ -26,9 +26,9 @@ export function formatTimeAgo(date?: string | number | Date): string {
   if (isNaN(d.getTime())) return "Recently";
 
   // Align client hydration clock with server render time to prevent relative time drift
-  const now = (typeof window !== "undefined" && (window as any).__serverTime)
-    ? (window as any).__serverTime
-    : Date.now();
+  const now = (typeof window !== "undefined")
+    ? ((window as any).__serverTime || Date.now())
+    : ((globalThis as any).__serverTime || Date.now());
 
   const diffInMs = now - d.getTime();
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));

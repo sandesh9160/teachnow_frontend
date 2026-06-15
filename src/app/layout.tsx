@@ -40,6 +40,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const serverTime = Date.now();
+  if (typeof globalThis !== "undefined") {
+    (globalThis as any).__serverTime = serverTime;
+  }
+
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <head>
@@ -51,7 +56,7 @@ export default function RootLayout({
         <script
           id="server-time-script"
           dangerouslySetInnerHTML={{
-            __html: `window.__serverTime = ${Date.now()};`
+            __html: `window.__serverTime = ${serverTime};`
           }}
         />
         <noscript>
