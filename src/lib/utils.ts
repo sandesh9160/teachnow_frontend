@@ -10,11 +10,12 @@ export function formatDate(date: string | number | Date): string {
   const d = new Date(date);
   if (isNaN(d.getTime())) return "";
   
-  // Use a stable locale to avoid hydration mismatches
+  // Use a stable locale and timezone to avoid hydration mismatches
   return d.toLocaleDateString('en-US', {
     month: 'numeric',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'UTC'
   });
 }
 
@@ -24,7 +25,12 @@ export function formatTimeAgo(date?: string | number | Date): string {
   const d = new Date(date);
   if (isNaN(d.getTime())) return "Recently";
 
-  const diffInMs = Date.now() - d.getTime();
+  // Align client hydration clock with server render time to prevent relative time drift
+  const now = (typeof window !== "undefined" && (window as any).__serverTime)
+    ? (window as any).__serverTime
+    : Date.now();
+
+  const diffInMs = now - d.getTime();
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
   
   if (diffInHours < 1) return "Just now";
@@ -42,6 +48,7 @@ export function formatTimeAgo(date?: string | number | Date): string {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC"
   });
 }
 

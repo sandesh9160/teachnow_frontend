@@ -26,8 +26,8 @@ const SkillBar = ({ w, bg, fg }: { w: string; bg: string; fg: string }) => (
   </div>
 );
 
-const SkillTag = ({ className }: { className: string }) => (
-  <div className={`h-[6px] rounded-[2px] ${className}`} style={{ width: `${28 + Math.random() * 20}%` }} />
+const SkillTag = ({ className, index = 0 }: { className: string; index?: number }) => (
+  <div className={`h-[6px] rounded-[2px] ${className}`} style={{ width: `${28 + ((index * 7) % 20)}%` }} />
 );
 
 /* ──────────────────── Templates ──────────────────── */
@@ -147,8 +147,8 @@ const DeveloperTech = () => (
       <Bar w="60%" className="bg-white/60 h-[4px]!" />
       <Bar w="45%" className="bg-emerald-400/40" />
       <div className="mt-1 flex flex-wrap gap-[2px]">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <SkillTag key={i} className="bg-emerald-500/20" />
+        {[1, 2, 3, 4, 5, 6].map((i, idx) => (
+          <SkillTag key={i} index={idx} className="bg-emerald-500/20" />
         ))}
       </div>
       <div className="mt-auto">
@@ -185,8 +185,8 @@ const MarketingSpecialist = () => (
       <Lines count={3} className="bg-gray-200" />
       <SectionTitle className="text-rose-500">Skills</SectionTitle>
       <div className="flex flex-wrap gap-[2px]">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <SkillTag key={i} className="bg-rose-100" />
+        {[1, 2, 3, 4, 5].map((i, idx) => (
+          <SkillTag key={i} index={idx} className="bg-rose-100" />
         ))}
       </div>
     </div>

@@ -58,7 +58,11 @@ function formatPostedDate(date?: string): string {
   const postedDate = new Date(date);
   if (Number.isNaN(postedDate.getTime())) return "Posted recently";
 
-  const diffInHours = Math.max(1, Math.floor((Date.now() - postedDate.getTime()) / (1000 * 60 * 60)));
+  const refTime = (typeof window !== "undefined" && (window as any).__serverTime)
+    ? (window as any).__serverTime
+    : Date.now();
+
+  const diffInHours = Math.max(1, Math.floor((refTime - postedDate.getTime()) / (1000 * 60 * 60)));
   if (diffInHours < 24) return `Posted ${diffInHours} hours ago`;
 
   const diffInDays = Math.floor(diffInHours / 24);
@@ -68,6 +72,7 @@ function formatPostedDate(date?: string): string {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC"
   })}`;
 }
 
@@ -76,7 +81,11 @@ function formatDeadline(date?: string): string {
   const deadline = new Date(date);
   if (Number.isNaN(deadline.getTime())) return "Ongoing";
 
-  const now = new Date();
+  const refTime = (typeof window !== "undefined" && (window as any).__serverTime)
+    ? (window as any).__serverTime
+    : Date.now();
+
+  const now = new Date(refTime);
   if (deadline < now) return "Expired";
 
   const diffTime = deadline.getTime() - now.getTime();
@@ -90,6 +99,7 @@ function formatDeadline(date?: string): string {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC"
   });
 }
 
@@ -97,7 +107,6 @@ function formatDeadline(date?: string): string {
 
 
 export default function JobDetails({ job, slug }: JobDetailsProps) {
-  const [mounted, setMounted] = useState(false);
   // const [activeTab, setActiveTab] = useState("description");
   const { isLoggedIn, user } = useClientSession();
   const { bookmarks, fetchBookmarks, toggleBookmark } = useBookmarks();
@@ -107,7 +116,6 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     void fetchBookmarks();
   }, [job.id, fetchBookmarks]);
 
@@ -159,7 +167,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
   const logoFallback = (employerName[0] || title[0] || "J").toUpperCase();
   const jobType = formatJobType(job.job_type);
   const salaryRange = formatSalaryRange(job);
-  const postedText = mounted ? formatPostedDate(job.created_at) : "Posted recently";
+  const postedText = formatPostedDate(job.created_at);
   const jobSegment = sanitizeSlug(job.slug || slug || String(job.id));
   const institutionHref = job.employer?.slug ? `/${sanitizeSlug(job.employer.slug)}` : `/${job.employer?.id || ""}`;
 

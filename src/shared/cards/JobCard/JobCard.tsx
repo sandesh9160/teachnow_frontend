@@ -221,21 +221,23 @@ const JobCard = ({
             )}
             <div className="flex items-center gap-1.5">
               <Clock3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="whitespace-nowrap">{mounted ? (() => {
-                if (isExpired) return "Closed";
-                if (savedAt) {
-                  const savedAgo = formatTimeAgo(savedAt);
-                  return savedAgo === "Just now" ? "Saved Just now" : `Saved ${savedAgo}`;
-                }
-                const ago = formatTimeAgo(posted);
-                return ago.includes("ago") || ago === "Just now" || ago === "Recently" ? `Posted ${ago}` : `Posted on ${ago}`;
-              })() : "..."}</span>
+              <span className="whitespace-nowrap">
+                {(() => {
+                  if (isExpired) return "Closed";
+                  if (savedAt) {
+                    const savedAgo = formatTimeAgo(savedAt);
+                    return savedAgo === "Just now" ? "Saved Just now" : `Saved ${savedAgo}`;
+                  }
+                  const ago = formatTimeAgo(posted);
+                  return ago.includes("ago") || ago === "Just now" || ago === "Recently" ? `Posted ${ago}` : `Posted on ${ago}`;
+                })()}
+              </span>
             </div>
 
             {deadline && (
               <div className="flex items-center gap-1.5">
                 <Clock3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="whitespace-nowrap">Deadline: {new Date(deadline).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+                <span className="whitespace-nowrap">Deadline: {new Date(deadline).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" })}</span>
               </div>
             )}
 

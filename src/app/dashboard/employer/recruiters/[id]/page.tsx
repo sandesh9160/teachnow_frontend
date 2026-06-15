@@ -2,6 +2,7 @@ import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import RecruiterJobsClient from "./RecruiterJobsClient";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
 export default async function RecruiterDetailsPage({ 
   params,
@@ -32,7 +33,13 @@ export default async function RecruiterDetailsPage({
         </div>
       </div>
 
-      <RecruiterJobsClient initialData={data} />
+      <Suspense fallback={
+        <div className="flex h-[200px] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+        </div>
+      }>
+        <RecruiterJobsClient initialData={data} />
+      </Suspense>
     </div>
   );
 }

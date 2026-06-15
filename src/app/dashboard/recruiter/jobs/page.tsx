@@ -1,6 +1,7 @@
 import { requireSessionRole } from "@/lib/serverAuth";
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import RecruiterJobsClient from "./RecruiterJobsClient";
+import { Suspense } from "react";
 
 export default async function RecruiterJobsPage({
   searchParams
@@ -16,8 +17,14 @@ export default async function RecruiterJobsPage({
   console.log(`[RecruiterJobsPage] API Response:`, response);
 
   return (
-    <RecruiterJobsClient 
-      initialData={response}
-    />
+    <Suspense fallback={
+      <div className="flex h-[300px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+      </div>
+    }>
+      <RecruiterJobsClient 
+        initialData={response}
+      />
+    </Suspense>
   );
 }

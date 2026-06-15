@@ -47,7 +47,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
       </head>
-      <body className="antialiased font-sans" suppressHydrationWarning>
+      <body className="antialiased font-sans">
+        <script
+          id="server-time-script"
+          dangerouslySetInnerHTML={{
+            __html: `window.__serverTime = ${Date.now()};`
+          }}
+        />
         <noscript>
           <link rel="stylesheet" href="/no-js.css" />  
         </noscript>

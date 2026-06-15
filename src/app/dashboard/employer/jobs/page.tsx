@@ -1,6 +1,7 @@
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import JobsClient from "@/app/dashboard/employer/jobs/JobsClient";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function JobsPage({ 
   searchParams 
@@ -37,5 +38,13 @@ export default async function JobsPage({
     active_count: jobsData?.active_jobs?.data?.length
   });
   
-  return <JobsClient initialData={jobsData} />;
+  return (
+    <Suspense fallback={
+      <div className="flex h-[300px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+      </div>
+    }>
+      <JobsClient initialData={jobsData} />
+    </Suspense>
+  );
 }

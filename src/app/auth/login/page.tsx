@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -27,57 +27,58 @@ function LoginContent() {
   const { companyName, companyLogo, brandSecondaryPart, brandPrimaryPart } = useBranding();
 
   // Redirect if already authenticated
-  const [isRedirecting] = useState(() => {
-    if (typeof window !== "undefined") {
-      const isSessionExpired = searchParams?.get("session_expired");
-      const redirectMsg = searchParams?.get("message");
-      
-      const cookieMatch = document.cookie.split(';').find(item => item.trim().startsWith('userData='));
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-      if (cookieMatch && !isSessionExpired && !redirectMsg) {
-        try {
-          const userDataStr = cookieMatch.split('=')[1];
-          const userObj = JSON.parse(decodeURIComponent(userDataStr));
-          const dashUrl = dashboardUrlAfterLogin(userObj);
-          window.location.replace(`${dashUrl}?message=already_auth`);
-        } catch (e) {
-          window.location.replace(`/dashboard/jobseeker?message=already_auth`);
-        }
-        return true; // We are redirecting
+  useEffect(() => {
+    const isSessionExpired = searchParams?.get("session_expired");
+    const redirectMsg = searchParams?.get("message");
+    
+    const cookieMatch = document.cookie.split(';').find(item => item.trim().startsWith('userData='));
+
+    if (cookieMatch && !isSessionExpired && !redirectMsg) {
+      try {
+        const userDataStr = cookieMatch.split('=')[1];
+        const userObj = JSON.parse(decodeURIComponent(userDataStr));
+        const dashUrl = dashboardUrlAfterLogin(userObj);
+        setIsRedirecting(true);
+        window.location.replace(`${dashUrl}?message=already_auth`);
+      } catch (e) {
+        setIsRedirecting(true);
+        window.location.replace(`/dashboard/jobseeker?message=already_auth`);
       }
     }
-    return false;
-  });
+  }, [searchParams]);
 
   // Show redirect message or session expired as toast if present
-  useState(() => {
-    if (typeof window !== "undefined") {
-      const isSessionExpired = searchParams?.get("session_expired");
+  useEffect(() => {
+    const isSessionExpired = searchParams?.get("session_expired");
+    let handler: any;
 
-      if (isSessionExpired || redirectMessage) {
-        setTimeout(() => {
-          if (isSessionExpired) {
-            toast.error("Session expired. Please login again.", {
-              description: "Your session has timed out due to inactivity.",
-              duration: 5000,
-            });
-          } else if (redirectMessage) {
-            toast.error(redirectMessage, {
-              description: "Please sign in to continue your session.",
-              duration: 5000,
-            });
-          }
+    if (isSessionExpired || redirectMessage) {
+      handler = setTimeout(() => {
+        if (isSessionExpired) {
+          toast.error("Session expired. Please login again.", {
+            description: "Your session has timed out due to inactivity.",
+            duration: 5000,
+          });
+        } else if (redirectMessage) {
+          toast.error(redirectMessage, {
+            description: "Please sign in to continue your session.",
+            duration: 5000,
+          });
+        }
 
-          // Clean URL to remove params
-          const url = new URL(window.location.href);
-          url.searchParams.delete("message");
-          url.searchParams.delete("session_expired");
-          window.history.replaceState({}, "", url.toString());
-        }, 100);
-      }
+        // Clean URL to remove params
+        const url = new URL(window.location.href);
+        url.searchParams.delete("message");
+        url.searchParams.delete("session_expired");
+        window.history.replaceState({}, "", url.toString());
+      }, 100);
     }
-    return null;
-  });
+    return () => {
+      if (handler) clearTimeout(handler);
+    };
+  }, [searchParams, redirectMessage]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

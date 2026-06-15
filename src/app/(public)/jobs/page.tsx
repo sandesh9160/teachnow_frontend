@@ -1,6 +1,7 @@
 import { fetchJobsPaginated } from "@/lib/jobs/api";
 import JobsClientManager from "./JobsClientManager";
 import { Job } from "@/types/homepage";
+import { Suspense } from "react";
 
 // Force Server-Side Rendering (SSR) for dynamic, live searches on every request
 export const dynamic = "force-dynamic";
@@ -104,12 +105,18 @@ export default async function JobsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <JobsClientManager
-      initialJobs={initialJobs}
-      similarJobs={similarJobs}
-      initialTotalResults={totalResults}
-      initialTotalPages={totalPages}
-      error={errorMsg}
-    />
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-[#F8FAFC]">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    }>
+      <JobsClientManager
+        initialJobs={initialJobs}
+        similarJobs={similarJobs}
+        initialTotalResults={totalResults}
+        initialTotalPages={totalPages}
+        error={errorMsg}
+      />
+    </Suspense>
   );
 }
