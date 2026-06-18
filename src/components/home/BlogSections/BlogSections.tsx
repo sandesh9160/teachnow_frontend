@@ -51,10 +51,10 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
 
   return (
     <section className="pt-12 pb-8 md:pb-10 bg-white overflow-hidden relative">
-      <div className="max-w-none w-full">
+      <div className="max-w-none w-full px-4 md:px-12">
         {/* Header with All Posts Link */}
-        <div className="relative mb-14 px-4 md:px-12">
-          <div className="text-center">
+        <div className="relative mb-10">
+          <div className="text-center mb-14 px-4">
             <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
               Career Blogs
             </h2>
@@ -63,12 +63,21 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
             </p>
           </div>
 
-          <div className="absolute right-4 md:right-12 bottom-0 sm:top-1/2 sm:-translate-y-1/2 hidden md:block">
+          <div className="absolute right-0 md:right-0 top-1/2 -translate-y-1/2 hidden md:block z-10">
             <Link
               href="/blogs"
               className="group flex items-center gap-2 text-blue-600 font-semibold"
             >
               All Posts <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+          {/* Mobile View All */}
+          <div className="text-right mt-4 md:hidden">
+            <Link
+              href="/blogs"
+              className="text-blue-600 font-semibold"
+            >
+              All Posts
             </Link>
           </div>
         </div>
@@ -86,7 +95,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
                     scroll("left");
                   }}
                   aria-label="Scroll blogs left"
-                  className="absolute left-0 md:left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                  className="absolute -left-4 md:-left-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
                 >
                   <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
                 </button>
@@ -100,7 +109,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
                     scroll("right");
                   }}
                   aria-label="Scroll blogs right"
-                  className="absolute right-0 md:right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
+                  className="absolute -right-4 md:-right-4 top-1/2 -translate-y-1/2 z-[70] h-10 w-10 md:h-12 md:w-12 rounded-full border shadow-xl flex items-center justify-center transition-all duration-300 focus:outline-none pointer-events-auto cursor-pointer bg-[#1e3a8a] border-transparent text-white hover:bg-[#1e40af] active:scale-95 animate-in fade-in duration-200"
                 >
                   <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
                 </button>
@@ -110,7 +119,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
               <div
                 ref={scrollRef}
                 onScroll={checkScroll}
-                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-10 pt-2 px-[calc(50%-135px)] md:px-12 scroll-smooth snap-x snap-mandatory"
+                className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-10 pt-2 px-[calc(50%-135px)] md:px-0 scroll-smooth snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {/* Start Spacer */}

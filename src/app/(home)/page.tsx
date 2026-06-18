@@ -8,7 +8,6 @@ import Features from "@/components/home/Features/Features";
 import EmployerSteps from "@/components/home/Steps/EmployerSteps";
 import Testimonial from "@/components/home/Testimonial/Testimonial";
 import Faq from "@/components/home/FAQ/FAQ";
-import ExploreTutors from "@/components/home/ExploreTutors/ExploreTutors";
 import dynamic from "next/dynamic";
 
 // Homepage Sections (dynamically imported with SSR enabled to defer client JS loading)
@@ -87,8 +86,6 @@ export default async function HomePage() {
       <Faq faqs={faqs || []} />
 
       <BlogSections blogs={blogs || []} />
-
-      <ExploreTutors />
     </div>
   );
 }

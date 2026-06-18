@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense, useMemo } from "react";
 import Header from "@/shared/layout/Header/Header";
 import Footer from "@/shared/layout/Footer/Footer";
+import ExploreTutors from "@/components/home/ExploreTutors/ExploreTutors";
 
 function ScrollToTop() {
   const pathname = usePathname();
@@ -39,6 +40,7 @@ export function LayoutWrapper({
 
   // Define routes where global header/footer should be hidden
   const isDashboard = useMemo(() => pathname?.startsWith("/dashboard"), [pathname]);
+  const isAuthPage = useMemo(() => pathname?.startsWith("/auth"), [pathname]);
 
   const showDashboard = !!isDashboard;
 
@@ -61,6 +63,7 @@ export function LayoutWrapper({
       <Header navigationData={navigationData} footerData={footerData} authUser={null} />
       {/* Cache Invalidation Touch to resolve stale Turbopack hydration mismatch */}
       <main className="pt-16 min-h-screen flex flex-col">{children}</main>
+      {!isAuthPage && <ExploreTutors />}
       <Footer footerData={footerData} heroCTA={heroCTA} navigationData={navigationData} />
     </>
   );

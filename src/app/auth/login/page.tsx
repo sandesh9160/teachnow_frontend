@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -28,6 +28,7 @@ function LoginContent() {
 
   // Redirect if already authenticated
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const isLoggingInRef = useRef(false);
 
   useEffect(() => {
     const isSessionExpired = searchParams?.get("session_expired");
@@ -36,6 +37,8 @@ function LoginContent() {
     const cookieMatch = document.cookie.split(';').find(item => item.trim().startsWith('userData='));
 
     if (cookieMatch && !isSessionExpired && !redirectMsg) {
+      if (isLoggingInRef.current) return;
+
       try {
         const userDataStr = cookieMatch.split('=')[1];
         const userObj = JSON.parse(decodeURIComponent(userDataStr));
@@ -82,6 +85,7 @@ function LoginContent() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    isLoggingInRef.current = true;
     try {
       setAuthLoading(true);
       const res = await EmailSignInAction({
@@ -112,6 +116,7 @@ function LoginContent() {
       }
     } catch (err: any) {
       toast.error(err.message || "An error occurred during login.");
+      isLoggingInRef.current = false;
     } finally {
       setAuthLoading(false);
     }
