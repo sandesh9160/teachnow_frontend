@@ -2,9 +2,21 @@ import { fetchJobsPaginated } from "@/lib/jobs/api";
 import JobsClientManager from "./JobsClientManager";
 import { Job } from "@/types/homepage";
 import { Suspense } from "react";
+import { JsonLd } from '@/components/seo/JsonLd';
+import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/seo';
+
+import { generateSeoMetadata } from '@/lib/seo';
 
 // Force Server-Side Rendering (SSR) for dynamic, live searches on every request
 export const dynamic = "force-dynamic";
+
+export const metadata = generateSeoMetadata({
+  path: '/jobs',
+  pageFallback: {
+    title: 'Search Teaching Jobs | TeachNow',
+    description: 'Browse thousands of teaching and education jobs near you.'
+  }
+});
 
 interface PageProps {
   readonly searchParams: Promise<{
@@ -110,6 +122,18 @@ export default async function JobsPage({ searchParams }: PageProps) {
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     }>
+      <JsonLd 
+        schema={generateCollectionPageSchema({
+          name: "Teaching Jobs",
+          url: "/jobs",
+        })} 
+      />
+      <JsonLd 
+        schema={generateBreadcrumbSchema([
+          { name: "Home", url: "/" },
+          { name: "Jobs", url: "/jobs" }
+        ])} 
+      />
       <JobsClientManager
         initialJobs={initialJobs}
         similarJobs={similarJobs}

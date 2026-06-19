@@ -5,8 +5,32 @@ import { Clock, Search, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import Image from "next/image";
+import { JsonLd } from '@/components/seo/JsonLd';
+import { generateBlogPostingSchema, generateBreadcrumbSchema, generateSeoMetadata } from '@/lib/seo';
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { blog: blogData } = await getBlogBySlug(slug);
+
+  if (!blogData) {
+    return generateSeoMetadata({
+      path: `/blogs/${slug}`,
+      pageFallback: { title: 'Blog Not Found' }
+    });
+  }
+
+  return generateSeoMetadata({
+    path: `/blogs/${slug}`,
+    pageFallback: {
+      title: `${blogData.title} | TeachNow Blog`,
+      description: blogData.excerpt || blogData.title,
+      image: blogData.image,
+      imageAlt: blogData.title
+    }
+  });
+}
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -44,6 +68,22 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
   return (
     <div className="min-h-screen bg-white pb-16 font-sans">
+      <JsonLd 
+        schema={generateBlogPostingSchema({
+          headline: blogData.title,
+          description: processedContent.substring(0, 150).replace(/<[^>]+>/g, ''),
+          image: blogData.image ? [blogData.image] : [],
+          datePublished: blogData.created_at || new Date().toISOString(),
+          authorName: blogData.author || "TeachNow Team"
+        })} 
+      />
+      <JsonLd 
+        schema={generateBreadcrumbSchema([
+          { name: "Home", url: "/" },
+          { name: "Blog", url: "/blogs" },
+          { name: blogData.title, url: `/blogs/${slug}` }
+        ])} 
+      />
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-slate-100 bg-white sticky top-16 z-40">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">

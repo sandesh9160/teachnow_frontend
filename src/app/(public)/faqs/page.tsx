@@ -1,6 +1,16 @@
 import { getFAQs } from "@/hooks/useHomepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import FAQClient from "./FAQClient";
+import { JsonLd } from '@/components/seo/JsonLd';
+import { generateFAQSchema, generateSeoMetadata } from '@/lib/seo';
+
+export const metadata = generateSeoMetadata({
+  path: '/faqs',
+  pageFallback: {
+    title: 'Frequently Asked Questions | TeachNow',
+    description: 'Find answers to common questions about TeachNow, including how to find jobs and manage your profile.'
+  }
+});
 
 // Incremental Static Regeneration (ISR): Cache for 1/2 hour, refresh in background
 // export const revalidate = 900;
@@ -17,6 +27,12 @@ export default async function FAQPage() {
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
+      <JsonLd 
+        schema={generateFAQSchema(faqs.map(faq => ({
+          question: faq.question,
+          answer: faq.answer
+        })))} 
+      />
       {/* Consistent Breadcrumb Bar */}
       <div className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-16 z-40">
         <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">

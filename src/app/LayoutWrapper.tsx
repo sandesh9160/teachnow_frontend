@@ -3,8 +3,11 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense, useMemo } from "react";
 import Header from "@/shared/layout/Header/Header";
-import Footer from "@/shared/layout/Footer/Footer";
-import ExploreTutors from "@/components/home/ExploreTutors/ExploreTutors";
+import dynamic from "next/dynamic";
+
+const Footer = dynamic(() => import("@/shared/layout/Footer/Footer"), { ssr: true });
+const ExploreTutors = dynamic(() => import("@/components/home/ExploreTutors/ExploreTutors"), { ssr: true });
+
 
 function ScrollToTop() {
   const pathname = usePathname();

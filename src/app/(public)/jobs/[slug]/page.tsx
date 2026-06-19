@@ -10,6 +10,8 @@ import { Job, Institution, ApiResponse } from "@/types/homepage";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 import { sanitizeSlug } from "@/lib/utils";
 import { cache } from 'react';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { generateJobPostingSchema, generateBreadcrumbSchema, generateEducationalOrganizationSchema, generateSeoMetadata } from '@/lib/seo';
 
 export const dynamic = "force-dynamic";
 
@@ -386,11 +388,86 @@ const resolveSlug = cache(async (slug: string) => {
   return { type: 'not-found' as const };
 });
 
+export async function generateMetadata({ params }: { readonly params: Promise<{ readonly slug: string }> }) {
+  const { slug } = await params;
+  const resolved = await resolveSlug(slug);
+
+  if (resolved.type === 'job') {
+    const job = resolved.data as Job;
+    return generateSeoMetadata({
+      path: `/jobs/${slug}`,
+      pageFallback: {
+        title: `${job.title} at ${job.employer?.company_name || 'TeachNow'}`,
+        description: job.description?.substring(0, 160) || `Apply for ${job.title} job.`,
+        image: job.employer?.company_logo,
+        imageAlt: `${job.employer?.company_name || 'Company'} Logo`
+      }
+    });
+  }
+
+  if (resolved.type === 'institution') {
+    const company = resolved.data as Institution;
+    return generateSeoMetadata({
+      path: `/institutions/${slug}`,
+      pageFallback: {
+        title: `${company.company_name} | TeachNow`,
+        description: company.company_description?.substring(0, 160) || `Learn more about ${company.company_name}.`,
+        image: company.company_logo,
+        imageAlt: `${company.company_name} Logo`
+      }
+    });
+  }
+
+  if (resolved.type === 'category') {
+    return generateSeoMetadata({
+      path: `/jobs/${slug}`,
+      pageFallback: {
+        title: `${(resolved as any).name || 'Jobs'} | TeachNow`,
+        description: `Browse jobs for ${(resolved as any).name || 'this category'}.`
+      }
+    });
+  }
+
+  return generateSeoMetadata({
+    path: `/jobs/${slug}`,
+    pageFallback: { title: 'Not Found' }
+  });
+}
+
 export default async function GenericJobDetailPage({ params }: { readonly params: Promise<{ readonly slug: string }> }) {
   const { slug } = await params;
   const resolved = await resolveSlug(slug);
 
-  if (resolved.type === 'job') return <JobDetails job={resolved.data as Job} slug={slug} />;
+  if (resolved.type === 'job') {
+    const job = resolved.data as Job;
+    return (
+      <>
+        <JsonLd 
+          schema={generateJobPostingSchema({
+            title: job.title,
+            description: job.description || job.title,
+            datePosted: job.created_at || new Date().toISOString(),
+            employmentType: job.job_type,
+            hiringOrganizationName: job.employer?.company_name,
+            hiringOrganizationLogo: job.employer?.company_logo,
+            location: {
+              addressLocality: job.location || "",
+              addressRegion: "",
+              addressCountry: "IN"
+            }
+          })} 
+        />
+        <JsonLd 
+          schema={generateBreadcrumbSchema([
+            { name: "Home", url: "/" },
+            { name: "Jobs", url: "/jobs" },
+            { name: job.title, url: `/jobs/${slug}` }
+          ])} 
+        />
+        <JobDetails job={job} slug={slug} />
+      </>
+    );
+  }
 
   if (resolved.type === 'institution') {
     const company = resolved.data as Institution;
@@ -401,11 +478,33 @@ export default async function GenericJobDetailPage({ params }: { readonly params
     const similarCompanies = allCompanies.filter(c => c.id !== company.id).slice(0, 4);
 
     return (
-      <InstitutionDetailsView
-        company={company}
-        companyJobs={companyJobs}
-        similarCompanies={similarCompanies}
-      />
+      <>
+        <JsonLd 
+          schema={generateEducationalOrganizationSchema({
+            name: company.company_name,
+            url: company.website,
+            logo: company.company_logo,
+            telephone: company.phone,
+            address: {
+              addressLocality: company.city || "",
+              addressRegion: "",
+              addressCountry: company.country || "IN"
+            }
+          })} 
+        />
+        <JsonLd 
+          schema={generateBreadcrumbSchema([
+            { name: "Home", url: "/" },
+            { name: "Institutions", url: "/institutions" },
+            { name: company.company_name, url: `/institutions/${slug}` }
+          ])} 
+        />
+        <InstitutionDetailsView
+          company={company}
+          companyJobs={companyJobs}
+          similarCompanies={similarCompanies}
+        />
+      </>
     );
   }
 

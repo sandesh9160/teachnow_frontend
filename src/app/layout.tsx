@@ -1,16 +1,36 @@
 import type { Metadata } from "next";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 // import { Suspense } from "react";
 import { Providers } from "@/providers";
 import "./globals.css";
+
+const interFont = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const plusJakartaSansFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+});
 
 import { LayoutWrapper } from "./LayoutWrapper";
 import { LayoutDataProvider } from "@/providers/LayoutDataProvider";
 import { getGlobalLayoutData } from "@/lib/globalLayout/getGlobalLayoutData";
 
+import { generateSeoMetadata } from "@/lib/seo";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://jobsvedika.in"),
-  title: "TeachNow – Find Jobs, Build Resume, and Get Hired Faster",
-  description: "India's #1 job portal for education professionals.",
+  ...generateSeoMetadata({
+    path: "/",
+    pageFallback: {
+      title: "TeachNow – Find Jobs, Build Resume, and Get Hired Faster",
+      description: "India's #1 job portal for education professionals.",
+    }
+  }),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://teachnow.in"),
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -33,14 +53,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Preconnect to Google Fonts and backend CDN */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet" />
+        {/* Preconnect to backend CDN */}
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
       </head>
-      <body className="antialiased font-sans">
+      <body className={`antialiased font-sans ${interFont.variable} ${plusJakartaSansFont.variable}`}>
         <script
           id="server-time-script"
           dangerouslySetInnerHTML={{

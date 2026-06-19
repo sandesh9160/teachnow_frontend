@@ -43,17 +43,11 @@ export const Hero = ({
       className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] lg:min-h-[600px] flex items-center justify-center"
     >
       {imageUrl && (
-        <div className="absolute inset-0 z-0">
-          <Image
+        <div className="absolute inset-0 z-0 bg-[#F7F9FC]">
+          <img
             src={imageUrl}
             alt="Find Teaching Jobs at Schools, Colleges & Institutes"
-            fill
-            priority
-            loading="eager"
-            decoding="sync"
-            fetchPriority="high"
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1440px"
-            className="object-cover object-center"
+            style={{ width: '100%', height: '100%' }}
           />
         </div>
       )}

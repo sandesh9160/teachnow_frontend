@@ -148,7 +148,7 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
       CharacterCount,
       ImageExtension.configure({
         HTMLAttributes: {
-          class: "rounded-xl border border-slate-100 shadow-sm max-w-full h-auto my-4",
+          class: "rounded-xl border border-slate-100 shadow-sm max-w-full h-auto my-4 cursor-default",
         },
       }),
       FontSize,
@@ -216,7 +216,7 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
 
           if (res?.status && res.data?.document_file) {
             const url = normalizeMediaUrl(res.data.document_file);
-            editor.chain().focus().setImage({ src: url }).run();
+            editor.chain().focus().setImage({ src: url }).insertContent(' ').run();
             toast.success("Image added to editor", { id: "editor-upload" });
           } else {
             toast.error(res?.message || "Failed to upload image", { id: "editor-upload" });
@@ -426,7 +426,24 @@ export const TipTapEditor = ({ value, onChange, placeholder = "Start typing desc
         </div>
       )}
       
-      <div className="bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative">
+      <div 
+        onClick={(e) => {
+          if (editor && editor.isEditable) {
+            const target = e.target as HTMLElement;
+            if (!target.closest('button') && !target.closest('input') && !target.closest('select') && !target.closest('option')) {
+              if (editor.isActive('image')) {
+                const { selection } = editor.state;
+                if (selection && 'node' in selection) {
+                  editor.commands.setTextSelection(selection.to);
+                } else {
+                  editor.commands.focus('end');
+                }
+              }
+            }
+          }
+        }}
+        className="bg-white max-h-[500px] overflow-y-auto custom-scrollbar relative"
+      >
          <EditorContent editor={editor} />
       </div>
       

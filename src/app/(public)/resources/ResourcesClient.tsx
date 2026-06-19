@@ -103,7 +103,7 @@ export default function ResourcesClient({ initialResources }: ResourcesClientPro
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   {items.map((resource) => (
-                    <div key={resource.slug} className="w-full lg:w-[205px] shrink-0 lg:snap-start">
+                    <div key={resource.slug} className="w-full lg:w-[260px] shrink-0 lg:snap-start">
                       <ResourceCard
                         resource={resource}
                       />
