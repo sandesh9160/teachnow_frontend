@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next";
 import { cache } from 'react';
+import { generateSeoMetadata } from "@/lib/seo";
 
 import JobDetails from "@/components/jobs/JobDetails/JobDetails";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
@@ -83,21 +84,94 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   if (isStaticOrIconRoute(slug)) {
-    return { title: "TeachNow" };
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      pageFallback: { title: "TeachNow" }
+    });
   }
   const resolved = await resolveSlug(slug);
   if (!resolved) {
-    return { title: "TeachNow" };
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      pageFallback: { title: "TeachNow" }
+    });
   }
+
   if (resolved.type === 'job') {
-    const job = resolved.data as any;
-    return { title: `${job.title} | TeachNow` };
+    const job = resolved.data as Job;
+    const cleanDesc = job.description ? job.description.replace(/<[^>]*>/g, '').trim() : '';
+    const descFallback = cleanDesc.substring(0, 160) || `Apply for ${job.title} job.`;
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      apiSeo: {
+        title: job.meta_title || undefined,
+        description: job.meta_description || undefined,
+        keywords: job.meta_keywords || undefined,
+      },
+      pageFallback: {
+        title: `${job.title} at ${job.employer?.company_name || 'TeachNow'}`,
+        description: descFallback,
+        image: job.employer?.company_logo,
+        imageAlt: `${job.employer?.company_name || 'Company'} Logo`
+      }
+    });
   }
+
   if (resolved.type === 'institute') {
-    const inst = resolved.data as any;
-    return { title: `${inst.company.company_name} | TeachNow` };
+    const company = resolved.data.company;
+    const descText = company.company_description || company.description || '';
+    const cleanDesc = descText.replace(/<[^>]*>/g, '').trim();
+    const descFallback = cleanDesc.substring(0, 160) || `Learn more about ${company.company_name}.`;
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      pageFallback: {
+        title: `${company.company_name} | TeachNow`,
+        description: descFallback,
+        image: company.company_logo,
+        imageAlt: `${company.company_name} Logo`
+      }
+    });
   }
-  return { title: "TeachNow" };
+
+  if (resolved.type === 'category') {
+    const name = resolved.data.name || 'Jobs';
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      pageFallback: {
+        title: `${name} | TeachNow`,
+        description: `Browse available teaching jobs for ${name} on TeachNow.`,
+        keywords: `${name}, teaching jobs, education careers`
+      }
+    });
+  }
+
+  if (resolved.type === 'location') {
+    const name = resolved.data.name || 'Location';
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      pageFallback: {
+        title: `Teaching Jobs in ${name} | TeachNow`,
+        description: `Browse available teaching jobs in ${name} on TeachNow. Apply for free today.`,
+        keywords: `teaching jobs in ${name}, teacher recruitment ${name}`
+      }
+    });
+  }
+
+  if (resolved.type === 'search') {
+    const name = resolved.data.name || 'Search Results';
+    return generateSeoMetadata({
+      path: `/${slug}`,
+      pageFallback: {
+        title: `${name} | TeachNow`,
+        description: `Browse available teaching jobs matching ${name} on TeachNow.`
+      }
+    });
+  }
+
+  return generateSeoMetadata({
+    path: `/${slug}`,
+    pageFallback: { title: "TeachNow" }
+  });
 }
 
 

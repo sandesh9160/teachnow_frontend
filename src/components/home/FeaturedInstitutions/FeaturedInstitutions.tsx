@@ -53,7 +53,7 @@ export const FeaturedInstitutions = (props: FeaturedInstitutionsProps) => {
   const showContent = institutions && Array.isArray(institutions) && institutions.length > 0;
 
   return (
-    <section className="pt-12 pb-20 bg-[#F7F9FC] overflow-hidden relative">
+    <section className="pt-12 pb-20 bg-slate-100 overflow-hidden relative">
       <div className="max-w-none w-full">
         
         {/* Header - Center Title with Right-aligned "View All" */}

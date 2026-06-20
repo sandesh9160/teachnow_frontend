@@ -45,7 +45,7 @@ export const BrowseByCity = ({ cities, totalJobs }: BrowseByCityProps) => {
           </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
         
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <h3 className="text-xl font-bold text-white tracking-tight leading-tight mb-1">{city.name}</h3>

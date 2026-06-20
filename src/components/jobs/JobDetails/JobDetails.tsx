@@ -284,7 +284,7 @@ export default function JobDetails({ job, slug }: JobDetailsProps) {
                 ) : (
                   <Link href={`/apply/${jobSegment}`} className="w-full sm:w-auto">
                     <Button variant="hero">
-                      Apply No
+                      Apply Now
                     </Button>
                   </Link>
                 )}

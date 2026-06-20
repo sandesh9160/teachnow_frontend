@@ -3,6 +3,7 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { Badge } from "@/shared/ui/Badge/Badge";
 import { getResourceBySlug, getResources } from "@/hooks/useHomepage";
 import { normalizeMediaUrl } from "@/services/api/client";
+import { generateSeoMetadata } from "@/lib/seo";
 import {
   FileText,
   BookOpen,
@@ -37,6 +38,43 @@ function formatDate(dateStr: string) {
 
 interface ResourcePageProps {
   readonly params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: ResourcePageProps) {
+  const { slug } = await params;
+  try {
+    const found = await getResourceBySlug(slug);
+    if (!found?.resource) {
+      return generateSeoMetadata({
+        path: `/resources/${slug}`,
+        pageFallback: { title: "Resource Not Found" }
+      });
+    }
+
+    const resource = found.resource;
+    const cleanDesc = resource.description ? resource.description.replace(/<[^>]*>/g, '').trim() : '';
+    const descFallback = cleanDesc.substring(0, 160) || "Expertly curated teaching material designed to enhance classroom engagement and learning outcomes.";
+
+    return generateSeoMetadata({
+      path: `/resources/${slug}`,
+      apiSeo: {
+        title: resource.meta_title || undefined,
+        description: resource.meta_description || undefined,
+        keywords: resource.meta_keywords || undefined,
+      },
+      pageFallback: {
+        title: `${resource.title} | TeachNow Resources`,
+        description: descFallback,
+        image: resource.resource_photo || undefined,
+        imageAlt: resource.title
+      }
+    });
+  } catch {
+    return generateSeoMetadata({
+      path: `/resources/${slug}`,
+      pageFallback: { title: "Resource Details" }
+    });
+  }
 }
 
 export default async function ResourceDetailPage({ params }: ResourcePageProps) {

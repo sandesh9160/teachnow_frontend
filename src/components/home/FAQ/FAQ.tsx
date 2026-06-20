@@ -10,7 +10,7 @@ export const FAQ = ({ faqs }: FAQProps) => {
   const showContent = faqs && Array.isArray(faqs) && faqs.length > 0;
 
   return (
-    <section className="bg-[#F7F9FC] py-10 px-4">
+    <section className="bg-slate-100 py-10 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">

@@ -1,11 +1,9 @@
 /* Styles applied only when JavaScript is disabled */
 
 /* Hide React Suspense loading skeletons (fallback boundaries) */
-[id^="B:"], [id^="$B:"] {
+.suspense-fallback {
   display: none !important;
 }
 
-/* Force React Suspense server-rendered content to display */
-[id^="S:"], [id^="$S:"] {
-  display: contents !important;
-}
+/* We don't need the template display tricks since we use <noscript> tags instead */
+

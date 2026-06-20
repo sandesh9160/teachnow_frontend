@@ -142,7 +142,7 @@ export const BlogSections = ({ blogs }: BlogSectionsProps) => {
               </div>
             </>
           ) : (
-            <div className="text-center py-12 text-slate-400 font-semibold bg-slate-50/50 rounded-2xl mx-4 md:mx-12 border border-slate-100">
+            <div className="text-center py-12 text-slate-400 font-semibold bg-slate-50 rounded-2xl mx-4 md:mx-12 border border-slate-100">
               No blogs available at the moment.
             </div>
           )}

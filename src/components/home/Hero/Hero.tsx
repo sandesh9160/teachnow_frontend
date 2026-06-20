@@ -21,7 +21,7 @@ export const Hero = ({
   const renderTitle = (titleText: string) => {
     const rawLines = titleText.replace(/<br\s*\/?>/gi, '\n').split('\n').map(line => line.trim()).filter(Boolean);
     if (rawLines.length === 0) return null;
-    
+
     return (
       <>
         {rawLines.map((line, lineIdx) => {
@@ -38,16 +38,21 @@ export const Hero = ({
   };
 
   return (
-    <section 
+    <section
       id="main-hero"
-      className="relative w-full bg-[#F7F9FC] overflow-visible min-h-[500px] lg:min-h-[600px] flex items-center justify-center"
+      className="relative w-full bg-slate-100 overflow-visible min-h-[500px] lg:min-h-[600px] flex items-center justify-center"
     >
       {imageUrl && (
-        <div className="absolute inset-0 z-0 bg-[#F7F9FC]">
-          <img
+        <div className="absolute inset-0 z-0 bg-slate-100">
+          <Image
             src={imageUrl}
             alt="Find Teaching Jobs at Schools, Colleges & Institutes"
-            style={{ width: '100%', height: '100%' }}
+            fill
+            priority
+            fetchPriority="high"
+            className="object-cover"
+            sizes="100vw"
+            quality={75}
           />
         </div>
       )}
@@ -55,7 +60,7 @@ export const Hero = ({
       {/* Relative container to stay above background */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-4 pt-6 pb-16 sm:pt-16 sm:pb-24 text-center">
         <div className="mx-auto max-w-5xl">
-          <h1 
+          <h1
             id="hero-heading"
             className="font-display text-4xl sm:text-5xl lg:text-6xl font-black text-[#1a202c] leading-[1.1] tracking-tight whitespace-pre-line"
           >
@@ -114,8 +119,8 @@ export const Hero = ({
               <span className="text-slate-500 font-medium text-[13px] mr-3 shrink-0">Popular:</span>
               <div className="flex-1 min-w-0 relative">
                 {/* Gradient masks for smooth fading at edges */}
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-[#F7F9FC] to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-[#F7F9FC] to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-slate-100 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-slate-100 to-transparent z-10 pointer-events-none"></div>
                 <AutoScrollCarousel speed={50} isContinuous={true} gapClass="gap-2">
                   {popularSearches.map((search) => (
                     <Link

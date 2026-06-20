@@ -51,7 +51,7 @@ export const HomeCTA = ({ cta }: CTAProps) => {
               </div>
 
               {/* Right Column: Visual Background */}
-              <div className="w-full md:w-1/2 lg:w-[45%] bg-slate-800/30 relative flex items-center justify-center p-8 md:p-12 overflow-hidden">
+              <div className="w-full md:w-1/2 lg:w-[45%] bg-slate-800 relative flex items-center justify-center p-8 md:p-12 overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(var(--primary-rgb),0.2),transparent_70%)] animate-pulse" />
 
                 <div className="relative z-10 w-full h-full flex items-center justify-center">
@@ -65,7 +65,7 @@ export const HomeCTA = ({ cta }: CTAProps) => {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
+                    <div className="h-48 w-48 rounded-full bg-primary blur-3xl" />
                   )}
                 </div>
 

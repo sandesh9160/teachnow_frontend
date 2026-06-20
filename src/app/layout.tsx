@@ -53,9 +53,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Preconnect to backend CDN */}
+        {/* Preconnect to backend — both http and https */}
         <link rel="preconnect" href="https://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://teachnowbackend.jobsvedika.in" />
+        <link rel="preconnect" href="http://teachnowbackend.jobsvedika.in" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="http://teachnowbackend.jobsvedika.in" />
+        {/* Preconnect to Google Fonts CDN used by next/font */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`antialiased font-sans ${interFont.variable} ${plusJakartaSansFont.variable}`}>
         <script

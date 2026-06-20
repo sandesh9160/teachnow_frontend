@@ -394,11 +394,18 @@ export async function generateMetadata({ params }: { readonly params: Promise<{ 
 
   if (resolved.type === 'job') {
     const job = resolved.data as Job;
+    const cleanDesc = job.description ? job.description.replace(/<[^>]*>/g, '').trim() : '';
+    const descFallback = cleanDesc.substring(0, 160) || `Apply for ${job.title} job.`;
     return generateSeoMetadata({
       path: `/jobs/${slug}`,
+      apiSeo: {
+        title: job.meta_title || undefined,
+        description: job.meta_description || undefined,
+        keywords: job.meta_keywords || undefined,
+      },
       pageFallback: {
         title: `${job.title} at ${job.employer?.company_name || 'TeachNow'}`,
-        description: job.description?.substring(0, 160) || `Apply for ${job.title} job.`,
+        description: descFallback,
         image: job.employer?.company_logo,
         imageAlt: `${job.employer?.company_name || 'Company'} Logo`
       }
@@ -407,11 +414,14 @@ export async function generateMetadata({ params }: { readonly params: Promise<{ 
 
   if (resolved.type === 'institution') {
     const company = resolved.data as Institution;
+    const descText = company.company_description || company.description || '';
+    const cleanDesc = descText.replace(/<[^>]*>/g, '').trim();
+    const descFallback = cleanDesc.substring(0, 160) || `Learn more about ${company.company_name}.`;
     return generateSeoMetadata({
       path: `/institutions/${slug}`,
       pageFallback: {
         title: `${company.company_name} | TeachNow`,
-        description: company.company_description?.substring(0, 160) || `Learn more about ${company.company_name}.`,
+        description: descFallback,
         image: company.company_logo,
         imageAlt: `${company.company_name} Logo`
       }
@@ -434,7 +444,10 @@ export async function generateMetadata({ params }: { readonly params: Promise<{ 
   });
 }
 
-export default async function GenericJobDetailPage({ params }: { readonly params: Promise<{ readonly slug: string }> }) {
+import LoadingSkeleton from './LoadingSkeleton';
+import { Suspense } from 'react';
+
+async function GenericJobDetailPageContent({ params }: { readonly params: Promise<{ readonly slug: string }> }) {
   const { slug } = await params;
   const resolved = await resolveSlug(slug);
 
@@ -523,4 +536,17 @@ export default async function GenericJobDetailPage({ params }: { readonly params
   }
 
   return notFound();
+}
+
+export default function GenericJobDetailPage({ params }: { readonly params: Promise<{ readonly slug: string }> }) {
+  return (
+    <>
+      <Suspense fallback={<div className="suspense-fallback"><LoadingSkeleton /></div>}>
+        <GenericJobDetailPageContent params={params} />
+      </Suspense>
+      <noscript>
+        <GenericJobDetailPageContent params={params} />
+      </noscript>
+    </>
+  );
 }

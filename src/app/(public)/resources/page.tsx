@@ -3,6 +3,16 @@ import { getResources } from "@/hooks/useHomepage";
 import { ResourceData } from "@/types/homepage";
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import ResourcesClient from "./ResourcesClient";
+import { generateSeoMetadata } from "@/lib/seo";
+
+export const metadata = generateSeoMetadata({
+  path: "/resources",
+  pageFallback: {
+    title: "Teaching Resources - Lesson Plans, Worksheets & Templates | TeachNow",
+    description: "Explore our curated collection of free templates, worksheets, and guides designed specifically for educators and teaching professionals.",
+    keywords: "teaching resources, lesson plans, teacher worksheets, education templates, classroom resources"
+  }
+});
 
 // Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
 // export const revalidate = 0;

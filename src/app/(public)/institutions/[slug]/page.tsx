@@ -2,8 +2,47 @@ import { notFound, redirect } from "next/navigation";
 import { getCompanyBySlugWithJobs, getCompanies } from "@/hooks/useCompanies";
 import InstitutionDetailsView from "@/components/institutions/InstitutionDetails/InstitutionDetailsView";
 import { Institution } from "@/types/homepage";
+import { generateSeoMetadata } from "@/lib/seo";
+import { Metadata } from "next";
 
 export const revalidate = 900; // Cache for 15 minutes, refresh in background
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const result = await getCompanyBySlugWithJobs(slug);
+    if (!result?.company) {
+      return generateSeoMetadata({
+        path: `/institutions/${slug}`,
+        pageFallback: { title: "Institution Not Found" }
+      });
+    }
+
+    const company = result.company;
+    const descText = company.company_description || company.description || '';
+    const cleanDesc = descText.replace(/<[^>]*>/g, '').trim();
+    const descFallback = cleanDesc.substring(0, 160) || `Learn more about ${company.company_name}.`;
+
+    return generateSeoMetadata({
+      path: `/institutions/${slug}`,
+      pageFallback: {
+        title: `${company.company_name} | TeachNow`,
+        description: descFallback,
+        image: company.company_logo || undefined,
+        imageAlt: `${company.company_name} Logo`
+      }
+    });
+  } catch {
+    return generateSeoMetadata({
+      path: `/institutions/${slug}`,
+      pageFallback: { title: "Institution Details" }
+    });
+  }
+}
 
 /**
  * Modern Institution Detail Page wrapper.

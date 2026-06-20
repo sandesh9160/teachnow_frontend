@@ -117,30 +117,41 @@ export default async function JobsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <Suspense fallback={
-      <div className="flex h-screen items-center justify-center bg-[#F8FAFC]">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    }>
-      <JsonLd 
-        schema={generateCollectionPageSchema({
-          name: "Teaching Jobs",
-          url: "/jobs",
-        })} 
-      />
-      <JsonLd 
-        schema={generateBreadcrumbSchema([
-          { name: "Home", url: "/" },
-          { name: "Jobs", url: "/jobs" }
-        ])} 
-      />
-      <JobsClientManager
-        initialJobs={initialJobs}
-        similarJobs={similarJobs}
-        initialTotalResults={totalResults}
-        initialTotalPages={totalPages}
-        error={errorMsg}
-      />
-    </Suspense>
+    <>
+      <Suspense fallback={
+        <div className="suspense-fallback flex h-screen items-center justify-center bg-[#F8FAFC]">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      }>
+        <JsonLd 
+          schema={generateCollectionPageSchema({
+            name: "Teaching Jobs",
+            url: "/jobs",
+          })} 
+        />
+        <JsonLd 
+          schema={generateBreadcrumbSchema([
+            { name: "Home", url: "/" },
+            { name: "Jobs", url: "/jobs" }
+          ])} 
+        />
+        <JobsClientManager
+          initialJobs={initialJobs}
+          similarJobs={similarJobs}
+          initialTotalResults={totalResults}
+          initialTotalPages={totalPages}
+          error={errorMsg}
+        />
+      </Suspense>
+      <noscript>
+        <JobsClientManager
+          initialJobs={initialJobs}
+          similarJobs={similarJobs}
+          initialTotalResults={totalResults}
+          initialTotalPages={totalPages}
+          error={errorMsg}
+        />
+      </noscript>
+    </>
   );
 }

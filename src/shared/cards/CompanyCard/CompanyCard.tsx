@@ -15,18 +15,20 @@ const CompanyCard = ({ name, type = "", location, city, openJobs = 0, slug = "in
       className="group relative flex flex-col items-center text-center h-[190px] rounded-xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-500"
     >
       {/* Box Logo Section */}
-      <div className="h-14 w-14 mb-3 rounded-lg bg-slate-50 flex items-center justify-center p-2 relative z-10 border border-slate-100/50 transition-transform duration-500 group-hover:scale-105">
+      <div className="h-16 w-16 mb-3 rounded-xl bg-white flex items-center justify-center p-1.5 relative z-10 border border-slate-200 transition-transform duration-500 group-hover:scale-105 overflow-hidden shadow-sm">
         {logo ? (
-          <Image 
-            src={logo} 
-            alt={name} 
-            width={56} 
-            height={56} 
-            className="h-full w-full object-contain overflow-hidden" 
-            loading="lazy"
-          />
+          <div className="relative w-full h-full">
+            <Image 
+              src={logo} 
+              alt={name} 
+              fill
+              className="object-contain"
+              sizes="64px"
+              loading="lazy"
+            />
+          </div>
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-200 text-[#1e3a8a] font-semibold text-lg rounded-xl">
+          <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-[#1e3a8a] font-bold text-xl rounded-lg">
             {name[0]}
           </div>
         )}

@@ -16,7 +16,7 @@ const FeaturedInstitutions = dynamic(() => import("@/components/home/FeaturedIns
 const FeaturedJobs = dynamic(() => import("@/components/home/FeaturedJobs/FeaturedJobs"), { ssr: true });
 const BlogSections = dynamic(() => import("@/components/home/BlogSections/BlogSections"), { ssr: true });
 
-export const revalidate = 30; // Force dynamic server rendering, no static cache
+export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 // API
 import {
@@ -74,9 +74,8 @@ async function BlogSectionsWrapper() {
 }
 
 export default async function HomePage() {
-  // Only fetch critical above-the-fold data blocking the initial render
+  // Hero data comes from the layout's cached getGlobalLayoutData — no extra fetch needed
   const globalData = await getGlobalLayoutData();
-  
   const heroCTA = globalData?.heroCTA ?? null;
   const hero = heroCTA?.hero ?? null;
   const cta = heroCTA?.cta ?? [];
@@ -89,42 +88,66 @@ export default async function HomePage() {
       {/* Hero renders immediately as it uses layout-level cached data */}
       <Hero hero={hero} cta={cta} popularSearches={heroCTA?.popular_searches} />
 
-      <Suspense fallback={<div className="h-40 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-40 w-full animate-pulse bg-slate-50" />}>
         <CategoriesWrapper />
       </Suspense>
+      <noscript>
+        <CategoriesWrapper />
+      </noscript>
 
-      <Suspense fallback={<div className="h-64 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-64 w-full animate-pulse bg-slate-50" />}>
         <FeaturedInstitutionsWrapper />
       </Suspense>
+      <noscript>
+        <FeaturedInstitutionsWrapper />
+      </noscript>
 
-      <Suspense fallback={<div className="h-64 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-64 w-full animate-pulse bg-slate-50" />}>
         <BrowseByCityWrapper />
       </Suspense>
+      <noscript>
+        <BrowseByCityWrapper />
+      </noscript>
 
-      <Suspense fallback={<div className="h-64 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-64 w-full animate-pulse bg-slate-50" />}>
         <FeaturedJobsWrapper />
       </Suspense>
+      <noscript>
+        <FeaturedJobsWrapper />
+      </noscript>
 
-      <Suspense fallback={<div className="h-40 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-40 w-full animate-pulse bg-slate-50" />}>
         <HeroStatsWrapper />
       </Suspense>
+      <noscript>
+        <HeroStatsWrapper />
+      </noscript>
 
       {/* Static components stream instantly */}
       <JobSeekerSteps />
       <Features />
       <EmployerSteps />
 
-      <Suspense fallback={<div className="h-64 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-64 w-full animate-pulse bg-slate-50" />}>
         <TestimonialWrapper />
       </Suspense>
+      <noscript>
+        <TestimonialWrapper />
+      </noscript>
 
-      <Suspense fallback={<div className="h-64 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-64 w-full animate-pulse bg-slate-50" />}>
         <FaqWrapper />
       </Suspense>
+      <noscript>
+        <FaqWrapper />
+      </noscript>
 
-      <Suspense fallback={<div className="h-64 w-full animate-pulse bg-slate-50" />}>
+      <Suspense fallback={<div className="suspense-fallback h-64 w-full animate-pulse bg-slate-50" />}>
         <BlogSectionsWrapper />
       </Suspense>
+      <noscript>
+        <BlogSectionsWrapper />
+      </noscript>
     </div>
   );
 }

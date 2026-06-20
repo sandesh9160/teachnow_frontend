@@ -8,7 +8,7 @@ const employerHiringImg = "/images/employer-hiring.jpg";
 
 export const Features = () => {
   return (
-    <section className="bg-[#F7F9FC] py-20 md:py-24">
+    <section className="bg-slate-100 py-20 md:py-24">
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
         <div className="text-center mb-14 px-4">
           <h2 className="text-[32px] md:text-[32px] font-extrabold text-[#111827] tracking-tight mb-2">
