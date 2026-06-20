@@ -1,7 +1,8 @@
 import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import Link from "next/link";
 import Image from "next/image";
-export const dynamic = "force-dynamic";
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 import { getBlogs } from "@/hooks/useBlogs";
 import { Search, Clock } from "lucide-react";
 import { formatDate } from "@/lib/utils";

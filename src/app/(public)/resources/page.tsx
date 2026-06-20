@@ -15,7 +15,7 @@ export const metadata = generateSeoMetadata({
 });
 
 // Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
-// export const revalidate = 0;
+export const revalidate = 900;
 
 export default async function ResourcesPage() {
   let allResources: ResourceData[] = [];

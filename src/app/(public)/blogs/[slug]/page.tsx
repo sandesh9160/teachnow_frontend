@@ -8,7 +8,8 @@ import Image from "next/image";
 import { JsonLd } from '@/components/seo/JsonLd';
 import { generateBlogPostingSchema, generateBreadcrumbSchema, generateSeoMetadata } from '@/lib/seo';
 
-export const dynamic = "force-dynamic";
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

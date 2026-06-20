@@ -61,7 +61,7 @@ export default function RootLayout({
         {/* Preconnect to Google Fonts CDN used by next/font */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`antialiased font-sans ${interFont.variable} ${plusJakartaSansFont.variable}`}>
+      <body className={`antialiased font-sans ${interFont.variable} ${plusJakartaSansFont.variable}`} suppressHydrationWarning>
         <script
           id="server-time-script"
           dangerouslySetInnerHTML={{

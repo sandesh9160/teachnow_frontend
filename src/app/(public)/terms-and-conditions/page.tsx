@@ -2,6 +2,9 @@ import Breadcrumb from "@/shared/ui/Breadcrumb/Breadcrumb";
 import { getTermsAndConditions } from "@/hooks/useHomepage";
 import TermsPageClient from "./TermsPageClient";
 
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
+
 export default async function TermsAndConditionsPage() {
   let sections: any[] = [];
   let lastUpdated: string | null = null;

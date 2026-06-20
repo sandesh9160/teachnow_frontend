@@ -2,8 +2,8 @@
 import { getPrivacyPolicy } from "@/hooks/useHomepage";
 import { PolicyData } from "@/types/homepage";
 
-// Incremental Static Regeneration (ISR): Cache for 1/2 hour, refresh in background
-// export const revalidate = 120;
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 
 export default async function PrivacyPolicyPage() {
   // const breadcrumbItems = [{ label: "Privacy Policy", isCurrent: true }];

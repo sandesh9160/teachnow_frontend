@@ -11,6 +11,9 @@ export const metadata = generateSeoMetadata({
   }
 });
 
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
+
 export default async function InstitutionsPage() {
   const initialCompanies = await getCompanies() || [];
 

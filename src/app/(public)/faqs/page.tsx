@@ -12,8 +12,8 @@ export const metadata = generateSeoMetadata({
   }
 });
 
-// Incremental Static Regeneration (ISR): Cache for 1/2 hour, refresh in background
-// export const revalidate = 900;
+// Incremental Static Regeneration (ISR): Cache for 15 minutes, refresh in background
+export const revalidate = 900;
 
 interface FAQItem {
   id: number;
