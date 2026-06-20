@@ -31,6 +31,21 @@ const nextConfig = {
       bodySizeLimit: '5mb',
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.teachnow.jobsvedika.in',
+          },
+        ],
+        destination: 'https://teachnow.jobsvedika.in/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
