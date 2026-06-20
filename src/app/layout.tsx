@@ -30,7 +30,7 @@ export const metadata: Metadata = {
       description: "India's #1 job portal for education professionals.",
     }
   }),
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://teachnow.in"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://teachnow.jobsvedika.in"),
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
